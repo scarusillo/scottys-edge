@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read",
+      "Edit",
+      "Write",
+      "Glob",
+      "Grep",
+      "Skill(update-config)",
+      "Bash(PYTHONIOENCODING=utf-8 python backtest.py --sport nba --min-edge 3)",
+      "Bash(PYTHONIOENCODING=utf-8 python backtest.py --sport ncaab --min-edge 3)",
+      "Bash(PYTHONIOENCODING=utf-8 python backtest.py --sport nhl --min-edge 3)",
+      "Bash(PYTHONIOENCODING=utf-8 python backtest.py --sport baseball_ncaa --min-edge 3)",
+      "Bash(PYTHONIOENCODING=utf-8 python historical_scores.py --sport baseball_ncaa --odds-api --odds-days 30)",
+      "WebSearch",
+      "WebFetch(domain:stats.ncaa.org)",
+      "WebFetch(domain:www.fridaystarters.com)",
+      "WebFetch(domain:www.boydsworld.com)",
+      "WebFetch(domain:www.baseball-reference.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:highlightly.net)",
+      "WebFetch(domain:collegebaseball.readthedocs.io)",
+      "WebFetch(domain:site.api.espn.com)"
+    ]
+  }
+}
