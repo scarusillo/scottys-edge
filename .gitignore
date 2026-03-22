@@ -1,0 +1,36 @@
+# Database — too large for GitHub, contains local data
+data/*.db
+data/*.db-journal
+
+# API keys and secrets
+.env
+*.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Backup files
+scripts/backup_*/
+scripts/*.bak
+
+# Output images (regenerated each run)
+*.png
+*.html
+*.jfif
+
+# Logs
+*.log
+picks_log.jsonl
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Batch files (contain local paths)
+scripts/*.bat

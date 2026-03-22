@@ -1,0 +1,415 @@
+#!/usr/bin/env python3
+"""
+SOCIAL MEDIA AUTOMATION — Discord + Twitter/X
+
+Auto-posts picks to Discord via webhook and Twitter via API.
+Integrated into main.py run pipeline.
+
+Discord: Free, uses webhooks (no approval needed)
+Twitter: Requires developer API keys (free tier = 1,500 tweets/month)
+Instagram: Manual only (screenshot HTML card from desktop)
+
+Setup:
+  Discord: Set DISCORD_WEBHOOK_URL environment variable
+  Twitter: Set TWITTER_API_KEY, TWITTER_API_SECRET, 
+           TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET
+"""
+import os
+import json
+import urllib.request
+from datetime import datetime
+
+# ═══════════════════════════════════════════════════════════════════
+# DISCORD
+# ═══════════════════════════════════════════════════════════════════
+
+DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL', 
+    'https://discord.com/api/webhooks/1481219807654449184/pzs8bBwwW-MIxEI-U9Vs2nHm66lXdUZt3JgnbXn_8AQ58_Z2wVUm_wuUUkjx8rR1DsGj')
+
+
+def post_to_discord(picks):
+    """Post formatted picks to Discord via webhook."""
+    if not DISCORD_WEBHOOK_URL:
+        print("  Discord: No webhook URL set")
+        return False
+    
+    try:
+        from model_engine import _to_eastern, _eastern_tz_label, kelly_label
+    except ImportError:
+        print("  Discord: Could not import model_engine")
+        return False
+    
+    tz = _eastern_tz_label()
+    now = datetime.now()
+    date_str = now.strftime('%A, %B %d %Y')
+    
+    # Build Discord embed
+    sport_icons = {
+        'basketball_nba': '🏀', 'basketball_ncaab': '🏀',
+        'icehockey_nhl': '🏒', 'baseball_ncaa': '⚾', 'baseball_mlb': '⚾',
+        'soccer_epl': '⚽', 'soccer_germany_bundesliga': '⚽',
+        'soccer_france_ligue_one': '⚽', 'soccer_italy_serie_a': '⚽',
+        'soccer_spain_la_liga': '⚽', 'soccer_usa_mls': '⚽',
+        'soccer_uefa_champs_league': '⚽',
+    }
+    
+    # Build pick lines — sorted by confidence (highest first)
+    picks = sorted(picks, key=lambda p: p['units'], reverse=True)
+    pick_lines = []
+    for p in picks:
+        kl = kelly_label(p['units'])
+        icon = sport_icons.get(p.get('sport', ''), '🏟️')
+        odds_str = f"{p['odds']:+.0f}" if p['odds'] else ''
+        tier = '🔥' if kl == 'MAX PLAY' else '⭐' if kl == 'STRONG' else '✅'
+        
+        game_time = ''
+        if p.get('commence'):
+            try:
+                gt = datetime.fromisoformat(p['commence'].replace('Z', '+00:00'))
+                est = _to_eastern(gt)
+                game_time = est.strftime('%I:%M %p')
+            except:
+                pass
+        
+        line = f"{tier} {icon} **{p['selection']}** ({odds_str}) • {p['units']:.0f}u {kl}"
+        if game_time:
+            line += f" • {game_time} {tz}"
+        pick_lines.append(line)
+        
+        # Add context if available
+        if p.get('context'):
+            pick_lines.append(f"  └ 📍 {p['context']}")
+    
+    tu = sum(p['units'] for p in picks)
+    
+    # Discord embed (rich formatting)
+    embed = {
+        "embeds": [{
+            "title": f"🎯 SCOTTY'S EDGE — {date_str}",
+            "description": '\n'.join(pick_lines),
+            "color": 0x00e676,  # Green accent
+            "footer": {
+                "text": f"{len(picks)} plays • {tu:.0f}u total • IG: @scottys_edge • X: @Scottys_edge • Not gambling advice • 21+"
+            },
+            "timestamp": now.isoformat()
+        }],
+        "username": "Scotty's Edge",
+    }
+    
+    data = json.dumps(embed).encode('utf-8')
+    req = urllib.request.Request(
+        DISCORD_WEBHOOK_URL,
+        data=data,
+        headers={'Content-Type': 'application/json', 'User-Agent': 'ScottysEdge/1.0'},
+        method='POST'
+    )
+    
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status in (200, 204):
+                print(f"  Discord: ✅ Posted {len(picks)} picks")
+                return True
+            else:
+                print(f"  Discord: ❌ Status {resp.status}")
+                return False
+    except Exception as e:
+        print(f"  Discord: ❌ {e}")
+        return False
+
+
+def post_results_to_discord(report_text):
+    """Post clean public-facing results to Discord."""
+    if not DISCORD_WEBHOOK_URL:
+        return False
+    
+    # Parse key stats from report
+    import re
+    
+    record = re.search(r'Record: (\d+W-\d+L)', report_text)
+    pl = re.search(r'P/L: ([+-]?\d+\.\d+)u', report_text)
+    roi = re.search(r'ROI: ([+-]?\d+\.\d+)%', report_text)
+    
+    record_str = record.group(1) if record else 'N/A'
+    pl_str = pl.group(1) if pl else 'N/A'
+    roi_str = roi.group(1) if roi else 'N/A'
+    
+    # Extract today's picks
+    today_picks = []
+    in_picks = False
+    for line in report_text.split('\n'):
+        if 'PICKS FROM' in line:
+            in_picks = True
+            continue
+        if in_picks and ('=====' in line or line.strip() == ''):
+            if today_picks:
+                break
+            continue
+        if in_picks and line.strip():
+            today_picks.append(line.strip())
+    
+    # Build pick results
+    pick_lines = []
+    for p in today_picks:
+        pick_lines.append(p)
+    
+    # Extract best performers by sport
+    sport_lines = []
+    in_sport = False
+    for line in report_text.split('\n'):
+        if '── BY SPORT' in line:
+            in_sport = True
+            continue
+        if in_sport and '──' in line:
+            break
+        if in_sport and line.strip() and 'W-' in line:
+            sport_lines.append(line.strip())
+    
+    # Build Discord embed
+    picks_str = '\n'.join(pick_lines[:10]) if pick_lines else 'No picks graded'
+    
+    # Color based on P/L
+    try:
+        pl_val = float(pl_str)
+        color = 0x00e676 if pl_val >= 0 else 0xff5252
+    except:
+        color = 0x666666
+    
+    now = datetime.now()
+    
+    embed = {
+        "embeds": [{
+            "title": f"📊 SCOTTY'S EDGE — Daily Results",
+            "description": f"**Overall: {record_str} | {pl_str}u | {roi_str}% ROI**\n\n**Today's Results:**\n```\n{picks_str}\n```",
+            "color": color,
+            "footer": {
+                "text": f"IG: @scottys_edge • X: @Scottys_edge • Not gambling advice • 21+"
+            },
+            "timestamp": now.isoformat()
+        }],
+        "username": "Scotty's Edge",
+    }
+    
+    data = json.dumps(embed).encode('utf-8')
+    req = urllib.request.Request(
+        DISCORD_WEBHOOK_URL,
+        data=data,
+        headers={'Content-Type': 'application/json', 'User-Agent': 'ScottysEdge/1.0'},
+        method='POST'
+    )
+    
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            if resp.status in (200, 204):
+                print(f"  Discord: ✅ Posted results")
+                return True
+    except Exception as e:
+        print(f"  Discord: ❌ {e}")
+    return False
+
+
+# ═══════════════════════════════════════════════════════════════════
+# TWITTER/X
+# ═══════════════════════════════════════════════════════════════════
+
+TWITTER_API_KEY = os.environ.get('TWITTER_API_KEY', '')
+TWITTER_API_SECRET = os.environ.get('TWITTER_API_SECRET', '')
+TWITTER_ACCESS_TOKEN = os.environ.get('TWITTER_ACCESS_TOKEN', '')
+TWITTER_ACCESS_SECRET = os.environ.get('TWITTER_ACCESS_SECRET', '')
+
+
+def _twitter_auth_header(method, url, params=None):
+    """Generate OAuth 1.0a header for Twitter API."""
+    import hashlib
+    import hmac
+    import time
+    import urllib.parse
+    
+    if not all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET]):
+        return None
+    
+    oauth_params = {
+        'oauth_consumer_key': TWITTER_API_KEY,
+        'oauth_nonce': hashlib.md5(str(time.time()).encode()).hexdigest(),
+        'oauth_signature_method': 'HMAC-SHA1',
+        'oauth_timestamp': str(int(time.time())),
+        'oauth_token': TWITTER_ACCESS_TOKEN,
+        'oauth_version': '1.0',
+    }
+    
+    all_params = {**oauth_params}
+    if params:
+        all_params.update(params)
+    
+    # Create signature base string
+    param_str = '&'.join(f"{urllib.parse.quote(k, safe='')}={urllib.parse.quote(str(v), safe='')}" 
+                         for k, v in sorted(all_params.items()))
+    base_str = f"{method}&{urllib.parse.quote(url, safe='')}&{urllib.parse.quote(param_str, safe='')}"
+    
+    # Sign
+    signing_key = f"{urllib.parse.quote(TWITTER_API_SECRET, safe='')}&{urllib.parse.quote(TWITTER_ACCESS_SECRET, safe='')}"
+    import base64
+    signature = base64.b64encode(
+        hmac.new(signing_key.encode(), base_str.encode(), hashlib.sha1).digest()
+    ).decode()
+    
+    oauth_params['oauth_signature'] = signature
+    
+    auth_header = 'OAuth ' + ', '.join(
+        f'{urllib.parse.quote(k, safe="")}="{urllib.parse.quote(v, safe="")}"'
+        for k, v in sorted(oauth_params.items())
+    )
+    
+    return auth_header
+
+
+def _format_twitter_thread(picks):
+    """
+    Format picks into tweets respecting 280 character limit.
+    Returns list of tweet strings.
+    """
+    from model_engine import kelly_label
+    
+    tz = 'EDT' if 3 <= datetime.now().month <= 10 else 'EST'
+    now = datetime.now()
+    date_str = now.strftime('%B %d')
+    day_str = now.strftime('%A')
+    
+    sport_icons = {
+        'basketball_nba': '🏀', 'basketball_ncaab': '🏀',
+        'icehockey_nhl': '🏒', 'baseball_ncaa': '⚾', 'baseball_mlb': '⚾',
+        'soccer_epl': '⚽', 'soccer_germany_bundesliga': '⚽',
+        'soccer_france_ligue_one': '⚽', 'soccer_italy_serie_a': '⚽',
+        'soccer_spain_la_liga': '⚽', 'soccer_usa_mls': '⚽',
+    }
+    
+    tu = sum(p['units'] for p in picks)
+    tweets = []
+    
+    # Tweet 1: Header + first picks (fit as many as possible)
+    header = f"🎯 Scotty's Edge — {day_str} {date_str}\n\n"
+    current_tweet = header
+    
+    for i, p in enumerate(picks):
+        kl = kelly_label(p['units'])
+        icon = sport_icons.get(p.get('sport', ''), '🏟️')
+        tier = '🔥' if kl == 'MAX PLAY' else '⭐' if kl == 'STRONG' else '✅'
+        odds_str = f"{p['odds']:+.0f}" if p['odds'] else ''
+        
+        pick_line = f"{tier} {icon} {p['selection']} ({odds_str}) {p['units']:.0f}u\n"
+        
+        # Check if adding this line exceeds 280 chars (leave room for footer)
+        if i == len(picks) - 1:
+            # Last pick — add footer
+            footer = f"\n{len(picks)} plays • {tu:.0f}u\n⚠️ Not gambling advice • 21+"
+            if len(current_tweet + pick_line + footer) <= 280:
+                current_tweet += pick_line + footer
+            else:
+                # Need to split
+                tweets.append(current_tweet.strip())
+                current_tweet = pick_line + footer
+        elif len(current_tweet + pick_line) > 260:
+            # Getting close to limit, start new tweet
+            tweets.append(current_tweet.strip())
+            current_tweet = pick_line
+        else:
+            current_tweet += pick_line
+    
+    tweets.append(current_tweet.strip())
+    
+    return tweets
+
+
+def post_to_twitter(picks):
+    """Post picks to Twitter/X as a thread."""
+    if not all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET]):
+        print("  Twitter: No API keys set (set TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET)")
+        return False
+    
+    tweets = _format_twitter_thread(picks)
+    
+    url = 'https://api.twitter.com/2/tweets'
+    reply_to = None
+    
+    for i, tweet_text in enumerate(tweets):
+        payload = {"text": tweet_text}
+        if reply_to:
+            payload["reply"] = {"in_reply_to_tweet_id": reply_to}
+        
+        data = json.dumps(payload).encode('utf-8')
+        auth = _twitter_auth_header('POST', url)
+        
+        if not auth:
+            print("  Twitter: ❌ Auth failed")
+            return False
+        
+        req = urllib.request.Request(
+            url,
+            data=data,
+            headers={
+                'Content-Type': 'application/json',
+                'Authorization': auth,
+            },
+            method='POST'
+        )
+        
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                result = json.loads(resp.read().decode())
+                tweet_id = result.get('data', {}).get('id')
+                reply_to = tweet_id
+                print(f"  Twitter: ✅ Tweet {i+1}/{len(tweets)} posted")
+        except Exception as e:
+            print(f"  Twitter: ❌ Tweet {i+1} failed: {e}")
+            return False
+    
+    return True
+
+
+# ═══════════════════════════════════════════════════════════════════
+# UNIFIED POST FUNCTION
+# ═══════════════════════════════════════════════════════════════════
+
+def post_picks_social(picks):
+    """Post picks to all configured social platforms."""
+    if not picks:
+        return
+    
+    print("\n📱 Posting to social media...")
+    post_to_discord(picks)
+    
+    if all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET]):
+        post_to_twitter(picks)
+    else:
+        print("  Twitter: Skipped (no API keys)")
+
+
+def post_results_social(report_text):
+    """Post grading results to all platforms."""
+    post_results_to_discord(report_text)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# CLI TEST
+# ═══════════════════════════════════════════════════════════════════
+
+if __name__ == '__main__':
+    # Test Discord webhook
+    test_picks = [{
+        'selection': 'Test Pick +5.0',
+        'sport': 'basketball_nba',
+        'odds': -110,
+        'units': 4.0,
+        'commence': '2026-03-10T23:00:00Z',
+        'home': 'Team A',
+        'away': 'Team B',
+        'context': 'Test context',
+    }]
+    
+    print("Testing Discord webhook...")
+    post_to_discord(test_picks)
+    
+    print("\nTesting Twitter formatting (no post):")
+    tweets = _format_twitter_thread(test_picks)
+    for i, t in enumerate(tweets):
+        print(f"  Tweet {i+1} ({len(t)} chars):")
+        print(f"  {t}")

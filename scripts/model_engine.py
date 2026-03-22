@@ -1,0 +1,2124 @@
+"""
+model_engine.py v9 — Scotty's Edge
+
+Integrates the complete edge framework inspired by from "Gambler":
+  - Key number point value system for edge calculation
+  - Star system for bet sizing (0.5-3.0 stars)
+  - Vig-adjusted spread calculation
+  - Spread vs Moneyline recommendation
+  - Stack injury multiplier (exponential, not linear)
+  - Cross-zero penalty
+  - Bet timing guidance (favorites early, dogs late)
+  - 90/10 power rating update formula
+"""
+import sqlite3, math, os
+from datetime import datetime, timedelta, timezone
+try:
+    from zoneinfo import ZoneInfo
+    EASTERN = ZoneInfo('America/New_York')
+except ImportError:
+    EASTERN = None
+
+def _to_eastern(utc_dt):
+    """Convert UTC datetime to Eastern time (handles DST automatically)."""
+    if EASTERN and utc_dt.tzinfo:
+        return utc_dt.astimezone(EASTERN)
+    # Fallback: check if DST is active (March-November)
+    month = utc_dt.month
+    if 3 <= month <= 10:  # Rough DST window
+        return utc_dt - timedelta(hours=4)  # EDT
+    return utc_dt - timedelta(hours=5)  # EST
+
+def _eastern_tz_label():
+    """Return 'EDT' or 'EST' based on current date."""
+    now = datetime.now()
+    if 3 <= now.month <= 10:
+        return 'EDT'
+    return 'EST'
+
+DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+
+from scottys_edge import (
+    scottys_edge_assessment, calculate_point_value, get_star_rating,
+    vig_adjusted_spread, recommend_spread_or_ml, bet_timing_advice,
+    stack_injury_multiplier, minimum_play_threshold, stars_to_units,
+    kelly_units, kelly_label,
+    SOFT_MARKETS, SHARP_MARKETS,
+)
+
+# Context engine — schedule, travel, line movement, altitude, splits
+try:
+    from context_engine import get_context_adjustments
+    HAS_CONTEXT = True
+except ImportError:
+    HAS_CONTEXT = False
+
+# Elo engine integration (independent ratings from game results)
+try:
+    from elo_engine import get_elo_ratings, blended_spread, elo_predicted_spread, ELO_CONFIG
+    HAS_ELO = True
+except ImportError:
+    HAS_ELO = False
+
+# Pitcher context — day-of-week pitching quality + named starters
+try:
+    from pitcher_scraper import get_pitcher_context
+    HAS_PITCHER = True
+except ImportError:
+    HAS_PITCHER = False
+
+# Weather engine — wind, rain, cold adjustments for outdoor totals
+try:
+    from weather_engine import get_weather_adjustment
+    HAS_WEATHER = True
+except ImportError:
+    HAS_WEATHER = False
+
+# Referee tendencies — official-specific total deviation adjustments
+try:
+    from referee_engine import get_ref_adjustment
+    HAS_REFEREE = True
+except ImportError:
+    HAS_REFEREE = False
+
+SPORT_CONFIG = {
+    'basketball_ncaab': {
+        'logistic_scale': 6.3, 'spread_std': 11.0, 'home_court': 3.2,
+        'max_spread_divergence': 4.5,   # v12 FIX: Was 6.0 — medium dogs (4-7.5 pts) went 2-8. 4.5 allows small dogs + favorites.
+        'ml_scale': 7.5,  # Separate scale for moneyline win probability
+    },
+    'basketball_nba': {
+        'logistic_scale': 6.3, 'spread_std': 11.0, 'home_court': 2.5,
+        'max_spread_divergence': 4.0,   # Tightened from 5.0
+        'ml_scale': 7.5,
+    },
+    'icehockey_nhl': {
+        'logistic_scale': 0.49, 'spread_std': 2.2, 'home_court': 0.15,
+        'max_spread_divergence': 1.5,   # v12.2: Was 1.2 — filtering 56% of games. NHL record is 11W-6L +12.6u. Model earned more room.
+        'ml_scale': 2.2,
+    },
+    'soccer_epl': {
+        'logistic_scale': 0.40, 'spread_std': 1.3, 'home_court': 0.40,  # v12 FIX: Was 0.25 — massively undervaluing home teams, inflating away ML edges
+        'max_spread_divergence': 1.0,  # v16: raised from 0.75 — was blocking all spread picks
+        'ml_scale': 1.5,  # v13 FIX: Was 1.0 — too flat, underdogs kept ~50% win prob. Backtest: ML dogs 13W-34L (-8.0u). Steeper curve = realistic dog probs.
+    },
+    'soccer_italy_serie_a': {
+        'logistic_scale': 0.40, 'spread_std': 1.3, 'home_court': 0.45,  # v12 FIX: Was 0.30 — Serie A has strong home advantage historically
+        'max_spread_divergence': 1.0,  # v16: raised from 0.75 — was blocking all spread picks
+        'ml_scale': 1.5,  # v13 FIX: Was 1.0
+    },
+    'soccer_spain_la_liga': {
+        'logistic_scale': 0.40, 'spread_std': 1.3, 'home_court': 0.40,  # v12 FIX: Was 0.25
+        'max_spread_divergence': 1.0,  # v16: raised from 0.75 — was blocking all spread picks
+        'ml_scale': 1.5,  # v13 FIX: Was 1.0
+    },
+    'soccer_germany_bundesliga': {
+        'logistic_scale': 0.40, 'spread_std': 1.3, 'home_court': 0.42,  # v12 FIX: Was 0.30 — Bundesliga has strong home support
+        'max_spread_divergence': 1.0,  # v16: raised from 0.75 — was blocking all spread picks
+        'ml_scale': 1.5,  # v13 FIX: Was 1.0
+    },
+    'soccer_france_ligue_one': {
+        'logistic_scale': 0.40, 'spread_std': 1.3, 'home_court': 0.40,  # v12 FIX: Was 0.25
+        'max_spread_divergence': 1.0,  # v16: raised from 0.75 — was blocking all spread picks
+        'ml_scale': 1.5,  # v13 FIX: Was 1.0
+    },
+    'soccer_uefa_champs_league': {
+        'logistic_scale': 0.40, 'spread_std': 1.3, 'home_court': 0.30,  # v12 FIX: Was 0.20 — UCL lower but still real
+        'max_spread_divergence': 1.0,  # v16: raised from 0.75 — was blocking all spread picks
+        'ml_scale': 1.5,  # v13 FIX: Was 1.0
+    },
+    'soccer_usa_mls': {
+        'logistic_scale': 0.40, 'spread_std': 1.3, 'home_court': 0.45,  # v12 FIX: Was 0.35 — MLS travel distances = big home edge
+        'max_spread_divergence': 1.0,  # v16: raised from 0.75 — was blocking all spread picks
+        'ml_scale': 1.5,  # v13 FIX: Was 1.0
+    },
+    # ── BASEBALL ──
+    # Calibrated from Elo MAE = 6.2 runs (spread_std must exceed this)
+    # NBA ratio: MAE/std = 4/11 = 0.36. Baseball: 6.2/10 = 0.62 (conservative)
+    # Run lines are ±1.5 (variable juice). Primary value = MONEYLINES.
+    'baseball_ncaa': {
+        'logistic_scale': 1.8,    # Baseball: tighter scale, fewer blowouts than basketball
+        'spread_std': 10.0,       # Calibrated: Elo MAE=6.2, match NBA conservatism ratio
+        'home_court': 0.4,        # v14: Actual home win rate 65.6% — Elo home_advantage handles this
+        'max_spread_divergence': 2.0,  # Was 3.0 — too wide for early-season thin Elo data
+        'ml_scale': 3.5,          # v12 FIX: Was 2.2 (way too steep). Real baseball: 1 run diff = ~57% win
+    },
+}
+
+def spread_to_win_prob(spread, sport):
+    """Win probability for MONEYLINE bets. Uses ml_scale (calibrated to real win rates)."""
+    s = SPORT_CONFIG.get(sport, SPORT_CONFIG['basketball_nba']).get('ml_scale', 7.5)
+    return 1.0 / (1.0 + math.exp(spread / s))
+
+def spread_to_cover_prob(model_spread, market_spread, sport):
+    """Cover probability for SPREAD bets. Uses spread_std."""
+    std = SPORT_CONFIG.get(sport, SPORT_CONFIG['basketball_nba'])['spread_std']
+    return _ncdf((market_spread - model_spread) / std)
+
+def _ncdf(z):
+    if z > 6: return 1.0
+    if z < -6: return 0.0
+    a1,a2,a3,a4,a5 = 0.254829592,-0.284496736,1.421413741,-1.453152027,1.061405429
+    p = 0.3275911; sign = 1 if z >= 0 else -1
+    t = 1.0/(1.0+p*abs(z))
+    y = 1.0-(((((a5*t+a4)*t)+a3)*t+a2)*t+a1)*t*math.exp(-z*z/2)
+    return 0.5*(1.0+sign*y)
+
+def american_to_implied_prob(odds):
+    if odds is None: return None
+    return 100.0/(odds+100.0) if odds > 0 else abs(odds)/(abs(odds)+100.0)
+
+
+def devig_ml_odds(home_odds, away_odds, draw_odds=None):
+    """
+    Remove vig from ML odds to get fair probabilities.
+    
+    Raw implied probs sum to >100% (the vig). De-vigging normalizes
+    them to 100% so edge comparisons are against true market probability.
+    
+    Without this, dogs always look like value because vig inflates
+    favorites more in absolute terms.
+    
+    Returns: (home_fair, away_fair, draw_fair) or (home_fair, away_fair, None)
+    """
+    h_imp = american_to_implied_prob(home_odds)
+    a_imp = american_to_implied_prob(away_odds)
+    d_imp = american_to_implied_prob(draw_odds) if draw_odds else None
+    
+    if h_imp is None or a_imp is None:
+        return None, None, None
+    
+    total = h_imp + a_imp + (d_imp or 0)
+    if total <= 0:
+        return h_imp, a_imp, d_imp
+    
+    h_fair = h_imp / total
+    a_fair = a_imp / total
+    d_fair = d_imp / total if d_imp else None
+    
+    return h_fair, a_fair, d_fair
+
+def get_latest_ratings(conn, sport):
+    rows = conn.execute("""
+        SELECT team, base_rating, home_court, rest_adjust, injury_adjust,
+               situational_adjust, manual_override, final_rating
+        FROM power_ratings WHERE sport = ? ORDER BY run_timestamp DESC
+    """, (sport,)).fetchall()
+    ratings, seen = {}, set()
+    for r in rows:
+        t = r[0]
+        if t in seen: continue
+        seen.add(t)
+        if r[1] is None: continue
+        hca = r[2] or SPORT_CONFIG.get(sport, {}).get('home_court', 2.5)
+        override = r[6]
+        final = override if override is not None else (r[1] + (r[3] or 0) + (r[4] or 0) + (r[5] or 0))
+        ratings[t] = {'base': r[1], 'home_court': hca, 'final': final}
+    return ratings
+
+def compute_model_spread(home, away, ratings, sport):
+    h, a = ratings.get(home), ratings.get(away)
+    if not h or not a: return None
+    hca = h.get('home_court', SPORT_CONFIG.get(sport, {}).get('home_court', 2.5))
+    return round(a['final'] - h['final'] - hca, 2)
+
+def _soccer_draw_prob(abs_spread):
+    """Estimate draw probability in soccer based on model spread.
+    
+    v12 FIX: Old decay (0.55) made draws crash from 30% to 14% at spread 1.0.
+    Real data: draws stay ~20% even in moderately lopsided matches.
+    Calibrated against EPL 2020-2024:
+      Even: ~26%, Sm fav: ~24%, Med fav: ~19%, Big fav: ~15%
+    """
+    return 0.30 * math.exp(-0.30 * abs_spread)
+
+
+def soccer_ml_probs(model_spread, sport):
+    """
+    Calculate 3-way soccer probabilities: (home_win, draw, away_win).
+    
+    CRITICAL: Soccer has 3 outcomes, not 2. Without this adjustment,
+    the model overestimates underdog win probability by 15-25% because
+    draw probability gets assigned to the underdog instead.
+    
+    Example: Inter Milan vs Genoa (spread -1.5)
+      Without draw fix: Home=65%, Away=35% → Genoa looks like great value at +1100
+      With draw fix:    Home=71%, Draw=13%, Away=16% → Genoa correctly filtered out
+    """
+    raw_home = spread_to_win_prob(model_spread, sport)
+    draw = _soccer_draw_prob(abs(model_spread))
+    home_win = raw_home * (1.0 - draw)
+    away_win = (1.0 - raw_home) * (1.0 - draw)
+    return home_win, draw, away_win
+
+
+def get_team_injury_context(conn, team, sport):
+    today = datetime.now().strftime('%Y-%m-%d')
+    rows = conn.execute("""
+        SELECT player, status, point_impact FROM injuries
+        WHERE sport=? AND team=? AND report_date=?
+        AND status IN ('Out','OUT','Doubtful','DOUBTFUL','Day-To-Day','DAY-TO-DAY')
+    """, (sport, team, today)).fetchall()
+    return len(rows), min(len(rows), 3)
+
+# ── Totals model ──
+
+LEAGUE_AVG_TOTAL = {
+    'basketball_ncaab': 145.0, 'basketball_nba': 228.0,  # Fallbacks only — see dynamic calc below
+    'icehockey_nhl': 6.0,
+    'soccer_epl': 2.65, 'soccer_italy_serie_a': 2.50,
+    'soccer_spain_la_liga': 2.55,
+    'soccer_germany_bundesliga': 3.10,  # Bundesliga averages higher scoring
+    'soccer_france_ligue_one': 2.60,
+    'soccer_uefa_champs_league': 2.80,
+    'soccer_usa_mls': 2.85,
+    'baseball_ncaa': 13.0,  # v14: Actual data avg=13.0 (was 11.5). Metal bats + college pitching depth
+}
+
+TOTAL_STD = {
+    # These reflect MODEL UNCERTAINTY, not game variance.
+    # The model uses crude team averages to estimate totals.
+    # Higher STD = more conservative = fewer false positives.
+    'basketball_ncaab': 22.0, 'basketball_nba': 20.0,   # Was 12.0 — produced 30% edges on 10pt gaps
+    'icehockey_nhl': 2.2,                                 # v12 FIX: Was 1.8. 0.5 goal disagreement was producing 8.6% edge. At 2.2, need 1.0+ goal disagreement for playable edge. Prevents systematic under flooding.
+    'soccer_epl': 1.8, 'soccer_italy_serie_a': 1.8,      # v13 FIX: Was 1.5 — backtest 15W-15L coinflip, MLS 1W-8L. Raise bar to require 0.5+ goal deviation.
+    'soccer_spain_la_liga': 1.8,
+    'soccer_germany_bundesliga': 1.8,
+    'soccer_france_ligue_one': 1.8,
+    'soccer_uefa_champs_league': 1.8,
+    'soccer_usa_mls': 5.0,  # v13: Was 1.8 — backtest 1W-7L (-72.8% ROI). Zero signal. Effectively disabled.
+    'baseball_ncaa': 3.5,  # v14: Was 5.0 (too conservative). Backtest: 50W-35L +30.7u +15.3% ROI at 5.0. Lower to let more signal through.
+}
+
+
+def _get_dynamic_league_avg_total(conn, sport):
+    """
+    Get the REAL average total from market consensus, not a hardcoded guess.
+    This fixes the NCAAB under-bias: if markets average 155, we use 155, not 145.
+    """
+    row = conn.execute("""
+        SELECT AVG(best_over_total), COUNT(*)
+        FROM market_consensus
+        WHERE sport=? AND best_over_total IS NOT NULL
+        AND best_over_total > 0
+    """, (sport,)).fetchone()
+
+    if row and row[0] and row[1] >= 10:
+        return round(row[0], 1)
+    return LEAGUE_AVG_TOTAL.get(sport, 145.0)
+
+def _weighted_team_stats(conn, team, sport, elo_ratings=None, min_games=5):
+    """
+    v12.3: Recency-weighted, home/away split, opponent-adjusted team stats.
+
+    Returns dict with offense/defense averages (overall and home/away splits).
+    Last 10 games get 2x weight vs earlier games.
+    If elo_ratings provided, adjusts for opponent quality.
+    """
+    rows = conn.execute("""
+        SELECT home, away, home_score, away_score, commence_time
+        FROM results
+        WHERE (home=? OR away=?) AND sport=? AND completed=1
+        AND home_score IS NOT NULL AND away_score IS NOT NULL
+        ORDER BY commence_time DESC
+    """, (team, team, sport)).fetchall()
+
+    if len(rows) < min_games:
+        return None
+
+    # Accumulators: overall and home/away splits
+    off_sum, def_sum, off_w = 0.0, 0.0, 0.0
+    h_off_sum, h_def_sum, h_w = 0.0, 0.0, 0.0  # home splits
+    a_off_sum, a_def_sum, a_w = 0.0, 0.0, 0.0  # away splits
+    opp_elos = []
+
+    for i, (home_tm, away_tm, hs, as_, ct) in enumerate(rows):
+        weight = 2.0 if i < 10 else 1.0  # Last 10 games get 2x weight
+        is_home = (home_tm == team)
+        offense = hs if is_home else as_
+        defense = as_ if is_home else hs
+        opponent = away_tm if is_home else home_tm
+
+        # Overall
+        off_sum += offense * weight
+        def_sum += defense * weight
+        off_w += weight
+
+        # Home/away splits
+        if is_home:
+            h_off_sum += offense * weight
+            h_def_sum += defense * weight
+            h_w += weight
+        else:
+            a_off_sum += offense * weight
+            a_def_sum += defense * weight
+            a_w += weight
+
+        # Opponent quality
+        if elo_ratings and opponent in elo_ratings:
+            opp_elos.append(elo_ratings[opponent].get('elo', 1500))
+
+    overall_off = off_sum / off_w if off_w > 0 else None
+    overall_def = def_sum / off_w if off_w > 0 else None
+
+    # Use splits if enough games (4+), otherwise fall back to overall
+    home_off = h_off_sum / h_w if h_w >= 4 else overall_off
+    home_def = h_def_sum / h_w if h_w >= 4 else overall_def
+    away_off = a_off_sum / a_w if a_w >= 4 else overall_off
+    away_def = a_def_sum / a_w if a_w >= 4 else overall_def
+
+    # v12.3: Opponent quality adjustment using Elo
+    # If team scored 110 avg against weak opponents (avg Elo 1420),
+    # that's less impressive than 110 against strong opponents (1580).
+    elo_adj = 1.0
+    if opp_elos and len(opp_elos) >= 5:
+        avg_opp = sum(opp_elos) / len(opp_elos)
+        # Gentle adjustment: 100 Elo points of weak schedule = ~2% offense reduction
+        elo_adj = 1.0 + (avg_opp - 1500) / 5000  # ~±2% per 100 Elo points
+
+    return {
+        'offense': overall_off, 'defense': overall_def,
+        'home_offense': home_off, 'home_defense': home_def,
+        'away_offense': away_off, 'away_defense': away_def,
+        'games': len(rows), 'elo_adj': elo_adj,
+    }
+
+
+def estimate_model_total(home, away, ratings, sport, conn):
+    """
+    Estimate game total from team scoring history.
+
+    v12 fix: For soccer, uses ACTUAL scoring data (goals scored) from results
+    table instead of market totals. This eliminates the circular bias where
+    the model averaged market lines and compared them back to the market,
+    systematically finding false under "edges."
+
+    For basketball/hockey, blends team-specific market totals with league average.
+    
+    Returns model_total (float) or None.
+    """
+    h = ratings.get(home)
+    a = ratings.get(away)
+    if not h or not a:
+        return None
+
+    # ──────────────────────────────────────────────────────────
+    # SOCCER: Anchor on MARKET total, adjust by team deviation
+    # ──────────────────────────────────────────────────────────
+    # The market is SMART about soccer totals. We should only
+    # disagree when team-specific data shows they deviate from
+    # what the market expects. The model starts at the market
+    # line and adjusts based on:
+    #   - Each team's goals scored vs league average (attack rate)
+    #   - Each team's goals conceded vs league average (defense rate)
+    #
+    # This prevents the old bugs:
+    #   v11: averaged market totals → always said under (circular)
+    #   v12a: averaged actual goals → always said over (blunt)
+    #   v12b: starts at market, only moves for real team deviations ✅
+    
+    if 'soccer' in sport:
+        # INDEPENDENT soccer total — does NOT anchor on market total.
+        # Uses team attack/defense rates to predict scoring from scratch,
+        # then compares to market. Same philosophy as Elo spreads.
+        #
+        # Old approach anchored on market total and barely adjusted (±0.1),
+        # producing zero disagreement. New approach builds prediction
+        # independently, finding edges where scoring rates diverge from
+        # the market's expectation.
+        #
+        # Method: Expected goals = (home_atk × away_def_leak) + (away_atk × home_def_leak)
+        # normalized to league average. This captures matchup-specific scoring.
+
+        min_games = 8
+
+        # League average actual goals per game
+        league_row = conn.execute("""
+            SELECT AVG(actual_total), COUNT(*)
+            FROM results
+            WHERE sport = ? AND completed = 1 AND actual_total IS NOT NULL
+        """, (sport,)).fetchone()
+        league_avg = league_row[0] if league_row and league_row[0] and league_row[1] >= 20 else None
+
+        if not league_avg:
+            return None
+
+        league_atk = league_avg / 2  # Average goals per team per game
+
+        # Home team scoring and conceding rates
+        # Use LIKE matching to handle ESPN vs Odds API name variants
+        # (e.g., "Union Berlin" vs "1. FC Union Berlin", "Augsburg" vs "FC Augsburg")
+        h_like = f'%{home}%'
+        h_stats = conn.execute("""
+            SELECT AVG(CASE WHEN home LIKE ? THEN home_score ELSE away_score END),
+                   AVG(CASE WHEN home LIKE ? THEN away_score ELSE home_score END),
+                   COUNT(*)
+            FROM results
+            WHERE (home LIKE ? OR away LIKE ?) AND sport = ? AND completed = 1
+            AND home_score IS NOT NULL
+        """, (h_like, h_like, h_like, h_like, sport)).fetchone()
+
+        # Away team scoring and conceding rates
+        a_like = f'%{away}%'
+        a_stats = conn.execute("""
+            SELECT AVG(CASE WHEN home LIKE ? THEN home_score ELSE away_score END),
+                   AVG(CASE WHEN home LIKE ? THEN away_score ELSE home_score END),
+                   COUNT(*)
+            FROM results
+            WHERE (home LIKE ? OR away LIKE ?) AND sport = ? AND completed = 1
+            AND home_score IS NOT NULL
+        """, (a_like, a_like, a_like, a_like, sport)).fetchone()
+
+        if not h_stats or not a_stats or h_stats[2] < min_games or a_stats[2] < min_games:
+            return None
+
+        h_atk, h_def = h_stats[0], h_stats[1]  # Home goals scored, conceded per game
+        a_atk, a_def = a_stats[0], a_stats[1]  # Away goals scored, conceded per game
+
+        if not h_atk or not a_atk or not h_def or not a_def:
+            return None
+
+        # Matchup-based expected goals:
+        # Home team expected = home_atk_rate × (away_def_rate / league_avg_def)
+        # This captures: a strong attack vs a leaky defense = more goals
+        h_atk_ratio = h_atk / league_atk if league_atk > 0 else 1.0  # e.g., 1.4 = scores 40% above avg
+        a_atk_ratio = a_atk / league_atk if league_atk > 0 else 1.0
+        h_def_ratio = h_def / league_atk if league_atk > 0 else 1.0  # e.g., 1.2 = concedes 20% above avg
+        a_def_ratio = a_def / league_atk if league_atk > 0 else 1.0
+
+        # Expected home goals = league_avg_atk × home_atk_strength × away_def_weakness
+        exp_home_goals = league_atk * h_atk_ratio * a_def_ratio
+        # Expected away goals = league_avg_atk × away_atk_strength × home_def_weakness
+        exp_away_goals = league_atk * a_atk_ratio * h_def_ratio
+
+        independent_total = exp_home_goals + exp_away_goals
+
+        # Blend: 60% independent model, 40% league average
+        # (pure independent can be noisy with small samples)
+        model_total = independent_total * 0.6 + league_avg * 0.4
+
+        return round(model_total, 2)
+
+    # ──────────────────────────────────────────────────────────
+    # BASKETBALL / HOCKEY: Independent scoring prediction
+    # ──────────────────────────────────────────────────────────
+    # v14 FIX: Old method anchored on market total and applied small
+    # adjustments — circular by design, barely disagreed with the market.
+    # New approach builds prediction independently from actual scoring
+    # data (same philosophy as soccer totals and Elo spreads), then
+    # compares to market to find real edges.
+    #
+    # Method: matchup-based expected scoring using attack/defense ratios
+    #   Home expected = league_avg_per_team × home_atk_ratio × away_def_ratio
+    #   Away expected = league_avg_per_team × away_atk_ratio × home_def_ratio
+    # Blend with league average to dampen noise from small samples.
+
+    # League average actual total per game
+    league_row = conn.execute("""
+        SELECT AVG(actual_total), COUNT(*)
+        FROM results
+        WHERE sport=? AND completed=1 AND actual_total IS NOT NULL
+    """, (sport,)).fetchone()
+    league_avg = league_row[0] if league_row and league_row[0] and league_row[1] >= 20 else None
+
+    if not league_avg:
+        avg = _get_dynamic_league_avg_total(conn, sport)
+        return round(avg, 1) if avg else None
+
+    league_per_team = league_avg / 2  # Average points per team per game
+
+    # Recency-weighted, home/away split, opponent-adjusted stats
+    elo_data = None
+    try:
+        from elo_engine import get_elo_ratings
+        elo_data = get_elo_ratings(conn, sport)
+    except Exception:
+        pass
+
+    h_stats = _weighted_team_stats(conn, home, sport, elo_ratings=elo_data)
+    a_stats = _weighted_team_stats(conn, away, sport, elo_ratings=elo_data)
+
+    if not h_stats or not a_stats:
+        return None
+
+    # Use HOME splits for home team, AWAY splits for away team
+    h_off = h_stats['home_offense'] * h_stats['elo_adj']
+    h_def = h_stats['home_defense'] / h_stats['elo_adj']
+    a_off = a_stats['away_offense'] * a_stats['elo_adj']
+    a_def = a_stats['away_defense'] / a_stats['elo_adj']
+
+    # Attack/defense ratios relative to league average
+    h_atk_ratio = h_off / league_per_team if league_per_team > 0 else 1.0
+    a_atk_ratio = a_off / league_per_team if league_per_team > 0 else 1.0
+    h_def_ratio = h_def / league_per_team if league_per_team > 0 else 1.0
+    a_def_ratio = a_def / league_per_team if league_per_team > 0 else 1.0
+
+    # Matchup-based expected scoring
+    exp_home_pts = league_per_team * h_atk_ratio * a_def_ratio
+    exp_away_pts = league_per_team * a_atk_ratio * h_def_ratio
+    independent_total = exp_home_pts + exp_away_pts
+
+    # Blend: 60% independent model, 40% league average (dampen noise)
+    if 'basketball' in sport:
+        blend_weight = 0.60
+    else:
+        blend_weight = 0.55  # Hockey: slightly more conservative
+
+    model_total = independent_total * blend_weight + league_avg * (1 - blend_weight)
+
+    # Blowout/close game adjustment — basketball only
+    # Use predicted scoring gap as proxy for expected blowout
+    spread_diff = abs(exp_home_pts - exp_away_pts)
+    if 'basketball' in sport:
+        if spread_diff > 8:
+            model_total -= 2  # Blowouts tend to go under
+        elif spread_diff < 2:
+            model_total += 1  # Close games, OT possibility
+
+    return round(model_total, 1)
+
+
+def _totals_confidence(home, away, sport, conn):
+    """
+    Check if we have enough data to trust a totals prediction.
+    Returns 'HIGH', 'MEDIUM', or 'LOW'.
+    """
+    for team in [home, away]:
+        cnt = conn.execute("""
+            SELECT COUNT(*) FROM market_consensus
+            WHERE sport=? AND best_over_total IS NOT NULL AND (home=? OR away=?)
+        """, (sport, team, team)).fetchone()[0]
+        if cnt < 5:
+            return 'LOW'
+    
+    # Also check results table for actual game data
+    for team in [home, away]:
+        results_cnt = conn.execute("""
+            SELECT COUNT(*) FROM results
+            WHERE sport=? AND completed=1 AND (home=? OR away=?)
+        """, (sport, team, team)).fetchone()[0]
+        if results_cnt >= 10:
+            return 'HIGH'
+    
+    return 'MEDIUM'
+
+
+def calculate_point_value_totals(model_total, market_total, sport):
+    """
+    Point value for totals — now probability-based, not linear.
+    
+    Uses the CDF to compute the actual probability that the total goes
+    over/under the market line, then converts to edge %.
+    
+    This fixes the v10 issue where 8-pt and 14-pt diffs both showed ~20%.
+    """
+    diff = abs(model_total - market_total)
+    std = TOTAL_STD.get(sport, 22.0)
+    prob = _ncdf(diff / std)
+    
+    # Edge = how much our probability exceeds the implied 50% (at -110)
+    # At -110 odds, implied prob = 52.4%. Edge = prob - 0.524
+    edge_pct = (prob - 0.524) * 100.0
+    
+    # Cap at 25% for totals (realistic ceiling — anything above is a data issue)
+    return round(max(0.0, min(edge_pct, 25.0)), 1)
+
+
+def _total_prob(diff, sport):
+    """Probability that actual total exceeds market by diff."""
+    std = TOTAL_STD.get(sport, 22.0)
+    return _ncdf(diff / std)
+
+def generate_predictions(conn, sport=None, date=None):
+    sports = [sport] if sport else list(SPORT_CONFIG.keys())
+    all_picks = []
+
+    now_utc = datetime.now(timezone.utc)
+    # TODAY ONLY — games from now until midnight Eastern tonight
+    # Midnight Eastern = 4:00 AM UTC (EDT) or 5:00 AM UTC (EST)
+    offset_hours = 4 if 3 <= now_utc.month <= 10 else 5
+    est_midnight = now_utc.replace(hour=offset_hours, minute=0, second=0, microsecond=0)
+    if now_utc.hour >= 5:
+        est_midnight += timedelta(days=1)
+    # v16: Games must start at least 30 min from now so subscribers have time to bet.
+    # Was -2 hours (allowed already-started games).
+    window_start = (now_utc + timedelta(minutes=30)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    window_end = est_midnight.strftime('%Y-%m-%dT%H:%M:%SZ')
+    print(f"  Game window: TODAY ONLY — {window_start} to {window_end}")
+
+    for sp in sports:
+        ratings = get_latest_ratings(conn, sp)
+        if len(ratings) < 5:
+            print(f"  {sp}: only {len(ratings)} teams — SKIP"); continue
+        print(f"  {sp}: {len(ratings)} teams rated")
+
+        # Load Elo ratings if available
+        elo_data = {}
+        if HAS_ELO:
+            elo_data = get_elo_ratings(conn, sp)
+            if elo_data:
+                elo_count = sum(1 for v in elo_data.values() if v['confidence'] != 'LOW')
+                print(f"    + Elo ratings: {elo_count} teams with confidence")
+            else:
+                print(f"    ⚠ No Elo data — using market ratings only (run historical_scores.py + elo_engine.py)")
+
+        game_count = conn.execute(
+            "SELECT COUNT(DISTINCT event_id) FROM market_consensus WHERE sport=?",
+            (sp,)).fetchone()[0]
+        is_thin = game_count < 30
+        if is_thin: print(f"    {game_count} games — conservative mode")
+        min_pv = minimum_play_threshold(sp, is_thin)
+        min_pv_totals = min_pv + 5.0  # v12 FIX: Totals 24% +CLV rate. Require 5% more edge than spreads.
+        # Soccer totals: independent model produces smaller PV% (goals vs points),
+        # but backtest shows 9W-2L at 5%+ edge. Lower threshold for soccer.
+        if 'soccer' in sp:
+            min_pv_totals = 5.0
+        # Walters ML threshold: Elo probability vs de-vigged ML odds.
+        # Lower than spread thresholds because ML edges are raw probability
+        # comparisons — no key number inflation. Spread min_pv is calibrated
+        # for PV% which can reach 15-25% from crossing multiple key numbers.
+        # ML edges are naturally 4-12% for genuine disagreements.
+        min_pv_ml = max(5.0, min_pv * 0.50)  # Half of spread threshold, floor 5%
+
+        games = conn.execute("""
+            SELECT event_id, commence_time, home, away,
+                   best_home_spread, best_home_spread_odds, best_home_spread_book,
+                   best_away_spread, best_away_spread_odds, best_away_spread_book,
+                   best_over_total, best_over_odds, best_over_book,
+                   best_under_total, best_under_odds, best_under_book,
+                   best_home_ml, best_home_ml_book, best_away_ml, best_away_ml_book
+            FROM market_consensus
+            WHERE sport=? AND commence_time>=? AND commence_time<=?
+            AND snapshot_date = (
+                SELECT MAX(mc2.snapshot_date) FROM market_consensus mc2
+                WHERE mc2.event_id = market_consensus.event_id AND mc2.sport = market_consensus.sport
+            )
+            ORDER BY commence_time
+        """, (sp, window_start, window_end)).fetchall()
+        print(f"    {len(games)} games today")
+
+        # ── AUTO-SEED unrated teams from RESULTS + market data ──
+        # Critical for NCAAB: 363 teams, many small schools won't be
+        # in power_ratings from bootstrap. Step 1: try to derive a real
+        # rating from game results (like a mini-bootstrap). Step 2: if
+        # no results exist, derive from market spread. Step 3: only if
+        # truly no data, seed at 0.0 (model = market, no false edges).
+        seeded = 0
+        hca_seed = SPORT_CONFIG.get(sp, {}).get('home_court', 2.5)
+        
+        def _derive_rating_from_results(team, sport_key, conn_local, ratings_local, hca_val):
+            """Mini-bootstrap: derive a team's rating from their game results."""
+            rows = conn_local.execute("""
+                SELECT home, away, actual_margin
+                FROM results
+                WHERE (home = ? OR away = ?) AND sport = ? AND completed = 1
+                AND actual_margin IS NOT NULL
+                ORDER BY commence_time DESC LIMIT 10
+            """, (team, team, sport_key)).fetchall()
+            
+            if len(rows) < 2:
+                return None
+            
+            implied_ratings = []
+            for r in rows:
+                home_r, away_r, margin = r
+                is_home = (home_r == team)
+                opponent = away_r if is_home else home_r
+                opp_rating = ratings_local.get(opponent, {}).get('final')
+                
+                if opp_rating is not None:
+                    # TGPL: team_rating = margin + opponent_rating (adjusted for HCA)
+                    if is_home:
+                        implied = margin + opp_rating - hca_val
+                    else:
+                        implied = -margin + opp_rating + hca_val
+                    implied_ratings.append(implied)
+            
+            if not implied_ratings:
+                return None
+            
+            return round(sum(implied_ratings) / len(implied_ratings), 2)
+        
+        for g in games:
+            home_t, away_t = g[2], g[3]
+            mkt_spread = g[4]  # home spread (negative = home favored)
+            h_rated = home_t in ratings
+            a_rated = away_t in ratings
+
+            if h_rated and a_rated:
+                continue  # Both already rated
+
+            # Step 1: Try to derive from results
+            if not h_rated:
+                derived = _derive_rating_from_results(home_t, sp, conn, ratings, hca_seed)
+                if derived is not None:
+                    ratings[home_t] = {'base': derived, 'home_court': hca_seed, 'final': derived}
+                    h_rated = True
+                    seeded += 1
+            
+            if not a_rated:
+                derived = _derive_rating_from_results(away_t, sp, conn, ratings, hca_seed)
+                if derived is not None:
+                    ratings[away_t] = {'base': derived, 'home_court': hca_seed, 'final': derived}
+                    a_rated = True
+                    seeded += 1
+            
+            if h_rated and a_rated:
+                continue
+            
+            # Step 2: Derive from market spread + rated opponent
+            if mkt_spread is not None:
+                if h_rated and not a_rated:
+                    derived = ratings[home_t]['final'] + mkt_spread + hca_seed
+                    ratings[away_t] = {'base': derived, 'home_court': hca_seed, 'final': round(derived, 2)}
+                    seeded += 1
+                elif a_rated and not h_rated:
+                    derived = ratings[away_t]['final'] - mkt_spread - hca_seed
+                    ratings[home_t] = {'base': derived, 'home_court': hca_seed, 'final': round(derived, 2)}
+                    seeded += 1
+                else:
+                    # Neither rated, no results — seed from market (model = market, zero false edge)
+                    ratings[home_t] = {'base': 0.0, 'home_court': hca_seed, 'final': 0.0}
+                    derived = 0.0 + mkt_spread + hca_seed
+                    ratings[away_t] = {'base': derived, 'home_court': hca_seed, 'final': round(derived, 2)}
+                    seeded += 2
+            else:
+                if not h_rated:
+                    ratings[home_t] = {'base': 0.0, 'home_court': hca_seed, 'final': 0.0}
+                    seeded += 1
+                if not a_rated:
+                    ratings[away_t] = {'base': 0.0, 'home_court': hca_seed, 'final': 0.0}
+                    seeded += 1
+
+        if seeded:
+            print(f"    + Auto-seeded {seeded} unrated teams (from results + market data)")
+
+        cfg = SPORT_CONFIG[sp]
+        seen = set()
+        skip_nr = skip_div = skip_w = 0
+
+        for g in games:
+            eid, commence, home, away = g[0], g[1], g[2], g[3]
+
+            # Skip games already in progress or about to start
+            # 5-minute buffer accounts for clock drift between API and real tip-off
+            if commence:
+                try:
+                    game_time = datetime.fromisoformat(commence.replace('Z', '+00:00'))
+                    if game_time < now_utc - timedelta(minutes=5):
+                        continue
+                except:
+                    pass
+
+            ms = compute_model_spread(home, away, ratings, sp)
+            if ms is None: skip_nr += 1; continue
+
+            # Neutral-site detection for NCAA tournament games.
+            # Before March 17: regular season + conference tournaments (HCA mostly applies)
+            # March 17+: NCAA tournament / NIT / CBI — ALL neutral sites
+            # April 1-7: Final Four + Championship — neutral
+            # Old code treated ALL of March as neutral, removing 3.2 pts of real HCA
+            # from regular season home games in early March.
+            _neutral = False
+            if sp == 'basketball_ncaab':
+                _now = datetime.now()
+                _m, _d = _now.month, _now.day
+                if _m == 4 and _d <= 7:
+                    _neutral = True   # Final Four / Championship
+                elif _m == 3 and _d >= 17:
+                    _neutral = True   # NCAA tournament (post-Selection Sunday)
+
+            # UPGRADE: If Elo ratings available, use blended spread
+            # This creates predictions INDEPENDENT of market lines
+            if HAS_ELO and elo_data:
+                elo_ms = blended_spread(home, away, elo_data, ratings, sp, conn, neutral_site=_neutral)
+                if elo_ms is not None:
+                    ms = elo_ms  # Use the blended prediction
+                elif sp == 'basketball_ncaab':
+                    # v12.2: NCAAB requires Elo. Without it, bootstrap is circular.
+                    skip_nr += 1
+                    continue
+
+            mkt_hs, mkt_hs_odds, mkt_hs_book = g[4], g[5], g[6]
+            mkt_as, mkt_as_odds, mkt_as_book = g[7], g[8], g[9]
+            hml, hml_book, aml, aml_book = g[16], g[17], g[18], g[19]
+
+            # ═══ SOCCER ELO ML: DISABLED v13 — backtest 0W-8L (-100% ROI) ═══
+            # ml_scale 1.5 + dog cap +180 still couldn't fix it. Model fundamentally
+            # overestimates underdog win probability. All 8 remaining picks lost.
+            # Spreads are +7.3% ROI — that's where soccer edge lives.
+            if False and 'soccer' in sp and HAS_ELO and elo_data and hml is not None and aml is not None:
+                from elo_engine import elo_win_probability, ELO_CONFIG
+                _soccer_home_prob = elo_win_probability(home, away, elo_data, sp, neutral_site=False)
+                if _soccer_home_prob is not None:
+                    # Compute Elo-derived spread for 3-way probability split
+                    h_elo = elo_data.get(home, {})
+                    a_elo = elo_data.get(away, {})
+                    _spe = ELO_CONFIG.get(sp, {}).get('spread_per_elo', 160)
+                    _ha = ELO_CONFIG.get(sp, {}).get('home_advantage', 55)
+                    _elo_spread = -((h_elo.get('elo', 1500) + _ha) - a_elo.get('elo', 1500)) / _spe
+                    _s_home, _s_draw, _s_away = soccer_ml_probs(_elo_spread, sp)
+
+                    # De-vig 3-way market odds
+                    draw_row = conn.execute("""
+                        SELECT odds FROM odds
+                        WHERE event_id=? AND market='h2h' AND selection='Draw'
+                        AND snapshot_date=(SELECT MAX(snapshot_date) FROM odds WHERE event_id=? AND market='h2h')
+                        ORDER BY odds DESC LIMIT 1
+                    """, (eid, eid)).fetchone()
+                    _d_odds = draw_row[0] if draw_row else None
+                    _h_fair, _a_fair, _ = devig_ml_odds(hml, aml, _d_odds)
+
+                    if _h_fair and _a_fair:
+                        # Confidence weight: scale by games played
+                        _mgp = min(h_elo.get('games', 0), a_elo.get('games', 0))
+                        _soccer_conf_w = min(1.0, _mgp / 15.0)
+
+                        # Home ML edge
+                        k_h = f"{eid}|M|{home}"
+                        if k_h not in seen:
+                            _h_edge = (_s_home - _h_fair) * 100 * _soccer_conf_w
+                            _h_stars = get_star_rating(_h_edge)
+                            if _h_edge >= min_pv_ml and _h_stars > 0 and hml <= 180:  # v13: Cap home dogs at +180. Backtest: dogs 72% loss rate.
+                                timing, t_r = bet_timing_advice(ms, mkt_hs or 0)
+                                seen.add(k_h)
+                                pick = _mk_ml(sp, eid, commence, home, away,
+                                    f"{home} ML", hml_book, hml, ms,
+                                    round(_s_home, 4), round(_h_fair, 4),
+                                    round(_h_edge, 2), _h_stars, timing, t_r)
+                                if pick:
+                                    pick['context'] = 'Soccer Elo ML — direct probability edge'
+                                    all_picks.append(pick)
+
+                        # Away ML edge
+                        k_a = f"{eid}|M|{away}"
+                        if k_a not in seen:
+                            _a_edge = (_s_away - _a_fair) * 100 * _soccer_conf_w
+                            _a_stars = get_star_rating(_a_edge)
+                            if _a_edge >= min_pv_ml and _a_stars > 0 and aml < 180:  # v13: Was 250 — tighten dog cap. Backtest: away dogs hemorrhaging units.
+                                timing, t_r = bet_timing_advice(-ms, mkt_as or 0)
+                                seen.add(k_a)
+                                pick = _mk_ml(sp, eid, commence, home, away,
+                                    f"{away} ML", aml_book, aml, ms,
+                                    round(_s_away, 4), round(_a_fair, 4),
+                                    round(_a_edge, 2), _a_stars, timing, t_r)
+                                if pick:
+                                    pick['context'] = 'Soccer Elo ML — direct probability edge'
+                                    all_picks.append(pick)
+
+            # DIVERGENCE CHECK — run on RAW model spread (before context)
+            # Context adjustments are our REASON for disagreeing with the market,
+            # not a sign of model error. Only the base model should be checked.
+            max_div = cfg['max_spread_divergence']
+            if mkt_hs is not None and abs(ms - mkt_hs) > max_div:
+                # ═══ WALTERS: Elo ML rescue for divergent games ═══
+                # Spread is too divergent for spread-based picks, but Elo win
+                # probability can still find ML value. This fires for ALL sports
+                # with Elo data — divergent games are often the biggest mismatches
+                # where favorites have genuine ML value that spreads can't capture.
+                #
+                # NCAAB tournament: 50% weight (Elo compresses extreme mismatches)
+                # Other sports: full Elo probability (better calibrated, fewer games)
+                if hml is not None and aml is not None and HAS_ELO and elo_data:
+                    # Confidence-weighted Elo edge: scale by data quality.
+                    # A 10% edge from 3 games is NOT the same as 10% from 25 games.
+                    # Weight = min_team_games / sport_min_games, capped at 1.0.
+                    # NCAAB tournament also dampened 50% for Elo compression.
+                    _is_tourney = (sp == 'basketball_ncaab'
+                        and (datetime.now().month == 3 or (datetime.now().month == 4 and datetime.now().day <= 7)))
+                    h_data = elo_data.get(home, {})
+                    a_data = elo_data.get(away, {})
+                    _min_gp = min(h_data.get('games', 0), a_data.get('games', 0))
+                    _sport_min = cfg.get('min_games_elo', 15)  # Target: 15+ games for full weight
+                    _conf_w = min(1.0, _min_gp / _sport_min)
+
+                    # v14: SOS dampening for cross-conference matchups (esp March Madness).
+                    # Elo built from conference play can't compare across conferences.
+                    # A 1780 Elo in the MAC != 1780 in the Big 12.
+                    # Two checks:
+                    #   1. SOS gap > 60: teams played in different strength leagues
+                    #   2. Weak SOS (< 1510): team's Elo is inflated by cupcakes
+                    # Either condition dampens the edge. Both together = block.
+                    _sos_w = 1.0
+                    if sp == 'basketball_ncaab' and conn is not None:
+                        try:
+                            h_sos = conn.execute("""
+                                SELECT AVG(e.elo) FROM results r
+                                JOIN elo_ratings e ON e.team = CASE WHEN r.home=? THEN r.away ELSE r.home END
+                                    AND e.sport=?
+                                WHERE (r.home=? OR r.away=?) AND r.sport=? AND r.completed=1
+                            """, (home, sp, home, home, sp)).fetchone()[0] or 1500
+                            a_sos = conn.execute("""
+                                SELECT AVG(e.elo) FROM results r
+                                JOIN elo_ratings e ON e.team = CASE WHEN r.home=? THEN r.away ELSE r.home END
+                                    AND e.sport=?
+                                WHERE (r.home=? OR r.away=?) AND r.sport=? AND r.completed=1
+                            """, (away, sp, away, away, sp)).fetchone()[0] or 1500
+                            _sos_gap = abs(h_sos - a_sos)
+
+                            # Check 1: SOS gap between teams
+                            if _sos_gap > 100:
+                                _sos_w = 0.0  # Block: completely different leagues
+                            elif _sos_gap > 50:
+                                _sos_w = max(0.20, 1.0 - (_sos_gap - 50) / 60)
+
+                            # Check 2: Either team has weak SOS (< 1510 = mid-major)
+                            # Their Elo is inflated regardless of the gap
+                            _min_sos = min(h_sos, a_sos)
+                            if _min_sos < 1480:
+                                _sos_w = min(_sos_w, 0.10)  # Near-block: cupcake schedule
+                            elif _min_sos < 1510:
+                                _sos_w = min(_sos_w, 0.30)  # Heavy dampen: weak schedule
+                        except Exception:
+                            pass
+
+                    from elo_engine import elo_win_probability
+                    home_prob = elo_win_probability(home, away, elo_data, sp, neutral_site=_neutral)
+                    if home_prob is not None:
+                        away_prob = 1.0 - home_prob
+                        h_fair, a_fair, _ = devig_ml_odds(hml, aml)
+                        if h_fair and a_fair:
+                            # Mismatch dampening: Elo compresses toward 50% and
+                            # can't distinguish 95% from 99% favorites. Close games
+                            # get full weight; extreme mismatches are dampened.
+                            _mkt_max = max(h_fair, a_fair)
+                            _mismatch_w = 1.0 if _mkt_max <= 0.75 else max(0.40, 1.0 - (_mkt_max - 0.75) * 2.4)
+                            _elo_w = _conf_w * _mismatch_w * _sos_w
+                            _min = min_pv if _is_tourney else min_pv_ml
+                            # Home ML
+                            h_edge = (home_prob - h_fair) * 100 * _elo_w
+                            k_h = f"{eid}|M|{home}"
+                            if k_h not in seen and h_edge >= _min:
+                                stars = get_star_rating(h_edge)
+                                if stars > 0:
+                                    timing, t_r = bet_timing_advice(ms, mkt_hs or 0)
+                                    seen.add(k_h)
+                                    pick = _mk_ml(sp, eid, commence, home, away,
+                                        f"{home} ML", hml_book, hml, ms,
+                                        round(home_prob, 4), round(h_fair, 4),
+                                        round(h_edge, 2), stars, timing, t_r)
+                                    if pick:
+                                        pick['context'] = 'Elo probability edge'
+                                        all_picks.append(pick)
+                            # Away ML
+                            a_edge = (away_prob - a_fair) * 100 * _elo_w
+                            k_a = f"{eid}|M|{away}"
+                            if k_a not in seen and a_edge >= _min:
+                                stars = get_star_rating(a_edge)
+                                if stars > 0:
+                                    timing, t_r = bet_timing_advice(-ms, mkt_as or 0)
+                                    seen.add(k_a)
+                                    pick = _mk_ml(sp, eid, commence, home, away,
+                                        f"{away} ML", aml_book, aml, ms,
+                                        round(away_prob, 4), round(a_fair, 4),
+                                        round(a_edge, 2), stars, timing, t_r)
+                                    if pick:
+                                        pick['context'] = 'Elo probability edge'
+                                        all_picks.append(pick)
+                skip_div += 1; continue
+            
+            # v12 FIX: If no spread line (common in baseball), check divergence via ML
+            # Without this, baseball games with ML-only skip divergence entirely
+            # and produce phantom 25-30% edges on thin data.
+            if mkt_hs is None and hml is not None and aml is not None:
+                # Infer market spread from ML odds
+                h_imp = american_to_implied_prob(hml)
+                a_imp = american_to_implied_prob(aml)
+                if h_imp and a_imp:
+                    # Rough ML-to-spread conversion using same ml_scale
+                    import math as _m
+                    ml_sc = cfg.get('ml_scale', 7.5)
+                    # If h_imp > a_imp, home is favored → negative implied spread
+                    if h_imp > 0.01 and h_imp < 0.99:
+                        implied_spread = -ml_sc * _m.log(h_imp / (1 - h_imp))
+                        if abs(ms - implied_spread) > max_div:
+                            skip_div += 1; continue
+
+            # CONTEXT ADJUSTMENTS — schedule, travel, altitude, splits
+            # Applied AFTER divergence check so legitimate context factors
+            # don't get filtered out. These can push us further from the market
+            # (confirming the edge) or closer (reducing it).
+            ctx = None
+            if HAS_CONTEXT:
+                try:
+                    ctx = get_context_adjustments(
+                        conn, sp, home, away, eid, commence, 'SPREAD')
+                    if ctx['spread_adj'] != 0:
+                        ms -= ctx['spread_adj']  # Positive adj = home advantage = ms more negative
+                except Exception as e:
+                    pass  # Context is supplementary — don't crash on errors
+
+            h_inj, h_cl = get_team_injury_context(conn, home, sp)
+            a_inj, a_cl = get_team_injury_context(conn, away, sp)
+
+            # HOME SPREAD
+            if mkt_hs is not None and mkt_hs_odds is not None:
+                k = f"{eid}|S|{home}"
+                if k not in seen:
+                    wa = scottys_edge_assessment(ms, mkt_hs, mkt_hs_odds, sp, hml, a_inj, a_cl)
+                    if wa['is_play'] and wa['point_value_pct'] >= min_pv:
+                        prob = spread_to_cover_prob(ms, mkt_hs, sp)
+                        # v12.2: Soccer draw adjustment for spreads
+                        if 'soccer' in sp:
+                            draw_p = _soccer_draw_prob(abs(ms))
+                            prob = prob * (1.0 - draw_p * 0.5)
+                        imp = american_to_implied_prob(mkt_hs_odds)
+                        pick = _mk(sp, eid, commence, home, away, 'SPREAD',
+                            f"{home} {mkt_hs:+.1f}", mkt_hs_book, mkt_hs, mkt_hs_odds,
+                            ms, prob, imp, wa, 'home_spread')
+                        if pick:
+                            # Soccer Kelly boost: 1/3 Kelly (~2.7x standard).
+                            # Soccer edges are proven (EPL +21% ROI, L1 +27%) but
+                            # point values are smaller due to tight spreads (±0.25-1.5).
+                            # Standard 1/8 Kelly undersizes soccer bets.
+                            if 'soccer' in sp:
+                                pick['units'] = kelly_units(edge_pct=wa['point_value_pct'], odds=mkt_hs_odds, fraction=0.333)
+                            if ctx and ctx['summary']:
+                                pick['context'] = ctx['summary']
+                                pick['context_adj'] = ctx['spread_adj']
+                            seen.add(k)
+                            all_picks.append(pick)
+                    else: skip_w += 1
+
+            # AWAY SPREAD
+            if mkt_as is not None and mkt_as_odds is not None:
+                k = f"{eid}|S|{away}"
+                if k not in seen:
+                    wa = scottys_edge_assessment(-ms, mkt_as, mkt_as_odds, sp, aml, h_inj, h_cl)
+                    if wa['is_play'] and wa['point_value_pct'] >= min_pv:
+                        prob = spread_to_cover_prob(-ms, mkt_as, sp)
+                        # v12.2: Soccer draw adjustment for spreads
+                        if 'soccer' in sp:
+                            draw_p = _soccer_draw_prob(abs(ms))
+                            prob = prob * (1.0 - draw_p * 0.5)
+                        imp = american_to_implied_prob(mkt_as_odds)
+                        pick = _mk(sp, eid, commence, home, away, 'SPREAD',
+                            f"{away} {mkt_as:+.1f}", mkt_as_book, mkt_as, mkt_as_odds,
+                            ms, prob, imp, wa, 'away_spread')
+                        if pick:
+                            # Soccer Kelly boost (same as home spread)
+                            if 'soccer' in sp:
+                                pick['units'] = kelly_units(edge_pct=wa['point_value_pct'], odds=mkt_as_odds, fraction=0.333)
+                            if ctx and ctx['summary']:
+                                pick['context'] = ctx['summary']
+                                pick['context_adj'] = ctx['spread_adj']
+                            seen.add(k)
+                            all_picks.append(pick)
+                    else: skip_w += 1
+
+            # HOME ML
+            # ═══ BASEBALL: Elo win probability + PITCHER-ADJUSTED ML ═══
+            # v14: ML was 17W-25L (-15.9% ROI) without pitcher data.
+            # v15: CONDITIONAL re-enable — only when pitcher quality data exists
+            # for BOTH teams AND shows a significant gap (one team's starter
+            # is much better). Dogs still blocked (they were the biggest losers).
+            # Minimum 15% edge threshold (higher bar since ML is unproven).
+            # Run lines remain DISABLED (1W-5L -60.8% ROI).
+            if 'baseball' in sp and hml is not None and aml is not None:
+                if HAS_ELO and elo_data:
+                    from elo_engine import elo_win_probability
+                    home_prob = elo_win_probability(home, away, elo_data, sp, neutral_site=_neutral)
+                    if home_prob is not None:
+                        away_prob = 1.0 - home_prob
+                        h_fair, a_fair, _ = devig_ml_odds(hml, aml)
+
+                        if h_fair and a_fair:
+                            h_edge = (home_prob - h_fair) * 100
+                            a_edge = (away_prob - a_fair) * 100
+
+                            # ── Run line evaluation (±1.5) ──
+                            # Compare run line to ML — recommend whichever has better EV.
+                            # v14: Actual data shows 78.5% of college wins are by 2+ runs (was 72%)
+                            # Metal bats + college pitching depth = bigger margins
+                            # Lose-by-1 rate: 21.5% of decided games (was 30%)
+                            WIN_BY_2_PCT = 0.785 if 'ncaa' in sp else 0.68
+                            LOSE_BY_1_PCT = 0.215
+
+                            # v14: Run lines DISABLED — backtest 1W-5L -60.8% ROI
+                            if False and mkt_hs is not None and mkt_as is not None:
+                                # Check both sides of run line
+                                for rl_team, rl_line, rl_odds, rl_book, rl_win_prob, rl_side in [
+                                    (away, mkt_as, mkt_as_odds, mkt_as_book, away_prob, 'away'),
+                                    (home, mkt_hs, mkt_hs_odds, mkt_hs_book, home_prob, 'home'),
+                                ]:
+                                    if rl_line is None or rl_odds is None:
+                                        continue
+
+                                    k_rl = f"{eid}|S|{rl_team}"
+                                    if k_rl in seen:
+                                        continue
+
+                                    # Calculate cover probability
+                                    if rl_line == -1.5:
+                                        # Favorite -1.5: must win by 2+
+                                        cover_prob = rl_win_prob * WIN_BY_2_PCT
+                                    elif rl_line == 1.5:
+                                        # Underdog +1.5: win OR lose by exactly 1
+                                        cover_prob = rl_win_prob + (1 - rl_win_prob) * LOSE_BY_1_PCT
+                                    else:
+                                        continue
+
+                                    rl_imp = american_to_implied_prob(rl_odds)
+                                    rl_edge = (cover_prob - rl_imp) * 100 if rl_imp else 0
+
+                                    if rl_edge >= 10.0:
+                                        stars = get_star_rating(rl_edge)
+                                        if stars > 0:
+                                            timing = 'EARLY' if rl_line < 0 else 'LATE'
+                                            t_r = 'Favorite' if rl_line < 0 else 'Dog'
+                                            seen.add(k_rl)
+                                            pick = _mk(sp, eid, commence, home, away, 'SPREAD',
+                                                f"{rl_team} {rl_line:+.1f}", rl_book, rl_line, rl_odds,
+                                                ms, round(cover_prob, 4), round(rl_imp, 4),
+                                                {'point_value_pct': round(rl_edge, 1), 'star_rating': stars,
+                                                 'units': kelly_units(edge_pct=rl_edge, odds=rl_odds),
+                                                 'is_play': True, 'timing': timing, 'timing_reason': t_r,
+                                                 'spread_or_ml': 'RUN_LINE', 'confidence': 'HIGH',
+                                                 'vig_adjusted_spread': rl_line, 'raw_spread_diff': 0,
+                                                 'injury_multiplier': 1.0, 'spread_or_ml_reason': 'Run line'},
+                                                f'{rl_side}_spread')
+                                            if pick:
+                                                pick['notes'] = f"RL: P(cover)={cover_prob:.0%} vs imp={rl_imp:.0%}"
+                                                if ctx and ctx['summary']:
+                                                    pick['context'] = ctx['summary']
+                                                all_picks.append(pick)
+
+                            # ── ML evaluation (v15: pitcher-conditional) ──
+                            # Only enabled when BOTH teams have pitcher quality data
+                            # AND there's a significant pitching gap. Dogs blocked.
+                            # Minimum 15% edge (higher bar than other sports).
+
+                            # Fetch pitcher context for ML adjustment
+                            _bb_pitcher_ctx = None
+                            _bb_ml_allowed = False
+                            _bb_pitcher_adj = 0.0
+                            BASEBALL_ML_MIN_EDGE = 15.0       # Higher bar — unproven market
+                            BASEBALL_ML_PITCHER_GAP = 1.5     # Min runs-allowed gap between starters
+                            BASEBALL_ML_MAX_PROB_ADJ = 0.08   # Cap pitcher adjustment at ±8%
+
+                            if HAS_PITCHER:
+                                try:
+                                    _bb_pitcher_ctx = get_pitcher_context(conn, home, away, commence)
+                                except Exception:
+                                    _bb_pitcher_ctx = None
+
+                            if _bb_pitcher_ctx and _bb_pitcher_ctx['confidence'] != 'LOW':
+                                # Both teams need pitching data (adj != 0 means data exists)
+                                h_pa = _bb_pitcher_ctx['home_pitching_adj']
+                                a_pa = _bb_pitcher_ctx['away_pitching_adj']
+                                _has_both = (h_pa != 0.0 or a_pa != 0.0)  # At least one non-zero
+
+                                # Check for significant gap: one team's pitching is
+                                # meaningfully better than the other's (in runs allowed)
+                                pitcher_gap = abs(h_pa - a_pa)
+
+                                if _has_both and pitcher_gap >= BASEBALL_ML_PITCHER_GAP:
+                                    _bb_ml_allowed = True
+                                    # Pitcher adjustment to win probability:
+                                    # Better pitching (lower runs allowed) = higher win prob
+                                    # home_pitching_adj negative = home allows fewer runs = good
+                                    # Scale: 1 run difference ≈ 3% win probability shift
+                                    raw_adj = (a_pa - h_pa) * 0.03  # positive = home pitching better
+                                    _bb_pitcher_adj = max(-BASEBALL_ML_MAX_PROB_ADJ,
+                                                         min(BASEBALL_ML_MAX_PROB_ADJ, raw_adj))
+
+                            # Apply pitcher adjustment to probabilities
+                            if _bb_ml_allowed and _bb_pitcher_adj != 0.0:
+                                home_prob_adj = home_prob + _bb_pitcher_adj
+                                away_prob_adj = 1.0 - home_prob_adj
+                                # Clamp probabilities
+                                home_prob_adj = max(0.05, min(0.95, home_prob_adj))
+                                away_prob_adj = max(0.05, min(0.95, away_prob_adj))
+                                h_edge = (home_prob_adj - h_fair) * 100
+                                a_edge = (away_prob_adj - a_fair) * 100
+
+                            # Home ML — FAVORITES ONLY when pitcher data confirms edge
+                            k_h = f"{eid}|M|{home}"
+                            if (_bb_ml_allowed and k_h not in seen
+                                    and h_edge >= BASEBALL_ML_MIN_EDGE
+                                    and hml < 0):  # Favorites only (negative ML = favorite)
+                                stars = get_star_rating(h_edge)
+                                if stars > 0:
+                                    timing, t_r = bet_timing_advice(ms, mkt_hs or 0)
+                                    seen.add(k_h)
+                                    _adj_prob = home_prob_adj if _bb_pitcher_adj != 0.0 else home_prob
+                                    pick = _mk_ml(sp, eid, commence, home, away,
+                                        f"{home} ML", hml_book, hml, ms,
+                                        round(_adj_prob, 4), round(h_fair, 4),
+                                        round(h_edge, 2), stars, timing, t_r)
+                                    if pick:
+                                        pick['notes'] += f" | PITCHER: {_bb_pitcher_ctx['summary']}"
+                                        if ctx and ctx['summary']:
+                                            pick['context'] = ctx['summary']
+                                        all_picks.append(pick)
+
+                            # Away ML — FAVORITES ONLY when pitcher data confirms edge
+                            k_a = f"{eid}|M|{away}"
+                            if (_bb_ml_allowed and k_a not in seen
+                                    and a_edge >= BASEBALL_ML_MIN_EDGE
+                                    and aml < 0):  # Favorites only (negative ML = favorite)
+                                stars = get_star_rating(a_edge)
+                                if stars > 0:
+                                    timing, t_r = bet_timing_advice(-ms, mkt_as or 0)
+                                    seen.add(k_a)
+                                    _adj_prob = away_prob_adj if _bb_pitcher_adj != 0.0 else away_prob
+                                    pick = _mk_ml(sp, eid, commence, home, away,
+                                        f"{away} ML", aml_book, aml, ms,
+                                        round(_adj_prob, 4), round(a_fair, 4),
+                                        round(a_edge, 2), stars, timing, t_r)
+                                    if pick:
+                                        pick['notes'] += f" | PITCHER: {_bb_pitcher_ctx['summary']}"
+                                        if ctx and ctx['summary']:
+                                            pick['context'] = ctx['summary']
+                                        all_picks.append(pick)
+                # Skip generic ML evaluation for baseball
+                elif 'baseball' in sp:
+                    pass
+            
+            # ═══ WALTERS ML EVALUATION (non-baseball) ═══
+            # Power ratings → win probability → compare to de-vigged ML odds.
+            # When Elo data available, use elo_win_probability() directly instead
+            # of compressed spread_to_win_prob(). This produces BOTH favorite and
+            # underdog ML picks based on genuine probability edge.
+            elif hml is not None and aml is not None and 'baseball' not in sp:
+                # Get win probabilities: Elo-direct when available, spread-derived fallback
+                # Apply confidence weighting for Elo-backed edges
+                _walters_elo_w = 1.0
+                if HAS_ELO and elo_data:
+                    from elo_engine import elo_win_probability
+                    _elo_p = elo_win_probability(home, away, elo_data, sp, neutral_site=_neutral)
+                    if _elo_p is not None:
+                        h_prob_ml, a_prob_ml = _elo_p, 1.0 - _elo_p
+                        # Confidence weight: scale edge by data quality
+                        h_d = elo_data.get(home, {})
+                        a_d = elo_data.get(away, {})
+                        _mgp = min(h_d.get('games', 0), a_d.get('games', 0))
+                        _walters_elo_w = min(1.0, _mgp / 15.0)
+                    else:
+                        h_prob_ml = spread_to_win_prob(ms, sp)
+                        a_prob_ml = 1.0 - h_prob_ml
+                else:
+                    h_prob_ml = spread_to_win_prob(ms, sp)
+                    a_prob_ml = 1.0 - h_prob_ml
+
+                # De-vig market ML odds (soccer includes draw)
+                if 'soccer' in sp:
+                    h_prob_ml, draw_prob_ml, a_prob_ml = soccer_ml_probs(ms, sp)
+                    draw_row = conn.execute("""
+                        SELECT odds FROM odds
+                        WHERE event_id=? AND market='h2h' AND selection='Draw'
+                        AND snapshot_date=(SELECT MAX(snapshot_date) FROM odds WHERE event_id=? AND market='h2h')
+                        ORDER BY odds DESC LIMIT 1
+                    """, (eid, eid)).fetchone()
+                    d_odds = draw_row[0] if draw_row else None
+                    h_imp_ml, a_imp_ml, _ = devig_ml_odds(hml, aml, d_odds)
+                else:
+                    h_imp_ml, a_imp_ml, _ = devig_ml_odds(hml, aml)
+
+                # HOME ML
+                k = f"{eid}|M|{home}"
+                if k not in seen and h_imp_ml:
+                    if 'soccer' in sp:
+                        pass  # v13: ALL soccer ML disabled — backtest 0W-8L. Edge lives in spreads only.
+                    else:
+                        h_edge_ml = (h_prob_ml - h_imp_ml) * 100 * _walters_elo_w
+                        stars = get_star_rating(h_edge_ml)
+                        if h_edge_ml >= min_pv_ml and stars > 0:
+                            timing, t_r = bet_timing_advice(ms, mkt_hs or 0)
+                            seen.add(k)
+                            pick = _mk_ml(sp, eid, commence, home, away,
+                                f"{home} ML", hml_book, hml, ms,
+                                round(h_prob_ml, 4), round(h_imp_ml, 4),
+                                round(h_edge_ml, 2), stars, timing, t_r)
+                            if pick:
+                                if ctx and ctx['summary']:
+                                    pick['context'] = ctx['summary'] + ' | Elo probability edge'
+                                else:
+                                    pick['context'] = 'Elo probability edge'
+                                all_picks.append(pick)
+
+                # AWAY ML
+                k = f"{eid}|M|{away}"
+                if k not in seen and a_imp_ml:
+                    if 'soccer' in sp:
+                        pass  # v13: ALL soccer ML disabled — backtest 0W-8L. Edge lives in spreads only.
+                    else:
+                        a_edge_ml = (a_prob_ml - a_imp_ml) * 100 * _walters_elo_w
+                        stars = get_star_rating(a_edge_ml)
+                        if a_edge_ml >= min_pv_ml and stars > 0:
+                            timing, t_r = bet_timing_advice(-ms, mkt_as or 0)
+                            seen.add(k)
+                            pick = _mk_ml(sp, eid, commence, home, away,
+                                f"{away} ML", aml_book, aml, ms,
+                                round(a_prob_ml, 4), round(a_imp_ml, 4),
+                                round(a_edge_ml, 2), stars, timing, t_r)
+                            if pick:
+                                if ctx and ctx['summary']:
+                                    pick['context'] = ctx['summary'] + ' | Elo probability edge'
+                                else:
+                                    pick['context'] = 'Elo probability edge'
+                                all_picks.append(pick)
+
+            # DRAW (soccer only — 3-way market)
+            if 'soccer' in sp:
+                k = f"{eid}|M|DRAW"
+                if k not in seen:
+                    # Get best draw odds from raw odds table
+                    draw_row = conn.execute("""
+                        SELECT odds, book FROM odds
+                        WHERE event_id=? AND market='h2h' AND selection='Draw'
+                        AND snapshot_date=(SELECT MAX(snapshot_date) FROM odds WHERE event_id=? AND market='h2h')
+                        ORDER BY odds DESC LIMIT 1
+                    """, (eid, eid)).fetchone()
+                    if draw_row:
+                        draw_odds, draw_book = draw_row
+                        # Estimate draw probability from model spread
+                        # Close games (small spread) have higher draw probability
+                        # Soccer draw rate: ~25% on average, but varies by spread
+                        draw_prob = _soccer_draw_prob(abs(ms))
+                        _, _, imp = devig_ml_odds(hml, aml, draw_odds)
+                        if imp is None:
+                            imp = american_to_implied_prob(draw_odds)
+                        edge = (draw_prob - imp) * 100 if imp else 0
+                        stars = get_star_rating(edge)
+                        if edge >= min_pv and stars > 0:
+                            seen.add(k)
+                            all_picks.append({
+                                'sport': sp, 'event_id': eid, 'commence': commence,
+                                'home': home, 'away': away, 'market_type': 'MONEYLINE',
+                                'selection': f"DRAW ({home} vs {away})",
+                                'book': draw_book, 'line': None, 'odds': draw_odds,
+                                'model_spread': ms, 'model_prob': round(draw_prob, 4),
+                                'implied_prob': round(imp, 4) if imp else None,
+                                'edge_pct': round(edge, 2), 'star_rating': stars,
+                                'units': kelly_units(edge_pct=edge, odds=draw_odds),
+                                'confidence': _conf(stars),
+                                'spread_or_ml': 'DRAW', 'timing': 'EARLY',
+                                'notes': f"DrawProb={draw_prob:.1%} Imp={imp:.1%} Edge={edge:.1f}% "
+                                         f"ModelSpread={ms:+.1f} | Close game → draw value",
+                            })
+
+            # ═══ CROSS-MARKET EDGE: Spread-implied ML vs actual ML ═══
+            # If spread says Team A wins 65% but ML implies 58%, that's a 7% edge on ML
+            if hml is not None and mkt_hs is not None:
+                if 'soccer' in sp:
+                    spread_win_prob, _, away_spread_prob = soccer_ml_probs(ms, sp)
+                else:
+                    spread_win_prob = spread_to_win_prob(ms, sp)
+                    away_spread_prob = 1.0 - spread_win_prob
+                ml_implied, aml_dv, _ = devig_ml_odds(hml, aml)
+                if ml_implied is None:
+                    ml_implied = american_to_implied_prob(hml)
+                if ml_implied and spread_win_prob:
+                    cross_edge = (spread_win_prob - ml_implied) * 100
+                    if cross_edge > 8.0:
+                        k = f"{eid}|X|{home}"
+                        if k not in seen:
+                            stars = get_star_rating(cross_edge)
+                            if stars >= 2.0:
+                                timing, t_r = bet_timing_advice(ms, mkt_hs or 0)
+                                seen.add(k)
+                                all_picks.append({
+                                    'sport': sp, 'event_id': eid, 'commence': commence,
+                                    'home': home, 'away': away, 'market_type': 'MONEYLINE',
+                                    'selection': f"{home} ML (cross-mkt)",
+                                    'book': hml_book, 'line': None, 'odds': hml,
+                                    'model_spread': ms, 'model_prob': round(spread_win_prob, 4),
+                                    'implied_prob': round(ml_implied, 4),
+                                    'edge_pct': round(cross_edge, 2), 'star_rating': stars,
+                                    'units': kelly_units(edge_pct=cross_edge, odds=hml), 'confidence': _conf(stars),
+                                    'spread_or_ml': 'CROSS_MKT', 'timing': timing,
+                                    'notes': f"Spread→{spread_win_prob:.1%} ML→{ml_implied:.1%} "
+                                             f"Gap={cross_edge:.1f}% | Cross-market discrepancy",
+                                })
+
+                    # Check away side too
+                    aml_implied = aml_dv  # Already de-vigged above
+                    if aml_implied is None and aml:
+                        _, aml_implied, _ = devig_ml_odds(hml, aml)
+                    if aml_implied and away_spread_prob:
+                        cross_edge_a = (away_spread_prob - aml_implied) * 100
+                        if cross_edge_a > 8.0:
+                            k = f"{eid}|X|{away}"
+                            if k not in seen:
+                                stars = get_star_rating(cross_edge_a)
+                                if stars >= 2.0:
+                                    seen.add(k)
+                                    all_picks.append({
+                                        'sport': sp, 'event_id': eid, 'commence': commence,
+                                        'home': home, 'away': away, 'market_type': 'MONEYLINE',
+                                        'selection': f"{away} ML (cross-mkt)",
+                                        'book': aml_book, 'line': None, 'odds': aml,
+                                        'model_spread': ms, 'model_prob': round(away_spread_prob, 4),
+                                        'implied_prob': round(aml_implied, 4),
+                                        'edge_pct': round(cross_edge_a, 2), 'star_rating': stars,
+                                        'units': kelly_units(edge_pct=cross_edge_a, odds=aml), 'confidence': _conf(stars),
+                                        'spread_or_ml': 'CROSS_MKT', 'timing': 'EARLY',
+                                        'notes': f"Spread→{away_spread_prob:.1%} ML→{aml_implied:.1%} "
+                                                 f"Gap={cross_edge_a:.1f}% | Cross-market discrepancy",
+                                    })
+
+            # ═══ TOTALS (OVER/UNDER) ═══
+            over_total = g[10]
+            over_odds = g[11]
+            over_book = g[12]
+            under_total = g[13]
+            under_odds = g[14]
+            under_book = g[15]
+
+            # Hard block: MLS totals disabled — 1W-7L -72.8% ROI. No signal.
+            if sp == 'soccer_usa_mls':
+                over_total = None  # prevents totals evaluation below
+
+            if over_total is not None and over_odds is not None and ms is not None:
+                # Check confidence BEFORE estimating total
+                total_conf = _totals_confidence(home, away, sp, conn)
+                if total_conf == 'LOW':
+                    pass  # Skip — insufficient data for totals prediction
+                else:
+                    # Estimate model total from team ratings + league average
+                    model_total = estimate_model_total(home, away, ratings, sp, conn)
+                    if model_total is not None:
+                        # Apply context adjustments to total (pace, refs, altitude, H2H)
+                        ctx_total = None
+                        if HAS_CONTEXT:
+                            ctx_total = get_context_adjustments(
+                                conn, sp, home, away, eid, commence, 'TOTAL')
+                            if ctx_total['total_adj'] != 0:
+                                model_total += ctx_total['total_adj']
+
+                        # Apply pitcher context for baseball (day-of-week quality + named starters)
+                        pitcher_ctx = None
+                        if HAS_PITCHER and 'baseball' in sp:
+                            try:
+                                pitcher_ctx = get_pitcher_context(conn, home, away, commence)
+                                if pitcher_ctx['total_adj'] != 0 and pitcher_ctx['confidence'] != 'LOW':
+                                    model_total += pitcher_ctx['total_adj']
+                            except Exception:
+                                pass
+                        
+                        # Weather adjustment for outdoor sports (baseball, soccer)
+                        weather_adj = 0.0
+                        weather_info = {}
+                        if HAS_WEATHER and ('baseball' in sp or 'soccer' in sp):
+                            try:
+                                weather_adj, weather_info = get_weather_adjustment(home, sp, commence)
+                                if weather_adj != 0:
+                                    # Cap: ±1.5 runs baseball, ±0.3 goals soccer
+                                    if 'baseball' in sp:
+                                        weather_adj = max(-1.5, min(1.5, weather_adj))
+                                    else:
+                                        weather_adj = max(-0.3, min(0.3, weather_adj))
+                                    model_total += weather_adj
+                            except Exception:
+                                pass
+
+                        # Referee tendency adjustment
+                        ref_adj = 0.0
+                        ref_info = ''
+                        if HAS_REFEREE:
+                            try:
+                                ref_adj, ref_info = get_ref_adjustment(home, away, sp, conn)
+                                if ref_adj != 0:
+                                    model_total += ref_adj
+                            except Exception:
+                                pass
+
+                        # Reduce Kelly fraction for MEDIUM confidence totals
+                        totals_kelly_frac = 0.125 if total_conf == 'HIGH' else 0.0625
+
+                        # OVER
+                        k = f"{eid}|T|OVER"
+                        if k not in seen:
+                            total_diff = model_total - over_total
+                            if total_diff > 0:  # Model says higher scoring
+                                pv = calculate_point_value_totals(model_total, over_total, sp)
+                                stars = get_star_rating(pv)
+                                if pv >= min_pv_totals and stars > 0:
+                                    prob = _total_prob(total_diff, sp)
+                                    imp = american_to_implied_prob(over_odds)
+                                    # Use actual probability edge for Kelly (not PV)
+                                    prob_edge = (prob - (imp or 0.524)) * 100.0
+                                    seen.add(k)
+                                    all_picks.append({
+                                        'sport': sp, 'event_id': eid, 'commence': commence,
+                                        'home': home, 'away': away, 'market_type': 'TOTAL',
+                                        'selection': f"{away}@{home} OVER {over_total}",
+                                        'book': over_book, 'line': over_total, 'odds': over_odds,
+                                        'model_spread': ms, 'model_prob': round(prob, 4),
+                                        'implied_prob': round(imp, 4) if imp else None,
+                                        'edge_pct': round(pv, 2), 'star_rating': stars,
+                                        'units': kelly_units(edge_pct=max(pv, prob_edge), odds=over_odds, fraction=totals_kelly_frac),
+                                        'confidence': _conf(stars),
+                                        'spread_or_ml': 'TOTAL', 'timing': 'EARLY',
+                                        'notes': f"ModelTotal={model_total:.1f} Mkt={over_total} "
+                                                 f"Diff={total_diff:+.1f} PV={pv}% {stars}★ data={total_conf}",
+                                    })
+                                    # Soccer totals Kelly boost (1/3 Kelly, same as spreads)
+                                    if 'soccer' in sp:
+                                        all_picks[-1]['units'] = kelly_units(
+                                            edge_pct=max(pv, prob_edge), odds=over_odds, fraction=0.333)
+                                    # Attach context
+                                    ctx_parts = []
+                                    if ctx_total and ctx_total['summary']:
+                                        ctx_parts.append(ctx_total['summary'])
+                                    if pitcher_ctx and pitcher_ctx['summary']:
+                                        ctx_parts.append(pitcher_ctx['summary'])
+                                    if weather_adj != 0:
+                                        ctx_parts.append(f"Weather {weather_adj:+.1f}")
+                                    if ref_adj != 0 and ref_info:
+                                        ctx_parts.append(ref_info)
+                                    if ctx_parts:
+                                        all_picks[-1]['context'] = ' | '.join(ctx_parts)
+
+                        # UNDER
+                        if under_total is not None and under_odds is not None:
+                            k = f"{eid}|T|UNDER"
+                            if k not in seen:
+                                total_diff_u = under_total - model_total
+                                if total_diff_u > 0:  # Model says lower scoring
+                                    pv = calculate_point_value_totals(model_total, under_total, sp)
+                                    stars = get_star_rating(pv)
+                                    if pv >= min_pv_totals and stars > 0:
+                                        prob = _total_prob(total_diff_u, sp)
+                                        imp = american_to_implied_prob(under_odds)
+                                        # Use actual probability edge for Kelly (not PV)
+                                        prob_edge = (prob - (imp or 0.524)) * 100.0
+                                        seen.add(k)
+                                        all_picks.append({
+                                            'sport': sp, 'event_id': eid, 'commence': commence,
+                                            'home': home, 'away': away, 'market_type': 'TOTAL',
+                                            'selection': f"{away}@{home} UNDER {under_total}",
+                                            'book': under_book, 'line': under_total, 'odds': under_odds,
+                                            'model_spread': ms, 'model_prob': round(prob, 4),
+                                            'implied_prob': round(imp, 4) if imp else None,
+                                            'edge_pct': round(pv, 2), 'star_rating': stars,
+                                            'units': kelly_units(edge_pct=max(pv, prob_edge), odds=under_odds, fraction=totals_kelly_frac),
+                                            'confidence': _conf(stars),
+                                            'spread_or_ml': 'TOTAL', 'timing': 'EARLY',
+                                            'notes': f"ModelTotal={model_total:.1f} Mkt={under_total} "
+                                                     f"Diff={total_diff_u:+.1f} PV={pv}% {stars}★ data={total_conf}",
+                                        })
+                                        # Soccer totals Kelly boost (1/3 Kelly, same as spreads)
+                                        if 'soccer' in sp:
+                                            all_picks[-1]['units'] = kelly_units(
+                                                edge_pct=max(pv, prob_edge), odds=under_odds, fraction=0.333)
+                                        # Attach context
+                                        ctx_parts = []
+                                        if ctx_total and ctx_total['summary']:
+                                            ctx_parts.append(ctx_total['summary'])
+                                        if pitcher_ctx and pitcher_ctx['summary']:
+                                            ctx_parts.append(pitcher_ctx['summary'])
+                                        if weather_adj != 0:
+                                            ctx_parts.append(f"Weather {weather_adj:+.1f}")
+                                        if ref_adj != 0 and ref_info:
+                                            ctx_parts.append(ref_info)
+                                        if ctx_parts:
+                                            all_picks[-1]['context'] = ' | '.join(ctx_parts)
+
+        if skip_nr or skip_div or skip_w:
+            print(f"    Filtered: {skip_nr} no rating, {skip_div} divergence, {skip_w} below threshold")
+
+    # ═══════════════════════════════════════════════════════════════
+    # CONTEXT-CONFIRMED CONVICTION
+    # ═══════════════════════════════════════════════════════════════
+    # Context factors (rest, splits, travel, pace, H2H, refs) provide
+    # a REASON for the edge beyond just the numbers. Picks confirmed
+    # by context deserve higher conviction than pure model disagreement.
+    #
+    # Rules:
+    # 1. NO context → cap at STRONG (can't be MAX PLAY)
+    # 2. Totals with NO context → 15% Kelly haircut (weakest model)
+    # 3. Totals WITH context → full Kelly (pace/refs confirm the edge)
+    
+    for p in all_picks:
+        has_context = bool(p.get('context'))
+
+        if not has_context:
+            if p['market_type'] == 'TOTAL':
+                # Totals without context backing — apply 15% haircut
+                # The totals model is the weakest part; without pace/ref/H2H
+                # confirmation, we should be less aggressive
+                p['units'] = round(p['units'] * 0.85, 1)
+                if p['units'] < 2.0:
+                    p['units'] = 2.0  # Floor at minimum
+
+            # Cap at STRONG tier regardless of market type
+            # MAX PLAY requires the model to have a situational REASON
+            max_units_no_context = 4.0  # STRONG ceiling
+            if p['units'] > max_units_no_context:
+                p['units'] = max_units_no_context
+
+        # v12.3: NCAAB favorite haircut — data shows NCAAB favorites are 3W-6L
+        # (-16.1u) while dogs are 13W-5L (+32.4u). The model overvalues NCAAB
+        # favorites, especially without context confirmation.
+        # Apply 20% haircut to NCAAB favorite spread picks.
+        if 'basketball_ncaab' in p.get('sport', ''):
+            line = p.get('line')
+            if line is not None and line < 0 and p.get('market_type') == 'SPREAD':
+                p['units'] = round(p['units'] * 0.80, 1)
+                if p['units'] < 2.0:
+                    p['units'] = 2.0
+
+    # v12.3: Line movement awareness — flag picks where sharp money disagrees
+    # If the spread has moved 1.5+ pts AGAINST our pick since first snapshot,
+    # add a warning. Data shows CLV-negative picks lose at high rate.
+    try:
+        for p in all_picks:
+            if p.get('market_type') not in ('SPREAD', 'TOTAL') or not p.get('event_id'):
+                continue
+            mkt = 'spreads' if p['market_type'] == 'SPREAD' else 'totals'
+            # Get earliest and latest snapshot for this event
+            snaps = conn.execute("""
+                SELECT point, snapshot_time FROM line_snapshots
+                WHERE event_id = ? AND market = ? AND outcome = ?
+                ORDER BY snapshot_time ASC
+            """, (p['event_id'], mkt, p['selection'].split()[0])).fetchall()
+            if len(snaps) >= 2:
+                opener_pt = snaps[0][0]
+                current_pt = snaps[-1][0]
+                if opener_pt is not None and current_pt is not None:
+                    shift = current_pt - opener_pt
+                    if abs(shift) >= 1.5:
+                        # Line moved significantly — check direction
+                        p['line_move'] = round(shift, 1)
+                        existing = p.get('notes', '')
+                        p['notes'] = existing + f" | LINE MOVE: {shift:+.1f}pts since open"
+    except Exception:
+        pass  # line_snapshots table may not exist
+
+    # Deduplicate: don't bet both sides of same event+market
+    # ═══ FINAL FILTER ═══
+    # Spread/Total picks: require 2.0★ (13%+ PV) — key number inflation means
+    # lower PV picks are noise.
+    # ML picks: require 1.0★ (7%+) — these use raw probability edge from Elo,
+    # not inflated PV%. A 7%+ Elo probability edge on a favorite is real value.
+    # One pick per event per market type (best edge wins).
+    final_picks = []
+    seen_event_market = {}
+    all_picks.sort(key=lambda x: x['star_rating']*100 + x['edge_pct'], reverse=True)
+    for p in all_picks:
+        is_ml = p.get('market_type') == 'MONEYLINE'
+        min_stars = 1.0 if is_ml else 2.0
+        if p['star_rating'] < min_stars:
+            continue
+        key = f"{p['event_id']}|{p['market_type']}"
+        if key not in seen_event_market:
+            seen_event_market[key] = True
+            final_picks.append(p)
+    return final_picks
+
+
+def _mk(sp, eid, commence, home, away, mtype, sel, book, line, odds, ms, prob, imp, wa, side):
+    # Walters methodology: key number value (PV%) IS the edge.
+    # Probability edge is a sanity check — if cover prob strongly disagrees
+    # with the market, the PV% is phantom. But small probability edges with
+    # real PV% are legitimate (common for favorites where the market is
+    # efficient but your number crosses key numbers).
+    prob_edge = (prob - imp) * 100 if imp else 0
+    pv_edge = wa['point_value_pct'] * 0.40  # Dampened PV% for Kelly sizing
+
+    # Sanity check: if probability STRONGLY disagrees, this is phantom value.
+    # PV% can look good when spread crosses key numbers but the probability
+    # math says there's no real edge. Allow small negative prob edges (favorites)
+    # but reject deeply negative ones.
+    if prob_edge < -2.0:
+        return None
+
+    # Walters: use the HIGHER of probability edge or dampened PV% for sizing.
+    # This lets favorites with real key number value get meaningful units
+    # instead of being killed by tiny probability edges.
+    actual_edge = max(prob_edge, pv_edge, 0)
+    if actual_edge < 1.0:
+        return None
+
+    units = kelly_units(edge_pct=actual_edge, odds=odds)
+    if units <= 0:
+        return None
+
+    kl = kelly_label(units)
+    return {
+        'sport': sp, 'event_id': eid, 'commence': commence,
+        'home': home, 'away': away, 'market_type': mtype,
+        'selection': sel, 'book': book, 'line': line, 'odds': odds,
+        'model_spread': ms, 'model_prob': round(prob,4),
+        'implied_prob': round(imp,4) if imp else None,
+        'edge_pct': round(actual_edge, 2),
+        'star_rating': wa['star_rating'], 'units': units,
+        'confidence': _conf(wa['star_rating']),
+        'spread_or_ml': wa['spread_or_ml'], 'timing': wa['timing'],
+        'notes': f"Model={ms:+.1f} PV={wa['point_value_pct']}% {wa['star_rating']}★ "
+                 f"VigAdj={wa['vig_adjusted_spread']:+.2f} | "
+                 f"Prob={prob:.1%} Imp={imp:.1%} RealEdge={actual_edge:.1f}% "
+                 f"Units={units:.1f} ({kl}) | {wa['timing']}",
+    }
+
+def _mk_ml(sp, eid, commence, home, away, sel, book, odds, ms, prob, imp, edge, stars, timing, t_r):
+    units = kelly_units(edge_pct=edge, odds=odds)
+    kl = kelly_label(units)
+    return {
+        'sport': sp, 'event_id': eid, 'commence': commence,
+        'home': home, 'away': away, 'market_type': 'MONEYLINE',
+        'selection': sel, 'book': book, 'line': None, 'odds': odds,
+        'model_spread': ms, 'model_prob': round(prob,4),
+        'implied_prob': round(imp,4) if imp else None,
+        'edge_pct': round(edge, 2), 'star_rating': stars,
+        'units': units, 'confidence': _conf(stars),
+        'spread_or_ml': 'MONEYLINE', 'timing': timing,
+        'notes': f"Win={prob:.1%} Imp={imp:.1%} Edge={edge:.1f}% {stars}★ Kelly={kl} | {t_r}",
+    }
+
+def _conf(s):
+    if s >= 2.5: return 'ELITE'
+    if s >= 2.0: return 'HIGH'
+    if s >= 1.5: return 'STRONG'
+    if s >= 1.0: return 'MEDIUM'
+    return 'LOW' if s >= 0.5 else 'NO_PLAY'
+
+def save_picks_to_db(conn, picks):
+    """Save picks to bets table with full analytical metadata.
+    
+    Captures every dimension needed for professional performance tracking:
+    side_type, spread_bucket, timing, context factors, market tier, etc.
+    
+    Prevents duplicate entries when model is run multiple times per day.
+    """
+    # Ensure new columns exist (safe migration for existing DBs)
+    _ensure_bet_columns(conn)
+    
+    now = datetime.now().isoformat()
+    today = datetime.now().strftime('%Y-%m-%d')
+    day_of_week = datetime.now().strftime('%A')  # Monday, Tuesday, etc.
+    saved = 0
+    dupes = 0
+    for p in picks:
+        # v12 FIX: Dedup by SIDE, not by full selection string.
+        # Old logic: "Nebraska +1.5" != "Nebraska +0.0" → saved twice.
+        # New logic: extract the team/side and match on that.
+        # Spreads: "Nebraska Cornhuskers +1.5" → "Nebraska Cornhuskers"
+        # Totals:  "UNDER 179.5" → "UNDER"
+        # ML:      "Iowa State Cyclones ML" → "Iowa State Cyclones"
+        import re
+        sel = p['selection']
+        mtype = p['market_type']
+        
+        if mtype == 'SPREAD':
+            dedup_side = re.sub(r'\s*[+-]?\d+\.?\d*$', '', sel).strip()
+        elif mtype == 'TOTAL':
+            dedup_side = 'OVER' if 'OVER' in sel.upper() else 'UNDER'
+        elif mtype == 'MONEYLINE':
+            dedup_side = sel.replace(' ML', '').replace(' (cross-mkt)', '').strip()
+        else:
+            dedup_side = sel  # Props: use full selection (player-specific)
+        
+        # Check if we already bet this side of this game today
+        existing_bets = conn.execute("""
+            SELECT id, selection FROM bets
+            WHERE event_id=? AND market_type=?
+            AND DATE(created_at)=?
+        """, (p['event_id'], mtype, today)).fetchall()
+        
+        is_dupe = False
+        for (existing_id, existing_sel) in existing_bets:
+            if mtype == 'SPREAD':
+                existing_side = re.sub(r'\s*[+-]?\d+\.?\d*$', '', existing_sel).strip()
+            elif mtype == 'TOTAL':
+                existing_side = 'OVER' if 'OVER' in existing_sel.upper() else 'UNDER'
+            elif mtype == 'MONEYLINE':
+                existing_side = existing_sel.replace(' ML', '').replace(' (cross-mkt)', '').strip()
+            else:
+                existing_side = existing_sel
+            
+            if dedup_side == existing_side:
+                is_dupe = True
+                break
+        
+        if is_dupe:
+            dupes += 1
+            continue
+        
+        # ── Derive analytical dimensions ──
+        side_type = _classify_side(p)
+        spread_bucket = _classify_spread_bucket(p)
+        edge_bucket = _classify_edge_bucket(p.get('edge_pct', 0))
+        timing = p.get('timing', 'UNKNOWN')
+        context_factors = p.get('context', '')
+        context_confirmed = 1 if context_factors else 0
+        context_adj = p.get('context_adj', 0.0)
+        market_tier = _classify_market_tier(p.get('sport', ''))
+        model_spread = p.get('model_spread', None)
+        
+        conn.execute("""
+            INSERT INTO bets (created_at, sport, event_id, market_type, selection,
+                book, line, odds, model_prob, implied_prob, edge_pct, confidence, units,
+                side_type, spread_bucket, edge_bucket, timing, context_factors,
+                context_confirmed, context_adj, market_tier, model_spread, day_of_week)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (now, p['sport'], p['event_id'], p['market_type'], p['selection'],
+              p['book'], p['line'], p['odds'], p['model_prob'], p['implied_prob'],
+              p['edge_pct'], p['confidence'], p['units'],
+              side_type, spread_bucket, edge_bucket, timing, context_factors,
+              context_confirmed, context_adj, market_tier, model_spread, day_of_week))
+        saved += 1
+    conn.commit()
+    if dupes:
+        print(f"  💾 Saved {saved} picks ({dupes} duplicates skipped)")
+    else:
+        print(f"  💾 Saved {saved} picks")
+
+
+def _ensure_bet_columns(conn):
+    """Add analytical columns to bets table if they don't exist yet."""
+    existing = {row[1] for row in conn.execute("PRAGMA table_info(bets)").fetchall()}
+    new_cols = {
+        'side_type': 'TEXT',         # FAVORITE, DOG, OVER, UNDER, PROP_OVER, PROP_UNDER
+        'spread_bucket': 'TEXT',     # SMALL_DOG, MED_DOG, BIG_DOG, SMALL_FAV, MED_FAV, BIG_FAV, PK
+        'edge_bucket': 'TEXT',       # EDGE_8_12, EDGE_12_16, EDGE_16_20, EDGE_20_PLUS
+        'timing': 'TEXT',            # EARLY, LATE
+        'context_factors': 'TEXT',   # Pipe-separated factor summary
+        'context_confirmed': 'INT',  # 1 = has context, 0 = no context
+        'context_adj': 'REAL',       # Total context adjustment in points
+        'market_tier': 'TEXT',       # SOFT, SHARP
+        'model_spread': 'REAL',      # The model's predicted spread
+        'day_of_week': 'TEXT',       # Monday, Tuesday, etc.
+    }
+    for col, dtype in new_cols.items():
+        if col not in existing:
+            try:
+                conn.execute(f"ALTER TABLE bets ADD COLUMN {col} {dtype}")
+            except:
+                pass
+    conn.commit()
+
+
+def _classify_side(pick):
+    """Classify pick as FAVORITE, DOG, OVER, UNDER, or PROP."""
+    mtype = pick.get('market_type', '')
+    sel = pick.get('selection', '')
+    line = pick.get('line', 0)
+    
+    if mtype == 'TOTAL':
+        return 'OVER' if 'OVER' in sel else 'UNDER'
+    elif mtype == 'PROP':
+        return 'PROP_OVER' if 'OVER' in sel else 'PROP_UNDER'
+    elif mtype == 'MONEYLINE':
+        odds = pick.get('odds', 0)
+        if odds and odds > 0:
+            return 'DOG'
+        return 'FAVORITE'
+    elif mtype == 'SPREAD':
+        if line is not None and line > 0:
+            return 'DOG'
+        elif line is not None and line < 0:
+            return 'FAVORITE'
+        return 'PK'
+    return 'UNKNOWN'
+
+
+def _classify_spread_bucket(pick):
+    """Classify spread magnitude into buckets."""
+    mtype = pick.get('market_type', '')
+    line = pick.get('line', 0)
+    
+    if mtype in ('TOTAL', 'PROP'):
+        return 'N/A'
+    
+    if line is None:
+        return 'UNKNOWN'
+    
+    abs_line = abs(line)
+    if abs_line <= 0.5:
+        side = 'PK'
+    elif line > 0:  # Dog
+        if abs_line <= 3.5:
+            side = 'SMALL_DOG'
+        elif abs_line <= 7.5:
+            side = 'MED_DOG'
+        else:
+            side = 'BIG_DOG'
+    else:  # Favorite
+        if abs_line <= 3.5:
+            side = 'SMALL_FAV'
+        elif abs_line <= 7.5:
+            side = 'MED_FAV'
+        else:
+            side = 'BIG_FAV'
+    return side
+
+
+def _classify_edge_bucket(edge_pct):
+    """Classify projected edge into buckets."""
+    if edge_pct >= 20:
+        return 'EDGE_20_PLUS'
+    elif edge_pct >= 16:
+        return 'EDGE_16_20'
+    elif edge_pct >= 12:
+        return 'EDGE_12_16'
+    return 'EDGE_8_12'
+
+
+def _classify_market_tier(sport):
+    """Classify sport into SOFT or SHARP market tier."""
+    soft = {'basketball_ncaab', 'soccer_usa_mls', 'soccer_germany_bundesliga',
+            'soccer_france_ligue_one', 'soccer_italy_serie_a', 'soccer_uefa_champs_league',
+            'baseball_ncaa'}
+    return 'SOFT' if sport in soft else 'SHARP'
+
+def print_picks(picks, title="TODAY'S PICKS"):
+    if not picks:
+        print(f"\n{'='*70}\n  {title}: No qualifying plays\n  Target: 5-10/week — patience IS the edge.\n{'='*70}")
+        return picks
+    print(f"\n{'='*70}")
+    print(f"  {title} — {datetime.now().strftime('%Y-%m-%d %I:%M %p')}")
+    print(f"  {len(picks)} plays | Scotty's Edge v11")
+    print(f"{'='*70}")
+    by_sport = {}
+    for p in picks: by_sport.setdefault(p['sport'], []).append(p)
+    for sport, spicks in by_sport.items():
+        SPORT_LABELS = {
+            'basketball_ncaab': 'NCAAB', 'basketball_nba': 'NBA',
+            'icehockey_nhl': 'NHL', 'baseball_ncaa': 'NCAA_BASEBALL',
+            'soccer_epl': 'EPL', 'soccer_italy_serie_a': 'ITALY_SERIE_A',
+            'soccer_spain_la_liga': 'SPAIN_LA_LIGA',
+            'soccer_germany_bundesliga': 'GERMANY_BUNDESLIGA',
+            'soccer_france_ligue_one': 'FRANCE_LIGUE_ONE',
+            'soccer_uefa_champs_league': 'UEFA_CHAMPIONS_LEAGUE',
+            'soccer_usa_mls': 'MLS',
+        }
+        label = SPORT_LABELS.get(sport, sport.upper())
+        print(f"\n  ── {label} {'─'*(50-len(label))}")
+        for p in spicks:
+            units = p['units']
+            kl = kelly_label(units)
+            # Size indicator: visual bar (scale 0-5u → 0-10 blocks)
+            filled = min(10, int(units * 2))
+            bar = '█' * filled + '░' * (10 - filled)
+            # Icon by conviction tier
+            tier_icon = {
+                'MAX PLAY': '🔥', 'STRONG': '⭐', 'SOLID': '✅',
+                'LEAN': '📊', 'SPRINKLE': '📋'
+            }.get(kl, '📋')
+            # Convert UTC to Eastern (DST-aware)
+            day_label, est_time = '', ''
+            tz_label = _eastern_tz_label()
+            if p['commence']:
+                try:
+                    gt = datetime.fromisoformat(p['commence'].replace('Z','+00:00'))
+                    est = _to_eastern(gt)
+                    est_time = est.strftime('%I:%M %p')
+                    today = datetime.now()
+                    if est.date() == today.date():
+                        day_label = 'TODAY'
+                    elif est.date() == (today + timedelta(days=1)).date():
+                        day_label = 'TOMORROW'
+                    else:
+                        day_label = est.strftime('%a %m/%d')
+                except:
+                    est_time = p['commence'][:16].replace('T',' ')
+            print(f"\n  {tier_icon} {p['selection']}")
+            print(f"     {p['home']} vs {p['away']} | {day_label} {est_time} {tz_label}")
+            print(f"     {p['book']} | {p['odds']:+.0f} | {p['market_type']}")
+            print(f"     Edge: {p['edge_pct']:.1f}%  |  {bar} {units:.1f}u {kl}")
+            timing = p.get('timing', '')
+            if timing:
+                timing_icon = {'EARLY': '⏰ BET EARLY', 'LATE': '⏳ BET LATE', 'HOLD': '🕐 HOLD FOR BEST LINE'}.get(timing, timing)
+                print(f"     {timing_icon}")
+            # Context factors (if any active)
+            ctx_summary = p.get('context')
+            if ctx_summary:
+                print(f"     📍 {ctx_summary}")
+    print(f"\n{'='*70}")
+    tu = sum(p['units'] for p in picks)
+    sizes = {}
+    for p in picks:
+        kl = kelly_label(p['units'])
+        sizes[kl] = sizes.get(kl, 0) + 1
+    size_str = ' | '.join(f"{v} {k}" for k, v in sizes.items() if v > 0)
+    print(f"  {len(picks)} plays | {tu:.1f} total units | {size_str}")
+    print(f"{'='*70}")
+    return picks
+
+def picks_to_text(picks, title="TODAY'S PICKS"):
+    """Clean subscriber-ready text format for email/Telegram."""
+    lines = []
+    if not picks:
+        return f"{title}: No qualifying plays today. Patience is the edge."
+    lines.append(f"{'━'*50}")
+    lines.append(f"  {title}")
+    lines.append(f"  {datetime.now().strftime('%A, %B %d %Y • %I:%M %p')} {_eastern_tz_label()}")
+    lines.append(f"  {len(picks)} plays")
+    lines.append(f"{'━'*50}")
+    for p in picks:
+        units = p['units']
+        kl = kelly_label(units)
+        tier_icon = {
+            'MAX PLAY': '🔥', 'STRONG': '⭐', 'SOLID': '✅',
+            'LEAN': '📊', 'SPRINKLE': '📋'
+        }.get(kl, '📋')
+        # Convert UTC to Eastern (DST-aware)
+        game_time = ''
+        tz_label = _eastern_tz_label()
+        if p['commence']:
+            try:
+                gt = datetime.fromisoformat(p['commence'].replace('Z','+00:00'))
+                est = _to_eastern(gt)
+                game_time = est.strftime('%I:%M %p') + f' {tz_label}'
+            except:
+                game_time = ''
+        lines.append(f"")
+        lines.append(f"  {tier_icon} {p['selection']}")
+        lines.append(f"    {p['home']} vs {p['away']} • {game_time}")
+        lines.append(f"    {p['book']}  {p['odds']:+.0f}  {p['market_type']}")
+        lines.append(f"    {units:.1f}u {kl}  •  Edge: {p['edge_pct']:.1f}%")
+        timing = p.get('timing', '')
+        if timing:
+            timing_label = {'EARLY': '⏰ BET EARLY', 'LATE': '⏳ BET LATE', 'HOLD': '🕐 HOLD FOR BEST LINE'}.get(timing, timing)
+            lines.append(f"    {timing_label}")
+        ctx_summary = p.get('context')
+        if ctx_summary:
+            lines.append(f"    📍 {ctx_summary}")
+    lines.append(f"")
+    lines.append(f"{'━'*50}")
+    tu = sum(p['units'] for p in picks)
+    sizes = {}
+    for p in picks:
+        kl = kelly_label(p['units'])
+        sizes[kl] = sizes.get(kl, 0) + 1
+    size_str = ' | '.join(f"{v} {k}" for k, v in sizes.items() if v > 0)
+    lines.append(f"  {len(picks)} plays • {tu:.1f} total units")
+    lines.append(f"  {size_str}")
+    lines.append(f"{'━'*50}")
+    return '\n'.join(lines)
+
+def update_ratings_post_game(conn, sport, home, away, home_score, away_score,
+                             home_inj=0, away_inj=0, hfa=None):
+    """90/10 update: New = 90% old + 10% TGPL. Auto-seeds new teams."""
+    ratings = get_latest_ratings(conn, sport)
+    h, a = ratings.get(home), ratings.get(away)
+    if hfa is None: hfa = SPORT_CONFIG.get(sport, {}).get('home_court', 2.5)
+    
+    # Auto-seed unrated teams at 0.0 (neutral) so they enter the update cycle
+    if not h:
+        h = {'base': 0.0, 'home_court': hfa, 'final': 0.0}
+    if not a:
+        a = {'base': 0.0, 'home_court': hfa, 'final': 0.0}
+    
+    inj_d = home_inj - away_inj
+    tgpl_h = (home_score - away_score) + a['final'] + inj_d - hfa
+    tgpl_a = (away_score - home_score) + h['final'] - inj_d + hfa
+    new_h = round(0.9 * h['final'] + 0.1 * tgpl_h, 3)
+    new_a = round(0.9 * a['final'] + 0.1 * tgpl_a, 3)
+    now = datetime.now().isoformat()
+    for team, nr in [(home, new_h), (away, new_a)]:
+        conn.execute("""INSERT INTO power_ratings (run_timestamp, sport, team,
+            base_rating, home_court, final_rating, games_used, iterations,
+            learning_rate, regularization)
+            VALUES (?,?,?,?,?,?,1,1,0,0)""", (now, sport, team, nr, hfa, nr))
+    conn.commit()
+    return new_h, new_a
+
+if __name__ == '__main__':
+    conn = sqlite3.connect(DB_PATH)
+    picks = generate_predictions(conn)
+    print_picks(picks)
+    conn.close()
