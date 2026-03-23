@@ -328,7 +328,20 @@ STAT_TYPE_MAP = {
     'player_shots': 'shots', 'player_shots_on_target': 'sot',
 }
 
-MIN_BOOKS_FOR_CONSENSUS = 3
+# Sport-specific minimum books for consensus.
+# NBA has 7-8 books posting props; 3-book minimum is fine.
+# NHL/NCAAB/soccer have fewer books; 2-book minimum captures real edges.
+# Backtest 3/23: min_books=3 killed 73.7% of all prop groups including
+# ALL soccer props and most NHL/NCAAB. Lowering to 2 for thin markets.
+MIN_BOOKS_FOR_CONSENSUS = 3  # Default (NBA)
+MIN_BOOKS_BY_SPORT = {
+    'basketball_nba': 3,
+    'basketball_ncaab': 2,
+    'icehockey_nhl': 2,
+    'soccer_epl': 2, 'soccer_italy_serie_a': 2, 'soccer_spain_la_liga': 2,
+    'soccer_germany_bundesliga': 2, 'soccer_france_ligue_one': 2,
+    'soccer_usa_mls': 2, 'soccer_uefa_champs_league': 2,
+}
 
 
 def evaluate_props(conn=None):
@@ -426,7 +439,9 @@ def evaluate_props(conn=None):
 
     for (eid, player, market, line_val), book_lines in grouped.items():
         pl_list = [v for v in book_lines.values() if v.get('book')]
-        if len(pl_list) < MIN_BOOKS_FOR_CONSENSUS:
+        sport = game_info.get(eid, {}).get('sport', '')
+        _min_books = MIN_BOOKS_BY_SPORT.get(sport, MIN_BOOKS_FOR_CONSENSUS)
+        if len(pl_list) < _min_books:
             continue
 
         gi = game_info.get(eid, {})
@@ -507,9 +522,53 @@ def evaluate_props(conn=None):
             if stars < 2.0:
                 continue
 
-            # Skip non-NY-legal books for recommendations
+            # If edge is at an excluded book, find the best legal book instead.
+            # Backtest 3/23: 59% of real edges were at excluded books (Bovada etc).
+            # The edge still exists if legal books have similar odds on the same side.
             if book in EXCLUDED_BOOKS:
-                continue
+                # Find best legal book offering the same side
+                best_legal = None
+                best_legal_odds = None
+                for bl in consensus.get('lines', pl_list):
+                    bk = bl.get('book', '')
+                    if bk in EXCLUDED_BOOKS or bk not in NY_LEGAL_BOOKS:
+                        continue
+                    if side == 'OVER' and bl.get('over_odds'):
+                        if best_legal_odds is None or bl['over_odds'] > best_legal_odds:
+                            best_legal = bk
+                            best_legal_odds = bl['over_odds']
+                    elif side == 'UNDER' and bl.get('under_odds'):
+                        if best_legal_odds is None or bl['under_odds'] > best_legal_odds:
+                            best_legal = bk
+                            best_legal_odds = bl['under_odds']
+                if best_legal and best_legal_odds:
+                    # Recalculate edge with the legal book's odds
+                    legal_imp = american_to_implied(best_legal_odds)
+                    legal_edge = (ce['model_prob'] - legal_imp) * 100 if legal_imp else 0
+                    if legal_edge >= 3.0:
+                        book = best_legal
+                        ce = dict(ce)  # copy to avoid mutating
+                        ce['book'] = best_legal
+                        ce['odds'] = best_legal_odds
+                        ce['implied_prob'] = legal_imp
+                        ce['edge_pct'] = legal_edge
+                        base_edge = legal_edge
+                        # Recalculate final edge with new base
+                        final_edge = (
+                            base_edge +
+                            min(movement_bonus * 0.30, 5.0) +
+                            min(stale_bonus * 0.20, 4.0) +
+                            min(hist_bonus * 0.15, 3.0)
+                        )
+                        if final_edge < 5.5:
+                            continue
+                        stars = get_star_rating(final_edge)
+                        if stars < 2.0:
+                            continue
+                    else:
+                        continue  # Legal book doesn't have enough edge
+                else:
+                    continue  # No legal book offers this side
 
             conf = 'ELITE' if stars >= 2.5 else 'HIGH'
             label = PROP_LABEL.get(market, market.replace('player_', '').upper())
@@ -552,7 +611,7 @@ def evaluate_props(conn=None):
                 'implied_prob': round(ce['implied_prob'], 4),
                 'edge_pct': round(final_edge, 2),
                 'star_rating': stars,
-                'units': kelly_units(edge_pct=final_edge, odds=ce['odds']),
+                'units': kelly_units(edge_pct=final_edge, odds=ce['odds'], fraction=0.25),  # 1/4 Kelly for props (raised from 1/8)
                 'confidence': conf,
                 'spread_or_ml': 'PROP',
                 'timing': 'EARLY' if stale_bonus > 0 else 'STANDARD',

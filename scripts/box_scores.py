@@ -220,7 +220,12 @@ def _parse_basketball_box(data, sport, espn_id, game_date):
 
 
 def _parse_hockey_box(data, sport, espn_id, game_date):
-    """Parse hockey box score into player stat rows."""
+    """Parse hockey box score into player stat rows.
+
+    ESPN NHL uses 'labels' not 'names' for column headers.
+    Skater labels: BS, HT, TK, +/-, TOI, PPTOI, SHTOI, ESTOI, SHFT, G, YTDG, A, S, SM, SOG, FW, FL, FO%, GV, PN, PIM
+    Points (G+A) must be computed since ESPN doesn't provide a PTS column for skaters.
+    """
     rows = []
     boxscore = data.get('boxscore', {})
     players_sections = boxscore.get('players', [])
@@ -228,43 +233,56 @@ def _parse_hockey_box(data, sport, espn_id, game_date):
     for section in players_sections:
         team_name = section.get('team', {}).get('displayName', '')
         for stat_group in section.get('statistics', []):
-            stat_names = stat_group.get('names', [])
-            idx_map = {name: i for i, name in enumerate(stat_names)}
+            # ESPN NHL uses 'labels' instead of 'names'
+            stat_labels = stat_group.get('labels', []) or stat_group.get('names', [])
+            idx_map = {name: i for i, name in enumerate(stat_labels)}
 
-            # Hockey has separate sections for skaters and goalies
+            # Skip goalie sections (they have GA, SA, SV% etc)
+            if 'GA' in idx_map or 'SV%' in idx_map:
+                continue
+
             for athlete_data in stat_group.get('athletes', []):
                 player_name = athlete_data.get('athlete', {}).get('displayName', '')
                 stats = athlete_data.get('stats', [])
 
                 if not player_name or not stats:
                     continue
-                if len(stats) < len(stat_names):
-                    continue
 
                 now = datetime.now().isoformat()
 
-                for prop_market, espn_col in HOCKEY_STAT_MAP.items():
-                    if espn_col not in idx_map:
-                        continue
-
-                    raw_val = stats[idx_map[espn_col]]
+                # SOG (shots on goal)
+                if 'SOG' in idx_map:
                     try:
-                        val = float(raw_val)
-                    except (ValueError, TypeError):
-                        continue
+                        val = float(stats[idx_map['SOG']])
+                        rows.append((now, game_date, sport, espn_id, team_name, player_name, 'sog', val))
+                    except (ValueError, TypeError, IndexError):
+                        pass
 
-                    stat_type_map = {
-                        'player_shots_on_goal': 'sog',
-                        'player_points': 'hockey_pts',
-                        'player_power_play_points': 'ppp',
-                        'player_blocked_shots': 'blocked_shots',
-                    }
-                    stat_type = stat_type_map.get(prop_market, prop_market)
+                # Points = Goals + Assists (ESPN doesn't have PTS for skaters)
+                g_val, a_val = 0.0, 0.0
+                if 'G' in idx_map:
+                    try:
+                        g_val = float(stats[idx_map['G']])
+                    except (ValueError, TypeError, IndexError):
+                        pass
+                if 'A' in idx_map:
+                    try:
+                        a_val = float(stats[idx_map['A']])
+                    except (ValueError, TypeError, IndexError):
+                        pass
+                pts = g_val + a_val
+                rows.append((now, game_date, sport, espn_id, team_name, player_name, 'hockey_pts', pts))
 
-                    rows.append((
-                        now, game_date, sport, espn_id,
-                        team_name, player_name, stat_type, val
-                    ))
+                # Blocked shots
+                if 'BS' in idx_map:
+                    try:
+                        val = float(stats[idx_map['BS']])
+                        rows.append((now, game_date, sport, espn_id, team_name, player_name, 'blocked_shots', val))
+                    except (ValueError, TypeError, IndexError):
+                        pass
+
+                # Power play points — ESPN doesn't have PPP directly.
+                # Would need PPTOI + goal/assist tracking. Skip for now.
 
     return rows
 

@@ -531,7 +531,19 @@ def grade_bets(conn, days_back=3):
         h_score, a_score, home, away, _ = score
 
         # Determine W/L/P
-        result = determine_result(sel, mtype, line, h_score, a_score, home, away, sport=sport)
+        # v12.1: Props use box score player stats, not team scores
+        if mtype == 'PROP':
+            try:
+                from box_scores import grade_prop
+                bet_date = created[:10] if created else None
+                result = grade_prop(conn, sel, line, bet_date, sport=sport)
+            except ImportError:
+                result = 'PENDING'  # box_scores.py not installed yet
+            except Exception as e:
+                print(f"  ⚠ Prop grading error: {e}")
+                result = 'PENDING'
+        else:
+            result = determine_result(sel, mtype, line, h_score, a_score, home, away, sport=sport)
         pnl = calculate_pnl(result, odds, units)
 
         # Compute CLV
@@ -688,13 +700,25 @@ def accumulate_player_results(conn, days_back=3):
         else:  # side == 'UNDER'
             prop_result = 'UNDER' if result == 'WIN' else 'OVER'
         
-        # Estimate actual value (best we can do without box scores)
-        # WIN on OVER 25.5 → actual was at least 26 (we use line + 1)
-        # LOSS on OVER 25.5 → actual was at most 25 (we use line - 1)
-        if prop_result == 'OVER':
-            estimated_actual = line + 1.0
-        else:
-            estimated_actual = line - 1.0
+        # v12.1: Try to get REAL value from ESPN box scores
+        estimated_actual = None
+        try:
+            from box_scores import lookup_player_stat, PROP_TO_STAT
+            stat_type_key = PROP_TO_STAT.get(stat_type.upper(), stat_type)
+            real_val = lookup_player_stat(conn, player, stat_type_key, game_date, sport=sport)
+            if real_val is not None:
+                estimated_actual = real_val
+        except ImportError:
+            pass
+        except Exception:
+            pass
+        
+        # Fallback: estimate from win/loss if no box score
+        if estimated_actual is None:
+            if prop_result == 'OVER':
+                estimated_actual = line + 1.0
+            else:
+                estimated_actual = line - 1.0
         
         game_date = created_at[:10] if created_at else datetime.now().strftime('%Y-%m-%d')
         

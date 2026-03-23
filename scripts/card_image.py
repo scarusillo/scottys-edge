@@ -122,11 +122,11 @@ def _draw_disclaimer(draw, fonts, y):
     draw.line([(PADDING, y), (CARD_WIDTH - PADDING, y)], fill=WHITE_25, width=S)
     y += 14*S
     # Social handles
-    social_font = _font(fonts, 'bold', 12)
+    social_font = _font(fonts, 'bold', 16)
     social_w = draw.textlength(SOCIALS, font=social_font)
     social_x = (CARD_WIDTH - social_w) // 2  # Center
     draw.text((social_x, y), SOCIALS, fill=(0, 200, 120), font=social_font)
-    y += 22*S
+    y += 30*S
     disc_font = _font(fonts, 'regular', 11)
     words = DISCLAIMER.split()
     lines, current = [], ""
@@ -299,57 +299,69 @@ def _render_picks_slide(picks, fonts, section_label, show_units_explain=True):
 
 
 def _generate_no_picks_card(fonts, output_path=None):
-    """Generate a card when no picks meet the threshold."""
+    """Generate a card when no picks meet the threshold — vertically centered."""
     img = Image.new('RGB', (IG_W, IG_H), BG)
     draw = ImageDraw.Draw(img)
     draw.rectangle([(0,0),(CARD_WIDTH,5*S)], fill=GREEN)
-    y = 20*S
-    y = _draw_header(draw, fonts, y)
-    y += 10*S; _draw_divider(draw, y); y += 50*S
+
+    # Header at top
+    y_header = 20*S
+    y_header = _draw_header(draw, fonts, y_header)
+    y_header += 10*S; _draw_divider(draw, y_header)
+    header_bottom = y_header + 10*S
+
+    # Measure disclaimer height from bottom
+    disclaimer_h = 130*S  # approximate disclaimer block height
+
+    # Calculate content block height to center it in the available space
+    content_h = 120*S + 55*S*3 + 30*S + 50*S + 6*S + 50*S + 70*S  # title + lines + gap + bar + tag
+    available = IG_H - header_bottom - disclaimer_h
+    y = header_bottom + (available - content_h) // 2
 
     # Centered "NO EDGE TONIGHT" message
-    nef = _font(fonts, 'bold', 46)
+    nef = _font(fonts, 'bold', 64)
     msg = "NO EDGE TONIGHT"
     mw = draw.textlength(msg, font=nef)
     draw.text(((CARD_WIDTH - mw) // 2, y), msg, fill=WHITE, font=nef)
-    y += 85*S
+    y += 120*S
 
     # Subtitle lines
-    sf = _font(fonts, 'regular', 22)
+    sf = _font(fonts, 'regular', 30)
     lines = [
-        "The model didn't find enough edge to recommend a play.",
+        "The model didn't find enough edge",
+        "to recommend a play.",
         "",
         "We only bet when the data says to bet.",
         "Sitting out is part of the strategy.",
     ]
     for line in lines:
         if line == "":
-            y += 20*S
+            y += 30*S
             continue
         lw = draw.textlength(line, font=sf)
         draw.text(((CARD_WIDTH - lw) // 2, y), line, fill=WHITE_60, font=sf)
-        y += 42*S
+        y += 55*S
 
-    y += 35*S
-    # Green accent
-    bar_w = 150*S
-    draw.rectangle([((CARD_WIDTH - bar_w) // 2, y), ((CARD_WIDTH + bar_w) // 2, y + 4*S)], fill=GREEN)
-    y += 35*S
+    y += 50*S
+    # Green accent bar
+    bar_w = 200*S
+    draw.rectangle([((CARD_WIDTH - bar_w) // 2, y), ((CARD_WIDTH + bar_w) // 2, y + 6*S)], fill=GREEN)
+    y += 50*S
 
     # Bottom tagline
-    tf = _font(fonts, 'bold', 18)
+    tf = _font(fonts, 'bold', 26)
     tag = "DISCIPLINE IS THE EDGE"
     tw = draw.textlength(tag, font=tf)
     draw.text(((CARD_WIDTH - tw) // 2, y), tag, fill=GREEN, font=tf)
-    y += 55*S
 
-    _draw_divider(draw, y); y += 10*S
-    y = _draw_disclaimer(draw, fonts, y)
+    # Disclaimer pinned to bottom
+    y_disc = IG_H - disclaimer_h
+    _draw_divider(draw, y_disc); y_disc += 10*S
+    _draw_disclaimer(draw, fonts, y_disc)
 
-    final = _finalize(img, y)
     if output_path is None:
         output_path = os.path.join(_get_desktop(), 'scottys_edge_card.png')
-    final.save(output_path, 'PNG', quality=95)
+    img.save(output_path, 'PNG', quality=95)
     print(f"  \U0001f4f8 No-edge card: {output_path}")
     return output_path
 

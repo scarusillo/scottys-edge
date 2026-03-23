@@ -365,19 +365,34 @@ def cmd_run(args):
         picks = generate_predictions(conn, sport=sp)
         game_picks.extend(picks)
 
-    # Step 7: Player Props — Edge Consensus Method
+    # Step 7a: Player Props — Edge Consensus Method
     print("\n🎯 Step 7: Player Props — Edge Consensus Analysis...")
-    prop_picks = []
+    consensus_props = []
     try:
         from props_engine import evaluate_props
-        prop_picks = evaluate_props(conn)
-        if prop_picks:
-            print(f"  ✅ {len(prop_picks)} prop edges found")
+        consensus_props = evaluate_props(conn)
+        if consensus_props:
+            print(f"  ✅ {len(consensus_props)} consensus prop edges found")
         else:
             print("  No consensus edges found (books are in agreement)")
     except Exception as e:
-        print(f"  Props analysis: {e}")
+        print(f"  Props consensus: {e}")
         import traceback; traceback.print_exc()
+
+    # Step 7b: Player Props — Projection Model
+    print("\n🔮 Step 7b: Player Props — Projection Model...")
+    model_props = []
+    try:
+        from player_prop_model import generate_prop_projections
+        model_props = generate_prop_projections(conn)
+        if model_props:
+            print(f"  ✅ {len(model_props)} projection-based prop picks")
+    except Exception as e:
+        print(f"  Props projection: {e}")
+        import traceback; traceback.print_exc()
+
+    # Step 7c: Merge consensus + model props (dedup: keep higher edge)
+    prop_picks = _merge_prop_sources(consensus_props, model_props)
 
     # ═══ MERGE, DEDUP, SELECT BEST PICKS ═══
     all_picks = _merge_and_select(game_picks, prop_picks, conn=conn)
@@ -569,10 +584,11 @@ def cmd_run(args):
             except Exception as e:
                 print(f"  Captions: {e}")
         else:
-            # No NEW picks — only send no-edge email on first run (before 9am).
-            # Later runs with no new picks = skip email, don't clutter inbox.
-            if datetime.now().hour >= 9:
-                print("  No new picks — skipping email (don't clutter inbox)")
+            # No picks found — send no-edge card + captions on the 11am and 5:30pm
+            # scheduled runs only. Other hours (8am opener, ad-hoc) skip to avoid clutter.
+            _hour = datetime.now().hour
+            if _hour not in (10, 11, 17):
+                print("  No new picks — skipping email (only 11am/5:30pm runs send no-edge cards)")
                 return
             from emailer import send_picks_email, send_email
             from datetime import datetime
@@ -589,7 +605,7 @@ def cmd_run(args):
                 # Caption email
                 caption = generate_caption([])
                 if caption:
-                    caption_text = "INSTAGRAM CAPTION:\n" + "="*40 + "\n" + caption + "\n\n" + "TWITTER CAPTION:\n" + "="*40 + "\nNo plays tonight.\n\nDiscipline is the edge. We only bet when the data says to bet.\n\nBack tomorrow.\n\n#ScottysEdge #SportsBetting"
+                    caption_text = "INSTAGRAM CAPTION:\n" + "="*40 + "\n" + caption + "\n\n" + "TWITTER CAPTION:\n" + "="*40 + "\nNo plays tonight.\n\nDiscipline is the edge. We only bet when the data says to bet.\n\nBack tomorrow.\n\n#SportsBetting #FreePicks #BettingCommunity"
                     send_email(f"Social Captions - {run_type} {today}", caption_text)
                 print("  No-edge card + caption sent")
             except Exception as e:
@@ -1298,6 +1314,30 @@ def _validate_picks(picks):
     return valid
 
 
+def _merge_prop_sources(consensus_props, model_props):
+    """Merge consensus and projection model prop picks. Dedup by player+stat: keep higher edge."""
+    if not model_props:
+        return consensus_props or []
+    if not consensus_props:
+        return model_props or []
+    # Index consensus by (event_id, player_key, stat_label)
+    best = {}
+    for p in consensus_props:
+        sel = p.get('selection', '')
+        parts = sel.split()
+        # Key: event_id + first part of selection (player) + last part (stat label)
+        dk = f"{p.get('event_id','')}|{parts[0] if parts else ''}|{parts[-1] if parts else ''}"
+        if dk not in best or p.get('edge_pct', 0) > best[dk].get('edge_pct', 0):
+            best[dk] = p
+    for p in model_props:
+        sel = p.get('selection', '')
+        parts = sel.split()
+        dk = f"{p.get('event_id','')}|{parts[0] if parts else ''}|{parts[-1] if parts else ''}"
+        if dk not in best or p.get('edge_pct', 0) > best[dk].get('edge_pct', 0):
+            best[dk] = p
+    return list(best.values())
+
+
 def _merge_and_select(game_picks, prop_picks, conn=None):
     """
     Merge game and prop picks. Apply market-tier selection:
@@ -1480,6 +1520,86 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                 elif not is_sharp and edge < 17.0:
                     return False
             # Big dogs (8+): keep current thresholds, they're working
+
+        # ── Baseball total signal conflict filter ──
+        # Session 3/23 analysis: all 3 losses were baseball totals where internal
+        # signals contradicted the bet direction. Since we only recommend MAX PLAYs,
+        # conflicted picks should be suppressed entirely rather than size-reduced.
+        #
+        # Conflict 1: Pace direction vs bet side
+        #   - "fast-paced (+X)" means higher scoring → conflicts with UNDER
+        #   - "slow-paced (-X)" means lower scoring → conflicts with OVER
+        # Conflict 2: Pitching edge vs bet side
+        #   - Negative pitching adj (team suppresses runs) → conflicts with OVER
+        #   - Positive pitching adj (team allows runs) → conflicts with UNDER
+        #
+        # Data: 3 losses all had conflicts + CLV=0.0. 13 wins had aligned signals.
+        # Only applies to baseball totals — NHL/soccer have different dynamics.
+        if mtype == 'TOTAL' and 'baseball' in sport:
+            import re as _re
+            ctx = str(p.get('context', ''))
+            sel = p.get('selection', '')
+            is_over = 'OVER' in sel.upper()
+            is_under = 'UNDER' in sel.upper()
+
+            # Check pace direction from context string
+            _pace_match = _re.search(r'(fast|slow)-paced\s*\(([+-]?\d+\.?\d*)\)', ctx, _re.IGNORECASE)
+            _pace_conflicts = False
+            if _pace_match:
+                _pace_val = float(_pace_match.group(2))
+                # Positive pace = fast = more runs. Negative pace = slow = fewer runs.
+                if is_under and _pace_val > 0:
+                    _pace_conflicts = True  # Fast-paced but betting Under
+                elif is_over and _pace_val < 0:
+                    _pace_conflicts = True  # Slow-paced but betting Over
+
+            # Check pitching edge direction from context string
+            # Format: "Pitching edge: Team Name (+/-X.X pts)"
+            _pitch_match = _re.search(r'Pitching edge:.*?\(([+-]?\d+\.?\d*)\s*pts?\)', ctx, _re.IGNORECASE)
+            _pitch_conflicts = False
+            if _pitch_match:
+                _pitch_val = float(_pitch_match.group(1))
+                # Negative pitching adj = pitcher suppresses runs (Under signal)
+                # Positive pitching adj = pitcher allows runs (Over signal)
+                if is_over and _pitch_val <= -0.5:
+                    _pitch_conflicts = True  # Strong Under pitcher but betting Over
+                elif is_under and _pitch_val >= 0.5:
+                    _pitch_conflicts = True  # Weak pitcher but betting Under
+
+            # Block rules (tested against 3/22 data — 13W-3L):
+            # 1. Pitching edge ≥ 1.0 pts against bet direction → strong single conflict
+            # 2. Pace conflicts AND pitching doesn't support the bet (neutral or against)
+            #    i.e. pace says Over but betting Under, and pitching isn't helping the Under
+            #
+            # What this catches:
+            #   - UCF/TCU OVER: pitching -1.0 (strong Under pitcher) → blocked (rule 1)
+            #   - Wake/UVA UNDER: pace +0.6 (fast, Over signal) + pitching -0.1 (neutral) → blocked (rule 2)
+            # What this preserves:
+            #   - Houston/Kansas UNDER: pace +1.7 conflicts but pitching -0.3 supports Under → pass
+            #   - Troy/SoMiss UNDER: pace -0.7 supports Under (no pace conflict) → pass
+            #   - Creighton/Miami OVER: pitching -0.5 (below 1.0 threshold) → pass
+            _strong_pitch = _pitch_conflicts and abs(float(_pitch_match.group(1))) >= 1.0 if _pitch_match and _pitch_conflicts else False
+
+            # Check if pitching SUPPORTS the bet direction (counteracts pace conflict)
+            _pitch_supports_bet = False
+            if _pitch_match:
+                _pv = float(_pitch_match.group(1))
+                # Negative pitching = suppresses runs (supports Under)
+                # Positive pitching = allows runs (supports Over)
+                if is_under and _pv <= -0.2:
+                    _pitch_supports_bet = True
+                elif is_over and _pv >= 0.2:
+                    _pitch_supports_bet = True
+
+            _pace_unsupported = _pace_conflicts and not _pitch_supports_bet
+
+            if _pace_unsupported or _strong_pitch:
+                _conflict_type = []
+                if _pace_conflicts: _conflict_type.append('pace')
+                if _pitch_conflicts: _conflict_type.append('pitching')
+                if _pace_unsupported and not _pitch_conflicts: _conflict_type.append('no pitching support')
+                print(f"    ⚠ BLOCKED: {sel[:50]} — signal conflict ({', '.join(_conflict_type)} vs bet side)")
+                return False
 
         # ── CLV-aware filter ──
         # Data: Positive CLV bets 16W-4L (76%), CLV > 1pt is 12W-0L.
@@ -1664,6 +1784,14 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                 return sel.split(word)[0].strip()
         return sel
     
+    # ── Prop filters — backtest 3/23: 4 filters turned 14W-29L (-18u) into 6W-1L (+63u) ──
+    # 1. OVER only — Unders are 3W-14L (-49u, -57.6% ROI). Books price downside accurately.
+    # 2. No FanDuel — 2W-13L (-50.8u). FanDuel lines look like edges but aren't.
+    # 3. <7 book consensus — 7+ books means all books have it; "edge" is noise not mispricing.
+    #    3-6 books: 10W-9L (+35.5u). 7+ books: 4W-16L (-51u).
+    # 4. No medium dog odds (+151 to +250) — 3W-15L (-49.8u). Big dogs (+251+) are 3W-1L (+43u).
+    PROP_EXCLUDED_RECS = {'FanDuel'}  # Still use for consensus calc, never recommend
+    PROP_MAX_BOOK_COUNT = 6           # Skip when 7+ books all have the line
     prop_filtered = []
     for p in (prop_picks or []):
         if p.get('units', 0) < PROP_MIN_UNITS:
@@ -1671,6 +1799,21 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         market_key = _get_prop_market_key(p)
         min_edge = PROP_MIN_EDGE_THREES if market_key in LOW_LINE_MARKETS else PROP_MIN_EDGE
         if p.get('edge_pct', 0) < min_edge:
+            continue
+        # Filter 1: OVER only — block all UNDER props
+        sel = p.get('selection', '')
+        if 'UNDER' in sel.upper():
+            continue
+        # Filter 2: Block FanDuel recommendations
+        if p.get('book', '') in PROP_EXCLUDED_RECS:
+            continue
+        # Filter 3: Skip high book count (edge is noise when every book has the line)
+        signals = p.get('_signals', {})
+        if signals.get('book_count', 0) >= 7:
+            continue
+        # Filter 4: Block medium dog odds (+151 to +250) — looks like value, isn't
+        odds = p.get('odds', -110)
+        if 151 <= odds <= 250:
             continue
         prop_filtered.append(p)
     
@@ -1826,6 +1969,14 @@ def cmd_grade(args):
     except Exception as e:
         print(f"  ESPN baseball scores: {e}")
 
+    # Fetch ESPN box scores for player prop grading (FREE — NBA, NCAAB, NHL)
+    print("  Fetching ESPN box scores (props)...")
+    try:
+        from box_scores import fetch_all_box_scores
+        fetch_all_box_scores(days_back=3)
+    except Exception as e:
+        print(f"  ESPN box scores: {e}")
+
     # v12.2: ESPN team endpoint backup — scoreboard misses games.
     # The team-specific schedule endpoint has ALL games including doubleheaders.
     print("  Backfilling missing scores (ESPN team endpoint)...")
@@ -1909,7 +2060,7 @@ def cmd_grade(args):
         _game_date = conn.execute("SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5").fetchone()[0]
         _game_dt = datetime.strptime(_game_date, '%Y-%m-%d')
         _date_str = _game_dt.strftime('%A %B %d')
-        _yb = conn.execute("SELECT selection, result, pnl_units FROM graded_bets WHERE DATE(created_at) = (SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5) AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5 ORDER BY pnl_units DESC").fetchall()
+        _yb = conn.execute("SELECT selection, result, pnl_units, sport FROM graded_bets WHERE DATE(created_at) = (SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5) AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5 ORDER BY pnl_units DESC").fetchall()
         _all = conn.execute("SELECT result, pnl_units FROM graded_bets WHERE DATE(created_at) >= '2026-03-04' AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5").fetchall()
         _yw = sum(1 for b in _yb if b[1]=='WIN')
         _yl = sum(1 for b in _yb if b[1]=='LOSS')
@@ -1919,14 +2070,62 @@ def cmd_grade(args):
         _tp = sum(b[1] or 0 for b in _all)
         _twp = _tw/(_tw+_tl)*100 if (_tw+_tl)>0 else 0
         _lines = []
+        _sport_counts = {}
         for b in _yb:
             icon = "\u2705" if b[1]=='WIN' else "\u274c"
             _lines.append(f"{icon} {b[0]} | {b[2]:+.1f}u")
+            sp = b[3] or ''
+            if 'basketball_nba' in sp: _sport_counts['nba'] = _sport_counts.get('nba', 0) + 1
+            elif 'basketball_ncaab' in sp: _sport_counts['ncaab'] = _sport_counts.get('ncaab', 0) + 1
+            elif 'hockey' in sp: _sport_counts['nhl'] = _sport_counts.get('nhl', 0) + 1
+            elif 'baseball' in sp: _sport_counts['baseball'] = _sport_counts.get('baseball', 0) + 1
+            elif 'soccer' in sp: _sport_counts['soccer'] = _sport_counts.get('soccer', 0) + 1
+        # Build sport-aware hashtags
+        _sport_ig = {
+            'nba': ['#NBA', '#NBABets', '#NBAPicksToday'],
+            'ncaab': ['#CBB', '#CollegeBasketball', '#MarchMadness'],
+            'nhl': ['#NHL', '#NHLBets', '#HockeyBets'],
+            'baseball': ['#CollegeBaseball', '#NCAACWS', '#BaseballBets'],
+            'soccer': ['#Soccer', '#SoccerBets', '#FootballBets'],
+        }
+        _sport_tw = {
+            'nba': ['#NBA', '#NBABets'],
+            'ncaab': ['#CBB', '#MarchMadness'],
+            'nhl': ['#NHL', '#NHLBets'],
+            'baseball': ['#CollegeBaseball', '#BaseballBets'],
+            'soccer': ['#Soccer', '#SoccerBets'],
+        }
+        # March Madness override for NCAAB in March/early April
+        _now_m = datetime.now().month
+        _now_d = datetime.now().day
+        _is_march_madness = 'ncaab' in _sport_counts and (_now_m == 3 or (_now_m == 4 and _now_d <= 7))
+        if _is_march_madness:
+            _sport_ig['ncaab'] = ['#MarchMadness', '#CollegeBasketball', '#CBBPicks']
+            _sport_tw['ncaab'] = ['#MarchMadness', '#CBB']
+        # Sort sports by frequency, pick top 2
+        _top_sports = sorted(_sport_counts, key=_sport_counts.get, reverse=True)[:2]
+        _ig_sport_tags = []
+        _tw_sport_tags = []
+        for s in _top_sports:
+            _ig_sport_tags.extend(_sport_ig.get(s, []))
+            _tw_sport_tags.extend(_sport_tw.get(s, []))
+        # Dedupe while preserving order
+        _ig_sport_tags = list(dict.fromkeys(_ig_sport_tags))
+        _tw_sport_tags = list(dict.fromkeys(_tw_sport_tags))
+        # IG: core discoverable tags + up to 4 sport tags + community (max ~10)
+        _ig_hashtags = ['#SportsBetting', '#BettingPicks', '#FreePicks', '#GamblingTwitter'] + _ig_sport_tags[:4] + ['#BettingCommunity', '#PicksOfTheDay']
+        _ig_hashtags = list(dict.fromkeys(_ig_hashtags))
+        # Twitter: keep it tight — 3-4 discoverable tags + sport tags (max ~5)
+        _tw_hashtags = ['#SportsBetting', '#FreePicks'] + _tw_sport_tags[:3] + ['#GamblingX']
+        _tw_hashtags = list(dict.fromkeys(_tw_hashtags))
+        # Build sport emojis
+        _emoji_map = {'nba': '\U0001f3c0', 'ncaab': '\U0001f3c0', 'nhl': '\U0001f3d2', 'baseball': '\u26be', 'soccer': '\u26bd'}
+        _sport_emojis = ''.join(dict.fromkeys(_emoji_map.get(s, '') for s in _top_sports))
         if _yp >= 10: verdict = "\U0001f525 HUGE DAY"
         elif _yp >= 0: verdict = "\u2705 GREEN DAY"
         elif _yp >= -5: verdict = "Minor loss"
         else: verdict = "Tough day. Full transparency \u2014 every pick tracked."
-        ig = f"\U0001f3c0\U0001f3d2 Scotty's Edge \u2014 {_date_str} Results\n\n"
+        ig = f"{_sport_emojis} Scotty's Edge \u2014 {_date_str} Results\n\n"
         ig += f"{_yw}W-{_yl}L | {_yp:+.1f}u"
         if _yp >= 10: ig += " \U0001f525"
         ig += f"\n\n{verdict}\n\n"
@@ -1934,14 +2133,14 @@ def cmd_grade(args):
         ig += f"\n\nSeason: {_tw}W-{_tl}L | {_tp:+.1f}u | {_twp:.1f}%"
         ig += "\nEvery pick tracked & graded \U0001f4ca"
         ig += "\n\n\u26a0\ufe0f Not gambling advice \u2022 21+ \u2022 1-800-GAMBLER"
-        ig += "\n\nFollow for daily picks:\n\U0001f4f1 IG: @scottys_edge\n\U0001f426 X: @Scottys_edge\n\U0001f4ac Discord: discord.gg/JQ6rRfuN\n\n#ScottysEdge #SportsBetting #SportsPicks"
-        tw = f"\U0001f3c0\U0001f3d2 Scotty's Edge \u2014 {_date_str}\n\n"
+        ig += f"\n\nFollow for daily picks:\n\U0001f4f1 IG: @scottys_edge\n\U0001f426 X: @Scottys_edge\n\U0001f4ac Discord: discord.gg/JQ6rRfuN\n\n{' '.join(_ig_hashtags)}"
+        tw = f"{_sport_emojis} Scotty's Edge \u2014 {_date_str}\n\n"
         tw += f"{_yw}W-{_yl}L | {_yp:+.1f}u"
         if _yp >= 10: tw += " \U0001f525"
         tw += f"\n\n{verdict}"
         tw += f"\n\nSeason: {_tw}W-{_tl}L | {_tp:+.1f}u | {_twp:.1f}%"
         tw += "\nEvery pick tracked. Every loss shown. \U0001f4ca"
-        tw += "\n\n\U0001f4f1 @scottys_edge | \U0001f426 @Scottys_edge\n\n#ScottysEdge #SportsBetting"
+        tw += f"\n\n\U0001f4f1 @scottys_edge | \U0001f426 @Scottys_edge\n\n{' '.join(_tw_hashtags)}"
         results_caption = "INSTAGRAM CAPTION:\n" + "="*40 + "\n" + ig + "\n\n" + "TWITTER CAPTION:\n" + "="*40 + "\n" + tw
         print("  Captions generated")
     except Exception as e:
