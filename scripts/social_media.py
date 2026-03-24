@@ -50,7 +50,7 @@ def post_to_discord(picks):
         'soccer_epl': '⚽', 'soccer_germany_bundesliga': '⚽',
         'soccer_france_ligue_one': '⚽', 'soccer_italy_serie_a': '⚽',
         'soccer_spain_la_liga': '⚽', 'soccer_usa_mls': '⚽',
-        'soccer_uefa_champs_league': '⚽',
+        'soccer_uefa_champs_league': '⚽', 'soccer_mexico_ligamx': '⚽',
     }
     
     # Build pick lines — sorted by confidence (highest first)

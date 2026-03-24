@@ -26,6 +26,7 @@ LEAGUE_SLUGS = {
     'soccer_germany_bundesliga': 'ger.1',
     'soccer_france_ligue_one':   'fra.1',
     'soccer_usa_mls':            'usa.1',
+    'soccer_mexico_ligamx':      'mex.1',
 }
 
 # Short aliases for CLI convenience
@@ -36,6 +37,8 @@ SPORT_ALIASES = {
     'bundesliga': 'soccer_germany_bundesliga',
     'ligue_one':  'soccer_france_ligue_one',
     'mls':        'soccer_usa_mls',
+    'ligamx':     'soccer_mexico_ligamx',
+    'liga_mx':    'soccer_mexico_ligamx',
 }
 
 STANDINGS_URL = 'https://site.api.espn.com/apis/v2/sports/soccer/{slug}/standings'

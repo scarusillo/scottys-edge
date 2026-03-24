@@ -37,6 +37,7 @@ ESPN_SUMMARY = {
     'soccer_germany_bundesliga': 'https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/summary?event={}',
     'soccer_france_ligue_one': 'https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/summary?event={}',
     'soccer_usa_mls': 'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/summary?event={}',
+    'soccer_mexico_ligamx': 'https://site.api.espn.com/apis/site/v2/sports/soccer/mex.1/summary?event={}',
 }
 
 ESPN_SCOREBOARD = {
@@ -49,6 +50,7 @@ ESPN_SCOREBOARD = {
     'soccer_germany_bundesliga': 'https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/scoreboard?dates={}',
     'soccer_france_ligue_one': 'https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/scoreboard?dates={}',
     'soccer_usa_mls': 'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard?dates={}',
+    'soccer_mexico_ligamx': 'https://site.api.espn.com/apis/site/v2/sports/soccer/mex.1/scoreboard?dates={}',
 }
 
 # Adjustment caps per sport category

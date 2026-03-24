@@ -104,11 +104,17 @@ def get_player_baseline(conn, player, stat_type, sport, limit=20):
     avg = sum(v * w for v, w in zip(values, weights)) / total_w
 
     # Weighted standard deviation
+    # Use actual data when available (5-7 games), blended with population default.
+    # Only fall back to pure default if we somehow have < 5 games (shouldn't happen).
+    variance = sum(w * (v - avg) ** 2 for v, w in zip(values, weights)) / total_w
+    empirical_std = max(0.5, math.sqrt(variance))
     if len(values) >= 8:
-        variance = sum(w * (v - avg) ** 2 for v, w in zip(values, weights)) / total_w
-        std = max(0.5, math.sqrt(variance))
+        std = empirical_std
     else:
-        std = DEFAULT_STD.get(stat_type, 3.0)
+        # Blend: weight empirical by (games/8), fill remainder with population default
+        pop_std = DEFAULT_STD.get(stat_type, 3.0)
+        blend = len(values) / 8.0
+        std = empirical_std * blend + pop_std * (1.0 - blend)
 
     return {'avg': round(avg, 2), 'std': round(std, 2), 'games': len(values)}
 
@@ -260,10 +266,24 @@ def project_player_stat(conn, player, stat_type, sport, team, opponent, home, aw
 # EDGE CALCULATION — CDF probability vs implied probability
 # ═══════════════════════════════════════════════════════════════════
 
+def _binary_over_prob(projection, line):
+    """
+    For binary lines (0.5), estimate P(actual >= 1) directly from the
+    player's average rather than using a normal CDF which is inappropriate
+    for discrete 0-or-1+ outcomes.
+
+    Uses a Poisson-like model: P(X >= 1) = 1 - e^(-avg).
+    This is well-suited for low-count stats like blocks and steals.
+    """
+    # Poisson P(X=0) = e^(-lambda), so P(X >= 1) = 1 - e^(-lambda)
+    return 1.0 - math.exp(-projection)
+
+
 def calculate_prop_edge(projection, std, market_line, odds):
     """
-    Calculate edge for an OVER bet using normal CDF.
-    Same pattern as calculate_point_value_totals in model_engine.py.
+    Calculate edge for an OVER bet.
+    Uses Poisson model for binary 0.5 lines (blocks, steals, etc.)
+    and normal CDF for continuous lines (points, rebounds, assists).
     """
     diff = projection - market_line
     if diff <= 0:
@@ -272,8 +292,12 @@ def calculate_prop_edge(projection, std, market_line, odds):
     if std <= 0:
         return 0.0
 
-    z = diff / std
-    prob = _ncdf(z)
+    # Binary lines: use Poisson instead of normal CDF
+    if market_line == 0.5:
+        prob = _binary_over_prob(projection, market_line)
+    else:
+        z = diff / std
+        prob = _ncdf(z)
 
     implied = american_to_implied(odds)
     if not implied or implied <= 0:

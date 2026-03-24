@@ -341,6 +341,7 @@ MIN_BOOKS_BY_SPORT = {
     'soccer_epl': 2, 'soccer_italy_serie_a': 2, 'soccer_spain_la_liga': 2,
     'soccer_germany_bundesliga': 2, 'soccer_france_ligue_one': 2,
     'soccer_usa_mls': 2, 'soccer_uefa_champs_league': 2,
+    'soccer_mexico_ligamx': 2,
 }
 
 

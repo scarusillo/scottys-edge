@@ -276,7 +276,7 @@ def _infer_market_tier(sport):
     """Infer market tier from sport."""
     soft = {'basketball_ncaab', 'soccer_usa_mls', 'soccer_germany_bundesliga',
             'soccer_france_ligue_one', 'soccer_italy_serie_a', 'soccer_uefa_champs_league',
-            'baseball_ncaa'}
+            'soccer_mexico_ligamx', 'baseball_ncaa'}
     return 'SOFT' if sport in soft else 'SHARP'
 
 
@@ -1011,6 +1011,7 @@ def performance_report(conn=None, days=7, sport=None, start_date=None):
         'soccer_epl': 'EPL', 'soccer_italy_serie_a': 'Serie A', 'soccer_spain_la_liga': 'La Liga',
         'soccer_germany_bundesliga': 'Bundesliga', 'soccer_france_ligue_one': 'Ligue 1',
         'soccer_uefa_champs_league': 'UCL', 'soccer_usa_mls': 'MLS',
+        'soccer_mexico_ligamx': 'Liga MX',
     })
 
     # ═══════════════════════════════════════════════════════════════

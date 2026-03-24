@@ -134,6 +134,16 @@ ELO_CONFIG = {
         'season_revert': 0.30,    # Higher roster turnover
         'min_games': 8,
     },
+    'soccer_mexico_ligamx': {
+        'k_factor': 20,
+        'home_advantage': 80,     # Liga MX: altitude + travel = huge home edge
+        'mov_multiplier': True,
+        'mov_cap': 5,
+        'spread_per_elo': 160,
+        'initial_elo': 1500,
+        'season_revert': 0.25,
+        'min_games': 8,
+    },
     'baseball_ncaa': {
         'k_factor': 24,           # Higher K — short season, each game matters more
         'home_advantage': 65,     # v14: Was 40. Actual home win rate 65.6% — needs stronger HA.
@@ -252,7 +262,7 @@ def build_elo_ratings(sport, verbose=True):
         'icehockey_nhl': 10, 'baseball_ncaa': 2, 'baseball_mlb': 3,
         'soccer_epl': 8, 'soccer_italy_serie_a': 8, 'soccer_spain_la_liga': 8,
         'soccer_germany_bundesliga': 8, 'soccer_france_ligue_one': 8,
-        'soccer_uefa_champs_league': 9, 'soccer_usa_mls': 2,
+        'soccer_uefa_champs_league': 9, 'soccer_usa_mls': 2, 'soccer_mexico_ligamx': 1,
     }
     revert_pct = cfg.get('season_revert', 0.25)
     start_month = season_start_month.get(sport, 0)
@@ -617,7 +627,7 @@ def blended_spread(home, away, elo_ratings, market_ratings, sport, conn, neutral
     # estimate — will recalibrate once we have 20+ graded soccer spreads.
     for s in ['soccer_epl', 'soccer_spain_la_liga', 'soccer_italy_serie_a',
               'soccer_germany_bundesliga', 'soccer_france_ligue_one',
-              'soccer_uefa_champs_league', 'soccer_usa_mls']:
+              'soccer_uefa_champs_league', 'soccer_usa_mls', 'soccer_mexico_ligamx']:
         SPREAD_EXPANSION[s] = 1.40
     
     expansion = SPREAD_EXPANSION.get(sport, 1.0)

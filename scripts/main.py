@@ -54,6 +54,7 @@ SPORT_MAP = {
     'ligue1': 'soccer_france_ligue_one', 'l1': 'soccer_france_ligue_one',
     'ucl': 'soccer_uefa_champs_league', 'champions': 'soccer_uefa_champs_league',
     'mls': 'soccer_usa_mls',
+    'ligamx': 'soccer_mexico_ligamx', 'liga_mx': 'soccer_mexico_ligamx',
     'ncaa_baseball': 'baseball_ncaa', 'college_baseball': 'baseball_ncaa',
     'cbb_base': 'baseball_ncaa', 'ncaabb': 'baseball_ncaa',
 }
@@ -64,7 +65,7 @@ SPORT_MAP = {
 # ML still disabled in model_engine.py. MLS totals still disabled.
 _DISABLED_SPORTS = set()
 ALL_SPORTS = [s for s in set(SPORT_MAP.values()) if s not in _DISABLED_SPORTS]
-PROP_SPORTS = ['basketball_nba', 'basketball_ncaab', 'icehockey_nhl']
+PROP_SPORTS = ['basketball_nba', 'icehockey_nhl']
 # v12 FIX: Soccer props removed to save API budget. Soccer prop markets
 # (shots, shots on target) are thinly covered by US books — rarely produce
 # actionable edges. Saves ~150 usage per run × 2 runs = 300/day.
@@ -655,7 +656,7 @@ def _generate_html_card(picks):
         'soccer_epl': '⚽', 'soccer_germany_bundesliga': '⚽',
         'soccer_france_ligue_one': '⚽', 'soccer_italy_serie_a': '⚽',
         'soccer_spain_la_liga': '⚽', 'soccer_usa_mls': '⚽',
-        'soccer_uefa_champs_league': '⚽',
+        'soccer_uefa_champs_league': '⚽', 'soccer_mexico_ligamx': '⚽',
     }
     sport_labels = {
         'basketball_nba': 'NBA', 'basketball_ncaab': 'NCAAB',
@@ -663,7 +664,7 @@ def _generate_html_card(picks):
         'soccer_epl': 'EPL', 'soccer_germany_bundesliga': 'BUNDESLIGA',
         'soccer_france_ligue_one': 'LIGUE 1', 'soccer_italy_serie_a': 'SERIE A',
         'soccer_spain_la_liga': 'LA LIGA', 'soccer_usa_mls': 'MLS',
-        'soccer_uefa_champs_league': 'UCL',
+        'soccer_uefa_champs_league': 'UCL', 'soccer_mexico_ligamx': 'LIGA MX',
     }
     
     for p in picks:
@@ -673,26 +674,39 @@ def _generate_html_card(picks):
             sport_groups[label] = {'icon': sport_icons.get(sp, '🏟️'), 'picks': []}
         sport_groups[label]['picks'].append(p)
     
-    # Build pick HTML blocks — sorted by confidence (highest first)
-    sorted_picks = sorted(picks, key=lambda p: p['units'], reverse=True)
+    # Build pick HTML blocks — grouped by sport, sorted within each group
     pick_blocks = []
-    for p in sorted_picks:
-        kl = kelly_label(p['units'])
-        sp = p.get('sport', 'other')
-        icon = sport_icons.get(sp, '🏟️')
-        game_time = ''
-        if p.get('commence'):
-            try:
-                gt = datetime.fromisoformat(p['commence'].replace('Z', '+00:00'))
-                est = _to_eastern(gt)
-                game_time = est.strftime('%I:%M %p') + f' {tz}'
-            except:
-                pass
-        
-        conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
-        ctx_html = f'<div class="pick-context">📍 {p.get("context", "")}</div>' if p.get('context') else ''
-        
+
+    # Render sport sections in a consistent order
+    sport_order = ['NBA', 'NHL', 'NCAAB', 'NCAA BASEBALL',
+                   'EPL', 'LA LIGA', 'SERIE A', 'BUNDESLIGA', 'LIGUE 1', 'MLS', 'LIGA MX', 'UCL']
+
+    for sport_label in sport_order:
+        if sport_label not in sport_groups:
+            continue
+        sg = sport_groups[sport_label]
+        sport_picks = sorted(sg['picks'], key=lambda p: p['units'], reverse=True)
+
         pick_blocks.append(f"""
+    <div class="sport-header">{sport_label}</div>""")
+
+        for p in sport_picks:
+            kl = kelly_label(p['units'])
+            sp = p.get('sport', 'other')
+            icon = sport_icons.get(sp, '🏟️')
+            game_time = ''
+            if p.get('commence'):
+                try:
+                    gt = datetime.fromisoformat(p['commence'].replace('Z', '+00:00'))
+                    est = _to_eastern(gt)
+                    game_time = est.strftime('%I:%M %p') + f' {tz}'
+                except:
+                    pass
+
+            conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
+            ctx_html = f'<div class="pick-context">📍 {p.get("context", "")}</div>' if p.get('context') else ''
+
+            pick_blocks.append(f"""
     <div class="pick">
       <div class="pick-icon">{icon}</div>
       <div class="pick-info">
@@ -706,7 +720,43 @@ def _generate_html_card(picks):
         <div class="pick-conviction {conv_class}">{kl}</div>
       </div>
     </div>""")
-    
+
+    # Add any ungrouped sports
+    grouped_labels = set(sport_order)
+    for sport_label, sg in sport_groups.items():
+        if sport_label not in grouped_labels:
+            sport_picks = sorted(sg['picks'], key=lambda p: p['units'], reverse=True)
+            pick_blocks.append(f"""
+    <div class="sport-header">{sport_label}</div>""")
+            for p in sport_picks:
+                kl = kelly_label(p['units'])
+                sp = p.get('sport', 'other')
+                icon = sport_icons.get(sp, '🏟️')
+                game_time = ''
+                if p.get('commence'):
+                    try:
+                        gt = datetime.fromisoformat(p['commence'].replace('Z', '+00:00'))
+                        est = _to_eastern(gt)
+                        game_time = est.strftime('%I:%M %p') + f' {tz}'
+                    except:
+                        pass
+                conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
+                ctx_html = f'<div class="pick-context">📍 {p.get("context", "")}</div>' if p.get('context') else ''
+                pick_blocks.append(f"""
+    <div class="pick">
+      <div class="pick-icon">{icon}</div>
+      <div class="pick-info">
+        <div class="pick-team">{p['selection']}</div>
+        <div class="pick-matchup">{p['home']} vs {p['away']} • {game_time}</div>
+        {ctx_html}
+      </div>
+      <div class="pick-meta">
+        <div class="pick-odds">{p['odds']:+.0f}</div>
+        <div class="pick-units">{p['units']:.1f} units</div>
+        <div class="pick-conviction {conv_class}">{kl}</div>
+      </div>
+    </div>""")
+
     picks_html = '\n'.join(pick_blocks)
     tu = sum(p['units'] for p in picks)
     
@@ -796,6 +846,13 @@ def _generate_html_card(picks):
     color: rgba(255,255,255,0.4); margin-bottom: 4px;
   }}
   .pick-context {{ font-size: 12px; color: #00e676; opacity: 0.7; font-weight: 500; }}
+  .sport-header {{
+    font-family: 'Bebas Neue', sans-serif; font-size: 24px;
+    color: rgba(255,255,255,0.7); letter-spacing: 3px;
+    margin-top: 20px; margin-bottom: 12px; padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    position: relative; z-index: 1;
+  }}
   .pick-meta {{ text-align: right; min-width: 140px; }}
   .pick-odds {{ font-family: 'Bebas Neue', sans-serif; font-size: 32px; color: #ffffff; line-height: 1; }}
   .pick-units {{

@@ -40,6 +40,7 @@ TRACKED_SPORTS = [
     'soccer_france_ligue_one',      # Was missing — same
     'soccer_uefa_champs_league',    # Was missing — same
     'soccer_usa_mls',               # Was missing — same
+    'soccer_mexico_ligamx',
     'baseball_ncaa',
 ]
 

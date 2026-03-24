@@ -48,6 +48,7 @@ SPORT_LABELS = {
     'baseball_ncaa': 'BASEBALL', 'soccer_epl': 'EPL', 'soccer_germany_bundesliga': 'BUNDESLIGA',
     'soccer_france_ligue_one': 'LIGUE 1', 'soccer_italy_serie_a': 'SERIE A',
     'soccer_spain_la_liga': 'LA LIGA', 'soccer_usa_mls': 'MLS', 'soccer_uefa_champs_league': 'UCL',
+    'soccer_mexico_ligamx': 'LIGA MX',
 }
 SPORT_BADGE_COLORS = {
     'basketball_nba': (255, 100, 50), 'basketball_ncaab': (255, 152, 0),
@@ -56,6 +57,7 @@ SPORT_BADGE_COLORS = {
     'soccer_france_ligue_one': (130, 50, 200), 'soccer_italy_serie_a': (130, 50, 200),
     'soccer_spain_la_liga': (130, 50, 200), 'soccer_usa_mls': (130, 50, 200),
     'soccer_uefa_champs_league': (130, 50, 200),
+    'soccer_mexico_ligamx': (130, 50, 200),
 }
 SOCIALS = "IG: @scottys_edge | X: @Scottys_edge | Discord: discord.gg/JQ6rRfuN"
 DISCLAIMER = ("For entertainment and informational purposes only. Not gambling advice. "
@@ -298,6 +300,133 @@ def _render_picks_slide(picks, fonts, section_label, show_units_explain=True):
     return _finalize(img, y)
 
 
+def _render_picks_slide_grouped(items, fonts, section_label, show_units_explain=True):
+    """Render a picks card with sport group headers interleaved."""
+    from scottys_edge import kelly_label
+
+    # Count actual picks (not headers)
+    pick_items = [item for kind, item in items if kind == '__PICK__']
+    n = len(pick_items)
+    header_count = sum(1 for kind, _ in items if kind == '__HEADER__')
+    ctx_count = sum(1 for p in pick_items if p.get('context'))
+
+    # Dynamic layout
+    fixed = (5 + 20 + 105 + 26 + 38 + 20 + 70 + 85) * S
+    if show_units_explain:
+        fixed += 55 * S
+    header_space = header_count * 48 * S  # Space for sport headers
+    ctx_extra = ctx_count * 22 * S
+    pick_gaps = n * 14 * S
+    avail = IG_H - fixed - ctx_extra - pick_gaps - header_space
+    pick_h = avail // max(n, 1)
+    pick_h = max(120*S, min(275*S, pick_h))
+
+    scale = pick_h / (155*S)
+    name_sz = max(22, min(32, int(28 * scale)))
+    detail_sz = max(14, min(20, int(17 * scale)))
+    book_sz = max(13, min(18, int(15 * scale)))
+    ctx_sz = max(13, min(18, int(15 * scale)))
+    odds_sz = max(28, min(44, int(38 * scale)))
+    units_sz = max(14, min(20, int(17 * scale)))
+    tier_sz = max(12, min(17, int(14 * scale)))
+
+    total_h = max(IG_H, fixed + n*(pick_h+14*S) + ctx_extra + header_space)
+    img = Image.new('RGB', (CARD_WIDTH, total_h), BG)
+    draw = ImageDraw.Draw(img)
+    draw.rectangle([(0,0),(CARD_WIDTH,5*S)], fill=GREEN)
+    y = 20*S
+    y = _draw_header(draw, fonts, y)
+    y += 8*S; _draw_divider(draw, y); y += 18*S
+    draw.text((PADDING, y), section_label, fill=GREEN, font=_font(fonts, 'bold', 18)); y += 38*S
+
+    pnf=_font(fonts,'bold',name_sz); pdf=_font(fonts,'regular',detail_sz)
+    pbf=_font(fonts,'regular',book_sz); pcf=_font(fonts,'regular',ctx_sz)
+    of=_font(fonts,'bold',odds_sz); uf=_font(fonts,'regular',units_sz)
+    ttf=_font(fonts,'bold',tier_sz)
+
+    badge_y = int(12 * scale) * S
+    name_y = int(40 * scale) * S
+    matchup_y = int(72 * scale) * S
+    book_y = int(94 * scale) * S
+    ctx_y = int(116 * scale) * S
+    odds_y = int(20 * scale) * S
+    units_y = int(62 * scale) * S
+    tier_y_top = int(88 * scale) * S
+    tier_y_bot = int(112 * scale) * S
+    tier_txt_y = int(92 * scale) * S
+    right_col_w = 160 * S
+    name_max_w = CARD_WIDTH - PADDING*2 - 22*S - right_col_w - 10*S
+
+    sport_hdr_font = _font(fonts, 'bold', 20)
+
+    for kind, item in items:
+        if kind == '__HEADER__':
+            # Draw sport section header
+            icon = SPORT_ICONS.get(item.replace(' (CONT.)', ''), '🏟️')
+            hdr_text = f"{icon}  {item}"
+            y += 8*S
+            draw.text((PADDING, y), hdr_text, fill=WHITE_80, font=sport_hdr_font)
+            y += 32*S
+            # Subtle divider under header
+            draw.rectangle([(PADDING, y), (CARD_WIDTH - PADDING, y + 1*S)],
+                           fill=(255, 255, 255, 20))
+            y += 8*S
+            continue
+
+        p = item
+        kl=kelly_label(p['units']); tier_color=TIER_COLORS.get(kl, WHITE_60)
+        game_time=_to_eastern(p.get('commence','')); ctx=p.get('context','')
+        matchup=f"{p.get('home','')} vs {p.get('away','')} \u2022 {game_time}"
+        box_h=pick_h+(22*S if ctx else 0)
+        draw.rectangle([(PADDING,y),(CARD_WIDTH-PADDING,y+box_h)], fill=CARD_BG)
+        draw.rectangle([(PADDING,y),(PADDING+5*S,y+box_h)], fill=GREEN)
+        tx=PADDING+22*S
+        bx=tx; bw=_draw_sport_badge(draw,fonts,bx,y+badge_y,p.get('sport','')); bx+=bw
+        if p.get('timing'): _draw_timing_badge(draw,fonts,bx,y+badge_y+1*S,p['timing'])
+        sel_text = p['selection']
+        sel_font = pnf
+        sel_w = draw.textlength(sel_text, font=sel_font)
+        if sel_w > name_max_w:
+            for shrink_sz in range(name_sz - 2, 16, -2):
+                sel_font = _font(fonts, 'bold', shrink_sz)
+                sel_w = draw.textlength(sel_text, font=sel_font)
+                if sel_w <= name_max_w:
+                    break
+        draw.text((tx,y+name_y),sel_text,fill=WHITE,font=sel_font)
+        draw.text((tx,y+matchup_y),matchup,fill=WHITE_40,font=pdf)
+        draw.text((tx,y+book_y),p.get('book',''),fill=WHITE_40,font=pbf)
+        if ctx: draw.text((tx,y+ctx_y),ctx,fill=GREEN,font=pcf)
+        rx=CARD_WIDTH-PADDING-22*S
+        os_=f"{p['odds']:+.0f}"; ow=draw.textlength(os_,font=of)
+        draw.text((rx-ow,y+odds_y),os_,fill=WHITE,font=of)
+        us_=f"{p['units']:.1f} units"; uw=draw.textlength(us_,font=uf)
+        draw.text((rx-uw,y+units_y),us_,fill=WHITE_60,font=uf)
+        tw=draw.textlength(kl,font=ttf); bwt=tw+20*S; bxt=rx-bwt
+        bbg=(tier_color[0]//6,tier_color[1]//6,tier_color[2]//6)
+        draw.rectangle([(bxt,y+tier_y_top),(bxt+bwt,y+tier_y_bot)],fill=bbg)
+        draw.text((bxt+10*S,y+tier_txt_y),kl,fill=tier_color,font=ttf)
+        y+=box_h+14*S
+
+    _draw_divider(draw,y); y+=20*S
+    tu=sum(p['units'] for p in pick_items)
+    stf=_font(fonts,'bold',36); slf=_font(fonts,'regular',14)
+    draw.text((PADDING+30*S,y),str(n),fill=WHITE,font=stf)
+    draw.text((PADDING+30*S,y+40*S),"PLAYS",fill=WHITE_40,font=slf)
+    draw.text((PADDING+150*S,y),f"{tu:.0f}u",fill=WHITE,font=stf)
+    draw.text((PADDING+150*S,y+40*S),"TOTAL",fill=WHITE_40,font=slf)
+    trf=_font(fonts,'regular',16); ts="Every pick tracked & graded"
+    tsw=draw.textlength(ts,font=trf)
+    draw.text((CARD_WIDTH-PADDING-tsw,y+14*S),ts,fill=WHITE_40,font=trf)
+    y+=70*S
+    if show_units_explain:
+        ef=_font(fonts,'regular',13)
+        draw.text((PADDING,y),"UNIT SIZING: 1 unit = 1% of your bankroll. If your bankroll is $1,000, one unit = $10.",fill=WHITE_40,font=ef)
+        draw.text((PADDING,y+20*S),"A 5.0u MAX PLAY at $10/unit = $50 wager. Scale to your comfort level.",fill=WHITE_40,font=ef)
+        y+=55*S
+    y=_draw_disclaimer(draw,fonts,y)
+    return _finalize(img, y)
+
+
 def _generate_no_picks_card(fonts, output_path=None):
     """Generate a card when no picks meet the threshold — vertically centered."""
     img = Image.new('RGB', (IG_W, IG_H), BG)
@@ -366,6 +495,42 @@ def _generate_no_picks_card(fonts, output_path=None):
     return output_path
 
 
+SPORT_ORDER = ['NBA', 'NHL', 'NCAAB', 'NCAA BASEBALL',
+               'EPL', 'LA LIGA', 'SERIE A', 'BUNDESLIGA', 'LIGUE 1', 'MLS', 'LIGA MX', 'UCL']
+
+SPORT_ICONS = {
+    'NBA': '🏀', 'NCAAB': '🏀', 'NHL': '🏒', 'BASEBALL': '⚾',
+    'NCAA BASEBALL': '⚾', 'EPL': '⚽', 'BUNDESLIGA': '⚽', 'LIGUE 1': '⚽',
+    'SERIE A': '⚽', 'LA LIGA': '⚽', 'MLS': '⚽', 'LIGA MX': '⚽', 'UCL': '⚽',
+}
+
+
+def _group_picks_by_sport(picks):
+    """Group picks by sport label in display order."""
+    from scottys_edge import kelly_label
+    groups = {}
+    for p in picks:
+        sp = p.get('sport', 'other')
+        label = SPORT_LABELS.get(sp, sp.upper())
+        if label not in groups:
+            groups[label] = []
+        groups[label].append(p)
+
+    # Sort within each group by tier then units
+    tier_order = {'MAX PLAY': 0, 'STRONG': 1, 'SOLID': 2, 'LEAN': 3, 'SPRINKLE': 4}
+    for label in groups:
+        groups[label].sort(key=lambda p: (tier_order.get(kelly_label(p['units']), 5), -p['units']))
+
+    # Return ordered list of (label, picks) tuples
+    ordered = []
+    for sl in SPORT_ORDER:
+        if sl in groups:
+            ordered.append((sl, groups.pop(sl)))
+    for sl, sp in groups.items():
+        ordered.append((sl, sp))
+    return ordered
+
+
 def generate_card_image(picks, output_path=None, min_units=4.5, max_per_card=5):
     from scottys_edge import kelly_label
     fonts=_load_fonts()
@@ -373,27 +538,51 @@ def generate_card_image(picks, output_path=None, min_units=4.5, max_per_card=5):
     if not picks:
         print("  No picks above minimum units threshold — generating no-edge card.")
         return _generate_no_picks_card(fonts, output_path)
-    tier_order={'MAX PLAY':0,'STRONG':1,'SOLID':2,'LEAN':3,'SPRINKLE':4}
-    picks=sorted(picks,key=lambda p:(tier_order.get(kelly_label(p['units']),5),-p['units']))
+
+    sport_groups = _group_picks_by_sport(picks)
     desktop=_get_desktop(); cards=[]
 
-    # Split picks into chunks of max_per_card for readable cards
-    chunks = [picks[i:i+max_per_card] for i in range(0, len(picks), max_per_card)]
+    # Build a flat ordered list with sport header markers
+    ordered_picks = []
+    for sport_label, sport_picks in sport_groups:
+        ordered_picks.append(('__HEADER__', sport_label))
+        for p in sport_picks:
+            ordered_picks.append(('__PICK__', p))
+
+    # Split into chunks respecting max_per_card (count only picks, not headers)
+    chunks = []
+    current_chunk = []
+    pick_count = 0
+    current_sport = None
+    for kind, item in ordered_picks:
+        if kind == '__HEADER__':
+            current_sport = item
+            current_chunk.append((kind, item))
+        else:
+            if pick_count >= max_per_card:
+                chunks.append(current_chunk)
+                current_chunk = []
+                pick_count = 0
+                # Re-add current sport header if we're mid-sport
+                if current_sport:
+                    current_chunk.append(('__HEADER__', current_sport + ' (CONT.)'))
+            current_chunk.append((kind, item))
+            pick_count += 1
+    if current_chunk:
+        chunks.append(current_chunk)
 
     if len(chunks) == 1:
-        # Single card
-        c=_render_picks_slide(chunks[0],fonts,"TODAY'S PLAYS",True)
-        p=output_path or os.path.join(desktop,'scottys_edge_card.png')
-        c.save(p,'PNG',quality=95); print(f"  \U0001f4f8 Picks card: {p}"); cards.append(p)
+        c = _render_picks_slide_grouped(chunks[0], fonts, "TODAY'S PLAYS", True)
+        p = output_path or os.path.join(desktop, 'scottys_edge_card.png')
+        c.save(p, 'PNG', quality=95); print(f"  \U0001f4f8 Picks card: {p}"); cards.append(p)
     else:
-        # Multiple cards — number them
         for idx, chunk in enumerate(chunks, 1):
             label = f"TODAY'S PLAYS ({idx}/{len(chunks)})"
-            show_units = (idx == 1)  # Only show unit explanation on first card
-            c=_render_picks_slide(chunk, fonts, label, show_units)
-            p=os.path.join(desktop, f'scottys_edge_card_{idx}.png')
-            c.save(p,'PNG',quality=95)
-            print(f"  \U0001f4f8 Card {idx}/{len(chunks)}: {p} ({len(chunk)} picks)")
+            show_units = (idx == 1)
+            c = _render_picks_slide_grouped(chunk, fonts, label, show_units)
+            p = os.path.join(desktop, f'scottys_edge_card_{idx}.png')
+            c.save(p, 'PNG', quality=95)
+            print(f"  \U0001f4f8 Card {idx}/{len(chunks)}: {p}")
             cards.append(p)
 
     return cards[0] if len(cards) == 1 else cards

@@ -59,6 +59,10 @@ ESPN_ENDPOINTS = {
         'url': 'https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/scoreboard',
         'season_start': '2025-02-22',
     },
+    'soccer_mexico_ligamx': {
+        'url': 'https://site.api.espn.com/apis/site/v2/sports/soccer/mex.1/scoreboard',
+        'season_start': '2025-07-11',  # Liga MX Apertura 2025
+    },
     'baseball_ncaa': {
         'url': 'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard',
         'season_start': '2026-02-14',  # 2026 college baseball season

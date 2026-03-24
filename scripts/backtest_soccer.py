@@ -9,7 +9,8 @@ def run_backtest(days_back=45):
     cutoff = (datetime.now() - timedelta(days=days_back)).strftime('%Y-%m-%d')
 
     soccer_leagues = ['soccer_epl', 'soccer_germany_bundesliga', 'soccer_italy_serie_a',
-                      'soccer_spain_la_liga', 'soccer_france_ligue_one', 'soccer_usa_mls']
+                      'soccer_spain_la_liga', 'soccer_france_ligue_one', 'soccer_usa_mls',
+                      'soccer_mexico_ligamx']
 
     from model_engine import SPORT_CONFIG
 

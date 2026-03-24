@@ -27,6 +27,7 @@ SOFT_MARKETS = {
     'soccer_france_ligue_one',
     'soccer_italy_serie_a',
     'soccer_uefa_champs_league',
+    'soccer_mexico_ligamx',
     'baseball_ncaa',
 }
 
@@ -53,6 +54,7 @@ HOME_ADVANTAGE = {
     'soccer_france_ligue_one': 0.40,
     'soccer_uefa_champs_league': 0.30,
     'soccer_usa_mls': 0.45,
+    'soccer_mexico_ligamx': 0.50,
     'baseball_ncaa': 0.4,
 }
 
@@ -73,6 +75,7 @@ PLAY_THRESHOLDS = {
     'icehockey_nhl': 8.0,
     'soccer_epl': 13.0,
     'soccer_spain_la_liga': 10.0,
+    'soccer_mexico_ligamx': 8.0,
 }
 
 
@@ -141,6 +144,12 @@ SPORT_CONFIG = {
         'max_spread_divergence': 0.75,
         'ml_scale': 1.0,
     },
+    'soccer_mexico_ligamx': {
+        'logistic_scale': 0.40, 'spread_std': 1.3,
+        'home_court': HOME_ADVANTAGE['soccer_mexico_ligamx'],
+        'max_spread_divergence': 0.75,
+        'ml_scale': 1.0,
+    },
     'baseball_ncaa': {
         'logistic_scale': 1.8, 'spread_std': 10.0,
         'home_court': HOME_ADVANTAGE['baseball_ncaa'],
@@ -154,7 +163,7 @@ SPORT_CONFIG = {
 # PROP SPORTS
 # ═══════════════════════════════════════════════════════════════
 
-PROP_SPORTS = ['basketball_nba', 'basketball_ncaab', 'icehockey_nhl']
+PROP_SPORTS = ['basketball_nba', 'icehockey_nhl']
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -220,5 +229,6 @@ MAX_RATING = {
     'soccer_spain_la_liga': 0.5, 'soccer_germany_bundesliga': 0.5,
     'soccer_france_ligue_one': 0.5, 'soccer_uefa_champs_league': 0.5,
     'soccer_usa_mls': 0.5,
+    'soccer_mexico_ligamx': 0.5,
     'baseball_ncaa': 3.0,
 }
