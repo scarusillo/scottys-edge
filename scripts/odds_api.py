@@ -43,6 +43,8 @@ TRACKED_SPORTS = [
     'soccer_mexico_ligamx',
     'baseball_ncaa',
 ]
+# Tennis keys are NOT in TRACKED_SPORTS — they're event-based and most are
+# inactive at any given time. detect_active_tennis() finds live ones dynamically.
 
 # Books legal in NY (filter to these)
 NY_LEGAL_BOOKS = [
@@ -90,6 +92,33 @@ def _api_get(endpoint, params=None):
             else:
                 print(f"  ❌ API failed after {max_retries} retries for {endpoint} — {e}")
                 return []
+
+
+# ══════════════════════════════════════════════════════════════════════
+# TENNIS — Dynamic tournament detection
+# ══════════════════════════════════════════════════════════════════════
+
+def detect_active_tennis():
+    """
+    Poll the free /v4/sports endpoint to find which tennis tournaments
+    currently have active markets. Returns list of active sport keys.
+
+    This costs 0 API usage — the /sports endpoint is free.
+    Avoids wasting 30 API calls on inactive tournament keys.
+    """
+    try:
+        data = _api_get('/sports', {'all': 'false'})
+        if not data:
+            return []
+        active = []
+        for sport in data:
+            key = sport.get('key', '')
+            if key.startswith('tennis_') and sport.get('active', False):
+                active.append(key)
+        return active
+    except Exception as e:
+        print(f"  ⚠ Tennis detection failed: {e}")
+        return []
 
 
 # ══════════════════════════════════════════════════════════════════════

@@ -289,6 +289,24 @@ def create_db():
     )""")
     c.execute("CREATE INDEX IF NOT EXISTS idx_gb_date ON graded_bets(created_at)")
 
+    # ── 10b. TENNIS METADATA ────────────────────────────────────────────
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS tennis_metadata (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        event_id        TEXT NOT NULL UNIQUE,
+        tournament      TEXT,
+        surface         TEXT,        -- 'hard', 'clay', 'grass'
+        round           TEXT,        -- 'R1', 'R2', 'R3', 'R4', 'QF', 'SF', 'F'
+        best_of         INTEGER,     -- 3 or 5
+        set_scores      TEXT,        -- JSON: [[6,4],[3,6],[7,5]]
+        total_games     INTEGER,     -- sum of all games across all sets
+        player1_rank    INTEGER,
+        player2_rank    INTEGER,
+        match_duration_min INTEGER
+    )""")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_tm_event ON tennis_metadata(event_id)")
+    c.execute("CREATE INDEX IF NOT EXISTS idx_tm_surface ON tennis_metadata(surface, tournament)")
+
     # ── 11. SETTINGS ──────────────────────────────────────────────────
     c.execute("""
     CREATE TABLE IF NOT EXISTS settings (

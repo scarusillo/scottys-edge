@@ -1923,6 +1923,160 @@ def _scoring_trend_adjustment(conn, home, away, sport):
 # MASTER FUNCTION — Combine all adjustments
 # ═══════════════════════════════════════════════════════════════════
 
+# ═══════════════════════════════════════════════════════════════════
+# TENNIS CONTEXT — surface, fatigue, H2H
+# ═══════════════════════════════════════════════════════════════════
+
+def tennis_context_adjustments(conn, player1, player2, sport, commence):
+    """
+    Tennis-specific context factors. Returns (spread_adj, info_dict).
+    Positive adj = advantage for player1 (listed as "home").
+
+    Factors:
+    1. Fatigue — matches played in last 7 and 14 days
+    2. Head-to-head record — direct meetings (very meaningful in tennis)
+    3. Surface Elo gap vs overall Elo — detects surface specialists
+    """
+    adj = 0.0
+    info = {}
+
+    # 1. FATIGUE — recent match load
+    # A player coming off a 5-set match or deep tournament run is fatigued
+    if commence:
+        p1_7d = _games_in_window(conn, player1, sport, commence, 7)
+        p2_7d = _games_in_window(conn, player2, sport, commence, 7)
+        # Also check across all tennis sports (player may have played another tournament)
+        try:
+            game_date = datetime.fromisoformat(commence.replace('Z', '+00:00'))
+            window_7 = (game_date - timedelta(days=7)).isoformat()
+            window_14 = (game_date - timedelta(days=14)).isoformat()
+            p1_all_7 = conn.execute("""
+                SELECT COUNT(*) FROM results
+                WHERE (home = ? OR away = ?) AND sport LIKE 'tennis_%' AND completed = 1
+                AND commence_time >= ? AND commence_time < ?
+            """, (player1, player1, window_7, commence)).fetchone()[0]
+            p2_all_7 = conn.execute("""
+                SELECT COUNT(*) FROM results
+                WHERE (home = ? OR away = ?) AND sport LIKE 'tennis_%' AND completed = 1
+                AND commence_time >= ? AND commence_time < ?
+            """, (player2, player2, window_7, commence)).fetchone()[0]
+            p1_all_14 = conn.execute("""
+                SELECT COUNT(*) FROM results
+                WHERE (home = ? OR away = ?) AND sport LIKE 'tennis_%' AND completed = 1
+                AND commence_time >= ? AND commence_time < ?
+            """, (player1, player1, window_14, commence)).fetchone()[0]
+            p2_all_14 = conn.execute("""
+                SELECT COUNT(*) FROM results
+                WHERE (home = ? OR away = ?) AND sport LIKE 'tennis_%' AND completed = 1
+                AND commence_time >= ? AND commence_time < ?
+            """, (player2, player2, window_14, commence)).fetchone()[0]
+        except Exception:
+            p1_all_7, p2_all_7 = p1_7d, p2_7d
+            p1_all_14, p2_all_14 = 0, 0
+
+        # Heavy load: 4+ matches in 7 days or 7+ in 14 days
+        p1_fatigue = 0.0
+        p2_fatigue = 0.0
+        if p1_all_7 >= 5:
+            p1_fatigue = -0.5
+        elif p1_all_7 >= 4:
+            p1_fatigue = -0.3
+        if p1_all_14 >= 8:
+            p1_fatigue -= 0.2
+
+        if p2_all_7 >= 5:
+            p2_fatigue = -0.5
+        elif p2_all_7 >= 4:
+            p2_fatigue = -0.3
+        if p2_all_14 >= 8:
+            p2_fatigue -= 0.2
+
+        fatigue_diff = p2_fatigue - p1_fatigue  # Positive = P1 advantage (P2 more tired)
+        if abs(fatigue_diff) >= 0.1:
+            adj += fatigue_diff
+            info['p1_fatigue'] = round(p1_fatigue, 2)
+            info['p2_fatigue'] = round(p2_fatigue, 2)
+
+    # 2. HEAD-TO-HEAD RECORD
+    # Tennis H2H is very meaningful — same individuals playing repeatedly
+    try:
+        h2h = conn.execute("""
+            SELECT
+                SUM(CASE WHEN winner = ? THEN 1 ELSE 0 END),
+                SUM(CASE WHEN winner = ? THEN 1 ELSE 0 END)
+            FROM results
+            WHERE ((home = ? AND away = ?) OR (home = ? AND away = ?))
+            AND sport LIKE 'tennis_%' AND completed = 1
+        """, (player1, player2, player1, player2, player2, player1)).fetchone()
+
+        if h2h and h2h[0] is not None and h2h[1] is not None:
+            p1_wins, p2_wins = int(h2h[0]), int(h2h[1])
+            total_meetings = p1_wins + p2_wins
+            if total_meetings >= 3:
+                # Significant H2H: 5-1 = strong signal, 3-2 = weak signal
+                win_rate = p1_wins / total_meetings
+                if win_rate >= 0.75:
+                    h2h_adj = 0.5
+                elif win_rate >= 0.65:
+                    h2h_adj = 0.3
+                elif win_rate <= 0.25:
+                    h2h_adj = -0.5
+                elif win_rate <= 0.35:
+                    h2h_adj = -0.3
+                else:
+                    h2h_adj = 0.0
+
+                if h2h_adj != 0:
+                    adj += h2h_adj
+                    info['h2h'] = round(h2h_adj, 2)
+                    info['h2h_record'] = f"{p1_wins}-{p2_wins}"
+    except Exception:
+        pass
+
+    # 3. SURFACE SPECIALIST detection
+    # Compare player's surface-specific Elo to their overall tennis Elo.
+    # If surface Elo is 100+ points higher → surface specialist → boost.
+    try:
+        from config import TENNIS_SURFACES
+        surface = TENNIS_SURFACES.get(sport, 'hard')
+        tour = 'atp' if '_atp_' in sport else 'wta'
+        surface_elo_key = f'tennis_{tour}_{surface}'
+
+        # Get surface Elo for both players
+        from elo_engine import get_elo_ratings
+        surface_elos = get_elo_ratings(conn, surface_elo_key)
+
+        # Get overall Elo (average across all surfaces)
+        all_surface_keys = [f'tennis_{tour}_{s}' for s in ('hard', 'clay', 'grass')]
+        p1_overall = []
+        p2_overall = []
+        for sk in all_surface_keys:
+            sk_elos = get_elo_ratings(conn, sk)
+            if player1 in sk_elos:
+                p1_overall.append(sk_elos[player1]['elo'])
+            if player2 in sk_elos:
+                p2_overall.append(sk_elos[player2]['elo'])
+
+        p1_surf = surface_elos.get(player1, {}).get('elo')
+        p2_surf = surface_elos.get(player2, {}).get('elo')
+        p1_avg = sum(p1_overall) / len(p1_overall) if p1_overall else None
+        p2_avg = sum(p2_overall) / len(p2_overall) if p2_overall else None
+
+        surf_adj = 0.0
+        if p1_surf and p1_avg and (p1_surf - p1_avg) > 80:
+            surf_adj += 0.3  # P1 is a surface specialist
+        if p2_surf and p2_avg and (p2_surf - p2_avg) > 80:
+            surf_adj -= 0.3  # P2 is a surface specialist
+
+        if surf_adj != 0:
+            adj += surf_adj
+            info['surface_specialist'] = round(surf_adj, 2)
+    except Exception:
+        pass
+
+    return round(adj, 2), info
+
+
 def get_context_adjustments(conn, sport, home, away, event_id, commence,
                             market_type='SPREAD', selection=None):
     """
@@ -2175,6 +2329,24 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
         except Exception:
             pass
 
+    # ── TENNIS-SPECIFIC CONTEXT ──
+    if sport.startswith('tennis_'):
+        try:
+            t_adj, t_info = tennis_context_adjustments(conn, home, away, sport, commence)
+            if t_adj != 0:
+                total_spread_adj += t_adj
+                all_factors['tennis'] = t_info
+                for k, v in t_info.items():
+                    if 'fatigue' in k:
+                        who = 'P1' if 'p1' in k else 'P2'
+                        spread_summaries.append(f"{who} fatigue ({v:+.2f})")
+                    elif 'h2h' in k:
+                        spread_summaries.append(f"H2H dominance ({v:+.2f})")
+                    elif 'surface' in k:
+                        spread_summaries.append(f"Surface specialist ({v:+.2f})")
+        except Exception:
+            pass
+
     # 14. Weather — Walters' outdoor sports factor
     # Wind, rain, cold push totals down. Only fires for outdoor sports.
     try:
@@ -2197,7 +2369,10 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
     # ── Cap total adjustment to prevent runaway ──
     # v12 FIX: Sport-specific caps. 2.5 pts in basketball is fine.
     # 2.5 goals in hockey/soccer flips the favorite entirely — insane.
-    if 'soccer' in sport:
+    if sport.startswith('tennis_'):
+        MAX_SPREAD_ADJ = 1.0   # Tennis: ~1 game handicap max
+        MAX_TOTAL_ADJ = 1.5
+    elif 'soccer' in sport:
         MAX_SPREAD_ADJ = 0.75  # v16: raised from 0.5 to accommodate derby/UCL/congestion modules
         MAX_TOTAL_ADJ = 0.6    # v16: raised from 0.5 to accommodate derby/referee modules
     elif 'hockey' in sport:

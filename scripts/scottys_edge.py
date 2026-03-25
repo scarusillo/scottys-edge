@@ -74,6 +74,12 @@ KEY_NUMBERS = {
         # Calibrated conservatively — early-season Elo is thin.
         1: 5, 2: 4, 3: 3, 4: 2, 5: 2, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1,
     },
+    # Tennis: game handicap margins. 1-3 game margins are most common.
+    # Tennis spreads are in games (e.g., -3.5 games), not sets.
+    # A 1-game margin has high value because it flips the spread side.
+    'tennis': {
+        0: 6, 1: 10, 2: 8, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8: 2, 9: 1, 10: 1,
+    },
 }
 
 # ══════════════════════════════════════════════════════════════
@@ -196,7 +202,11 @@ def calculate_point_value(model_spread, market_spread, sport):
 
     Returns: total point value percentage
     """
-    key_nums = KEY_NUMBERS.get(sport, KEY_NUMBERS.get('basketball_nba', {}))
+    # Tennis: all tournament keys share the same key numbers
+    if sport.startswith('tennis_'):
+        key_nums = KEY_NUMBERS.get('tennis', {})
+    else:
+        key_nums = KEY_NUMBERS.get(sport, KEY_NUMBERS.get('basketball_nba', {}))
 
     # Determine direction: which side are we on?
     diff = abs(model_spread - market_spread)
@@ -317,6 +327,8 @@ def spread_to_fair_ml(spread, sport):
         scale = 0.49
     elif 'soccer' in sport:
         scale = 0.40
+    elif sport.startswith('tennis_'):
+        scale = 2.5  # Tennis: game handicap scale
     else:
         scale = 6.3
 
@@ -568,6 +580,13 @@ def minimum_play_threshold(sport, is_thin_data=False):
     
     The model should be AGGRESSIVE in soft markets and SELECTIVE in sharp ones.
     """
+    # Tennis: soft market, individual sport — all at 8%
+    if sport.startswith('tennis_'):
+        threshold = 8.0
+        if is_thin_data:
+            threshold *= 1.5
+        return threshold
+
     # Soft markets — where our model can genuinely disagree with the market
     soft = {
         'basketball_ncaab': 8.0,            # 363 teams, books can't price them all well

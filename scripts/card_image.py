@@ -59,6 +59,14 @@ SPORT_BADGE_COLORS = {
     'soccer_uefa_champs_league': (130, 50, 200),
     'soccer_mexico_ligamx': (130, 50, 200),
 }
+# Tennis: dynamically add labels and badge colors from config
+try:
+    from config import TENNIS_SPORTS, TENNIS_LABELS
+    for _tk in TENNIS_SPORTS:
+        SPORT_LABELS[_tk] = TENNIS_LABELS.get(_tk, _tk.split('_')[-1].upper())
+        SPORT_BADGE_COLORS[_tk] = (200, 200, 50)  # Yellow-gold for tennis
+except ImportError:
+    pass
 SOCIALS = "IG: @scottys_edge | X: @Scottys_edge | Discord: discord.gg/JQ6rRfuN"
 DISCLAIMER = ("For entertainment and informational purposes only. Not gambling advice. "
               "Past performance does not guarantee future results. Please gamble responsibly. "
@@ -496,13 +504,28 @@ def _generate_no_picks_card(fonts, output_path=None):
 
 
 SPORT_ORDER = ['NBA', 'NHL', 'NCAAB', 'NCAA BASEBALL',
-               'EPL', 'LA LIGA', 'SERIE A', 'BUNDESLIGA', 'LIGUE 1', 'MLS', 'LIGA MX', 'UCL']
+               'EPL', 'LA LIGA', 'SERIE A', 'BUNDESLIGA', 'LIGUE 1', 'MLS', 'LIGA MX', 'UCL',
+               'AUS OPEN', 'FRENCH OPEN', 'WIMBLEDON', 'US OPEN',
+               'INDIAN WELLS', 'MIAMI OPEN', 'MONTE CARLO', 'MADRID OPEN',
+               'ITALIAN OPEN', 'CANADIAN OPEN', 'CINCINNATI', 'SHANGHAI',
+               'PARIS MASTERS', 'DUBAI', 'QATAR OPEN', 'CHINA OPEN',
+               'AUS OPEN (W)', 'FRENCH OPEN (W)', 'WIMBLEDON (W)', 'US OPEN (W)',
+               'INDIAN WELLS (W)', 'MIAMI OPEN (W)', 'MADRID OPEN (W)',
+               'ITALIAN OPEN (W)', 'CANADIAN OPEN (W)', 'CINCINNATI (W)',
+               'DUBAI (W)', 'QATAR OPEN (W)', 'CHINA OPEN (W)', 'WUHAN OPEN']
 
 SPORT_ICONS = {
     'NBA': '🏀', 'NCAAB': '🏀', 'NHL': '🏒', 'BASEBALL': '⚾',
     'NCAA BASEBALL': '⚾', 'EPL': '⚽', 'BUNDESLIGA': '⚽', 'LIGUE 1': '⚽',
     'SERIE A': '⚽', 'LA LIGA': '⚽', 'MLS': '⚽', 'LIGA MX': '⚽', 'UCL': '⚽',
 }
+# Add tennis icons for all tournament labels
+try:
+    from config import TENNIS_LABELS
+    for _label in TENNIS_LABELS.values():
+        SPORT_ICONS[_label] = '🎾'
+except ImportError:
+    pass
 
 
 def _group_picks_by_sport(picks):

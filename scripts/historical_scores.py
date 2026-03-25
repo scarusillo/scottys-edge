@@ -67,6 +67,15 @@ ESPN_ENDPOINTS = {
         'url': 'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard',
         'season_start': '2026-02-14',  # 2026 college baseball season
     },
+    # Tennis — ATP and WTA
+    'tennis_atp': {
+        'url': 'https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard',
+        'season_start': '2026-01-06',  # Australian Open qualifying
+    },
+    'tennis_wta': {
+        'url': 'https://site.api.espn.com/apis/site/v2/sports/tennis/wta/scoreboard',
+        'season_start': '2026-01-06',
+    },
 }
 
 # Team name mapping: ESPN name → Odds API name
@@ -149,6 +158,308 @@ def _normalize_team_name(espn_name, conn, sport):
     # Return as-is (will still be useful for Elo even without exact mapping)
     _name_cache[key] = espn_name
     return espn_name
+
+
+# ── Tennis tournament name → Odds API sport key mapping ──
+# ESPN uses full tournament names; Odds API uses sport keys.
+_TENNIS_TOURNAMENT_MAP = {
+    # ATP
+    'australian open': 'tennis_atp_aus_open_singles',
+    'roland garros': 'tennis_atp_french_open',
+    'french open': 'tennis_atp_french_open',
+    'wimbledon': 'tennis_atp_wimbledon',
+    'us open': 'tennis_atp_us_open',
+    'indian wells': 'tennis_atp_indian_wells',
+    'bnp paribas open': 'tennis_atp_indian_wells',
+    'miami open': 'tennis_atp_miami_open',
+    'monte carlo': 'tennis_atp_monte_carlo_masters',
+    'rolex monte-carlo masters': 'tennis_atp_monte_carlo_masters',
+    'madrid open': 'tennis_atp_madrid_open',
+    'mutua madrid open': 'tennis_atp_madrid_open',
+    'italian open': 'tennis_atp_italian_open',
+    'internazionali bnl': 'tennis_atp_italian_open',
+    'canadian open': 'tennis_atp_canadian_open',
+    'national bank open': 'tennis_atp_canadian_open',
+    'cincinnati open': 'tennis_atp_cincinnati_open',
+    'western & southern open': 'tennis_atp_cincinnati_open',
+    'shanghai masters': 'tennis_atp_shanghai_masters',
+    'rolex shanghai masters': 'tennis_atp_shanghai_masters',
+    'paris masters': 'tennis_atp_paris_masters',
+    'rolex paris masters': 'tennis_atp_paris_masters',
+    'dubai': 'tennis_atp_dubai',
+    'dubai duty free': 'tennis_atp_dubai',
+    'qatar open': 'tennis_atp_qatar_open',
+    'china open': 'tennis_atp_china_open',
+}
+
+# WTA versions (appended separately so WTA scoreboard maps correctly)
+_TENNIS_TOURNAMENT_MAP_WTA = {
+    'australian open': 'tennis_wta_aus_open_singles',
+    'roland garros': 'tennis_wta_french_open',
+    'french open': 'tennis_wta_french_open',
+    'wimbledon': 'tennis_wta_wimbledon',
+    'us open': 'tennis_wta_us_open',
+    'indian wells': 'tennis_wta_indian_wells',
+    'bnp paribas open': 'tennis_wta_indian_wells',
+    'miami open': 'tennis_wta_miami_open',
+    'madrid open': 'tennis_wta_madrid_open',
+    'mutua madrid open': 'tennis_wta_madrid_open',
+    'italian open': 'tennis_wta_italian_open',
+    'internazionali bnl': 'tennis_wta_italian_open',
+    'canadian open': 'tennis_wta_canadian_open',
+    'national bank open': 'tennis_wta_canadian_open',
+    'cincinnati open': 'tennis_wta_cincinnati_open',
+    'western & southern open': 'tennis_wta_cincinnati_open',
+    'dubai': 'tennis_wta_dubai',
+    'dubai duty free': 'tennis_wta_dubai',
+    'qatar open': 'tennis_wta_qatar_open',
+    'china open': 'tennis_wta_china_open',
+    'wuhan open': 'tennis_wta_wuhan_open',
+}
+
+
+def _map_tennis_tournament(tournament_name, tour='atp'):
+    """Map ESPN tournament name to Odds API sport key."""
+    name_lower = tournament_name.lower().strip()
+    tmap = _TENNIS_TOURNAMENT_MAP_WTA if tour == 'wta' else _TENNIS_TOURNAMENT_MAP
+    # Try exact substring match
+    for key_phrase, sport_key in tmap.items():
+        if key_phrase in name_lower:
+            return sport_key
+    # Fallback: generic key
+    return f'tennis_{tour}_{name_lower.replace(" ", "_")}'
+
+
+def _parse_tennis_round(header):
+    """Normalize ESPN round header to short code."""
+    h = header.lower().strip()
+    round_map = {
+        'final': 'F', 'finals': 'F',
+        'semifinals': 'SF', 'semi-finals': 'SF',
+        'quarterfinals': 'QF', 'quarter-finals': 'QF',
+        'round of 16': 'R4', '4th round': 'R4', 'fourth round': 'R4',
+        'round of 32': 'R3', '3rd round': 'R3', 'third round': 'R3',
+        'round of 64': 'R2', '2nd round': 'R2', 'second round': 'R2',
+        'round of 128': 'R1', '1st round': 'R1', 'first round': 'R1',
+    }
+    for phrase, code in round_map.items():
+        if phrase in h:
+            return code
+    return header[:10]
+
+
+def fetch_tennis_scores(tour='atp', days_back=None, verbose=True):
+    """
+    Pull completed tennis match results from ESPN.
+
+    ESPN tennis has different JSON nesting than team sports:
+    events[] → one tournament per event
+    events[].groupings[] → round groupings (Men's Singles, etc.)
+    events[].groupings[].competitions[] → individual matches
+
+    Stores results with player names as home/away (convention: first listed = home).
+    Also populates tennis_metadata with surface, round, set scores, total games.
+    """
+    from config import TENNIS_SURFACES, TENNIS_BEST_OF
+
+    sport_key = f'tennis_{tour}'
+    cfg = ESPN_ENDPOINTS.get(sport_key)
+    if not cfg:
+        if verbose:
+            print(f"  ⚠ No ESPN endpoint for {sport_key}")
+        return 0
+
+    conn = sqlite3.connect(DB_PATH)
+
+    # Ensure tennis_metadata table exists
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS tennis_metadata (
+            id              INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_id        TEXT NOT NULL UNIQUE,
+            tournament      TEXT,
+            surface         TEXT,
+            round           TEXT,
+            best_of         INTEGER,
+            set_scores      TEXT,
+            total_games     INTEGER,
+            player1_rank    INTEGER,
+            player2_rank    INTEGER,
+            match_duration_min INTEGER
+        )
+    """)
+
+    if days_back:
+        start_date = datetime.now() - timedelta(days=days_back)
+    else:
+        start_date = datetime.strptime(cfg['season_start'], '%Y-%m-%d')
+
+    end_date = datetime.now() - timedelta(days=1)
+
+    if verbose:
+        total_days = (end_date - start_date).days + 1
+        print(f"  🎾 Pulling {tour.upper()} from {start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')} ({total_days} days)")
+
+    inserted = 0
+    skipped = 0
+    errors = 0
+    current = start_date
+
+    while current <= end_date:
+        date_str = current.strftime('%Y%m%d')
+        data = _fetch_espn_scoreboard(cfg['url'], date_str)
+        if not data:
+            errors += 1
+            current += timedelta(days=1)
+            time.sleep(0.3)
+            continue
+
+        for event in data.get('events', []):
+            tournament_name = event.get('name', '')
+            odds_api_key = _map_tennis_tournament(tournament_name, tour)
+            surface = TENNIS_SURFACES.get(odds_api_key, 'hard')
+            best_of = TENNIS_BEST_OF.get(odds_api_key, 3)
+
+            # Tennis uses groupings (Men's Singles, Women's Singles, etc.)
+            groupings = event.get('groupings', [])
+            # If no groupings, try competitions directly (some ESPN formats)
+            if not groupings:
+                groupings = [{'grouping': {'displayName': 'Singles'}, 'competitions': event.get('competitions', [])}]
+
+            for grouping in groupings:
+                # ESPN tennis uses grouping.displayName (not header)
+                grp_info = grouping.get('grouping', {})
+                group_name = grp_info.get('displayName', '') or grouping.get('header', '')
+                group_lower = group_name.lower()
+                # Only singles matches (skip doubles)
+                if 'double' in group_lower:
+                    continue
+                # Filter by gender: ATP endpoint → Men's Singles only, WTA → Women's Singles only
+                if tour == 'atp' and 'women' in group_lower:
+                    continue
+                if tour == 'wta' and 'men' in group_lower and 'women' not in group_lower:
+                    continue
+
+                for comp in grouping.get('competitions', []):
+                    status = comp.get('status', {}).get('type', {}).get('completed', False)
+                    if not status:
+                        continue
+
+                    competitors = comp.get('competitors', [])
+                    if len(competitors) != 2:
+                        continue
+
+                    # Extract player info
+                    p1 = competitors[0]
+                    p2 = competitors[1]
+                    p1_name = p1.get('athlete', {}).get('displayName', '') or p1.get('team', {}).get('displayName', '')
+                    p2_name = p2.get('athlete', {}).get('displayName', '') or p2.get('team', {}).get('displayName', '')
+
+                    if not p1_name or not p2_name:
+                        continue
+
+                    # Compute set counts and total games from linescores
+                    # ESPN tennis: score field is often None; use linescores + winner flag
+                    p1_linescores = p1.get('linescores', [])
+                    p2_linescores = p2.get('linescores', [])
+
+                    set_scores = []
+                    total_games = 0
+                    p1_sets = 0
+                    p2_sets = 0
+                    num_sets = max(len(p1_linescores), len(p2_linescores))
+
+                    for si in range(num_sets):
+                        s1 = int(p1_linescores[si].get('value', 0)) if si < len(p1_linescores) else 0
+                        s2 = int(p2_linescores[si].get('value', 0)) if si < len(p2_linescores) else 0
+                        set_scores.append([s1, s2])
+                        total_games += s1 + s2
+                        # Determine set winner
+                        p1_won_set = p1_linescores[si].get('winner', False) if si < len(p1_linescores) else False
+                        if p1_won_set:
+                            p1_sets += 1
+                        else:
+                            p2_sets += 1
+
+                    if p1_sets == 0 and p2_sets == 0:
+                        continue  # Walkover or bad data
+
+                    # Rankings
+                    p1_rank = None
+                    p2_rank = None
+                    try:
+                        p1_rank = int(p1.get('curatedRank', {}).get('current', 0)) or None
+                    except (ValueError, TypeError):
+                        pass
+                    try:
+                        p2_rank = int(p2.get('curatedRank', {}).get('current', 0)) or None
+                    except (ValueError, TypeError):
+                        pass
+
+                    # Determine round from competition status description
+                    comp_round = comp.get('status', {}).get('type', {}).get('description', '')
+                    match_round = _parse_tennis_round(comp_round) if comp_round else ''
+
+                    # Generate event ID
+                    espn_id = comp.get('id', '') or event.get('id', '')
+                    event_id = f"espn_tennis_{tour}_{espn_id}"
+
+                    commence_time = comp.get('date', '') or event.get('date', current.isoformat() + 'Z')
+
+                    winner = p1_name if p1_sets > p2_sets else p2_name
+                    margin = p1_sets - p2_sets
+
+                    # Check for duplicates
+                    existing = conn.execute(
+                        "SELECT id FROM results WHERE sport=? AND home=? AND away=? AND commence_time LIKE ?",
+                        (odds_api_key, p1_name, p2_name, commence_time[:10] + '%')
+                    ).fetchone()
+
+                    if existing:
+                        skipped += 1
+                        continue
+
+                    try:
+                        conn.execute("""
+                            INSERT OR IGNORE INTO results
+                                (sport, event_id, commence_time, home, away,
+                                 home_score, away_score, winner, completed,
+                                 actual_total, actual_margin, fetched_at)
+                            VALUES (?,?,?,?,?,?,?,?,1,?,?,?)
+                        """, (odds_api_key, event_id, commence_time,
+                              p1_name, p2_name,
+                              p1_sets, p2_sets, winner,
+                              total_games, margin,
+                              datetime.now().isoformat()))
+
+                        # Store tennis metadata
+                        conn.execute("""
+                            INSERT OR IGNORE INTO tennis_metadata
+                                (event_id, tournament, surface, round, best_of,
+                                 set_scores, total_games, player1_rank, player2_rank)
+                            VALUES (?,?,?,?,?,?,?,?,?)
+                        """, (event_id, tournament_name, surface, match_round,
+                              best_of, json.dumps(set_scores), total_games,
+                              p1_rank, p2_rank))
+
+                        inserted += 1
+                    except sqlite3.IntegrityError:
+                        skipped += 1
+
+        current += timedelta(days=1)
+        time.sleep(0.25)
+
+    conn.commit()
+
+    total_results = conn.execute(
+        "SELECT COUNT(*) FROM results WHERE sport LIKE 'tennis_%'"
+    ).fetchone()[0]
+
+    if verbose:
+        print(f"  ✅ tennis_{tour}: +{inserted} new results ({skipped} skipped, {errors} fetch errors)")
+        print(f"     Total tennis results in DB: {total_results}")
+
+    conn.close()
+    return inserted
 
 
 def _fetch_espn_scoreboard(url, date_str, sport=None):
@@ -408,25 +719,35 @@ def fetch_all_historical(sports=None, days_back=None, verbose=True):
     """Pull historical scores for all configured sports."""
     if sports is None:
         sports = list(ESPN_ENDPOINTS.keys())
-    
+
     print("=" * 60)
     print("  HISTORICAL SCORES — ESPN (FREE, no API credits)")
     print("=" * 60)
-    
+
     total = 0
     for sport in sports:
-        total += fetch_season_scores(sport, days_back=days_back, verbose=verbose)
-    
+        # Tennis uses a separate parser due to different ESPN JSON structure
+        if sport in ('tennis_atp', 'tennis_wta'):
+            tour = sport.replace('tennis_', '')
+            total += fetch_tennis_scores(tour=tour, days_back=days_back, verbose=verbose)
+        else:
+            total += fetch_season_scores(sport, days_back=days_back, verbose=verbose)
+
     print(f"\n  📊 Total new results: {total}")
-    
+
     # Show summary
     conn = sqlite3.connect(DB_PATH)
     print(f"\n  DATABASE SUMMARY:")
     for sport in sports:
-        cnt = conn.execute("SELECT COUNT(*) FROM results WHERE sport=?", (sport,)).fetchone()[0]
+        if sport.startswith('tennis_'):
+            # Tennis results are stored under per-tournament keys
+            cnt = conn.execute("SELECT COUNT(*) FROM results WHERE sport LIKE ?",
+                               (f'tennis_{sport.replace("tennis_", "")}%',)).fetchone()[0]
+        else:
+            cnt = conn.execute("SELECT COUNT(*) FROM results WHERE sport=?", (sport,)).fetchone()[0]
         print(f"    {sport:30s} {cnt:4d} games")
     conn.close()
-    
+
     return total
 
 

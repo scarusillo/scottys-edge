@@ -164,12 +164,87 @@ ELO_CONFIG = {
         'season_revert': 0.33,    # Moderate revert — some roster continuity
         'min_games': 15,          # ~2 weeks of games before trusting Elo
     },
+    # ── TENNIS ──
+    # Surface-split Elo: stored as tennis_atp_hard, tennis_atp_clay, tennis_atp_grass
+    # Individual players, not teams. Each match has clear W/L (no draws).
+    # Higher K-factor than team sports — individual performance is more predictable
+    # and each match provides strong signal about relative skill.
+    'tennis_atp_hard': {
+        'k_factor': 24,           # Individual sport — each match is more informative
+        'home_advantage': 0,      # Neutral tournament venues
+        'mov_multiplier': True,   # Set margin: 2-0 vs 2-1 (bo3) or 3-0 vs 3-2 (bo5)
+        'mov_cap': 3,             # Max 3-set margin in a Grand Slam
+        'spread_per_elo': 120,    # Elo points per 1 set of spread
+        'initial_elo': 1500,
+        'season_revert': 0.10,    # Minimal — tennis is year-round, skills carry over
+        'min_games': 8,           # Need 8+ matches on this surface
+        'elo_scale': 150,         # Tennis: less random than team sports → sharper probs
+    },
+    'tennis_atp_clay': {
+        'k_factor': 28,           # Higher K on clay — more upsets, faster signal needed
+        'home_advantage': 0,
+        'mov_multiplier': True,
+        'mov_cap': 3,
+        'spread_per_elo': 120,
+        'initial_elo': 1500,
+        'season_revert': 0.10,
+        'min_games': 6,           # Fewer clay events per year
+        'elo_scale': 150,
+    },
+    'tennis_atp_grass': {
+        'k_factor': 32,           # Highest K — very few grass events, each one matters a lot
+        'home_advantage': 0,
+        'mov_multiplier': True,
+        'mov_cap': 3,
+        'spread_per_elo': 120,
+        'initial_elo': 1500,
+        'season_revert': 0.10,
+        'min_games': 4,           # Only ~3 grass events per year
+        'elo_scale': 150,
+    },
+    'tennis_wta_hard': {
+        'k_factor': 28,           # WTA slightly more volatile than ATP
+        'home_advantage': 0,
+        'mov_multiplier': True,
+        'mov_cap': 2,             # WTA is always best-of-3 (max 2-set margin)
+        'spread_per_elo': 120,
+        'initial_elo': 1500,
+        'season_revert': 0.10,
+        'min_games': 8,
+        'elo_scale': 150,
+    },
+    'tennis_wta_clay': {
+        'k_factor': 32,
+        'home_advantage': 0,
+        'mov_multiplier': True,
+        'mov_cap': 2,
+        'spread_per_elo': 120,
+        'initial_elo': 1500,
+        'season_revert': 0.10,
+        'min_games': 6,
+        'elo_scale': 150,
+    },
+    'tennis_wta_grass': {
+        'k_factor': 36,
+        'home_advantage': 0,
+        'mov_multiplier': True,
+        'mov_cap': 2,
+        'spread_per_elo': 120,
+        'initial_elo': 1500,
+        'season_revert': 0.10,
+        'min_games': 4,
+        'elo_scale': 150,
+    },
 }
 
 
-def _expected_score(rating_a, rating_b):
-    """Standard Elo expected score: probability A beats B."""
-    return 1.0 / (1.0 + 10 ** ((rating_b - rating_a) / 400))
+def _expected_score(rating_a, rating_b, scale=400):
+    """Standard Elo expected score: probability A beats B.
+
+    scale: divisor for Elo diff. Standard=400 for team sports.
+    Tennis uses 150 (less randomness → sharper predictions).
+    """
+    return 1.0 / (1.0 + 10 ** ((rating_b - rating_a) / scale))
 
 
 def _mov_multiplier(margin, elo_diff, sport_cfg):
@@ -263,6 +338,9 @@ def build_elo_ratings(sport, verbose=True):
         'soccer_epl': 8, 'soccer_italy_serie_a': 8, 'soccer_spain_la_liga': 8,
         'soccer_germany_bundesliga': 8, 'soccer_france_ligue_one': 8,
         'soccer_uefa_champs_league': 9, 'soccer_usa_mls': 2, 'soccer_mexico_ligamx': 1,
+        # Tennis: year-round, Australian Open starts in January
+        'tennis_atp_hard': 1, 'tennis_atp_clay': 1, 'tennis_atp_grass': 1,
+        'tennis_wta_hard': 1, 'tennis_wta_clay': 1, 'tennis_wta_grass': 1,
     }
     revert_pct = cfg.get('season_revert', 0.25)
     start_month = season_start_month.get(sport, 0)
@@ -541,7 +619,8 @@ def elo_win_probability(home, away, elo_ratings, sport, neutral_site=False):
     home_elo = h['elo'] + ha
     away_elo = a['elo']
 
-    return _expected_score(home_elo, away_elo)
+    scale = cfg.get('elo_scale', 400)
+    return _expected_score(home_elo, away_elo, scale=scale)
 
 
 def blended_spread(home, away, elo_ratings, market_ratings, sport, conn, neutral_site=False):
@@ -629,11 +708,150 @@ def blended_spread(home, away, elo_ratings, market_ratings, sport, conn, neutral
               'soccer_germany_bundesliga', 'soccer_france_ligue_one',
               'soccer_uefa_champs_league', 'soccer_usa_mls', 'soccer_mexico_ligamx']:
         SPREAD_EXPANSION[s] = 1.40
+
+    # Tennis: start at 1.0 (no expansion) — calibrate after backtest data
+    if sport.startswith('tennis_'):
+        SPREAD_EXPANSION[sport] = 1.0
     
     expansion = SPREAD_EXPANSION.get(sport, 1.0)
     blended = blended * expansion
     
     return round(blended, 2)
+
+
+def build_tennis_elo(verbose=True):
+    """
+    Build surface-split Elo ratings for tennis players.
+
+    Tennis results are stored under per-tournament sport keys (e.g., tennis_atp_french_open).
+    We aggregate all ATP results by surface into tennis_atp_hard, tennis_atp_clay,
+    tennis_atp_grass (and same for WTA). This gives each player separate ratings
+    per surface — critical because a player's skill varies hugely by surface.
+    """
+    from config import TENNIS_SURFACES
+
+    conn = sqlite3.connect(DB_PATH)
+
+    # Gather all tennis results grouped by tour + surface
+    all_tennis = conn.execute("""
+        SELECT sport, home, away, home_score, away_score, actual_margin, commence_time
+        FROM results
+        WHERE sport LIKE 'tennis_%' AND completed=1
+        AND home_score IS NOT NULL AND away_score IS NOT NULL
+        ORDER BY commence_time ASC
+    """).fetchall()
+
+    if not all_tennis:
+        if verbose:
+            print("  ⚠ No tennis results — run historical_scores.py with tennis first")
+        conn.close()
+        return {}
+
+    # Group by surface-tour key
+    surface_games = defaultdict(list)
+    for sport, home, away, h_score, a_score, margin, commence in all_tennis:
+        surface = TENNIS_SURFACES.get(sport, 'hard')
+        tour = 'atp' if '_atp_' in sport else 'wta'
+        surface_key = f'tennis_{tour}_{surface}'
+        if margin is None:
+            margin = h_score - a_score
+        surface_games[surface_key].append((home, away, h_score, a_score, margin, commence))
+
+    if verbose:
+        print(f"\n  🎾 TENNIS ELO — Surface-split ratings")
+        for sk, games in sorted(surface_games.items()):
+            print(f"    {sk}: {len(games)} matches")
+
+    all_ratings = {}
+    for surface_key, games in surface_games.items():
+        if verbose:
+            print(f"\n  ── {surface_key} {'─' * (45 - len(surface_key))}")
+
+        cfg = ELO_CONFIG.get(surface_key)
+        if not cfg:
+            if verbose:
+                print(f"  ⚠ No Elo config for {surface_key}")
+            continue
+
+        if not games:
+            continue
+
+        if verbose:
+            print(f"  📊 {surface_key}: {len(games)} matches to process")
+
+        # Build Elo inline (can't use build_elo_ratings because results are
+        # stored under per-tournament keys, not surface keys)
+        elos = defaultdict(lambda: cfg['initial_elo'])
+        game_counts = defaultdict(int)
+        predictions = []
+
+        for home, away, h_score, a_score, margin, commence in games:
+            home_elo = elos[home]  # No home advantage in tennis
+            away_elo = elos[away]
+
+            expected_home = _expected_score(home_elo, away_elo)
+            predicted_spread = (away_elo - home_elo) / cfg['spread_per_elo']
+
+            predictions.append({
+                'home': home, 'away': away,
+                'predicted_spread': predicted_spread,
+                'actual_margin': margin,
+                'predicted_home_win': expected_home,
+                'home_won': margin > 0,
+                'date': commence,
+            })
+
+            actual_home = 1.0 if margin > 0 else (0.0 if margin < 0 else 0.5)
+            elo_diff = home_elo - away_elo
+            mov_mult = _mov_multiplier(margin, elo_diff, cfg)
+            k_adjust = cfg['k_factor']
+
+            delta = k_adjust * mov_mult * (actual_home - expected_home)
+            elos[home] += delta
+            elos[away] -= delta
+
+            game_counts[home] += 1
+            game_counts[away] += 1
+
+        # Normalize
+        avg_elo = sum(elos.values()) / len(elos) if elos else 1500
+        for player in elos:
+            elos[player] = round(elos[player] - avg_elo + 1500, 1)
+
+        # Calculate accuracy
+        meta = _calculate_accuracy(predictions, cfg, verbose)
+        meta['total_games'] = len(games)
+        meta['total_teams'] = len(elos)
+        meta['game_counts'] = dict(game_counts)
+
+        # Save to elo_ratings table
+        _save_elo_ratings(conn, surface_key, dict(elos), game_counts, cfg, meta)
+
+        all_ratings[surface_key] = dict(elos)
+
+        if elos and verbose:
+            ranked = sorted(elos.items(), key=lambda x: x[1], reverse=True)
+            print(f"  Top 5:")
+            for t, r in ranked[:5]:
+                print(f"    🎾 {t:30s} {r:.0f}")
+
+    conn.close()
+    return all_ratings
+
+
+def get_tennis_elo(conn, tournament_key):
+    """
+    Get the correct surface-split Elo ratings for a tennis tournament.
+
+    Maps a tournament key (e.g., tennis_atp_french_open) to the surface-specific
+    Elo key (tennis_atp_clay) and returns those ratings.
+    """
+    from config import TENNIS_SURFACES
+
+    surface = TENNIS_SURFACES.get(tournament_key, 'hard')
+    tour = 'atp' if '_atp_' in tournament_key else 'wta'
+    elo_key = f'tennis_{tour}_{surface}'
+    return get_elo_ratings(conn, elo_key), elo_key
 
 
 def build_all_elo(sports=None, verbose=True):
@@ -647,10 +865,13 @@ def build_all_elo(sports=None, verbose=True):
     
     all_ratings = {}
     for sport in sports:
+        # Skip tennis surface keys here — handled by build_tennis_elo()
+        if sport.startswith('tennis_'):
+            continue
         print(f"\n  ── {sport} {'─' * (45 - len(sport))}")
         elos, meta = build_elo_ratings(sport, verbose=verbose)
         all_ratings[sport] = elos
-        
+
         if elos:
             ranked = sorted(elos.items(), key=lambda x: x[1], reverse=True)
             print(f"  Top 5:")
@@ -659,7 +880,11 @@ def build_all_elo(sports=None, verbose=True):
             print(f"  Bottom 3:")
             for t, r in ranked[-3:]:
                 print(f"    📉 {t:30s} {r:.0f}")
-    
+
+    # Tennis: surface-split Elo (aggregates per-tournament results by surface)
+    tennis_ratings = build_tennis_elo(verbose=verbose)
+    all_ratings.update(tennis_ratings)
+
     return all_ratings
 
 

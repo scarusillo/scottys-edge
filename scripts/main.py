@@ -57,6 +57,8 @@ SPORT_MAP = {
     'ligamx': 'soccer_mexico_ligamx', 'liga_mx': 'soccer_mexico_ligamx',
     'ncaa_baseball': 'baseball_ncaa', 'college_baseball': 'baseball_ncaa',
     'cbb_base': 'baseball_ncaa', 'ncaabb': 'baseball_ncaa',
+    # Tennis: special alias → triggers dynamic tournament detection
+    'tennis': 'tennis_auto', 'atp': 'tennis_auto', 'wta': 'tennis_auto',
 }
 # v13: NCAA baseball RE-ENABLED. ESPN scoring now 100% (1585/1585 games, 0 phantom grades).
 # Backtest: 26W-17L ATS (60.5%), +11.6u, +10.3% ROI. Smaller market = real edges.
@@ -79,8 +81,28 @@ def get_sports(args):
     if '--sport' in args:
         i = args.index('--sport')
         if i+1 < len(args):
-            return [SPORT_MAP.get(args[i+1], args[i+1])]
+            sport_val = SPORT_MAP.get(args[i+1], args[i+1])
+            if sport_val == 'tennis_auto':
+                # Dynamic detection: find active tennis tournaments
+                return _detect_tennis_sports()
+            return [sport_val]
     return ALL_SPORTS
+
+
+def _detect_tennis_sports():
+    """Find which tennis tournaments are currently active on the Odds API."""
+    try:
+        from odds_api import detect_active_tennis
+        active = detect_active_tennis()
+        if active:
+            print(f"  🎾 Active tennis tournaments: {', '.join(active)}")
+            return active
+        else:
+            print("  🎾 No active tennis tournaments right now")
+            return []
+    except Exception as e:
+        print(f"  ⚠ Tennis detection failed: {e}")
+        return []
 
 def has_flag(args, flag):
     return flag in args
@@ -99,6 +121,15 @@ def cmd_opener(args):
     from datetime import datetime
     do_email = has_flag(args, '--email')
     sports = get_sports(args)
+
+    # Auto-detect active tennis tournaments
+    if not any(s.startswith('tennis_') for s in sports):
+        try:
+            active_tennis = _detect_tennis_sports()
+            if active_tennis:
+                sports.extend(active_tennis)
+        except Exception:
+            pass
 
     print("="*60)
     print(f"  📌 OPENING LINE CAPTURE — {datetime.now().strftime('%Y-%m-%d %I:%M %p ') + ('EDT' if 3 <= __import__('datetime').datetime.now().month <= 10 else 'EST')}")
@@ -194,6 +225,15 @@ def cmd_run(args):
     do_email = has_flag(args, '--email')
     _hour = datetime.now().hour
     run_type = 'Evening' if _hour >= 17 else ('Afternoon' if _hour >= 13 else 'Morning')
+
+    # Auto-detect active tennis tournaments and append to sports list
+    if not any(s.startswith('tennis_') for s in sports):
+        try:
+            active_tennis = _detect_tennis_sports()
+            if active_tennis:
+                sports.extend(active_tennis)
+        except Exception:
+            pass
 
     _log.info(f"=== {run_type} Run START | Sports: {', '.join(sports)} ===")
 
@@ -666,6 +706,14 @@ def _generate_html_card(picks):
         'soccer_spain_la_liga': 'LA LIGA', 'soccer_usa_mls': 'MLS',
         'soccer_uefa_champs_league': 'UCL', 'soccer_mexico_ligamx': 'LIGA MX',
     }
+    # Tennis: dynamically add icons and labels from config
+    try:
+        from config import TENNIS_SPORTS, TENNIS_LABELS
+        for _tk in TENNIS_SPORTS:
+            sport_icons[_tk] = '🎾'
+            sport_labels[_tk] = TENNIS_LABELS.get(_tk, _tk.split('_')[-1].upper())
+    except ImportError:
+        pass
     
     for p in picks:
         sp = p.get('sport', 'other')
@@ -679,7 +727,16 @@ def _generate_html_card(picks):
 
     # Render sport sections in a consistent order
     sport_order = ['NBA', 'NHL', 'NCAAB', 'NCAA BASEBALL',
-                   'EPL', 'LA LIGA', 'SERIE A', 'BUNDESLIGA', 'LIGUE 1', 'MLS', 'LIGA MX', 'UCL']
+                   'EPL', 'LA LIGA', 'SERIE A', 'BUNDESLIGA', 'LIGUE 1', 'MLS', 'LIGA MX', 'UCL',
+                   # Tennis tournaments (added dynamically but need ordering)
+                   'AUS OPEN', 'FRENCH OPEN', 'WIMBLEDON', 'US OPEN',
+                   'INDIAN WELLS', 'MIAMI OPEN', 'MONTE CARLO', 'MADRID OPEN',
+                   'ITALIAN OPEN', 'CANADIAN OPEN', 'CINCINNATI', 'SHANGHAI',
+                   'PARIS MASTERS', 'DUBAI', 'QATAR OPEN', 'CHINA OPEN',
+                   'AUS OPEN (W)', 'FRENCH OPEN (W)', 'WIMBLEDON (W)', 'US OPEN (W)',
+                   'INDIAN WELLS (W)', 'MIAMI OPEN (W)', 'MADRID OPEN (W)',
+                   'ITALIAN OPEN (W)', 'CANADIAN OPEN (W)', 'CINCINNATI (W)',
+                   'DUBAI (W)', 'QATAR OPEN (W)', 'CHINA OPEN (W)', 'WUHAN OPEN']
 
     for sport_label in sport_order:
         if sport_label not in sport_groups:

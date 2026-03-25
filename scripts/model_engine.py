@@ -150,6 +150,23 @@ SPORT_CONFIG = {
     },
 }
 
+# Dynamically add tennis tournament configs from config.py
+try:
+    from config import TENNIS_SPORTS, TENNIS_SURFACES
+    _TENNIS_PARAMS = {
+        'hard': {'logistic_scale': 2.5, 'spread_std': 5.0, 'home_court': 0.0,
+                 'max_spread_divergence': 4.0, 'ml_scale': 2.5},
+        'clay': {'logistic_scale': 2.5, 'spread_std': 5.5, 'home_court': 0.0,
+                 'max_spread_divergence': 4.5, 'ml_scale': 2.5},
+        'grass': {'logistic_scale': 2.5, 'spread_std': 4.5, 'home_court': 0.0,
+                  'max_spread_divergence': 3.5, 'ml_scale': 2.5},
+    }
+    for _tk in TENNIS_SPORTS:
+        _surf = TENNIS_SURFACES.get(_tk, 'hard')
+        SPORT_CONFIG[_tk] = dict(_TENNIS_PARAMS.get(_surf, _TENNIS_PARAMS['hard']))
+except ImportError:
+    pass
+
 def spread_to_win_prob(spread, sport):
     """Win probability for MONEYLINE bets. Uses ml_scale (calibrated to real win rates)."""
     s = SPORT_CONFIG.get(sport, SPORT_CONFIG['basketball_nba']).get('ml_scale', 7.5)
@@ -655,6 +672,24 @@ def generate_predictions(conn, sport=None, date=None):
 
     for sp in sports:
         ratings = get_latest_ratings(conn, sp)
+
+        # Tennis: no bootstrap power ratings — seed from Elo so the pipeline proceeds
+        if sp.startswith('tennis_') and len(ratings) < 5:
+            try:
+                from elo_engine import get_tennis_elo
+                _t_elo, _t_key = get_tennis_elo(conn, sp)
+                if _t_elo:
+                    for player, data in _t_elo.items():
+                        # Convert Elo to a spread-scale rating (centered at 0)
+                        ratings[player] = {
+                            'base': round((data['elo'] - 1500) / 120, 2),  # 120 Elo per set
+                            'home_court': 0.0,
+                            'final': round((data['elo'] - 1500) / 120, 2),
+                        }
+                    print(f"  {sp}: {len(ratings)} players seeded from Elo ({_t_key})")
+            except Exception as e:
+                print(f"  {sp}: Elo seed failed: {e}")
+
         if len(ratings) < 5:
             print(f"  {sp}: only {len(ratings)} teams — SKIP"); continue
         print(f"  {sp}: {len(ratings)} teams rated")
@@ -662,12 +697,25 @@ def generate_predictions(conn, sport=None, date=None):
         # Load Elo ratings if available
         elo_data = {}
         if HAS_ELO:
-            elo_data = get_elo_ratings(conn, sp)
-            if elo_data:
-                elo_count = sum(1 for v in elo_data.values() if v['confidence'] != 'LOW')
-                print(f"    + Elo ratings: {elo_count} teams with confidence")
+            # Tennis: use surface-split Elo (e.g., tennis_atp_clay for French Open)
+            if sp.startswith('tennis_'):
+                try:
+                    from elo_engine import get_tennis_elo
+                    elo_data, _elo_key = get_tennis_elo(conn, sp)
+                    if elo_data:
+                        elo_count = sum(1 for v in elo_data.values() if v['confidence'] != 'LOW')
+                        print(f"    + Tennis Elo ({_elo_key}): {elo_count} players with confidence")
+                    else:
+                        print(f"    ⚠ No tennis Elo — run historical_scores.py + elo_engine.py")
+                except ImportError:
+                    pass
             else:
-                print(f"    ⚠ No Elo data — using market ratings only (run historical_scores.py + elo_engine.py)")
+                elo_data = get_elo_ratings(conn, sp)
+                if elo_data:
+                    elo_count = sum(1 for v in elo_data.values() if v['confidence'] != 'LOW')
+                    print(f"    + Elo ratings: {elo_count} teams with confidence")
+                else:
+                    print(f"    ⚠ No Elo data — using market ratings only (run historical_scores.py + elo_engine.py)")
 
         game_count = conn.execute(
             "SELECT COUNT(DISTINCT event_id) FROM market_consensus WHERE sport=?",
@@ -827,7 +875,10 @@ def generate_predictions(conn, sport=None, date=None):
             # Old code treated ALL of March as neutral, removing 3.2 pts of real HCA
             # from regular season home games in early March.
             _neutral = False
-            if sp == 'basketball_ncaab':
+            # Tennis: all matches are at neutral tournament venues
+            if sp.startswith('tennis_'):
+                _neutral = True
+            elif sp == 'basketball_ncaab':
                 _now = datetime.now()
                 _m, _d = _now.month, _now.day
                 if _m == 4 and _d <= 7:
@@ -1322,11 +1373,22 @@ def generate_predictions(conn, sport=None, date=None):
                 else:
                     h_imp_ml, a_imp_ml, _ = devig_ml_odds(hml, aml)
 
+                # Tennis ML cap: skip big favorites and long-shot dogs
+                _tennis_ml_cap = None
+                if sp.startswith('tennis_'):
+                    try:
+                        from config import TENNIS_ML_CAP
+                        _tennis_ml_cap = TENNIS_ML_CAP
+                    except ImportError:
+                        _tennis_ml_cap = 200
+
                 # HOME ML
                 k = f"{eid}|M|{home}"
                 if k not in seen and h_imp_ml:
                     if 'soccer' in sp:
                         pass  # v13: ALL soccer ML disabled — backtest 0W-8L. Edge lives in spreads only.
+                    elif _tennis_ml_cap and abs(hml) > _tennis_ml_cap:
+                        pass  # Tennis: line too wide, skip
                     else:
                         h_edge_ml = (h_prob_ml - h_imp_ml) * 100 * _walters_elo_w
                         stars = get_star_rating(h_edge_ml)
@@ -1349,6 +1411,8 @@ def generate_predictions(conn, sport=None, date=None):
                 if k not in seen and a_imp_ml:
                     if 'soccer' in sp:
                         pass  # v13: ALL soccer ML disabled — backtest 0W-8L. Edge lives in spreads only.
+                    elif _tennis_ml_cap and abs(aml) > _tennis_ml_cap:
+                        pass  # Tennis: line too wide, skip
                     else:
                         a_edge_ml = (a_prob_ml - a_imp_ml) * 100 * _walters_elo_w
                         stars = get_star_rating(a_edge_ml)
