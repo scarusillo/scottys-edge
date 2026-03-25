@@ -594,7 +594,8 @@ def grade_bets(conn, days_back=3):
             'closing_line': closing_line_val, 'bet_line': line,
             'side_type': side_type, 'spread_bucket': spread_bucket,
             'context_confirmed': context_confirmed, 'market_tier': market_tier,
-            'timing': timing,
+            'timing': timing, 'context_factors': context_factors,
+            'model_spread': model_spread, 'event_id': eid,
         })
 
     conn.commit()
@@ -1240,6 +1241,289 @@ def _get_current_streak(records):
     return streak, streak_type
 
 
+# ═══════════════════════════════════════════════════════════════════
+# POST-GRADING LOSS ANALYSIS
+# ═══════════════════════════════════════════════════════════════════
+
+def analyze_losses(conn, graded_bets):
+    """
+    Analyze losses from the current grading batch and return a formatted report.
+
+    Categories:
+      BAD LUCK     — CLV >= 0 and loss margin <= 3 points
+      MODEL GAP    — model spread was 3+ points off the closing line
+      CONTEXT TRAP — a context factor with < 40% win rate fired
+      SHARP FADE   — CLV <= -1.5 (market moved hard against us)
+
+    Also identifies toxic context factors (3+ occurrences, < 45% win rate).
+    """
+    import re
+
+    losses = [g for g in graded_bets if g['result'] == 'LOSS']
+    if not losses:
+        return ""
+
+    # ── Build historical context factor W/L from ALL graded bets in DB ──
+    all_graded = conn.execute("""
+        SELECT context_factors, result FROM graded_bets
+        WHERE result IN ('WIN', 'LOSS')
+        AND context_factors IS NOT NULL AND context_factors != ''
+    """).fetchall()
+
+    factor_records = {}  # factor_tag -> {'wins': int, 'losses': int}
+    factor_exact = {}   # exact tag (with adjustment) for granular toxic detection
+    for ctx_str, result in all_graded:
+        # Context factors are stored as pipe-separated summaries like:
+        #   "Home on B2B (+1.5) | Sharp money agrees (+2.0)"
+        for tag in ctx_str.split('|'):
+            tag = tag.strip()
+            if not tag:
+                continue
+            # Track exact (with adjustment) for granular detection
+            if tag not in factor_exact:
+                factor_exact[tag] = {'wins': 0, 'losses': 0}
+            if result == 'WIN':
+                factor_exact[tag]['wins'] += 1
+            else:
+                factor_exact[tag]['losses'] += 1
+            # Normalize: strip the adjustment value for grouping
+            normalized = re.sub(r'\s*\([^)]*\)\s*$', '', tag).strip()
+            if not normalized:
+                continue
+            if normalized not in factor_records:
+                factor_records[normalized] = {'wins': 0, 'losses': 0}
+            if result == 'WIN':
+                factor_records[normalized]['wins'] += 1
+            else:
+                factor_records[normalized]['losses'] += 1
+
+    # ── Analyze each loss ──
+    analysis = []
+    for g in losses:
+        sel = g['selection']
+        clv = g['clv']
+        bet_line = g.get('bet_line')
+        closing_line = g.get('closing_line')
+        model_spread = g.get('model_spread')
+        ctx_str = g.get('context_factors', '') or ''
+        pnl = g['pnl']
+        sport = g['sport']
+        mtype = g['market_type']
+
+        categories = []
+
+        # ── BAD LUCK: CLV >= 0 and lost by <= 3 points ──
+        # For spreads/totals the loss margin approximation uses the line.
+        # We don't have the raw score diff here, so we use pnl as a proxy:
+        # a close loss on a flat -110 bet still loses full units,
+        # so instead check CLV — if we had the better number, it was bad luck.
+        if clv is not None and clv >= 0:
+            # Close loss heuristic: small pnl (1 unit bet = ~1u loss max)
+            # or if we can check the line vs closing line delta
+            margin_close = False
+            if bet_line is not None and closing_line is not None:
+                margin_close = abs(bet_line - closing_line) <= 3
+            elif clv >= 0:
+                margin_close = True  # Had CLV, still lost = unlucky
+            if margin_close:
+                categories.append('BAD LUCK')
+
+        # ── MODEL GAP: model spread 3+ pts off closing line ──
+        # Only compare for SPREAD bets (for totals, model_spread is a small offset, not comparable)
+        # closing_line is stored as the dog spread (positive), model_spread is signed (negative = fav)
+        if mtype == 'SPREAD' and model_spread is not None and closing_line is not None:
+            # Both should be on the same scale: model_spread is e.g. -6.72 (fav by 6.72)
+            # closing_line is e.g. 10.5 (dog gets +10.5, meaning fav -10.5)
+            closing_as_margin = -closing_line  # convert to same sign convention as model_spread
+            gap = abs(model_spread - closing_as_margin)
+            if gap >= 3:
+                categories.append(f'MODEL GAP ({gap:.1f} pts off)')
+        # For totals, compare bet_line vs closing_line to detect adverse line moves
+        elif mtype == 'TOTAL' and bet_line is not None and closing_line is not None:
+            gap = abs(bet_line - closing_line)
+            if gap >= 2:
+                categories.append(f'MODEL GAP (line moved {gap:.1f} pts)')
+
+        # ── CONTEXT TRAP: a context factor with < 40% historical win rate fired ──
+        trap_factors = []
+        if ctx_str:
+            for tag in ctx_str.split('|'):
+                tag = tag.strip()
+                if not tag:
+                    continue
+                # Check exact factor first (e.g. "Home bounce-back (+0.8)")
+                exact_rec = factor_exact.get(tag)
+                if exact_rec:
+                    total = exact_rec['wins'] + exact_rec['losses']
+                    if total >= 2 and exact_rec['wins'] / total < 0.40:
+                        trap_factors.append(f"{tag} ({exact_rec['wins']}W-{exact_rec['losses']}L)")
+                        continue
+                # Fall back to normalized grouping
+                normalized = re.sub(r'\s*\([^)]*\)\s*$', '', tag).strip()
+                rec = factor_records.get(normalized)
+                if rec:
+                    total = rec['wins'] + rec['losses']
+                    if total >= 2:
+                        wr = rec['wins'] / total
+                        if wr < 0.40:
+                            trap_factors.append(f"{normalized} ({rec['wins']}W-{rec['losses']}L)")
+            if trap_factors:
+                categories.append(f"CONTEXT TRAP: {', '.join(trap_factors)}")
+
+        # ── SHARP FADE: CLV <= -1.5 (market moved hard against us) ──
+        if clv is not None and clv <= -1.5:
+            categories.append(f'SHARP FADE (CLV {clv:+.1f})')
+
+        # Default if nothing triggered
+        if not categories:
+            categories.append('STANDARD LOSS')
+
+        analysis.append({
+            'selection': sel,
+            'sport': sport,
+            'market_type': mtype,
+            'pnl': pnl,
+            'clv': clv,
+            'categories': categories,
+        })
+
+    # ── Identify toxic context factors ──
+    # Check both normalized (grouped) and exact (with adjustment) factors
+    toxic = []
+    seen = set()
+    # Exact factors: 3+ bets, < 45% win rate (catches e.g. "Home bounce-back (+0.8)" at 0W-3L)
+    for factor, rec in factor_exact.items():
+        total = rec['wins'] + rec['losses']
+        if total >= 3:
+            wr = rec['wins'] / total
+            if wr < 0.45:
+                toxic.append((factor, rec['wins'], rec['losses'], wr))
+                seen.add(factor)
+    # Grouped factors: 3+ bets, < 45% win rate
+    for factor, rec in factor_records.items():
+        if factor in seen:
+            continue
+        total = rec['wins'] + rec['losses']
+        if total >= 3:
+            wr = rec['wins'] / total
+            if wr < 0.45:
+                toxic.append((factor, rec['wins'], rec['losses'], wr))
+    toxic.sort(key=lambda x: x[3])  # worst win rate first
+
+    # ── Format report ──
+    lines = []
+    lines.append(f"\n{'─'*60}")
+    lines.append(f"  LOSS ANALYSIS — {len(losses)} loss{'es' if len(losses) != 1 else ''}")
+    lines.append(f"{'─'*60}")
+
+    for a in analysis:
+        clv_str = f"CLV={a['clv']:+.1f}" if a['clv'] is not None else "CLV=N/A"
+        lines.append(f"  {a['selection']}")
+        lines.append(f"    {a['pnl']:+.1f}u | {clv_str} | {', '.join(a['categories'])}")
+
+    if toxic:
+        lines.append(f"\n  TOXIC CONTEXT FACTORS (3+ bets, <45% WR):")
+        for factor, w, l, wr in toxic:
+            lines.append(f"    {factor}: {w}W-{l}L ({wr:.0%})")
+
+    # Summary counts
+    cat_counts = {}
+    for a in analysis:
+        for c in a['categories']:
+            # Group by prefix (strip details)
+            prefix = c.split(':')[0].split('(')[0].strip()
+            cat_counts[prefix] = cat_counts.get(prefix, 0) + 1
+
+    if cat_counts:
+        lines.append(f"\n  BREAKDOWN: {' | '.join(f'{k}: {v}' for k, v in cat_counts.items())}")
+
+    lines.append(f"{'─'*60}")
+    return '\n'.join(lines)
+
+
+def generate_subscriber_recap(conn, graded_bets, overall_stats):
+    """Generate a short, confident subscriber-facing recap of yesterday's results.
+
+    Args:
+        conn: sqlite3 connection
+        graded_bets: list of dicts from grade_bets() for the current batch
+        overall_stats: dict with keys 'wins', 'losses', 'pnl' for the full season
+
+    Returns:
+        str: 2-3 sentence recap ready to share with subscribers
+    """
+    SPORT_NAMES = {
+        'basketball_nba': 'NBA', 'basketball_ncaab': 'NCAAB',
+        'icehockey_nhl': 'NHL', 'baseball_ncaa': 'College Baseball',
+        'soccer_epl': 'EPL', 'soccer_italy_serie_a': 'Serie A',
+        'soccer_spain_la_liga': 'La Liga', 'soccer_germany_bundesliga': 'Bundesliga',
+        'soccer_france_ligue_one': 'Ligue 1', 'soccer_uefa_champs_league': 'UCL',
+        'soccer_usa_mls': 'MLS', 'soccer_mexico_ligamx': 'Liga MX',
+    }
+
+    settled = [g for g in graded_bets if g['result'] in ('WIN', 'LOSS')]
+    if not settled:
+        return ""
+
+    wins = sum(1 for g in settled if g['result'] == 'WIN')
+    losses = sum(1 for g in settled if g['result'] == 'LOSS')
+    pnl = sum(g['pnl'] for g in settled)
+
+    # Group by sport
+    sport_stats = {}
+    for g in settled:
+        sport = g.get('sport', '') or ''
+        # Collapse soccer leagues into "Soccer" for the recap
+        if 'soccer' in sport:
+            label = 'Soccer'
+        elif 'tennis' in sport:
+            label = 'Tennis'
+        else:
+            label = SPORT_NAMES.get(sport, sport.split('_')[-1].upper() if sport else 'Other')
+        if label not in sport_stats:
+            sport_stats[label] = {'wins': 0, 'losses': 0, 'pnl': 0.0}
+        if g['result'] == 'WIN':
+            sport_stats[label]['wins'] += 1
+        else:
+            sport_stats[label]['losses'] += 1
+        sport_stats[label]['pnl'] += g['pnl']
+
+    # Best and worst sport by P/L
+    sorted_sports = sorted(sport_stats.items(), key=lambda x: x[1]['pnl'], reverse=True)
+    best_sport, best = sorted_sports[0]
+    worst_sport, worst = sorted_sports[-1] if len(sorted_sports) > 1 else (None, None)
+
+    # Build the sport color lines
+    color_parts = []
+    # Positive callout for best sport
+    best_rec = f"{best['wins']}-{best['losses']}"
+    color_parts.append(f"{best_sport} carried us going {best_rec}")
+
+    # Brief acknowledgment for worst sport (only if it actually lost units and is different)
+    if worst_sport and worst_sport != best_sport and worst['pnl'] < 0:
+        if worst['wins'] == 0:
+            color_parts.append(f"{worst_sport} didn't connect")
+        else:
+            color_parts.append(f"{worst_sport} was rough")
+
+    color_line = ". ".join(color_parts) + "."
+
+    # Season totals
+    season_w = overall_stats['wins']
+    season_l = overall_stats['losses']
+    season_pnl = overall_stats['pnl']
+    season_wp = season_w / (season_w + season_l) * 100 if (season_w + season_l) > 0 else 0
+
+    # Build recap
+    lines = []
+    lines.append("YESTERDAY'S RECAP")
+    lines.append(f"{wins}W-{losses}L, {pnl:+.1f}u — {color_line}")
+    lines.append(f"Still {season_pnl:+.1f}u on the season ({season_w}W-{season_l}L, {season_wp:.1f}% win rate).")
+
+    recap = "\n".join(lines)
+    return recap
+
+
 def daily_grade_and_report(conn=None):
     """Full daily grading: grade bets, compute CLV, accumulate player data, report."""
     close_conn = False
@@ -1275,6 +1559,40 @@ def daily_grade_and_report(conn=None):
     else:
         print("  No new bets to grade (scores may not be in yet)")
 
+    # Automatic loss analysis
+    if graded and any(g['result'] == 'LOSS' for g in graded):
+        try:
+            loss_report = analyze_losses(conn, graded)
+            if loss_report:
+                print(loss_report)
+        except Exception as e:
+            print(f"  Loss analysis: {e}")
+
+    # Subscriber recap — clean summary for followers (no CLV / MODEL GAP)
+    subscriber_recap = ""
+    if graded and any(g['result'] in ('WIN', 'LOSS') for g in graded):
+        try:
+            season_all = conn.execute("""
+                SELECT result, pnl_units FROM graded_bets
+                WHERE DATE(created_at) >= '2026-03-04'
+                AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
+                AND units >= 4.5
+            """).fetchall()
+            overall_stats = {
+                'wins': sum(1 for r in season_all if r[0] == 'WIN'),
+                'losses': sum(1 for r in season_all if r[0] == 'LOSS'),
+                'pnl': sum(r[1] or 0 for r in season_all),
+            }
+            subscriber_recap = generate_subscriber_recap(conn, graded, overall_stats)
+            if subscriber_recap:
+                print(f"\n{'\u2500'*60}")
+                print(f"  SUBSCRIBER RECAP")
+                print(f"{'\u2500'*60}")
+                print(f"  {subscriber_recap.replace(chr(10), chr(10) + '  ')}")
+                print(f"{'\u2500'*60}")
+        except Exception as e:
+            print(f"  Subscriber recap: {e}")
+
     # Check for stale PENDING bets (possible postponements)
     pending_warning = ""
     try:
@@ -1304,6 +1622,10 @@ def daily_grade_and_report(conn=None):
     # v12.2: Use full record since March 4 (model launch date), not rolling 7 days.
     # Discord and email should show the complete track record.
     report = performance_report(conn, start_date='2026-03-04')
+
+    # Append subscriber recap to report
+    if subscriber_recap and report:
+        report += "\n\n" + subscriber_recap
 
     # Append pending warning to report
     if pending_warning and report:

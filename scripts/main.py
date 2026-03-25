@@ -402,7 +402,14 @@ def cmd_run(args):
 
     from model_engine import generate_predictions, print_picks, save_picks_to_db, picks_to_text
     game_picks = []
+    # Resolve tennis_auto → active tournament keys before generating predictions
+    resolved_sports = []
     for sp in sports:
+        if sp == 'tennis_auto':
+            resolved_sports.extend(_detect_tennis_sports())
+        else:
+            resolved_sports.append(sp)
+    for sp in resolved_sports:
         picks = generate_predictions(conn, sport=sp)
         game_picks.extend(picks)
 
@@ -1497,7 +1504,8 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     # over/under tendencies from team attack/defense rates.
     SOCCER_TOTAL_MIN_EDGE = 5.0
     MIN_UNITS = 4.5  # MAX PLAY only — subscribers want highest conviction picks
-    # HIGH confidence at 4.5u is 1W-5L -18.6u. Only ELITE (39W-21L +54u) should qualify.
+    # 3/25: HIGH tier eliminated from _conf() entirely. Only ELITE (2.5+ stars)
+    # exists above STRONG. Former HIGH tier was 3W-7L -22.5u (-46.9% ROI).
     REQUIRED_CONFIDENCE = 'ELITE'
 
     def _passes_filter(p):
@@ -1534,8 +1542,10 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         _min_u = MIN_UNITS
         if not (p.get('units', 0) >= _min_u and p.get('edge_pct', 0) >= min_edge):
             return False
-        # Block HIGH confidence — 1W-5L -18.6u. Only ELITE passes.
-        if p.get('confidence') not in (REQUIRED_CONFIDENCE, None) and p.get('confidence') != 'ELITE':
+        # Only ELITE confidence passes. HIGH tier eliminated from _conf() on 3/25
+        # (was 3W-7L -22.5u). This is a safety net — sub-ELITE should never reach
+        # 4.5u anyway, but belt-and-suspenders.
+        if p.get('confidence') not in ('ELITE', None):
             return False
         
         # v12 FIX: Soft market picks without context need 20%+ edge.
@@ -2064,7 +2074,8 @@ def cmd_grade(args):
     from grader import daily_grade_and_report
     do_email = has_flag(args, '--email')
     db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
-    conn = sqlite3.connect(db)
+    conn = sqlite3.connect(db, timeout=15)
+    conn.execute("PRAGMA journal_mode=WAL")
 
     print("  Fetching latest scores...")
     try:
@@ -2101,6 +2112,16 @@ def cmd_grade(args):
             print(f"  ESPN team endpoint: {team_new} new results")
     except Exception as e:
         print(f"  ESPN team backup: {e}")
+
+    # v15: NCAA.com backup — ESPN misses ~40% of college baseball games.
+    print("  Fetching NCAA.com baseball scores...")
+    try:
+        from ncaa_scores import fetch_ncaa_scores
+        ncaa_new = fetch_ncaa_scores('baseball_ncaa', days_back=5, verbose=True)
+        if ncaa_new:
+            print(f"  NCAA.com: {ncaa_new} new results")
+    except Exception as e:
+        print(f"  NCAA.com scores: {e}")
 
     # v14: Proactively backfill thin-data teams for better Elo accuracy.
     # ESPN scoreboard misses ~40% of college games. The team endpoint gets ALL games.

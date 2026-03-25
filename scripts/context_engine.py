@@ -707,15 +707,15 @@ def motivation_adjustment(conn, home, away, sport, commence):
     if h_margin is not None:
         for threshold, boost in bounce_thresholds:
             if h_margin <= threshold:
-                if 'home_bounceback' not in freeze:
+                if boost >= 1.0 and 'home_bounceback' not in freeze:
                     adj += boost
                     reasons['home_bounceback'] = boost
                 break
-    
+
     if a_margin is not None:
         for threshold, boost in bounce_thresholds:
             if a_margin <= threshold:
-                if 'away_bounceback' not in freeze:
+                if boost >= 1.0 and 'away_bounceback' not in freeze:
                     adj -= boost
                     reasons['away_bounceback'] = -boost
                 break

@@ -653,6 +653,33 @@ def _total_prob(diff, sport):
     std = TOTAL_STD.get(sport, 22.0)
     return _ncdf(diff / std)
 
+def _divergence_penalty(model_val, market_val, market_type='SPREAD'):
+    """
+    Model-vs-market divergence safety check.
+    When the model heavily disagrees with the market, the market is more
+    likely right. Returns a multiplier (0.5–1.0) to reduce edge_pct.
+
+    Spreads: >5pt gap → 0.70, >7pt gap → 0.50
+    Totals:  >4pt gap → 0.70, >6pt gap → 0.50
+    """
+    gap = abs(model_val - market_val)
+    if market_type == 'TOTAL':
+        if gap > 6.0:
+            print(f"    ⚠ DIVERGENCE PENALTY: model-market gap={gap:.1f} (total) → edge×0.50")
+            return 0.50
+        elif gap > 4.0:
+            print(f"    ⚠ DIVERGENCE PENALTY: model-market gap={gap:.1f} (total) → edge×0.70")
+            return 0.70
+    else:  # SPREAD / default
+        if gap > 7.0:
+            print(f"    ⚠ DIVERGENCE PENALTY: model-market gap={gap:.1f} (spread) → edge×0.50")
+            return 0.50
+        elif gap > 5.0:
+            print(f"    ⚠ DIVERGENCE PENALTY: model-market gap={gap:.1f} (spread) → edge×0.70")
+            return 0.70
+    return 1.0
+
+
 def generate_predictions(conn, sport=None, date=None):
     sports = [sport] if sport else list(SPORT_CONFIG.keys())
     all_picks = []
@@ -1231,7 +1258,7 @@ def generate_predictions(conn, sport=None, date=None):
                                                 {'point_value_pct': round(rl_edge, 1), 'star_rating': stars,
                                                  'units': kelly_units(edge_pct=rl_edge, odds=rl_odds),
                                                  'is_play': True, 'timing': timing, 'timing_reason': t_r,
-                                                 'spread_or_ml': 'RUN_LINE', 'confidence': 'HIGH',
+                                                 'spread_or_ml': 'RUN_LINE', 'confidence': _conf(stars),
                                                  'vig_adjusted_spread': rl_line, 'raw_spread_diff': 0,
                                                  'injury_multiplier': 1.0, 'spread_or_ml_reason': 'Run line'},
                                                 f'{rl_side}_spread')
@@ -1604,12 +1631,19 @@ def generate_predictions(conn, sport=None, date=None):
                             total_diff = model_total - over_total
                             if total_diff > 0:  # Model says higher scoring
                                 pv = calculate_point_value_totals(model_total, over_total, sp)
+                                # v17: Model-vs-market divergence penalty for totals
+                                _t_div = _divergence_penalty(model_total, over_total, 'TOTAL')
+                                if _t_div < 1.0:
+                                    pv *= _t_div
+                                    pv = round(pv, 1)
                                 stars = get_star_rating(pv)
                                 if pv >= min_pv_totals and stars > 0:
                                     prob = _total_prob(total_diff, sp)
                                     imp = american_to_implied_prob(over_odds)
                                     # Use actual probability edge for Kelly (not PV)
                                     prob_edge = (prob - (imp or 0.524)) * 100.0
+                                    if _t_div < 1.0:
+                                        prob_edge *= _t_div
                                     seen.add(k)
                                     all_picks.append({
                                         'sport': sp, 'event_id': eid, 'commence': commence,
@@ -1649,12 +1683,19 @@ def generate_predictions(conn, sport=None, date=None):
                                 total_diff_u = under_total - model_total
                                 if total_diff_u > 0:  # Model says lower scoring
                                     pv = calculate_point_value_totals(model_total, under_total, sp)
+                                    # v17: Model-vs-market divergence penalty for totals
+                                    _t_div_u = _divergence_penalty(model_total, under_total, 'TOTAL')
+                                    if _t_div_u < 1.0:
+                                        pv *= _t_div_u
+                                        pv = round(pv, 1)
                                     stars = get_star_rating(pv)
                                     if pv >= min_pv_totals and stars > 0:
                                         prob = _total_prob(total_diff_u, sp)
                                         imp = american_to_implied_prob(under_odds)
                                         # Use actual probability edge for Kelly (not PV)
                                         prob_edge = (prob - (imp or 0.524)) * 100.0
+                                        if _t_div_u < 1.0:
+                                            prob_edge *= _t_div_u
                                         seen.add(k)
                                         all_picks.append({
                                             'sport': sp, 'event_id': eid, 'commence': commence,
@@ -1800,6 +1841,14 @@ def _mk(sp, eid, commence, home, away, mtype, sel, book, line, odds, ms, prob, i
     # This lets favorites with real key number value get meaningful units
     # instead of being killed by tiny probability edges.
     actual_edge = max(prob_edge, pv_edge, 0)
+
+    # v17: Model-vs-market divergence penalty for spreads
+    # When model heavily disagrees with market, reduce edge (market is likely right)
+    if line is not None:
+        div_mult = _divergence_penalty(ms, line, 'SPREAD')
+        if div_mult < 1.0:
+            actual_edge *= div_mult
+
     if actual_edge < 1.0:
         return None
 
@@ -1840,8 +1889,11 @@ def _mk_ml(sp, eid, commence, home, away, sel, book, odds, ms, prob, imp, edge, 
     }
 
 def _conf(s):
+    # 3/25: HIGH tier eliminated — 3W-7L -22.5u (-46.9% ROI).
+    # Only ELITE (2.5+ stars) passes the card filter. Everything below
+    # is sub-ELITE and gets blocked. No reason for a "HIGH" label that
+    # could leak through filter edge cases.
     if s >= 2.5: return 'ELITE'
-    if s >= 2.0: return 'HIGH'
     if s >= 1.5: return 'STRONG'
     if s >= 1.0: return 'MEDIUM'
     return 'LOW' if s >= 0.5 else 'NO_PLAY'

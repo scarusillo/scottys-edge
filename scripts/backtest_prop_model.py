@@ -139,7 +139,7 @@ def backtest_prop_model(days=45, sport_filter=None, min_edge=None):
             odds = best['odds']
             book = best['book']
 
-            edge = calculate_prop_edge(projection, std, line_val, odds)
+            edge, _capped_prob = calculate_prop_edge(projection, std, line_val, odds)
             if edge < min_edge:
                 continue
 

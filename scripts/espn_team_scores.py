@@ -183,7 +183,8 @@ def backfill_missing(days_back=3, verbose=True):
     """
     Find all ungraded bets and try to fetch their scores via team endpoint.
     """
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL")
     
     # Find bets that haven't been graded yet
     ungraded = conn.execute("""
@@ -248,7 +249,7 @@ def backfill_missing(days_back=3, verbose=True):
             event_id = f"espn_team_{sport}_{bet_date}_{r_home}_{r_away}".replace(' ', '_')[:100]
             
             conn.execute("""
-                INSERT INTO results (event_id, sport, home, away, home_score, away_score, completed, commence_time)
+                INSERT OR IGNORE INTO results (event_id, sport, home, away, home_score, away_score, completed, commence_time)
                 VALUES (?, ?, ?, ?, ?, ?, 1, ?)
             """, (event_id, sport, r_home, r_away, r_hscore, r_ascore, f"{bet_date}T20:00:00Z"))
             inserted += 1
@@ -279,7 +280,8 @@ def backfill_thin_teams(sport, min_games=8, max_lookups=50, verbose=True):
     Only looks up teams that appear in today's odds (upcoming games),
     so we focus on teams we'll actually need ratings for.
     """
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=10)
+    conn.execute("PRAGMA journal_mode=WAL")
 
     if sport not in ESPN_SPORT_MAP:
         conn.close()

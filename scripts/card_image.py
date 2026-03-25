@@ -719,7 +719,7 @@ def _render_results_slide(bets, fonts, label, accent_color, daily_record, daily_
     rec_num_sz = max(26, min(44, int(26 * rec_scale)))
     rec_sub_sz = max(15, min(22, int(15 * rec_scale)))
     # Content block height: title(40) + numbers(40) + subtitle(30) = ~110*S
-    content_block_h = 120*S
+    content_block_h = 132*S
     rec_top = max(0, (record_h - content_block_h) // 2)
     ry = y + rec_top
     draw.text((PADDING,ry),"RUNNING RECORD",fill=GREEN,font=_font(fonts,'bold',rec_title_sz))
@@ -730,7 +730,7 @@ def _render_results_slide(bets, fonts, label, accent_color, daily_record, daily_
     draw.text((PADDING+260*S,ry),f"{twp:.1f}%",fill=GREEN if twp>52 else RED,font=rf)
     draw.text((PADDING+440*S,ry),f"{total_pnl:+.1f}u",fill=GREEN if total_pnl>=0 else RED,font=rf)
     draw.text((PADDING+620*S,ry),f"ROI {total_roi:+.1f}%",fill=GREEN if total_roi>=0 else RED,font=rf)
-    ry+=44*S
+    ry+=56*S
     days=(datetime.now()-datetime.strptime(start_date,'%Y-%m-%d')).days
     draw.text((PADDING+20*S,ry),f"Since {start_date}  \u2022  {days} days  \u2022  {total_wins+total_losses} total picks",fill=WHITE_40,font=_font(fonts,'regular',rec_sub_sz))
     y+=record_h
@@ -766,23 +766,34 @@ def _render_results_slide(bets, fonts, label, accent_color, daily_record, daily_
             l10_pnl = sum(r[1] or 0 for r in last10)
 
             # Visual streak dots (last 10 results, most recent first)
-            _draw_divider(draw, y); y += 20*S
+            _draw_divider(draw, y); y += 24*S
             streak_f = _font(fonts, 'bold', max(16, int(18 * rec_scale)))
-            dot_f = _font(fonts, 'bold', max(20, int(24 * rec_scale)))
-            draw.text((PADDING, y), "STREAK", fill=GREEN, font=streak_f)
-            draw.text((PADDING + 140*S, y), streak_str, fill=streak_color, font=streak_f)
-            draw.text((PADDING + 260*S, y), f"Last 10: {l10_w}W-{l10_l}L ({l10_pnl:+.1f}u)", fill=WHITE_60, font=_font(fonts, 'regular', max(14, int(16 * rec_scale))))
+            l10_f = _font(fonts, 'regular', max(14, int(16 * rec_scale)))
 
-            # Dot visualization
-            y += 32*S
+            # "STREAK:" label
+            streak_label = "STREAK"
+            draw.text((PADDING, y), streak_label, fill=GREEN, font=streak_f)
+            streak_label_w = draw.textlength(streak_label, font=streak_f)
+
+            # Streak count + direction with generous spacing
+            streak_x = PADDING + streak_label_w + 24*S
+            draw.text((streak_x, y), streak_str, fill=streak_color, font=streak_f)
+            streak_str_w = draw.textlength(streak_str, font=streak_f)
+
+            # Last 10 stats
+            l10_x = streak_x + streak_str_w + 40*S
+            draw.text((l10_x, y), f"Last 10: {l10_w}W-{l10_l}L ({l10_pnl:+.1f}u)", fill=WHITE_60, font=l10_f)
+
+            # Dot visualization — more space below text
+            y += 40*S
             dx = PADDING + 20*S
-            dot_size = 18*S
-            dot_gap = 8*S
+            dot_size = 14*S
+            dot_gap = 10*S
             for i, r in enumerate(reversed(last10)):
                 color = GREEN if r[0] == 'WIN' else RED
                 draw.ellipse([(dx, y), (dx + dot_size, y + dot_size)], fill=color)
                 dx += dot_size + dot_gap
-            y += dot_size + 15*S
+            y += dot_size + 20*S
     except Exception:
         pass
 

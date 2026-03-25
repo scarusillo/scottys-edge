@@ -553,8 +553,9 @@ def scottys_edge_assessment(model_spread, market_spread, odds, sport,
 
 
 def _confidence_label(stars):
+    # 3/25: HIGH tier eliminated — 3W-7L -22.5u (-46.9% ROI).
+    # Only ELITE passes card filter. See _conf() in model_engine.py.
     if stars >= 2.5: return 'ELITE'
-    if stars >= 2.0: return 'HIGH'
     if stars >= 1.5: return 'STRONG'
     if stars >= 1.0: return 'MEDIUM'
     if stars >= 0.5: return 'LOW'

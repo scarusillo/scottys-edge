@@ -116,7 +116,7 @@ def get_player_baseline(conn, player, stat_type, sport, limit=20):
         blend = len(values) / 8.0
         std = empirical_std * blend + pop_std * (1.0 - blend)
 
-    return {'avg': round(avg, 2), 'std': round(std, 2), 'games': len(values)}
+    return {'avg': round(avg, 2), 'std': round(std, 2), 'games': len(values), 'values': values}
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -259,6 +259,7 @@ def project_player_stat(conn, player, stat_type, sport, team, opponent, home, aw
         'opp_mult': opp_mult,
         'ctx_mult': ctx_mult,
         'factors': ctx.get('factors', {}),
+        'values': baseline.get('values', []),
     }
 
 
@@ -279,32 +280,54 @@ def _binary_over_prob(projection, line):
     return 1.0 - math.exp(-projection)
 
 
-def calculate_prop_edge(projection, std, market_line, odds):
+def calculate_prop_edge(projection, std, market_line, odds, season_values=None):
     """
     Calculate edge for an OVER bet.
     Uses Poisson model for binary 0.5 lines (blocks, steals, etc.)
     and normal CDF for continuous lines (points, rebounds, assists).
+
+    Applies overconfidence cap: when model_prob > 0.70, blend with market
+    implied prob to prevent claiming huge edges on volatile props.
+    Hard cap at 0.75 unless season hit rate over the line is >= 65%.
     """
     diff = projection - market_line
     if diff <= 0:
-        return 0.0  # No OVER edge
+        return 0.0, 0.0  # No OVER edge
 
     if std <= 0:
-        return 0.0
+        return 0.0, 0.0
 
     # Binary lines: use Poisson instead of normal CDF
     if market_line == 0.5:
-        prob = _binary_over_prob(projection, market_line)
+        raw_prob = _binary_over_prob(projection, market_line)
     else:
         z = diff / std
-        prob = _ncdf(z)
+        raw_prob = _ncdf(z)
 
     implied = american_to_implied(odds)
     if not implied or implied <= 0:
-        return 0.0
+        return 0.0, 0.0
+
+    # --- Overconfidence cap ---
+    # Compute season hit rate over the line if box score values provided
+    season_hit_rate = None
+    if season_values and len(season_values) >= 5:
+        hits = sum(1 for v in season_values if v > market_line)
+        season_hit_rate = hits / len(season_values)
+
+    prob = raw_prob
+
+    # Blend with market implied prob when model is very confident
+    if prob > 0.70:
+        prob = 0.6 * prob + 0.4 * implied
+
+    # Hard cap at 0.75 unless season hit rate justifies higher
+    if prob > 0.75:
+        if season_hit_rate is None or season_hit_rate < 0.65:
+            prob = 0.75
 
     edge_pct = (prob - implied) * 100.0
-    return max(0.0, round(edge_pct, 2))
+    return max(0.0, round(edge_pct, 2)), round(prob, 4)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -461,7 +484,10 @@ def generate_prop_projections(conn=None):
             if book not in NY_LEGAL_BOOKS:
                 continue
 
-            edge = calculate_prop_edge(proj['projection'], proj['std'], line, odds)
+            edge, capped_prob = calculate_prop_edge(
+                proj['projection'], proj['std'], line, odds,
+                season_values=proj.get('values'),
+            )
             if edge < MIN_EDGE_PCT:
                 continue
 
@@ -491,7 +517,7 @@ def generate_prop_projections(conn=None):
                 'line': line,
                 'odds': odds,
                 'model_spread': None,
-                'model_prob': round(_ncdf((proj['projection'] - line) / proj['std']), 4),
+                'model_prob': capped_prob,
                 'implied_prob': round(american_to_implied(odds) or 0, 4),
                 'edge_pct': round(edge, 2),
                 'star_rating': stars,
