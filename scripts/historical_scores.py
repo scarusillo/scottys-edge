@@ -67,6 +67,10 @@ ESPN_ENDPOINTS = {
         'url': 'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard',
         'season_start': '2026-02-14',  # 2026 college baseball season
     },
+    'baseball_mlb': {
+        'url': 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard',
+        'season_start': '2025-03-27',  # v17: Full 2025 MLB season for Elo training
+    },
     # Tennis — ATP and WTA
     'tennis_atp': {
         'url': 'https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard',
