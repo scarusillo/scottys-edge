@@ -83,7 +83,7 @@ except ImportError:
 
 SPORT_CONFIG = {
     'basketball_ncaab': {
-        'logistic_scale': 6.3, 'spread_std': 11.0, 'home_court': 3.2,
+        'logistic_scale': 7.5, 'spread_std': 13.0, 'home_court': 3.2,  # Was 6.3/11.0 — same as NBA but NCAAB has higher variance. 25%+ edge bucket was 1W-6L = fake edges.
         'max_spread_divergence': 4.5,   # v12 FIX: Was 6.0 — medium dogs (4-7.5 pts) went 2-8. 4.5 allows small dogs + favorites.
         'ml_scale': 7.5,  # Separate scale for moneyline win probability
     },
@@ -145,7 +145,7 @@ SPORT_CONFIG = {
         'logistic_scale': 1.8,    # Baseball: tighter scale, fewer blowouts than basketball
         'spread_std': 10.0,       # Calibrated: Elo MAE=6.2, match NBA conservatism ratio
         'home_court': 0.4,        # v14: Actual home win rate 65.6% — Elo home_advantage handles this
-        'max_spread_divergence': 2.0,  # Was 3.0 — too wide for early-season thin Elo data
+        'max_spread_divergence': 5.0,  # Was 2.0 — baseball totals at high div are 21W-10L +40u. Model's best sport needs room.
         'ml_scale': 3.5,          # v12 FIX: Was 2.2 (way too steep). Real baseball: 1 run diff = ~57% win
     },
 }
@@ -656,27 +656,17 @@ def _total_prob(diff, sport):
 def _divergence_penalty(model_val, market_val, market_type='SPREAD'):
     """
     Model-vs-market divergence safety check.
-    When the model heavily disagrees with the market, the market is more
-    likely right. Returns a multiplier (0.5–1.0) to reduce edge_pct.
+    Data shows the 3-5pt gap is the danger zone (5W-8L, -17.2u) — model is
+    indecisive. Big divergences (5+) are actually the model's best picks
+    (46W-17L, +109.9u). Only penalize the uncertain middle.
 
-    Spreads: >5pt gap → 0.70, >7pt gap → 0.50
-    Totals:  >4pt gap → 0.70, >6pt gap → 0.50
+    Spreads: 3-5pt gap → 0.80
+    Totals:  3-5pt gap → 0.80
     """
     gap = abs(model_val - market_val)
-    if market_type == 'TOTAL':
-        if gap > 6.0:
-            print(f"    ⚠ DIVERGENCE PENALTY: model-market gap={gap:.1f} (total) → edge×0.50")
-            return 0.50
-        elif gap > 4.0:
-            print(f"    ⚠ DIVERGENCE PENALTY: model-market gap={gap:.1f} (total) → edge×0.70")
-            return 0.70
-    else:  # SPREAD / default
-        if gap > 7.0:
-            print(f"    ⚠ DIVERGENCE PENALTY: model-market gap={gap:.1f} (spread) → edge×0.50")
-            return 0.50
-        elif gap > 5.0:
-            print(f"    ⚠ DIVERGENCE PENALTY: model-market gap={gap:.1f} (spread) → edge×0.70")
-            return 0.70
+    if 3.0 < gap <= 5.0:
+        print(f"    ⚠ DIVERGENCE PENALTY: model-market gap={gap:.1f} → edge×0.80")
+        return 0.80
     return 1.0
 
 
@@ -1014,6 +1004,11 @@ def generate_predictions(conn, sport=None, date=None):
                     h_data = elo_data.get(home, {})
                     a_data = elo_data.get(away, {})
                     _min_gp = min(h_data.get('games', 0), a_data.get('games', 0))
+                    # Hard-block teams with <10 Elo games — SIU-E had 3 games,
+                    # generated a -4.5 fav pick that flipped to +2.5 by game time.
+                    # Soft weighting wasn't enough to prevent fake edges.
+                    if _min_gp < 10:
+                        skip_div += 1; continue
                     _sport_min = cfg.get('min_games_elo', 15)  # Target: 15+ games for full weight
                     _conf_w = min(1.0, _min_gp / _sport_min)
 
@@ -1050,10 +1045,10 @@ def generate_predictions(conn, sport=None, date=None):
                             # Check 2: Either team has weak SOS (< 1510 = mid-major)
                             # Their Elo is inflated regardless of the gap
                             _min_sos = min(h_sos, a_sos)
-                            if _min_sos < 1480:
-                                _sos_w = min(_sos_w, 0.10)  # Near-block: cupcake schedule
-                            elif _min_sos < 1510:
-                                _sos_w = min(_sos_w, 0.30)  # Heavy dampen: weak schedule
+                            if _min_sos < 1500:
+                                _sos_w = 0.0  # Hard block: cupcake schedule inflates Elo. Was 0.10 soft-block at 1480.
+                            elif _min_sos < 1520:
+                                _sos_w = min(_sos_w, 0.20)  # Heavy dampen: weak schedule. Was 0.30 at 1510.
                         except Exception:
                             pass
 

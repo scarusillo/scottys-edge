@@ -1511,7 +1511,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     def _passes_filter(p):
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
-        min_edge = MARKET_MIN_EDGE.get(mtype, 13.0)
+        min_edge = MARKET_MIN_EDGE.get(mtype, 15.0)  # Was 13.0 — 13-15% bucket is 2W-4L -14.4u
         # v16: Soccer spreads DISABLED — backtest 80W-86L -70u.
         # Only totals are profitable (92W-62L +104u, 59.7%).
         # EPL/Ligue 1 spreads showed profit but not enough sample to trust yet.
@@ -1530,14 +1530,17 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         if mtype == 'MONEYLINE' and 'Elo' in str(p.get('context', '')):
             min_edge = 15.0
         
-        # Early bets: 12W-12L -10.7u (-9.1% ROI) vs Late: 27W-11L +57.2u (+30.7% ROI).
-        # Even EARLY FAVORITES are 6W-6L -6.2u (-10.8% ROI). The +8% surcharge for
-        # non-favs wasn't enough, and favorites aren't safe either.
-        # New policy: ALL early bets get surcharge. Soccer exempt (European books set lines early).
-        # Early totals (unders) are break-even, so surcharge rather than block.
+        # Early bets by sport (post-rebuild):
+        #   Baseball EARLY: 18W-7L +41.6u — lines settle early, no surcharge needed
+        #   NHL EARLY: 5W-2L +9.2u — same, no surcharge
+        #   NBA EARLY: 2W-1L +2.1u — small sample but OK
+        #   NCAAB EARLY: 1W-3L -11.0u — already hard-blocked above
+        # Only apply surcharge to sports where early bets are unproven/losing.
         timing = p.get('timing', 'EARLY')
         if timing == 'EARLY' and 'soccer' not in sport:
-            min_edge += 8.0
+            # Baseball + NHL exempt — early lines are reliable in these sports
+            if 'baseball' not in sport and 'hockey' not in sport:
+                min_edge += 5.0
         
         _min_u = MIN_UNITS
         if not (p.get('units', 0) >= _min_u and p.get('edge_pct', 0) >= min_edge):
@@ -1580,16 +1583,15 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                 return False
         
         # ── Elo-only ML filter ──
-        # Data: ML bets with ONLY "Elo probability edge" context are 5W-6L, -11.8% ROI.
-        # Louisville had model_spread +8.3 (8-pt dog) but model_prob 82.1% — contradictory.
-        # The Elo-to-ML probability conversion overestimates value without situational data.
-        # Require at least one REAL context factor beyond Elo for ML bets to qualify.
+        # Data: NCAAB Elo-only ML is 3W-4L -3.6u — cross-conference Elo breaks down.
+        # But NBA/NHL Elo is better calibrated (larger samples, no conference issue).
+        # Block Elo-only ML for soft markets only. Sharp markets (NBA/NHL) allowed.
         # Baseball ML exempt — uses pitcher data path, not Elo-only path.
-        if mtype == 'MONEYLINE' and 'baseball' not in sport:
+        if mtype == 'MONEYLINE' and 'baseball' not in sport and sport not in SHARP_MARKETS:
             ctx_str = str(p.get('context', ''))
             _elo_only = (ctx_str.strip() == 'Elo probability edge')
             if _elo_only:
-                return False  # Block ML bets backed only by Elo — no situational edge
+                return False  # Block Elo-only ML in soft markets — no situational edge
 
         # ── Heavy favorite ML filter ──
         # Laying -300 or worse is terrible risk/reward for subscribers.
@@ -1623,6 +1625,13 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # Late NCAAB is where the value lives.
         if timing == 'EARLY' and sport == 'basketball_ncaab':
             return False  # Block early NCAAB — lines too unsettled
+
+        # ── NCAAB totals block ──
+        # Data: NCAAB totals are 0W-3L, -14.0u. Model has no signal —
+        # TOTAL_STD=22 generates fake 18-35% edges. NCAAB spreads are
+        # profitable (late 15W-8L +30.3u), totals are not.
+        if mtype == 'TOTAL' and sport == 'basketball_ncaab':
+            return False
 
         # v12 FIX: Graduated edge requirements for dogs.
         # Elo compression makes the model systematically favor dogs.
