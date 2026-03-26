@@ -570,14 +570,14 @@ def travel_timezone_adjustment(home, away, commence, sport):
 # Slight effect for other high-altitude venues.
 
 ALTITUDE_VENUES = {
-    # NBA
-    'Denver Nuggets': {'altitude': 5280, 'spread_adj': 0.5, 'total_adj': 1.5},
-    'Utah Jazz': {'altitude': 4226, 'spread_adj': 0.3, 'total_adj': 1.0},
+    # NBA — v17: halved total_adj (was 1.5/1.0), altitude totals were 1W-2L
+    'Denver Nuggets': {'altitude': 5280, 'spread_adj': 0.5, 'total_adj': 0.75},
+    'Utah Jazz': {'altitude': 4226, 'spread_adj': 0.3, 'total_adj': 0.5},
     # NHL
     'Colorado Avalanche': {'altitude': 5280, 'spread_adj': 0.0, 'total_adj': 0.3},
-    # MLS
-    'Colorado Rapids': {'altitude': 5280, 'spread_adj': 0.5, 'total_adj': 1.0},
-    'Real Salt Lake': {'altitude': 4226, 'spread_adj': 0.3, 'total_adj': 0.5},
+    # MLS — v17: halved total_adj
+    'Colorado Rapids': {'altitude': 5280, 'spread_adj': 0.5, 'total_adj': 0.5},
+    'Real Salt Lake': {'altitude': 4226, 'spread_adj': 0.3, 'total_adj': 0.25},
 }
 
 
@@ -693,6 +693,8 @@ def motivation_adjustment(conn, home, away, sport, commence):
     # ── 2. BOUNCE-BACK (Walters p.252) ──
     # Walters NFL: +2 after 19pt loss, +4 after 29pt loss
     # Adapt thresholds per sport's scoring scale
+    # v17: Raised guard to boost >= 1.5 — small bounce-backs (1.0) were 0W-3L
+    # at the +0.8/+1.0 level. Only severe blowout bounce-backs are profitable.
     if 'basketball' in sport:
         bounce_thresholds = [(-29, 2.0), (-19, 1.0)]   # Basketball: same as NFL scale
     elif 'soccer' in sport:
@@ -703,11 +705,11 @@ def motivation_adjustment(conn, home, away, sport, commence):
         bounce_thresholds = [(-10, 1.5), (-7, 0.75)]    # Baseball: 7-run loss = ugly
     else:
         bounce_thresholds = [(-29, 2.0), (-19, 1.0)]
-    
+
     if h_margin is not None:
         for threshold, boost in bounce_thresholds:
             if h_margin <= threshold:
-                if boost >= 1.0 and 'home_bounceback' not in freeze:
+                if boost >= 1.5 and 'home_bounceback' not in freeze:
                     adj += boost
                     reasons['home_bounceback'] = boost
                 break
@@ -715,34 +717,37 @@ def motivation_adjustment(conn, home, away, sport, commence):
     if a_margin is not None:
         for threshold, boost in bounce_thresholds:
             if a_margin <= threshold:
-                if boost >= 1.0 and 'away_bounceback' not in freeze:
+                if boost >= 1.5 and 'away_bounceback' not in freeze:
                     adj -= boost
                     reasons['away_bounceback'] = -boost
                 break
     
     # ── 3. REVENGE FACTOR ──
     # Team facing opponent that blew them out earlier this season
+    # v17: Raised basketball threshold from -10 to -20. The -1.0 revenge adj
+    # (loss by 10-19) was 2W-4L (33%). Only blowout revenge (-1.5, loss by 20+)
+    # is profitable at 3W-2L. Other sports: removed small revenge entirely.
     h_revenge = _season_h2h_revenge(conn, home, away, sport, commence)
     a_revenge = _season_h2h_revenge(conn, away, home, sport, commence)
-    
+
     if 'basketball' in sport:
-        revenge_thresholds = [(-20, 1.5), (-10, 1.0)]
+        revenge_thresholds = [(-20, 1.5)]               # Only blowout revenge (20+ pt loss)
     elif 'soccer' in sport:
-        revenge_thresholds = [(-3, 1.0), (-2, 0.5)]
+        revenge_thresholds = [(-3, 1.0)]                # Only 3+ goal blowout
     elif 'icehockey' in sport:
-        revenge_thresholds = [(-4, 1.0), (-3, 0.5)]
+        revenge_thresholds = [(-4, 1.0)]                # Only 4+ goal blowout
     elif 'baseball' in sport:
-        revenge_thresholds = [(-7, 1.0), (-5, 0.5)]
+        revenge_thresholds = [(-7, 1.0)]                # Only 7+ run blowout
     else:
-        revenge_thresholds = [(-20, 1.5), (-10, 1.0)]
-    
+        revenge_thresholds = [(-20, 1.5)]
+
     if h_revenge is not None:
         for threshold, boost in revenge_thresholds:
             if h_revenge <= threshold:
                 adj += boost  # Home team has revenge motive
                 reasons['home_revenge'] = boost
                 break
-    
+
     if a_revenge is not None:
         for threshold, boost in revenge_thresholds:
             if a_revenge <= threshold:

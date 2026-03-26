@@ -572,6 +572,13 @@ def grade_bets(conn, days_back=3):
               side_type, spread_bucket, edge_bucket, timing,
               context_factors, context_confirmed, market_tier, model_spread, day_of_week))
 
+        # v17: Backfill result/profit/clv into source bets table
+        # Previously only graded_bets got updated — bets table was 97% empty
+        conn.execute("""
+            UPDATE bets SET result=?, profit=?, closing_line=?, clv=?
+            WHERE id=?
+        """, (result, pnl, closing_line_val, clv, bid))
+
         # Also mark any duplicate copies as graded
         dupes = conn.execute("""
             SELECT id FROM bets
@@ -1614,6 +1621,43 @@ def daily_grade_and_report(conn=None):
             print(pending_warning)
     except Exception as e:
         print(f"  Pending check: {e}")
+
+    # v17: Update power ratings from recent game results
+    # The update_ratings_post_game() function existed but was never called,
+    # leaving power ratings stale since bootstrap (Feb 27). Now we process
+    # all completed games from the last 3 days to keep ratings current.
+    try:
+        from model_engine import update_ratings_post_game, SPORT_CONFIG
+        rated_sports = ['basketball_nba', 'basketball_ncaab', 'icehockey_nhl',
+                        'baseball_ncaa', 'soccer_epl', 'soccer_italy_serie_a',
+                        'soccer_spain_la_liga', 'soccer_germany_bundesliga',
+                        'soccer_france_ligue_one', 'soccer_usa_mls',
+                        'soccer_mexico_ligamx', 'soccer_uefa_champs_league']
+        rating_cutoff = (datetime.now() - timedelta(days=3)).strftime('%Y-%m-%d')
+        # Get the latest power_ratings timestamp per sport to avoid reprocessing
+        latest_ts = {}
+        for sp in rated_sports:
+            row = conn.execute(
+                "SELECT MAX(run_timestamp) FROM power_ratings WHERE sport=?", (sp,)
+            ).fetchone()
+            latest_ts[sp] = row[0] if row and row[0] else '2000-01-01'
+
+        updated_count = 0
+        for sp in rated_sports:
+            games = conn.execute("""
+                SELECT home, away, home_score, away_score, commence_time
+                FROM results
+                WHERE sport=? AND completed=1 AND home_score IS NOT NULL
+                AND commence_time >= ? AND commence_time > ?
+                ORDER BY commence_time ASC
+            """, (sp, rating_cutoff, latest_ts[sp])).fetchall()
+            for g in games:
+                update_ratings_post_game(conn, sp, g[0], g[1], g[2], g[3])
+                updated_count += 1
+        if updated_count:
+            print(f"\n  Power ratings updated: {updated_count} games processed")
+    except Exception as e:
+        print(f"  Power ratings update: {e}")
 
     # Accumulate player results for historical signal
     accumulate_player_results(conn, days_back=3)

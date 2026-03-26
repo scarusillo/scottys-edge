@@ -666,15 +666,20 @@ def blended_spread(home, away, elo_ratings, market_ratings, sport, conn, neutral
         elo_weight = 0.20  # Still mostly market
 
     # v12.3: SOS confidence modifier — weaker schedules = less trust in Elo
-    h_sos = h_data.get('sos', 1500)
-    a_sos = a_data.get('sos', 1500)
-    avg_sos = (h_sos + a_sos) / 2
-    if avg_sos < 1450:
-        sos_penalty = (1450 - avg_sos) / 200  # Max ~0.15 reduction
-        elo_weight = max(0.15, elo_weight - sos_penalty)
-    elif avg_sos > 1550:
-        sos_bonus = (avg_sos - 1550) / 400  # Max ~0.05 boost
-        elo_weight = min(0.70, elo_weight + sos_bonus)
+    # v17: Skip for tennis — individual players don't have team SOS.
+    # Tennis SOS defaults to 1500 (neutral) so this is currently a no-op,
+    # but if SOS computation is ever added for tennis it would incorrectly
+    # penalize players who faced weaker draws.
+    if not sport.startswith('tennis_'):
+        h_sos = h_data.get('sos', 1500)
+        a_sos = a_data.get('sos', 1500)
+        avg_sos = (h_sos + a_sos) / 2
+        if avg_sos < 1450:
+            sos_penalty = (1450 - avg_sos) / 200  # Max ~0.15 reduction
+            elo_weight = max(0.15, elo_weight - sos_penalty)
+        elif avg_sos > 1550:
+            sos_bonus = (avg_sos - 1550) / 400  # Max ~0.05 boost
+            elo_weight = min(0.70, elo_weight + sos_bonus)
     
     blended = elo_weight * elo_spread + (1 - elo_weight) * market_spread
     

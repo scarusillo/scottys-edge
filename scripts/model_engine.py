@@ -275,13 +275,32 @@ def soccer_ml_probs(model_spread, sport):
 
 
 def get_team_injury_context(conn, team, sport):
+    """Return injury context: (injury_count, position_cluster_count, total_point_impact).
+
+    v17 FIX: Now returns actual point_impact sum instead of discarding it.
+    Previously returned (len, min(len,3)) — treating Cade Cunningham out
+    the same as a 12th man. Now the impact values drive spread adjustment.
+
+    Status weighting:
+      Out/Doubtful: full impact
+      Day-To-Day/Questionable: 50% impact (may play)
+    """
     today = datetime.now().strftime('%Y-%m-%d')
     rows = conn.execute("""
         SELECT player, status, point_impact FROM injuries
         WHERE sport=? AND team=? AND report_date=?
-        AND status IN ('Out','OUT','Doubtful','DOUBTFUL','Day-To-Day','DAY-TO-DAY')
+        AND status IN ('Out','OUT','Doubtful','DOUBTFUL','Day-To-Day','DAY-TO-DAY',
+                       'Questionable','QUESTIONABLE')
     """, (sport, team, today)).fetchall()
-    return len(rows), min(len(rows), 3)
+
+    total_impact = 0.0
+    for player, status, impact in rows:
+        pts = impact or 0.0
+        if status.upper() in ('DAY-TO-DAY', 'QUESTIONABLE'):
+            pts *= 0.5  # May play — discount impact
+        total_impact += pts
+
+    return len(rows), min(len(rows), 3), round(total_impact, 2)
 
 # ── Totals model ──
 
@@ -1128,14 +1147,23 @@ def generate_predictions(conn, sport=None, date=None):
                 except Exception as e:
                     pass  # Context is supplementary — don't crash on errors
 
-            h_inj, h_cl = get_team_injury_context(conn, home, sp)
-            a_inj, a_cl = get_team_injury_context(conn, away, sp)
+            h_inj, h_cl, h_imp = get_team_injury_context(conn, home, sp)
+            a_inj, a_cl, a_imp = get_team_injury_context(conn, away, sp)
+
+            # v17: Adjust model spread for injury differential
+            # If away team has 7.5 pts of injuries and home has 2.5,
+            # that's a 5.0 pt swing toward home (ms becomes more negative).
+            # Only apply the NET differential — market partially prices injuries
+            # so we use 50% of the raw differential to avoid over-counting.
+            inj_diff = a_imp - h_imp  # Positive = away more hurt = home advantage
+            inj_spread_adj = round(inj_diff * 0.5, 2)  # 50% weight — market prices some
+            ms_inj = ms - inj_spread_adj if abs(inj_spread_adj) >= 0.5 else ms
 
             # HOME SPREAD
             if mkt_hs is not None and mkt_hs_odds is not None:
                 k = f"{eid}|S|{home}"
                 if k not in seen:
-                    wa = scottys_edge_assessment(ms, mkt_hs, mkt_hs_odds, sp, hml, a_inj, a_cl)
+                    wa = scottys_edge_assessment(ms_inj, mkt_hs, mkt_hs_odds, sp, hml, a_inj, a_cl)
                     if wa['is_play'] and wa['point_value_pct'] >= min_pv:
                         prob = spread_to_cover_prob(ms, mkt_hs, sp)
                         # v12.2: Soccer draw adjustment for spreads
@@ -1164,7 +1192,7 @@ def generate_predictions(conn, sport=None, date=None):
             if mkt_as is not None and mkt_as_odds is not None:
                 k = f"{eid}|S|{away}"
                 if k not in seen:
-                    wa = scottys_edge_assessment(-ms, mkt_as, mkt_as_odds, sp, aml, h_inj, h_cl)
+                    wa = scottys_edge_assessment(-ms_inj, mkt_as, mkt_as_odds, sp, aml, h_inj, h_cl)
                     if wa['is_play'] and wa['point_value_pct'] >= min_pv:
                         prob = spread_to_cover_prob(-ms, mkt_as, sp)
                         # v12.2: Soccer draw adjustment for spreads
@@ -1375,10 +1403,10 @@ def generate_predictions(conn, sport=None, date=None):
                         _mgp = min(h_d.get('games', 0), a_d.get('games', 0))
                         _walters_elo_w = min(1.0, _mgp / 15.0)
                     else:
-                        h_prob_ml = spread_to_win_prob(ms, sp)
+                        h_prob_ml = spread_to_win_prob(ms_inj, sp)
                         a_prob_ml = 1.0 - h_prob_ml
                 else:
-                    h_prob_ml = spread_to_win_prob(ms, sp)
+                    h_prob_ml = spread_to_win_prob(ms_inj, sp)
                     a_prob_ml = 1.0 - h_prob_ml
 
                 # De-vig market ML odds (soccer includes draw)
@@ -1626,19 +1654,18 @@ def generate_predictions(conn, sport=None, date=None):
                             total_diff = model_total - over_total
                             if total_diff > 0:  # Model says higher scoring
                                 pv = calculate_point_value_totals(model_total, over_total, sp)
-                                # v17: Model-vs-market divergence penalty for totals
+                                # v17 FIX: Divergence penalty applied ONCE to final edge,
+                                # not separately to PV and prob_edge (was double-penalizing)
                                 _t_div = _divergence_penalty(model_total, over_total, 'TOTAL')
-                                if _t_div < 1.0:
-                                    pv *= _t_div
-                                    pv = round(pv, 1)
                                 stars = get_star_rating(pv)
                                 if pv >= min_pv_totals and stars > 0:
                                     prob = _total_prob(total_diff, sp)
                                     imp = american_to_implied_prob(over_odds)
-                                    # Use actual probability edge for Kelly (not PV)
                                     prob_edge = (prob - (imp or 0.524)) * 100.0
+                                    # Apply divergence once to the sizing edge
+                                    final_edge = max(pv, prob_edge)
                                     if _t_div < 1.0:
-                                        prob_edge *= _t_div
+                                        final_edge *= _t_div
                                     seen.add(k)
                                     all_picks.append({
                                         'sport': sp, 'event_id': eid, 'commence': commence,
@@ -1648,7 +1675,7 @@ def generate_predictions(conn, sport=None, date=None):
                                         'model_spread': ms, 'model_prob': round(prob, 4),
                                         'implied_prob': round(imp, 4) if imp else None,
                                         'edge_pct': round(pv, 2), 'star_rating': stars,
-                                        'units': kelly_units(edge_pct=max(pv, prob_edge), odds=over_odds, fraction=totals_kelly_frac),
+                                        'units': kelly_units(edge_pct=final_edge, odds=over_odds, fraction=totals_kelly_frac),
                                         'confidence': _conf(stars),
                                         'spread_or_ml': 'TOTAL', 'timing': 'EARLY',
                                         'notes': f"ModelTotal={model_total:.1f} Mkt={over_total} "
@@ -1657,7 +1684,7 @@ def generate_predictions(conn, sport=None, date=None):
                                     # Soccer totals Kelly boost (1/3 Kelly, same as spreads)
                                     if 'soccer' in sp:
                                         all_picks[-1]['units'] = kelly_units(
-                                            edge_pct=max(pv, prob_edge), odds=over_odds, fraction=0.333)
+                                            edge_pct=final_edge, odds=over_odds, fraction=0.333)
                                     # Attach context
                                     ctx_parts = []
                                     if ctx_total and ctx_total['summary']:
@@ -1678,19 +1705,16 @@ def generate_predictions(conn, sport=None, date=None):
                                 total_diff_u = under_total - model_total
                                 if total_diff_u > 0:  # Model says lower scoring
                                     pv = calculate_point_value_totals(model_total, under_total, sp)
-                                    # v17: Model-vs-market divergence penalty for totals
+                                    # v17 FIX: Divergence penalty applied ONCE (same as OVER fix)
                                     _t_div_u = _divergence_penalty(model_total, under_total, 'TOTAL')
-                                    if _t_div_u < 1.0:
-                                        pv *= _t_div_u
-                                        pv = round(pv, 1)
                                     stars = get_star_rating(pv)
                                     if pv >= min_pv_totals and stars > 0:
                                         prob = _total_prob(total_diff_u, sp)
                                         imp = american_to_implied_prob(under_odds)
-                                        # Use actual probability edge for Kelly (not PV)
                                         prob_edge = (prob - (imp or 0.524)) * 100.0
+                                        final_edge_u = max(pv, prob_edge)
                                         if _t_div_u < 1.0:
-                                            prob_edge *= _t_div_u
+                                            final_edge_u *= _t_div_u
                                         seen.add(k)
                                         all_picks.append({
                                             'sport': sp, 'event_id': eid, 'commence': commence,
@@ -1700,7 +1724,7 @@ def generate_predictions(conn, sport=None, date=None):
                                             'model_spread': ms, 'model_prob': round(prob, 4),
                                             'implied_prob': round(imp, 4) if imp else None,
                                             'edge_pct': round(pv, 2), 'star_rating': stars,
-                                            'units': kelly_units(edge_pct=max(pv, prob_edge), odds=under_odds, fraction=totals_kelly_frac),
+                                            'units': kelly_units(edge_pct=final_edge_u, odds=under_odds, fraction=totals_kelly_frac),
                                             'confidence': _conf(stars),
                                             'spread_or_ml': 'TOTAL', 'timing': 'EARLY',
                                             'notes': f"ModelTotal={model_total:.1f} Mkt={under_total} "
@@ -1709,7 +1733,7 @@ def generate_predictions(conn, sport=None, date=None):
                                         # Soccer totals Kelly boost (1/3 Kelly, same as spreads)
                                         if 'soccer' in sp:
                                             all_picks[-1]['units'] = kelly_units(
-                                                edge_pct=max(pv, prob_edge), odds=under_odds, fraction=0.333)
+                                                edge_pct=final_edge_u, odds=under_odds, fraction=0.333)
                                         # Attach context
                                         ctx_parts = []
                                         if ctx_total and ctx_total['summary']:
@@ -1767,30 +1791,58 @@ def generate_predictions(conn, sport=None, date=None):
                 if p['units'] < 2.0:
                     p['units'] = 2.0
 
-    # v12.3: Line movement awareness — flag picks where sharp money disagrees
-    # If the spread has moved 1.5+ pts AGAINST our pick since first snapshot,
-    # add a warning. Data shows CLV-negative picks lose at high rate.
+    # v17: CLV enforcement gate — block picks where sharp money strongly disagrees
+    # v12.3 only added a warning note. Now we actually remove picks with adverse
+    # line movement. If the line moved 2.0+ pts AGAINST our side since opener,
+    # sharp money is on the other side and we should not bet.
+    # Threshold: 2.0 pts for spreads, 1.5 for totals (totals move less).
     try:
-        for p in all_picks:
+        blocked_indices = []
+        for i, p in enumerate(all_picks):
             if p.get('market_type') not in ('SPREAD', 'TOTAL') or not p.get('event_id'):
                 continue
             mkt = 'spreads' if p['market_type'] == 'SPREAD' else 'totals'
-            # Get earliest and latest snapshot for this event
+            sel = p.get('selection', '')
+            # Determine which outcome to look up
+            if p['market_type'] == 'TOTAL':
+                outcome = 'Over' if 'OVER' in sel else 'Under'
+            else:
+                outcome = sel.split()[0]  # Team name
             snaps = conn.execute("""
                 SELECT point, snapshot_time FROM line_snapshots
                 WHERE event_id = ? AND market = ? AND outcome = ?
                 ORDER BY snapshot_time ASC
-            """, (p['event_id'], mkt, p['selection'].split()[0])).fetchall()
+            """, (p['event_id'], mkt, outcome)).fetchall()
             if len(snaps) >= 2:
                 opener_pt = snaps[0][0]
                 current_pt = snaps[-1][0]
                 if opener_pt is not None and current_pt is not None:
                     shift = current_pt - opener_pt
-                    if abs(shift) >= 1.5:
-                        # Line moved significantly — check direction
+                    # For spreads: positive shift = line moving against dog (getting fewer pts)
+                    # For totals OVER: negative shift = total dropped (harder to go over)
+                    # For totals UNDER: positive shift = total rose (harder to stay under)
+                    clv_threshold = 1.5 if p['market_type'] == 'TOTAL' else 2.0
+                    is_adverse = False
+                    if p['market_type'] == 'SPREAD' and shift < -clv_threshold:
+                        is_adverse = True  # Line moved against us
+                    elif p['market_type'] == 'SPREAD' and shift > clv_threshold:
+                        is_adverse = True  # Line moved against us
+                    elif 'OVER' in sel and shift < -clv_threshold:
+                        is_adverse = True  # Total dropped, harder for over
+                    elif 'UNDER' in sel and shift > clv_threshold:
+                        is_adverse = True  # Total rose, harder for under
+
+                    if is_adverse:
+                        print(f"  CLV BLOCK: {sel} — line moved {shift:+.1f}pts against us "
+                              f"(opener={opener_pt}, now={current_pt})")
+                        blocked_indices.append(i)
+                    elif abs(shift) >= 1.0:
                         p['line_move'] = round(shift, 1)
                         existing = p.get('notes', '')
                         p['notes'] = existing + f" | LINE MOVE: {shift:+.1f}pts since open"
+        # Remove blocked picks (reverse order to preserve indices)
+        for i in sorted(blocked_indices, reverse=True):
+            all_picks.pop(i)
     except Exception:
         pass  # line_snapshots table may not exist
 
