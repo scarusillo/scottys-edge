@@ -456,9 +456,11 @@ def cmd_run(args):
     if all_picks:
         today_str = datetime.now().strftime('%Y-%m-%d')
         already_posted = conn.execute("""
-            SELECT sport, market_type, selection FROM bets
+            SELECT sport, market_type, selection, event_id FROM bets
             WHERE created_at >= ? AND result IS NULL
         """, (today_str,)).fetchall()
+        # v17: Track event_ids already bet today for concentration cap
+        posted_event_ids = set(row[3] for row in already_posted if row[3])
         posted_keys = set()
         for row in already_posted:
             sport, mtype, sel = row
@@ -492,6 +494,10 @@ def cmd_run(args):
                 side = sel
             key = f"{sport}|{mtype}|{side}"
             if key in posted_keys:
+                duped.append(sel)
+            # v17: Concentration cap — skip if we already have a bet on this game from earlier run
+            elif p.get('event_id') in posted_event_ids and mtype != 'PROP':
+                print(f"  CONCENTRATION CAP: skipped {sel[:50]} — already have a bet on this game")
                 duped.append(sel)
             else:
                 new_picks.append(p)
@@ -639,9 +645,15 @@ def cmd_run(args):
                     _db.close()
                     _sw, _sl, _sp = _season[0] or 0, _season[1] or 0, _season[2] or 0
                     _wr = _sw/(_sw+_sl)*100 if (_sw+_sl) > 0 else 0
-                    _best_pick = sorted(all_picks, key=lambda x: x.get('units',0), reverse=True)[0] if all_picks else None
-                    _bp_sel = _best_pick['selection'] if _best_pick else ''
-                    _bp_odds = f"({_best_pick['odds']:+.0f})" if _best_pick and _best_pick.get('odds') else ''
+                    # Use all today's picks (including earlier runs) for the caption playbook
+                    _all_today = conn.execute("""
+                        SELECT selection, odds, units FROM bets
+                        WHERE created_at >= ? AND result IS NULL ORDER BY units DESC
+                    """, (today,)).fetchall() if 'today' in dir() else []
+                    _best_pick = _all_today[0] if _all_today else (all_picks[0] if all_picks else None)
+                    _bp_sel = _best_pick[0] if _best_pick and isinstance(_best_pick, tuple) else (_best_pick['selection'] if _best_pick else 'Check card')
+                    _bp_odds_raw = _best_pick[1] if _best_pick and isinstance(_best_pick, tuple) else (_best_pick.get('odds') if _best_pick else None)
+                    _bp_odds = f"({_bp_odds_raw:+.0f})" if _bp_odds_raw else ''
 
                     growth_section = f"""
 
