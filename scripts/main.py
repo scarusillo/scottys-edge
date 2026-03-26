@@ -626,6 +626,72 @@ def cmd_run(args):
                     thread_text = generate_thread(all_picks)
                     if thread_text:
                         caption_text += "\n\n" + "TWITTER THREADS (copy-paste each tweet separately):\n" + "="*40 + thread_text
+
+                    # v17: Growth playbook — accounts to engage, ready-to-post content
+                    _db = sqlite3.connect(DB_PATH)
+                    _season = _db.execute("""
+                        SELECT SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END),
+                               SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END),
+                               SUM(pnl_units)
+                        FROM graded_bets WHERE DATE(created_at) >= '2026-03-04'
+                        AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5
+                    """).fetchone()
+                    _db.close()
+                    _sw, _sl, _sp = _season[0] or 0, _season[1] or 0, _season[2] or 0
+                    _wr = _sw/(_sw+_sl)*100 if (_sw+_sl) > 0 else 0
+                    _best_pick = sorted(all_picks, key=lambda x: x.get('units',0), reverse=True)[0] if all_picks else None
+                    _bp_sel = _best_pick['selection'] if _best_pick else ''
+                    _bp_odds = f"({_best_pick['odds']:+.0f})" if _best_pick and _best_pick.get('odds') else ''
+
+                    growth_section = f"""
+
+GROWTH PLAYBOOK
+{'='*40}
+
+ACCOUNTS TO TAG (on your image, not caption):
+  IG: @actionnetworkhq @baborofficial @bettingcappers @vegasinsider
+  Twitter: @ActionNetworkHQ @BettingPros @covers @PrizePicks @br_betting
+
+ACCOUNTS TO COMMENT ON (within 30 min of their posts):
+  @ActionNetworkHQ @ESPNBet @BleacherReport — reply with your model's take
+
+READY-TO-TWEET (copy-paste):
+{'='*40}
+
+Tweet 1 (Free pick — post BEFORE games start):
+Today's free MAX PLAY: {_bp_sel} {_bp_odds}
+
+{_sw}W-{_sl}L ({_wr:.0f}%) | {_sp:+.0f}u on the season. Every pick tracked.
+
+Full card in bio.
+
+#SportsBetting #FreePicks #BettingTwitter
+
+Tweet 2 (Quote-tweet a big account's game preview):
+Our model has {_bp_sel} as the biggest edge on the board tonight.
+
+{_sw}W-{_sl}L this season. Data-driven, no gut picks.
+
+Tweet 3 (Engagement — reply to injury/line news):
+This is exactly why we have {_bp_sel} today. The model saw this edge before the line moved.
+
+{_sw}W-{_sl}L season. Link in bio.
+
+COMMENT TEMPLATE (for big account posts):
+{'='*40}
+"Our model agrees — [their pick] is the play. {_sw}W-{_sl}L on the season, all tracked."
+"Model disagrees here — we have {_bp_sel} as the value side. {_wr:.0f}% win rate this season."
+
+TONIGHT'S CHECKLIST:
+{'='*40}
+[ ] Post picks card to IG feed + story (tag 4 accounts ON image)
+[ ] Tweet free MAX PLAY (Tweet 1 above)
+[ ] Quote-tweet 1 big account with your take (Tweet 2)
+[ ] Comment on 2 big account posts (within 30 min)
+[ ] After wins hit: post results card + "Called it" story
+"""
+                    caption_text += growth_section
+
                     today = datetime.now().strftime('%Y-%m-%d')
                     send_email(f"Social Captions - {run_type} {today}", caption_text)
                     print("  Captions + pick write-ups email sent")
