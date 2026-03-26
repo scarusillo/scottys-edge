@@ -1015,7 +1015,7 @@ def performance_report(conn=None, days=7, sport=None, start_date=None):
     lines.append(f"\n  ── BY SPORT ──")
     _breakdown(lines, records, 'sport', {
         'basketball_ncaab': 'NCAAB', 'basketball_nba': 'NBA', 'icehockey_nhl': 'NHL',
-        'baseball_ncaa': 'NCAA Baseball',
+        'baseball_ncaa': 'NCAA Baseball', 'baseball_mlb': 'MLB',
         'soccer_epl': 'EPL', 'soccer_italy_serie_a': 'Serie A', 'soccer_spain_la_liga': 'La Liga',
         'soccer_germany_bundesliga': 'Bundesliga', 'soccer_france_ligue_one': 'Ligue 1',
         'soccer_uefa_champs_league': 'UCL', 'soccer_usa_mls': 'MLS',

@@ -49,6 +49,7 @@ SPORT_LABELS = {
     'soccer_france_ligue_one': 'LIGUE 1', 'soccer_italy_serie_a': 'SERIE A',
     'soccer_spain_la_liga': 'LA LIGA', 'soccer_usa_mls': 'MLS', 'soccer_uefa_champs_league': 'UCL',
     'soccer_mexico_ligamx': 'LIGA MX',
+    'baseball_mlb': 'MLB',
 }
 SPORT_BADGE_COLORS = {
     'basketball_nba': (255, 100, 50), 'basketball_ncaab': (255, 152, 0),
@@ -58,6 +59,7 @@ SPORT_BADGE_COLORS = {
     'soccer_spain_la_liga': (130, 50, 200), 'soccer_usa_mls': (130, 50, 200),
     'soccer_uefa_champs_league': (130, 50, 200),
     'soccer_mexico_ligamx': (130, 50, 200),
+    'baseball_mlb': (120, 180, 60),
 }
 # Tennis: dynamically add labels and badge colors from config
 try:

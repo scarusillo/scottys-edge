@@ -42,6 +42,7 @@ TRACKED_SPORTS = [
     'soccer_usa_mls',               # Was missing — same
     'soccer_mexico_ligamx',
     'baseball_ncaa',
+    'baseball_mlb',             # v17: Opening Day 2026-03-26
 ]
 # Tennis keys are NOT in TRACKED_SPORTS — they're event-based and most are
 # inactive at any given time. detect_active_tennis() finds live ones dynamically.

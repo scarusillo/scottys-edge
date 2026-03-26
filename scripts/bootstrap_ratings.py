@@ -33,7 +33,7 @@ def ml_to_implied_spread(home_ml, away_ml, sport):
              'soccer_italy_serie_a': 0.40, 'soccer_spain_la_liga': 0.40,
              'soccer_germany_bundesliga': 0.40, 'soccer_france_ligue_one': 0.40,
              'soccer_uefa_champs_league': 0.40, 'soccer_usa_mls': 0.40,
-             'baseball_ncaa': 1.8}
+             'baseball_ncaa': 1.8, 'baseball_mlb': 1.8}
     s = scale.get(sport, 4.0)
     return round(-s * math.log(hf / (1 - hf)), 2)
 

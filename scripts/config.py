@@ -158,6 +158,7 @@ SHARP_MARKETS = {
     'icehockey_nhl',
     'soccer_epl',
     'soccer_spain_la_liga',
+    'baseball_mlb',             # v17: Pro baseball — sharp, efficient market
 }
 
 
@@ -178,6 +179,7 @@ HOME_ADVANTAGE = {
     'soccer_usa_mls': 0.45,
     'soccer_mexico_ligamx': 0.50,
     'baseball_ncaa': 0.4,
+    'baseball_mlb': 0.3,        # v17: MLB ~54% home win rate (weaker than college)
 }
 # Tennis: no home advantage (neutral tournament venues)
 for _tk in TENNIS_SPORTS:
@@ -201,6 +203,7 @@ PLAY_THRESHOLDS = {
     'soccer_epl': 13.0,
     'soccer_spain_la_liga': 10.0,
     'soccer_mexico_ligamx': 8.0,
+    'baseball_mlb': 12.0,       # v17: Sharp market, higher bar than college (8.0)
 }
 # Tennis: 15% threshold — model is new, only fire on strongest edges
 for _tk in TENNIS_SPORTS:
@@ -286,6 +289,12 @@ SPORT_CONFIG = {
         'logistic_scale': 1.8, 'spread_std': 10.0,
         'home_court': HOME_ADVANTAGE['baseball_ncaa'],
         'max_spread_divergence': 2.0,
+        'ml_scale': 3.5,
+    },
+    'baseball_mlb': {
+        'logistic_scale': 1.8, 'spread_std': 8.0,
+        'home_court': HOME_ADVANTAGE['baseball_mlb'],
+        'max_spread_divergence': 4.0,
         'ml_scale': 3.5,
     },
 }

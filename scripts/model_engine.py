@@ -148,6 +148,15 @@ SPORT_CONFIG = {
         'max_spread_divergence': 5.0,  # Was 2.0 — baseball totals at high div are 21W-10L +40u. Model's best sport needs room.
         'ml_scale': 3.5,          # v12 FIX: Was 2.2 (way too steep). Real baseball: 1 run diff = ~57% win
     },
+    # v17: MLB — Opening Day 2026-03-26. Same structure as NCAA baseball
+    # with tighter settings (pro markets are sharper than college).
+    'baseball_mlb': {
+        'logistic_scale': 1.8,    # Same as NCAA — baseball scoring distribution is similar
+        'spread_std': 8.0,        # Tighter than NCAA (10.0) — pro lines are sharper
+        'home_court': 0.3,        # MLB home advantage ~54% (weaker than college 65%)
+        'max_spread_divergence': 4.0,  # Tighter than NCAA (5.0) — pro market more efficient
+        'ml_scale': 3.5,          # Same as NCAA
+    },
 }
 
 # Dynamically add tennis tournament configs from config.py
@@ -315,6 +324,7 @@ LEAGUE_AVG_TOTAL = {
     'soccer_usa_mls': 2.85,
     'soccer_mexico_ligamx': 2.70,
     'baseball_ncaa': 13.0,  # v14: Actual data avg=13.0 (was 11.5). Metal bats + college pitching depth
+    'baseball_mlb': 8.5,   # v17: MLB avg ~8.5 runs/game (lower than college — wood bats, better pitching)
 }
 
 TOTAL_STD = {
@@ -331,6 +341,7 @@ TOTAL_STD = {
     'soccer_usa_mls': 5.0,  # v13: Was 1.8 — backtest 1W-7L (-72.8% ROI). Zero signal. Effectively disabled.
     'soccer_mexico_ligamx': 1.8,
     'baseball_ncaa': 3.5,  # v14: Was 5.0 (too conservative). Backtest: 50W-35L +30.7u +15.3% ROI at 5.0. Lower to let more signal through.
+    'baseball_mlb': 4.0,   # v17: Tighter than NCAA (3.5) — pro lines sharper, need larger disagreement
 }
 
 
