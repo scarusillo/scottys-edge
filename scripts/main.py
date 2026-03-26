@@ -1936,7 +1936,30 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     
     # ── Merge: soft first, then sharp ──
     game_final = soft_final + sharp_final
-    
+
+    # v17: Per-game concentration cap — max 1 pick per event (spreads/totals/ML)
+    # Stacking spread + total on the same game creates correlated risk.
+    # If both hit, great. If the game goes sideways, you lose 2x on one event.
+    # Keep only the highest-edge pick per event. Props exempt (different players).
+    game_event_best = {}
+    game_capped = []
+    for p in game_final:
+        eid = p.get('event_id', '')
+        existing = game_event_best.get(eid)
+        if existing:
+            # Already have a pick on this game — keep the higher edge
+            if p.get('edge_pct', 0) > existing.get('edge_pct', 0):
+                game_capped.remove(existing)
+                game_event_best[eid] = p
+                game_capped.append(p)
+                print(f"  CONCENTRATION CAP: kept {p['selection'][:40]} over {existing['selection'][:40]} (same game)")
+            else:
+                print(f"  CONCENTRATION CAP: skipped {p['selection'][:40]} — already have {existing['selection'][:40]} on this game")
+        else:
+            game_event_best[eid] = p
+            game_capped.append(p)
+    game_final = game_capped
+
     # ── Props: lower unit floor (plus-money odds produce lower Kelly) ──
     # A 10% edge at +150 gives ~1.5u Kelly. 3.0u filter kills all props.
     # 2.0u minimum still filters weak edges while letting real props through.
