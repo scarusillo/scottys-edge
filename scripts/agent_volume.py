@@ -24,7 +24,7 @@ def analyze_daily_volume(conn, days_back=7):
     """Track daily pick volume trend."""
     daily = conn.execute("""
         SELECT DATE(created_at) as d, COUNT(*), 
-               SUM(CASE WHEN units >= 4.5 THEN 1 ELSE 0 END) as max_plays,
+               SUM(CASE WHEN units >= 3.5 THEN 1 ELSE 0 END) as max_plays,
                SUM(CASE WHEN units >= 4.0 AND units < 4.5 THEN 1 ELSE 0 END) as strong,
                SUM(CASE WHEN units < 4.0 THEN 1 ELSE 0 END) as below
         FROM bets
@@ -54,7 +54,7 @@ def analyze_sport_coverage(conn):
     # Last 7 days by sport
     sports = conn.execute("""
         SELECT sport, COUNT(*) as total,
-               SUM(CASE WHEN units >= 4.5 THEN 1 ELSE 0 END) as max_plays,
+               SUM(CASE WHEN units >= 3.5 THEN 1 ELSE 0 END) as max_plays,
                ROUND(AVG(units), 1) as avg_units
         FROM bets
         WHERE DATE(created_at) >= DATE('now', '-7 days')

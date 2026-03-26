@@ -35,7 +35,7 @@ def check_milestones(conn):
         FROM graded_bets
         WHERE DATE(created_at) >= '2026-03-04'
         AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
-        AND units >= 4.5
+        AND units >= 3.5
     """).fetchone()
     
     wins, losses, pnl, total = r
@@ -79,7 +79,7 @@ def check_milestones(conn):
         SELECT result FROM graded_bets
         WHERE DATE(created_at) >= '2026-03-04'
         AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
-        AND units >= 4.5
+        AND units >= 3.5
         ORDER BY created_at DESC
     """).fetchall()
     
@@ -110,7 +110,7 @@ def generate_weekly_digest(conn):
         FROM graded_bets
         WHERE DATE(created_at) >= DATE('now', '-7 days')
         AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
-        AND units >= 4.5
+        AND units >= 3.5
         ORDER BY created_at
     """).fetchall()
     
@@ -146,7 +146,7 @@ def generate_weekly_digest(conn):
                SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END),
                ROUND(SUM(pnl_units), 1)
         FROM graded_bets WHERE DATE(created_at) >= '2026-03-04'
-        AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED') AND units >= 4.5
+        AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED') AND units >= 3.5
     """).fetchone()
     
     wp = wins / (wins + losses) * 100 if (wins + losses) > 0 else 0
@@ -183,7 +183,7 @@ def analyze_content_performance(conn):
         FROM graded_bets
         WHERE DATE(created_at) >= '2026-03-04'
         AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
-        AND units >= 4.5
+        AND units >= 3.5
     """).fetchall()
     
     if len(bets) < 10:

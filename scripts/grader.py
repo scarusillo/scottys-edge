@@ -296,14 +296,14 @@ def grade_bets(conn, days_back=3):
 
     # Get ALL ungraded bets first, then dedup in Python (SQL can't easily strip lines)
     # v12 FIX: Also re-grade PENDING bets — they had no score last time but might now
-    # v12.2: Only grade 4.5u+ picks (public threshold). Sub-4.5u picks are tracked
+    # v17: Grade 3.5u+ picks (ELITE + STRONG). Sub-3.5u picks are tracked
     # in the bets table but not graded or shown in the record.
     all_bets = conn.execute("""
         SELECT id, sport, event_id, market_type, selection,
                book, line, odds, edge_pct, confidence, units, created_at
         FROM bets
         WHERE DATE(created_at) >= ?
-        AND units >= 4.5
+        AND units >= 3.5
         AND (result IS NULL OR result NOT IN ('TAINTED'))
         AND (
             id NOT IN (SELECT bet_id FROM graded_bets WHERE bet_id IS NOT NULL)
@@ -900,7 +900,7 @@ def performance_report(conn=None, days=7, sport=None, start_date=None):
                line
         FROM graded_bets WHERE DATE(created_at) >= ?
         AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
-        AND units >= 4.5
+        AND units >= 3.5
     """
     params = [cutoff]
     if sport:
@@ -1583,7 +1583,7 @@ def daily_grade_and_report(conn=None):
                 SELECT result, pnl_units FROM graded_bets
                 WHERE DATE(created_at) >= '2026-03-04'
                 AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
-                AND units >= 4.5
+                AND units >= 3.5
             """).fetchall()
             overall_stats = {
                 'wins': sum(1 for r in season_all if r[0] == 'WIN'),
@@ -1606,7 +1606,7 @@ def daily_grade_and_report(conn=None):
         stale_pending = conn.execute("""
             SELECT b.id, b.selection, b.sport, b.created_at
             FROM bets b
-            WHERE b.units >= 4.5
+            WHERE b.units >= 3.5
             AND b.id NOT IN (
                 SELECT bet_id FROM graded_bets
                 WHERE bet_id IS NOT NULL AND result != 'PENDING'

@@ -91,7 +91,7 @@ def check_ungraded(conn):
         )
         AND DATE(b.created_at) <= DATE('now', '-1 day')
         AND DATE(b.created_at) >= DATE('now', '-5 days')
-        AND b.units >= 4.5
+        AND b.units >= 3.5
     """).fetchall()
     
     for sel, sport, dt, units in ungraded:

@@ -607,7 +607,7 @@ def _check_phantom_picks(conn, records):
         )
         AND DATE(b.created_at) <= DATE('now', '-3 days')
         AND DATE(b.created_at) >= ?
-        AND b.units >= 4.5
+        AND b.units >= 3.5
     """, (START_DATE,)).fetchall()
 
     for sel, sport, dt, units in stale:

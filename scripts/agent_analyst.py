@@ -33,7 +33,7 @@ def get_performance(conn, days_back=None, start_date='2026-03-04'):
                timing, context_factors, market_type, created_at
         FROM graded_bets
         WHERE DATE(created_at) >= ? AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
-        AND units >= 4.5
+        AND units >= 3.5
     """, (cutoff,)).fetchall()
     
     wins = sum(1 for b in bets if b[1] == 'WIN')
@@ -66,14 +66,14 @@ def analyze_sport_health(conn):
     sports = conn.execute("""
         SELECT DISTINCT sport FROM graded_bets
         WHERE result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
-        AND DATE(created_at) >= '2026-03-04' AND units >= 4.5
+        AND DATE(created_at) >= '2026-03-04' AND units >= 3.5
     """).fetchall()
     
     for (sport,) in sports:
         bets = conn.execute("""
             SELECT result, pnl_units, created_at FROM graded_bets
             WHERE sport=? AND result NOT IN ('DUPLICATE','PENDING','TAINTED')
-            AND DATE(created_at) >= '2026-03-04' AND units >= 4.5
+            AND DATE(created_at) >= '2026-03-04' AND units >= 3.5
             ORDER BY created_at
         """, (sport,)).fetchall()
         
@@ -113,7 +113,7 @@ def analyze_context_health(conn):
     bets = conn.execute("""
         SELECT context_factors, result, pnl_units FROM graded_bets
         WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED')
-        AND DATE(created_at) >= '2026-03-04' AND units >= 4.5
+        AND DATE(created_at) >= '2026-03-04' AND units >= 3.5
         AND context_factors IS NOT NULL AND context_factors != ''
     """).fetchall()
     
@@ -145,7 +145,7 @@ def analyze_volume(conn):
     daily = conn.execute("""
         SELECT DATE(created_at), COUNT(*) FROM bets
         WHERE DATE(created_at) >= DATE('now', '-5 days')
-        AND units >= 4.5
+        AND units >= 3.5
         GROUP BY DATE(created_at)
         ORDER BY DATE(created_at)
     """).fetchall()
@@ -174,7 +174,7 @@ def analyze_ungraded(conn):
         )
         AND DATE(b.created_at) <= DATE('now', '-1 day')
         AND DATE(b.created_at) >= DATE('now', '-5 days')
-        AND b.units >= 4.5
+        AND b.units >= 3.5
     """).fetchall()
     
     return ungraded

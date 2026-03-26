@@ -1476,7 +1476,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     from scottys_edge import SOFT_MARKETS, SHARP_MARKETS
     from datetime import datetime
 
-    MAX_SHARP_PICKS = 4   # Was 2 — too restrictive. NHL (3-0) + NBA + EPL need room.
+    MAX_SHARP_PICKS = 6   # v17: Was 4 — NHL can have 5+ puck lines on heavy nights (20W-9L +25.3u)
     
     # ── Filter: Only highest conviction picks make the card ──
     # No artificial caps — quality thresholds control output volume.
@@ -1503,10 +1503,10 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     # Bundesliga 63.8% overs, UCL 72.8%. Model correctly identifies
     # over/under tendencies from team attack/defense rates.
     SOCCER_TOTAL_MIN_EDGE = 5.0
-    MIN_UNITS = 4.5  # MAX PLAY only — subscribers want highest conviction picks
-    # 3/25: HIGH tier eliminated from _conf() entirely. Only ELITE (2.5+ stars)
-    # exists above STRONG. Former HIGH tier was 3W-7L -22.5u (-46.9% ROI).
-    REQUIRED_CONFIDENCE = 'ELITE'
+    MIN_UNITS = 3.5  # v17: Lowered from 4.5 to include STRONG picks (was max-play only)
+    # ELITE (5u) = highest conviction. STRONG (3.5-4.5u) = solid plays.
+    # HIGH tier remains excluded — was 3W-7L -22.5u (-46.9% ROI).
+    REQUIRED_CONFIDENCE = ('ELITE', 'STRONG')
 
     def _passes_filter(p):
         mtype = p.get('market_type', 'SPREAD')
@@ -1545,29 +1545,25 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         _min_u = MIN_UNITS
         if not (p.get('units', 0) >= _min_u and p.get('edge_pct', 0) >= min_edge):
             return False
-        # Only ELITE confidence passes. HIGH tier eliminated from _conf() on 3/25
-        # (was 3W-7L -22.5u). This is a safety net — sub-ELITE should never reach
+        # v17: ELITE + STRONG confidence pass. HIGH tier remains blocked
+        # (was 3W-7L -22.5u). STRONG picks at 3.5-4.5u add volume.
         # 4.5u anyway, but belt-and-suspenders.
-        if p.get('confidence') not in ('ELITE', None):
+        if p.get('confidence') not in ('ELITE', 'STRONG', None):
             return False
         
-        # v12 FIX: Soft market picks without context need 20%+ edge.
-        # Data: Context-confirmed 18W-10L (+22.8u), Raw model 41W-48L (-19.9u).
-        # Edge 16-20% is 9W-17L (-31.8u) — almost all soft market, no context.
-        # The raw model in soft markets is a losing system. Context IS the edge.
-        # Sharp markets work without context (21W-10L), so no filter there.
+        # v17: Soft market context requirement.
+        # Data: Context-confirmed 42W-26L +54.2u (17.4% ROI).
+        #       Raw model (no ctx) 1W-2L -4.4u — no signal without context.
+        # Context at 20-25% edge is the sweet spot: 17W-5L +51.4u.
+        # Lowered gate from 20% to 18% — context 15-20% is 10W-8L (slight positive).
         #
-        # v14: EXCEPTION for March Madness (NCAAB March/April).
-        # Tournament neutral-site games don't trigger normal context (no B2B, no
-        # home/away rest). But Elo spread IS the signal when SOS is comparable.
-        # Elo-backed picks (tagged 'Elo probability edge') already passed SOS
-        # dampening, so they've earned trust. Allow them through at 15% edge.
+        # Exceptions: March Madness (15%+), Soccer (5%+) — both work without context.
         is_soft = sport in SOFT_MARKETS
         has_context = bool(p.get('context', ''))
         edge = p.get('edge_pct', 0)
         _is_march_madness = (sport == 'basketball_ncaab'
             and (datetime.now().month == 3 or (datetime.now().month == 4 and datetime.now().day <= 7)))
-        if is_soft and not has_context and edge < 20.0:
+        if is_soft and not has_context and edge < 18.0:
             # v14: March Madness exception. Tournament neutral-site games
             # don't trigger context (no B2B, no home/away rest). The Elo
             # spread itself is the signal. Allow picks through at 15% edge.
@@ -1602,14 +1598,14 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             return False
 
         # ── Underdog ML filter ──
-        # Elo ML rescue path: 5W-7L -12.2u, CLV -9.51. Losses concentrated
-        # on big dogs (+135 to +460). Wins came from near-favorites.
-        # Cap at +200 max. Dogs +201 and higher are blocked entirely.
-        # Dogs +100 to +200 capped at 4.5u (higher variance = smaller size).
-        if mtype == 'MONEYLINE' and odds >= 200:
-            return False  # Block dogs +200 and higher — Elo ML path loses money here
+        # v17: Tightened from +200 to +150. Data shows:
+        #   Small dogs (+100 to +150): 4W-1L +17.4u, 63% ROI — printing money
+        #   Med dogs (+151 to +200): 0W-2L -10.0u — complete loss
+        # Cap at +150. Dogs +151+ blocked entirely.
+        if mtype == 'MONEYLINE' and odds >= 151:
+            return False  # Block dogs +151 and higher
         if mtype == 'MONEYLINE' and odds > 0:
-            # Small dogs (+100 to +199): cap at 4.5u
+            # Small dogs (+100 to +150): cap at 4.5u
             p['units'] = min(p.get('units', 5.0), 4.5)
         
         # ── NHL puck line juice cap ──
@@ -2201,11 +2197,11 @@ def cmd_grade(args):
     # Generate captions
     results_caption = ""
     try:
-        _game_date = conn.execute("SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5").fetchone()[0]
+        _game_date = conn.execute("SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5").fetchone()[0]
         _game_dt = datetime.strptime(_game_date, '%Y-%m-%d')
         _date_str = _game_dt.strftime('%A %B %d')
-        _yb = conn.execute("SELECT selection, result, pnl_units, sport FROM graded_bets WHERE DATE(created_at) = (SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5) AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5 ORDER BY pnl_units DESC").fetchall()
-        _all = conn.execute("SELECT result, pnl_units FROM graded_bets WHERE DATE(created_at) >= '2026-03-04' AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5").fetchall()
+        _yb = conn.execute("SELECT selection, result, pnl_units, sport FROM graded_bets WHERE DATE(created_at) = (SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5) AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5 ORDER BY pnl_units DESC").fetchall()
+        _all = conn.execute("SELECT result, pnl_units FROM graded_bets WHERE DATE(created_at) >= '2026-03-04' AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5").fetchall()
         _yw = sum(1 for b in _yb if b[1]=='WIN')
         _yl = sum(1 for b in _yb if b[1]=='LOSS')
         _yp = sum(b[2] or 0 for b in _yb)

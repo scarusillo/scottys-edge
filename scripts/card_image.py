@@ -554,7 +554,7 @@ def _group_picks_by_sport(picks):
     return ordered
 
 
-def generate_card_image(picks, output_path=None, min_units=4.5, max_per_card=5):
+def generate_card_image(picks, output_path=None, min_units=3.5, max_per_card=5):
     from scottys_edge import kelly_label
     fonts=_load_fonts()
     picks=[p for p in picks if p.get('units',0)>=min_units]
@@ -666,22 +666,25 @@ def _render_results_slide(bets, fonts, label, accent_color, daily_record, daily_
     y += 8*S; _draw_divider(draw, y); y += 18*S + section_pad
 
     # Daily summary banner (dynamically sized, content vertically centered)
+    # v17: Fixed layout — date above record, units below, verdict right-aligned
     big_f=_font(fonts,'bold',big_sz); med_f=_font(fonts,'bold',med_sz); lbl_f=_font(fonts,'regular',17)
     yw,yl = daily_record
-    # Content block is ~85*S tall; center it within summary_h
-    content_block = 85*S
+    content_block = 95*S
     sum_top = max(0, (summary_h - content_block) // 2)
-    draw.text((PADDING+20*S,y+sum_top),f"{yw}W-{yl}L",fill=WHITE,font=big_f)
-    draw.text((PADDING+20*S,y+sum_top+68*S),latest_date,fill=WHITE_40,font=lbl_f)
+    # Date first (above the record)
+    draw.text((PADDING+20*S,y+sum_top),latest_date,fill=WHITE_40,font=lbl_f)
+    # Record below date
+    draw.text((PADDING+20*S,y+sum_top+24*S),f"{yw}W-{yl}L",fill=WHITE,font=big_f)
+    # P/L next to record
     pnl_color=GREEN if daily_pnl>=0 else RED
-    draw.text((PADDING+380*S,y+sum_top+10*S),f"{daily_pnl:+.1f}u",fill=pnl_color,font=med_f)
-    draw.text((PADDING+380*S,y+sum_top+56*S),"DAILY P/L",fill=WHITE_40,font=lbl_f)
+    draw.text((PADDING+380*S,y+sum_top+34*S),f"{daily_pnl:+.1f}u",fill=pnl_color,font=med_f)
+    draw.text((PADDING+380*S,y+sum_top+76*S),"DAILY P/L",fill=WHITE_40,font=lbl_f)
     if show_verdict:
         if daily_pnl>=10: verdict,vc="HUGE DAY",GREEN
         elif daily_pnl>=0: verdict,vc="GREEN DAY",GREEN
         elif daily_pnl>=-5: verdict,vc="MINOR LOSS",YELLOW
         else: verdict,vc="TOUGH DAY",RED
-        draw.text((PADDING+630*S,y+sum_top+10*S),verdict,fill=vc,font=_font(fonts,'bold',verdict_sz))
+        draw.text((PADDING+630*S,y+sum_top+34*S),verdict,fill=vc,font=_font(fonts,'bold',verdict_sz))
     y+=summary_h; _draw_divider(draw,y); y+=20*S + section_pad
 
     # Section label
@@ -742,49 +745,31 @@ def _render_results_slide(bets, fonts, label, accent_color, daily_record, daily_
         _conn = _sq.connect(_db)
         _recent = _conn.execute("""
             SELECT result, pnl_units, DATE(created_at) FROM graded_bets
-            WHERE DATE(created_at) >= ? AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5
+            WHERE DATE(created_at) >= ? AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5
             ORDER BY created_at DESC
         """, (start_date,)).fetchall()
         _conn.close()
 
         if _recent:
-            # Current streak
-            streak_type = _recent[0][0]
-            streak_count = 0
-            for r in _recent:
-                if r[0] == streak_type:
-                    streak_count += 1
-                else:
-                    break
-            streak_str = f"{streak_count} {'W' if streak_type == 'WIN' else 'L'}"
-            streak_color = GREEN if streak_type == 'WIN' else RED
-
-            # Last 10
+            # Last 10 results
             last10 = _recent[:10]
             l10_w = sum(1 for r in last10 if r[0] == 'WIN')
             l10_l = sum(1 for r in last10 if r[0] == 'LOSS')
             l10_pnl = sum(r[1] or 0 for r in last10)
 
-            # Visual streak dots (last 10 results, most recent first)
+            # v17: Show "LAST 10" with dot visualization — no confusing streak counter
             _draw_divider(draw, y); y += 24*S
             streak_f = _font(fonts, 'bold', max(16, int(18 * rec_scale)))
             l10_f = _font(fonts, 'regular', max(14, int(16 * rec_scale)))
 
-            # "STREAK:" label
-            streak_label = "STREAK"
-            draw.text((PADDING, y), streak_label, fill=GREEN, font=streak_f)
-            streak_label_w = draw.textlength(streak_label, font=streak_f)
+            draw.text((PADDING, y), "LAST 10", fill=GREEN, font=streak_f)
+            l10_label_w = draw.textlength("LAST 10", font=streak_f)
 
-            # Streak count + direction with generous spacing
-            streak_x = PADDING + streak_label_w + 24*S
-            draw.text((streak_x, y), streak_str, fill=streak_color, font=streak_f)
-            streak_str_w = draw.textlength(streak_str, font=streak_f)
+            l10_x = PADDING + l10_label_w + 24*S
+            l10_color = GREEN if l10_pnl >= 0 else RED
+            draw.text((l10_x, y), f"{l10_w}W-{l10_l}L  {l10_pnl:+.1f}u", fill=l10_color, font=streak_f)
 
-            # Last 10 stats
-            l10_x = streak_x + streak_str_w + 40*S
-            draw.text((l10_x, y), f"Last 10: {l10_w}W-{l10_l}L ({l10_pnl:+.1f}u)", fill=WHITE_60, font=l10_f)
-
-            # Dot visualization — more space below text
+            # Dot visualization (oldest to newest, left to right)
             y += 40*S
             dx = PADDING + 20*S
             dot_size = 14*S
@@ -809,15 +794,15 @@ def generate_results_card(conn=None, output_path=None, start_date='2026-03-04'):
     yesterday_bets=conn.execute("""
         SELECT selection, sport, result, pnl_units, units, odds, clv, side_type, confidence
         FROM graded_bets WHERE DATE(created_at) = (
-            SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5
-        ) AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5 ORDER BY pnl_units DESC
+            SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5
+        ) AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5 ORDER BY pnl_units DESC
     """).fetchall()
     if not yesterday_bets:
         print("  No graded bets found.")
         if close_conn: conn.close()
         return None
-    latest_date=conn.execute("SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5").fetchone()[0] or 'Unknown'
-    all_bets=conn.execute("SELECT result, pnl_units, units FROM graded_bets WHERE DATE(created_at) >= ? AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 4.5",(start_date,)).fetchall()
+    latest_date=conn.execute("SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5").fetchone()[0] or 'Unknown'
+    all_bets=conn.execute("SELECT result, pnl_units, units FROM graded_bets WHERE DATE(created_at) >= ? AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5",(start_date,)).fetchall()
     if close_conn: conn.close()
     tw=sum(1 for b in all_bets if b[0]=='WIN'); tl=sum(1 for b in all_bets if b[0]=='LOSS')
     tp=sum(b[1] or 0 for b in all_bets); twg=sum(b[2] or 0 for b in all_bets)
@@ -853,7 +838,7 @@ def generate_stats_card(conn=None, output_path=None, start_date='2026-03-04'):
     bets=conn.execute("""
         SELECT sport, result, pnl_units, units, clv, side_type, market_type, confidence, timing
         FROM graded_bets WHERE DATE(created_at) >= ? AND result NOT IN ('DUPLICATE','PENDING','TAINTED')
-        AND units >= 4.5
+        AND units >= 3.5
         ORDER BY created_at
     """,(start_date,)).fetchall()
     if close_conn: conn.close()
@@ -878,20 +863,21 @@ def generate_stats_card(conn=None, output_path=None, start_date='2026-03-04'):
     for b in bets:
         conf=b[7] or 'UNKNOWN'
         if conf=='ELITE': tier='MAX PLAY'
-        elif conf=='HIGH': tier='STRONG'
-        elif conf=='STRONG': tier='SOLID'
-        else: tier=conf
+        elif conf=='STRONG': tier='STRONG'
+        else: continue  # v17: Skip SOLID/HIGH/LEAN — no longer active tiers
         if tier not in tier_data: tier_data[tier]={'W':0,'L':0,'pnl':0,'wager':0}
         if b[1]=='WIN': tier_data[tier]['W']+=1
         elif b[1]=='LOSS': tier_data[tier]['L']+=1
         tier_data[tier]['pnl']+=(b[2] or 0); tier_data[tier]['wager']+=(b[3] or 0)
-    timing_data={}
+    # v17: By Sport replaces By Timing (hourly runs make timing irrelevant)
+    sport_data={}
     for b in bets:
-        t=b[8] or 'UNKNOWN'
-        if t not in timing_data: timing_data[t]={'W':0,'L':0,'pnl':0}
-        if b[1]=='WIN': timing_data[t]['W']+=1
-        elif b[1]=='LOSS': timing_data[t]['L']+=1
-        timing_data[t]['pnl']+=(b[2] or 0)
+        sp=b[0] or 'UNKNOWN'
+        sp_label=SPORT_LABELS.get(sp, sp.replace('_',' ').title())
+        if sp_label not in sport_data: sport_data[sp_label]={'W':0,'L':0,'pnl':0}
+        if b[1]=='WIN': sport_data[sp_label]['W']+=1
+        elif b[1]=='LOSS': sport_data[sp_label]['L']+=1
+        sport_data[sp_label]['pnl']+=(b[2] or 0)
 
     total_h = max(IG_H, 1000*S)
     img=Image.new('RGB',(CARD_WIDTH,total_h),BG); draw=ImageDraw.Draw(img)
@@ -919,9 +905,9 @@ def generate_stats_card(conn=None, output_path=None, start_date='2026-03-04'):
     secf=_font(fonts,'bold',18); rowf=_font(fonts,'regular',19); numf=_font(fonts,'bold',19)
     row_spacing = 40*S
 
-    # By Conviction
+    # By Conviction — v17: Only MAX PLAY + STRONG (active tiers)
     draw.text((PADDING,y),"BY CONVICTION",fill=GREEN,font=secf); y+=38*S
-    for tier in ['MAX PLAY','STRONG','SOLID','LEAN']:
+    for tier in ['MAX PLAY','STRONG']:
         if tier not in tier_data: continue
         d=tier_data[tier]; t=d['W']+d['L']
         if t==0: continue
@@ -933,31 +919,45 @@ def generate_stats_card(conn=None, output_path=None, start_date='2026-03-04'):
         y+=row_spacing
     y+=12*S; _draw_divider(draw,y); y+=25*S
 
-    # By Bet Type
+    # By Bet Type — v17: More granular (side + market type)
     draw.text((PADDING,y),"BY BET TYPE",fill=GREEN,font=secf); y+=38*S
-    for sk in ['DOG','FAVORITE','OVER','UNDER']:
+    # Side types
+    for sk in ['DOG','FAVORITE','OVER','UNDER','PROP OVER']:
         if sk not in side_data: continue
         d=side_data[sk]; t=d['W']+d['L']
         if t==0: continue
         swp=d['W']/t*100
-        label={'DOG':'Dogs','FAVORITE':'Favorites','OVER':'Overs','UNDER':'Unders'}.get(sk,sk)
+        label={'DOG':'Spread Dogs','FAVORITE':'Spread Favorites','OVER':'Totals Over',
+               'UNDER':'Totals Under','PROP OVER':'Prop Overs'}.get(sk,sk)
         draw.text((PADDING+20*S,y),label,fill=WHITE_80,font=rowf)
-        draw.text((PADDING+240*S,y),f"{d['W']}W-{d['L']}L ({swp:.0f}%)",fill=WHITE,font=numf)
-        draw.text((PADDING+490*S,y),f"{d['pnl']:+.1f}u",fill=GREEN if d['pnl']>=0 else RED,font=numf)
+        draw.text((PADDING+280*S,y),f"{d['W']}W-{d['L']}L ({swp:.0f}%)",fill=WHITE,font=numf)
+        draw.text((PADDING+530*S,y),f"{d['pnl']:+.1f}u",fill=GREEN if d['pnl']>=0 else RED,font=numf)
         y+=row_spacing
+    # Moneyline aggregate (not in side_data, compute from market_type)
+    ml_bets = [b for b in bets if b[6] == 'MONEYLINE']
+    if ml_bets:
+        ml_w = sum(1 for b in ml_bets if b[1]=='WIN')
+        ml_l = sum(1 for b in ml_bets if b[1]=='LOSS')
+        ml_pnl = sum(b[2] or 0 for b in ml_bets)
+        ml_t = ml_w + ml_l
+        if ml_t > 0:
+            draw.text((PADDING+20*S,y),"Moneylines",fill=WHITE_80,font=rowf)
+            draw.text((PADDING+280*S,y),f"{ml_w}W-{ml_l}L ({ml_w/ml_t*100:.0f}%)",fill=WHITE,font=numf)
+            draw.text((PADDING+530*S,y),f"{ml_pnl:+.1f}u",fill=GREEN if ml_pnl>=0 else RED,font=numf)
+            y+=row_spacing
     y+=12*S; _draw_divider(draw,y); y+=25*S
 
-    # By Timing
-    draw.text((PADDING,y),"BY TIMING",fill=GREEN,font=secf); y+=38*S
-    for tk in ['EARLY','LATE']:
-        if tk not in timing_data: continue
-        d=timing_data[tk]; t=d['W']+d['L']
+    # By Sport — v17: Replaces By Timing (hourly runs make timing irrelevant)
+    draw.text((PADDING,y),"BY SPORT",fill=GREEN,font=secf); y+=38*S
+    # Sort by P&L descending
+    sorted_sports = sorted(sport_data.items(), key=lambda x: x[1]['pnl'], reverse=True)
+    for sp_label, d in sorted_sports:
+        t=d['W']+d['L']
         if t==0: continue
-        twp=d['W']/t*100
-        label={'EARLY':'Early (11am)','LATE':'Late (5:30pm)'}.get(tk,tk)
-        draw.text((PADDING+20*S,y),label,fill=WHITE_80,font=rowf)
-        draw.text((PADDING+240*S,y),f"{d['W']}W-{d['L']}L ({twp:.0f}%)",fill=WHITE,font=numf)
-        draw.text((PADDING+490*S,y),f"{d['pnl']:+.1f}u",fill=GREEN if d['pnl']>=0 else RED,font=numf)
+        swp=d['W']/t*100
+        draw.text((PADDING+20*S,y),sp_label,fill=WHITE_80,font=rowf)
+        draw.text((PADDING+280*S,y),f"{d['W']}W-{d['L']}L ({swp:.0f}%)",fill=WHITE,font=numf)
+        draw.text((PADDING+530*S,y),f"{d['pnl']:+.1f}u",fill=GREEN if d['pnl']>=0 else RED,font=numf)
         y+=row_spacing
     y+=12*S; _draw_divider(draw,y); y+=25*S
 
@@ -985,7 +985,7 @@ def generate_stats_card(conn=None, output_path=None, start_date='2026-03-04'):
 # PICK WRITE-UPS (copy-paste social posts per pick)
 # ═══════════════════════════════════════════════════════════════
 
-def generate_pick_writeups(picks, min_units=4.5):
+def generate_pick_writeups(picks, min_units=3.5):
     """Generate a ready-to-post social write-up for each pick.
     Explains WHY the model likes the bet using context data."""
     picks = [p for p in picks if p.get('units', 0) >= min_units]
@@ -1057,7 +1057,7 @@ def generate_pick_writeups(picks, min_units=4.5):
 # TWITTER THREADS (multi-tweet deep analysis per pick)
 # ═══════════════════════════════════════════════════════════════
 
-def generate_thread(picks, min_units=4.5):
+def generate_thread(picks, min_units=3.5):
     """Generate ready-to-post Twitter threads for each pick.
     Each thread is 3 tweets: hook, data/context, closer with record."""
     picks = [p for p in picks if p.get('units', 0) >= min_units]
@@ -1078,7 +1078,7 @@ def generate_thread(picks, min_units=4.5):
         all_g = conn.execute(
             "SELECT result, pnl_units FROM graded_bets "
             "WHERE DATE(created_at) >= '2026-03-04' AND result NOT IN ('DUPLICATE','PENDING','TAINTED') "
-            "AND units >= 4.5"
+            "AND units >= 3.5"
         ).fetchall()
         tw = sum(1 for r in all_g if r[0] == 'WIN')
         tl = sum(1 for r in all_g if r[0] == 'LOSS')
@@ -1210,7 +1210,7 @@ def generate_thread(picks, min_units=4.5):
 # CAPTION
 # ═══════════════════════════════════════════════════════════════
 
-def generate_caption(picks, min_units=4.5):
+def generate_caption(picks, min_units=3.5):
     from scottys_edge import kelly_label
     picks=[p for p in picks if p.get('units',0)>=min_units]
     now=datetime.now(); day_str=now.strftime('%A'); date_str=now.strftime('%B %d')

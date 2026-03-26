@@ -131,7 +131,7 @@ def generate_totals_report(conn):
         lines.append(f"\n  RECENT TOTALS (last 5 days):")
         for sel, units, sport, dt in recent:
             label = sport.split('_')[-1].upper()
-            marker = " MAX PLAY" if units >= 4.5 else ""
+            marker = " MAX PLAY" if units >= 3.5 else ""
             lines.append(f"    {dt[:10]}  {units:.1f}u  {sel:40s} {label}{marker}")
     else:
         lines.append(f"\n  No totals generated in last 5 days — model may be too conservative")

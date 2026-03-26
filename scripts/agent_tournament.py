@@ -48,7 +48,7 @@ def tournament_record(conn):
         WHERE sport = 'basketball_ncaab'
         AND DATE(created_at) >= ?
         AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
-        AND units >= 4.5
+        AND units >= 3.5
         ORDER BY created_at
     """, (NCAA_TOURNAMENT_START,)).fetchall()
     
@@ -73,7 +73,7 @@ def compare_periods(conn):
             WHERE sport = 'basketball_ncaab'
             AND DATE(created_at) BETWEEN ? AND ?
             AND result NOT IN ('DUPLICATE', 'PENDING', 'TAINTED')
-            AND units >= 4.5
+            AND units >= 3.5
         """, (start, end)).fetchone()
         
         if r and (r[0] or 0) + (r[1] or 0) > 0:
