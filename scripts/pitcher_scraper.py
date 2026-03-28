@@ -451,7 +451,7 @@ def _get_league_avg(conn):
     return row[0] if row and row[0] else LEAGUE_AVG_RUNS_ALLOWED
 
 
-def get_pitcher_context(conn, home, away, commence_time=None):
+def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_ncaa'):
     """
     Get pitcher-quality context for a baseball game.
 
@@ -601,15 +601,19 @@ def get_pitcher_context(conn, home, away, commence_time=None):
         # Capped at ±2.0
         result['total_adj'] = round(max(-2.0, min(2.0, combined_adj * 0.5)), 2)
 
-    # Day-of-week baseline adjustments (from college baseball patterns)
+    # Day-of-week baseline adjustments (college baseball only)
     # Friday aces suppress scoring, Sunday #3 starters allow more
-    DOW_TOTAL_ADJ = {
-        'friday': -0.5,    # Aces → lower scoring
-        'saturday': 0.0,   # #2 starter → average
-        'sunday': 0.5,     # #3 starter → higher scoring
-        'midweek': 0.3,    # Bullpen day → slightly higher
-    }
-    dow_adj = DOW_TOTAL_ADJ.get(day_type, 0.0)
+    # MLB Friday scoring is actually HIGHER than average — no DOW adj for MLB
+    if sport == 'baseball_mlb':
+        dow_adj = 0.0
+    else:
+        DOW_TOTAL_ADJ = {
+            'friday': -0.3,    # Aces → lower scoring (reduced from -0.5; market already prices this)
+            'saturday': 0.0,   # #2 starter → average
+            'sunday': 0.5,     # #3 starter → higher scoring
+            'midweek': 0.3,    # Bullpen day → slightly higher
+        }
+        dow_adj = DOW_TOTAL_ADJ.get(day_type, 0.0)
     result['total_adj'] = round(result['total_adj'] + dow_adj, 2)
 
     # Confidence level

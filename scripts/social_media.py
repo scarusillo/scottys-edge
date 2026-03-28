@@ -7,7 +7,7 @@ Integrated into main.py run pipeline.
 
 Discord: Free, uses webhooks (no approval needed)
 Twitter: Requires developer API keys (free tier = 1,500 tweets/month)
-Instagram: Manual only (screenshot HTML card from desktop)
+Instagram: Auto-post via instagrapi (set IG_USERNAME + IG_PASSWORD)
 
 Setup:
   Discord: Set DISCORD_WEBHOOK_URL environment variable
@@ -386,6 +386,169 @@ def post_picks_social(picks):
 def post_results_social(report_text):
     """Post grading results to all platforms."""
     post_results_to_discord(report_text)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# INSTAGRAM
+# ═══════════════════════════════════════════════════════════════════
+
+IG_USERNAME = os.environ.get('IG_USERNAME', '')
+IG_PASSWORD = os.environ.get('IG_PASSWORD', '')
+IG_SESSION_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'ig_session.json')
+
+
+def _get_ig_client():
+    """Get authenticated Instagram client, reusing session if possible."""
+    try:
+        from instagrapi import Client
+    except ImportError:
+        print("  Instagram: instagrapi not installed (pip install instagrapi)")
+        return None
+
+    if not IG_USERNAME or not IG_PASSWORD:
+        print("  Instagram: No credentials (set IG_USERNAME + IG_PASSWORD env vars)")
+        return None
+
+    cl = Client()
+
+    # Try to reuse saved session to avoid login challenges
+    if os.path.exists(IG_SESSION_PATH):
+        try:
+            cl.load_settings(IG_SESSION_PATH)
+            cl.login(IG_USERNAME, IG_PASSWORD)
+            cl.get_timeline_feed()  # Verify session is valid
+            return cl
+        except Exception:
+            pass  # Session expired, do fresh login
+
+    try:
+        cl.login(IG_USERNAME, IG_PASSWORD)
+        cl.dump_settings(IG_SESSION_PATH)
+        return cl
+    except Exception as e:
+        print(f"  Instagram: Login failed — {e}")
+        return None
+
+
+def _prepare_for_ig(image_paths):
+    """Convert PNGs to JPEGs (required for carousels) and return paths."""
+    from PIL import Image
+    prepared = []
+    for p in image_paths:
+        if not os.path.exists(p):
+            continue
+        if p.lower().endswith('.png'):
+            jpg_path = p.rsplit('.', 1)[0] + '_ig.jpg'
+            img = Image.open(p).convert('RGB')
+            img.save(jpg_path, 'JPEG', quality=95)
+            prepared.append(jpg_path)
+        else:
+            prepared.append(p)
+    return prepared
+
+
+def _make_story_image(image_path):
+    """Resize a 4:5 card to 9:16 story format (1080x1920) with black bars."""
+    from PIL import Image
+    story_w, story_h = 1080, 1920
+    img = Image.open(image_path).convert('RGB')
+
+    # Scale image to fit within story dimensions (width-constrained)
+    scale = story_w / img.width
+    new_w = story_w
+    new_h = int(img.height * scale)
+
+    img_resized = img.resize((new_w, new_h), Image.LANCZOS)
+
+    # Create black background and paste centered
+    story = Image.new('RGB', (story_w, story_h), (0, 0, 0))
+    y_offset = (story_h - new_h) // 2
+    story.paste(img_resized, (0, y_offset))
+
+    story_path = image_path.rsplit('.', 1)[0] + '_story.jpg'
+    story.save(story_path, 'JPEG', quality=95)
+    return story_path
+
+
+def post_to_instagram(image_paths, caption, also_story=True):
+    """Post image(s) to Instagram feed (carousel if multiple) + story.
+
+    Args:
+        image_paths: str or list of str — path(s) to PNG/JPG files
+        caption: str — the post caption
+        also_story: bool — also post first image to story (default True)
+
+    Returns:
+        bool — True if posted successfully
+    """
+    cl = _get_ig_client()
+    if not cl:
+        return False
+
+    if isinstance(image_paths, str):
+        image_paths = [image_paths]
+
+    # Convert PNGs to JPEGs (instagrapi carousels require .jpg)
+    valid_paths = _prepare_for_ig(image_paths)
+    if not valid_paths:
+        print("  Instagram: No valid image files found")
+        return False
+
+    success = False
+    try:
+        if len(valid_paths) == 1:
+            media = cl.photo_upload(valid_paths[0], caption)
+        else:
+            media = cl.album_upload(valid_paths, caption)
+
+        print(f"  Instagram Feed: Posted (media pk={media.pk})")
+        success = True
+    except Exception as e:
+        print(f"  Instagram Feed: Post failed — {e}")
+
+    # Post to story — resize to 9:16 so it's not zoomed/cropped
+    if also_story and valid_paths:
+        try:
+            story_path = _make_story_image(valid_paths[0])
+            story = cl.photo_upload_to_story(story_path)
+            print(f"  Instagram Story: Posted (media pk={story.pk})")
+        except Exception as e:
+            print(f"  Instagram Story: Post failed — {e}")
+
+    return success
+
+
+def post_picks_to_instagram(card_paths, picks):
+    """Post picks card to Instagram feed + story with auto-generated caption."""
+    try:
+        from card_image import generate_caption
+        caption = generate_caption(picks)
+    except Exception as e:
+        caption = "Today's picks are live. Link in bio for full card."
+        print(f"  Instagram: Caption generation failed ({e}), using default")
+
+    return post_to_instagram(card_paths, caption)
+
+
+def post_results_to_instagram(card_paths, report_text=None):
+    """Post results card to Instagram feed + story with results caption."""
+    # Extract basic record from report text
+    caption = "Results are in. Every pick tracked. Every loss shown.\n\n"
+    if report_text:
+        import re
+        record_match = re.search(r'Record:\s*(\d+W-\d+L)', report_text)
+        pnl_match = re.search(r'P/L:\s*([\+\-][\d.]+u)', report_text)
+        if record_match:
+            caption += f"Season: {record_match.group(1)}"
+        if pnl_match:
+            caption += f" | {pnl_match.group(1)}"
+        caption += "\n\n"
+
+    caption += "\u26a0\ufe0f Not gambling advice \u2022 21+ \u2022 1-800-GAMBLER\n\n"
+    caption += "\U0001f4f1 @scottys_edge | \U0001f426 @Scottys_edge | \U0001f4ac discord.gg/JQ6rRfuN\n\n"
+    caption += "#SportsBetting #BettingResults #FreePicks #BettingCommunity #ScottysEdge"
+
+    return post_to_instagram(card_paths, caption)
 
 
 # ═══════════════════════════════════════════════════════════════════

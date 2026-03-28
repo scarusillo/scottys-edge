@@ -470,11 +470,15 @@ def _fetch_espn_scoreboard(url, date_str, sport=None):
     """Fetch one day of ESPN scoreboard data."""
     full_url = f"{url}?dates={date_str}"
     # v12.2 FIX: ESPN scoreboard only returns "featured" games by default.
-    # Adding groups=50 (D1) and limit=900 returns ALL D1 games.
-    # Without this, college baseball was missing 60%+ of games and
-    # the grader was matching bets to old results from wrong dates.
+    # Adding groups=50 (D1) and limit=900 returns ALL D1 games for basketball.
+    # v18.1 FIX: groups=50 does NOT work for college baseball — it filters to
+    # a single conference (~6 games) instead of all D1. Only use groups=50
+    # for basketball; baseball works correctly with just limit=900.
     if sport and ('ncaa' in sport or 'college' in sport):
-        full_url += "&groups=50&limit=900"
+        if 'baseball' in sport:
+            full_url += "&limit=900"
+        else:
+            full_url += "&groups=50&limit=900"
     req = Request(full_url, headers={'User-Agent': 'Mozilla/5.0'})
     try:
         resp = urlopen(req, timeout=15)

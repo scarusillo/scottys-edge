@@ -1343,7 +1343,7 @@ def generate_predictions(conn, sport=None, date=None):
 
                             if HAS_PITCHER:
                                 try:
-                                    _bb_pitcher_ctx = get_pitcher_context(conn, home, away, commence)
+                                    _bb_pitcher_ctx = get_pitcher_context(conn, home, away, commence, sport=sp)
                                 except Exception:
                                     _bb_pitcher_ctx = None
 
@@ -1649,7 +1649,7 @@ def generate_predictions(conn, sport=None, date=None):
                         pitcher_ctx = None
                         if HAS_PITCHER and 'baseball' in sp:
                             try:
-                                pitcher_ctx = get_pitcher_context(conn, home, away, commence)
+                                pitcher_ctx = get_pitcher_context(conn, home, away, commence, sport=sp)
                                 if pitcher_ctx['total_adj'] != 0 and pitcher_ctx['confidence'] != 'LOW':
                                     model_total += pitcher_ctx['total_adj']
                             except Exception:

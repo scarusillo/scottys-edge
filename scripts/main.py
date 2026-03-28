@@ -737,13 +737,22 @@ TONIGHT'S CHECKLIST:
 
     _log.info(f"Step 9: Email {'sent' if do_email else 'skipped'}")
 
-    # Step 9c: Auto-post to Discord + Twitter
+    # Step 9c: Auto-post to Discord + Twitter + Instagram
     if all_picks:
         try:
             from social_media import post_picks_social
             post_picks_social(all_picks)
         except Exception as e:
             print(f"  Social media: {e}")
+        # Instagram: post card images if available
+        try:
+            from social_media import post_picks_to_instagram
+            if png_card_paths:
+                post_picks_to_instagram(png_card_paths, all_picks)
+            elif png_card_path:
+                post_picks_to_instagram([png_card_path], all_picks)
+        except Exception as e:
+            print(f"  Instagram: {e}")
 
     # Step 10: Twitter/X content
     do_twitter = has_flag(args, '--twitter')
@@ -2548,13 +2557,19 @@ def cmd_grade(args):
         except Exception as e:
             print(f"  Diagnostic: {e}")
 
-    # Post results to Discord
+    # Post results to Discord + Instagram
     if report:
         try:
             from social_media import post_results_social
             post_results_social(report)
         except Exception as e:
             print(f"  Discord results: {e}")
+        try:
+            from social_media import post_results_to_instagram
+            if card_paths:
+                post_results_to_instagram(card_paths, report)
+        except Exception as e:
+            print(f"  Instagram results: {e}")
 
     # Twitter results thread
     do_twitter = has_flag(args, '--twitter')

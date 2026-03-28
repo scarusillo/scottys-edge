@@ -130,9 +130,16 @@ def fetch_missing_score(team_name, sport, bet_date):
         return None
     
     # Find games on the bet date
+    # v18.1 FIX: ESPN event dates are UTC — evening US games (e.g. 8pm ET = 3/28 00:00Z)
+    # have event_date one day ahead of the bet_date. Check bet_date AND bet_date+1.
+    from datetime import datetime as _dt, timedelta as _td
+    try:
+        next_date = (_dt.strptime(bet_date, '%Y-%m-%d') + _td(days=1)).strftime('%Y-%m-%d')
+    except:
+        next_date = bet_date
     for event in events:
         event_date = str(event.get('date', ''))[:10]
-        if event_date != bet_date:
+        if event_date != bet_date and event_date != next_date:
             continue
         
         for comp in event.get('competitions', []):
