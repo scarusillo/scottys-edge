@@ -471,57 +471,21 @@ def _make_story_image(image_path):
     return story_path
 
 
-IG_POST_LOG = os.path.join(os.path.dirname(__file__), '..', 'data', 'ig_post_log.json')
-
-
-def _ig_already_posted(post_type):
-    """Check if we already posted this type today. Prevents duplicate posts across hourly runs."""
-    today = datetime.now().strftime('%Y-%m-%d')
-    try:
-        with open(IG_POST_LOG, 'r') as f:
-            log = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        log = {}
-    return log.get(today, {}).get(post_type, False)
-
-
-def _ig_mark_posted(post_type):
-    """Mark this post type as done for today."""
-    today = datetime.now().strftime('%Y-%m-%d')
-    try:
-        with open(IG_POST_LOG, 'r') as f:
-            log = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        log = {}
-    if today not in log:
-        log[today] = {}
-    log[today][post_type] = True
-    # Clean old entries (keep last 7 days)
-    cutoff = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
-    log = {k: v for k, v in log.items() if k >= cutoff}
-    with open(IG_POST_LOG, 'w') as f:
-        json.dump(log, f)
-
-
-def post_to_instagram(image_paths, caption, also_story=True, post_type='general'):
+def post_to_instagram(image_paths, caption, also_story=True):
     """Post image(s) to Instagram feed (carousel if multiple) + story.
 
-    Rate-limited: only 1 post per type per day to avoid Instagram flags.
+    This is called from post_picks_to_instagram / post_results_to_instagram
+    which are only triggered when there are NEW picks (main.py dedup handles
+    filtering out already-posted picks before this is ever called).
 
     Args:
         image_paths: str or list of str — path(s) to PNG/JPG files
         caption: str — the post caption
         also_story: bool — also post first image to story (default True)
-        post_type: str — 'picks' or 'results' (for dedup across hourly runs)
 
     Returns:
         bool — True if posted successfully
     """
-    # Prevent duplicate posts across hourly runs
-    if _ig_already_posted(post_type):
-        print(f"  Instagram: Already posted '{post_type}' today — skipping")
-        return False
-
     cl = _get_ig_client()
     if not cl:
         return False
@@ -545,7 +509,6 @@ def post_to_instagram(image_paths, caption, also_story=True, post_type='general'
 
         print(f"  Instagram Feed: Posted (media pk={media.pk})")
         success = True
-        _ig_mark_posted(post_type)
     except Exception as e:
         print(f"  Instagram Feed: Post failed — {e}")
 
@@ -631,7 +594,7 @@ def post_picks_to_instagram(card_paths, picks):
     caption += "\n\n" + " ".join(account_tags)
     caption += "\n\n" + " ".join(hashtags[:15])  # Instagram allows max 30 hashtags
 
-    return post_to_instagram(card_paths, caption, post_type='picks')
+    return post_to_instagram(card_paths, caption)
 
 
 def post_results_to_instagram(card_paths, report_text=None):
@@ -662,7 +625,7 @@ def post_results_to_instagram(card_paths, report_text=None):
     caption += " ".join(results_tags) + "\n\n"
     caption += " ".join(results_hashtags)
 
-    return post_to_instagram(card_paths, caption, post_type='results')
+    return post_to_instagram(card_paths, caption)
 
 
 # ═══════════════════════════════════════════════════════════════════
