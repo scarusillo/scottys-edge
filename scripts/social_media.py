@@ -17,7 +17,7 @@ Setup:
 import os
 import json
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # ═══════════════════════════════════════════════════════════════════
 # DISCORD
@@ -409,6 +409,8 @@ def _get_ig_client():
         return None
 
     cl = Client()
+    # Set realistic device/user-agent to avoid bot detection
+    cl.delay_range = [2, 5]  # 2-5 second random delay between API calls
 
     # Try to reuse saved session to avoid login challenges
     if os.path.exists(IG_SESSION_PATH):
@@ -469,17 +471,57 @@ def _make_story_image(image_path):
     return story_path
 
 
-def post_to_instagram(image_paths, caption, also_story=True):
+IG_POST_LOG = os.path.join(os.path.dirname(__file__), '..', 'data', 'ig_post_log.json')
+
+
+def _ig_already_posted(post_type):
+    """Check if we already posted this type today. Prevents duplicate posts across hourly runs."""
+    today = datetime.now().strftime('%Y-%m-%d')
+    try:
+        with open(IG_POST_LOG, 'r') as f:
+            log = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        log = {}
+    return log.get(today, {}).get(post_type, False)
+
+
+def _ig_mark_posted(post_type):
+    """Mark this post type as done for today."""
+    today = datetime.now().strftime('%Y-%m-%d')
+    try:
+        with open(IG_POST_LOG, 'r') as f:
+            log = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        log = {}
+    if today not in log:
+        log[today] = {}
+    log[today][post_type] = True
+    # Clean old entries (keep last 7 days)
+    cutoff = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+    log = {k: v for k, v in log.items() if k >= cutoff}
+    with open(IG_POST_LOG, 'w') as f:
+        json.dump(log, f)
+
+
+def post_to_instagram(image_paths, caption, also_story=True, post_type='general'):
     """Post image(s) to Instagram feed (carousel if multiple) + story.
+
+    Rate-limited: only 1 post per type per day to avoid Instagram flags.
 
     Args:
         image_paths: str or list of str — path(s) to PNG/JPG files
         caption: str — the post caption
         also_story: bool — also post first image to story (default True)
+        post_type: str — 'picks' or 'results' (for dedup across hourly runs)
 
     Returns:
         bool — True if posted successfully
     """
+    # Prevent duplicate posts across hourly runs
+    if _ig_already_posted(post_type):
+        print(f"  Instagram: Already posted '{post_type}' today — skipping")
+        return False
+
     cl = _get_ig_client()
     if not cl:
         return False
@@ -493,6 +535,7 @@ def post_to_instagram(image_paths, caption, also_story=True):
         print("  Instagram: No valid image files found")
         return False
 
+    import time
     success = False
     try:
         if len(valid_paths) == 1:
@@ -502,11 +545,13 @@ def post_to_instagram(image_paths, caption, also_story=True):
 
         print(f"  Instagram Feed: Posted (media pk={media.pk})")
         success = True
+        _ig_mark_posted(post_type)
     except Exception as e:
         print(f"  Instagram Feed: Post failed — {e}")
 
     # Post to story — resize to 9:16 so it's not zoomed/cropped
-    if also_story and valid_paths:
+    if also_story and valid_paths and success:
+        time.sleep(10)  # Wait between feed post and story
         try:
             story_path = _make_story_image(valid_paths[0])
             story = cl.photo_upload_to_story(story_path)
@@ -586,7 +631,7 @@ def post_picks_to_instagram(card_paths, picks):
     caption += "\n\n" + " ".join(account_tags)
     caption += "\n\n" + " ".join(hashtags[:15])  # Instagram allows max 30 hashtags
 
-    return post_to_instagram(card_paths, caption)
+    return post_to_instagram(card_paths, caption, post_type='picks')
 
 
 def post_results_to_instagram(card_paths, report_text=None):
@@ -617,7 +662,7 @@ def post_results_to_instagram(card_paths, report_text=None):
     caption += " ".join(results_tags) + "\n\n"
     caption += " ".join(results_hashtags)
 
-    return post_to_instagram(card_paths, caption)
+    return post_to_instagram(card_paths, caption, post_type='results')
 
 
 # ═══════════════════════════════════════════════════════════════════
