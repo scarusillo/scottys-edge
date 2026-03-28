@@ -2572,6 +2572,13 @@ def cmd_grade(args):
             print(f"  Instagram results: {e}")
 
     # Twitter results thread
+    # Sync DB to OneDrive for cloud agent access
+    try:
+        from sync_db_to_cloud import sync_db
+        sync_db()
+    except Exception as e:
+        print(f"  DB sync: {e}")
+
     do_twitter = has_flag(args, '--twitter')
     if do_twitter:
         print("\n🐦 Generating results thread...")
