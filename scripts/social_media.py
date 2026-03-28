@@ -23,8 +23,7 @@ from datetime import datetime
 # DISCORD
 # ═══════════════════════════════════════════════════════════════════
 
-DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL', 
-    'https://discord.com/api/webhooks/1481219807654449184/pzs8bBwwW-MIxEI-U9Vs2nHm66lXdUZt3JgnbXn_8AQ58_Z2wVUm_wuUUkjx8rR1DsGj')
+DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL', '')
 
 
 def post_to_discord(picks):
