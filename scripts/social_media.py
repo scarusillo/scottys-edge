@@ -517,6 +517,61 @@ def post_to_instagram(image_paths, caption, also_story=True):
     return success
 
 
+def _get_sport_tags(picks):
+    """Get relevant @tags and #hashtags based on sports in the picks."""
+    sports = set()
+    for p in (picks or []):
+        sp = p.get('sport', '')
+        if 'nba' in sp: sports.add('nba')
+        elif 'ncaab' in sp: sports.add('ncaab')
+        elif 'nhl' in sp or 'hockey' in sp: sports.add('nhl')
+        elif 'mlb' in sp or 'baseball' in sp: sports.add('baseball')
+        elif 'soccer' in sp: sports.add('soccer')
+        elif 'tennis' in sp: sports.add('tennis')
+
+    # Accounts to tag by sport — mix of media, books, and betting community
+    sport_accounts = {
+        'nba': ['@nba', '@sportscenter', '@bleacherreport', '@espn'],
+        'ncaab': ['@marchmadness', '@sportscenter', '@espn', '@bleacherreport'],
+        'nhl': ['@nhl', '@sportscenter', '@espn'],
+        'baseball': ['@mlb', '@espn', '@sportscenter'],
+        'soccer': ['@espnfc', '@foxsoccer', '@espn'],
+        'tennis': ['@atptour', '@wta', '@espn'],
+    }
+
+    sport_hashtags = {
+        'nba': ['#NBAPicks', '#NBABetting', '#NBA'],
+        'ncaab': ['#CBBPicks', '#MarchMadness', '#CollegeBasketball'],
+        'nhl': ['#NHLPicks', '#NHLBetting', '#NHL'],
+        'baseball': ['#CollegeBaseball', '#BaseballBetting', '#CWS'],
+        'soccer': ['#SoccerPicks', '#SoccerBetting', '#EPL'],
+        'tennis': ['#TennisPicks', '#TennisBetting', '#ATP'],
+    }
+
+    tags = set()
+    hashtags = set()
+    for s in sports:
+        tags.update(sport_accounts.get(s, []))
+        hashtags.update(sport_hashtags.get(s, []))
+
+    # Always include betting community accounts + general tags
+    community_tags = ['@actionnetworkhq', '@underdogfantasy', '@prizepicks',
+                      '@betmgm', '@draftkings', '@fanduel']
+    community_hashtags = ['#SportsBetting', '#FreePicks', '#BettingPicks',
+                          '#GamblingTwitter', '#BettingCommunity', '#ScottysEdge',
+                          '#SportsAnalytics', '#BettingModel', '#DataDriven']
+
+    # Rotate community tags — use 3-4 per post to avoid spam
+    from datetime import datetime
+    day_idx = datetime.now().timetuple().tm_yday
+    selected_community = [community_tags[i % len(community_tags)] for i in range(day_idx, day_idx + 3)]
+
+    all_tags = list(tags)[:4] + selected_community  # Max ~7 account tags
+    all_hashtags = list(hashtags) + community_hashtags
+
+    return all_tags, all_hashtags
+
+
 def post_picks_to_instagram(card_paths, picks):
     """Post picks card to Instagram feed + story with auto-generated caption."""
     try:
@@ -526,12 +581,16 @@ def post_picks_to_instagram(card_paths, picks):
         caption = "Today's picks are live. Link in bio for full card."
         print(f"  Instagram: Caption generation failed ({e}), using default")
 
+    # Add sport-specific tags
+    account_tags, hashtags = _get_sport_tags(picks)
+    caption += "\n\n" + " ".join(account_tags)
+    caption += "\n\n" + " ".join(hashtags[:15])  # Instagram allows max 30 hashtags
+
     return post_to_instagram(card_paths, caption)
 
 
 def post_results_to_instagram(card_paths, report_text=None):
     """Post results card to Instagram feed + story with results caption."""
-    # Extract basic record from report text
     caption = "Results are in. Every pick tracked. Every loss shown.\n\n"
     if report_text:
         import re
@@ -543,9 +602,20 @@ def post_results_to_instagram(card_paths, report_text=None):
             caption += f" | {pnl_match.group(1)}"
         caption += "\n\n"
 
+    caption += "Swipe for full breakdown.\n\n"
     caption += "\u26a0\ufe0f Not gambling advice \u2022 21+ \u2022 1-800-GAMBLER\n\n"
-    caption += "\U0001f4f1 @scottys_edge | \U0001f426 @Scottys_edge | \U0001f4ac discord.gg/JQ6rRfuN\n\n"
-    caption += "#SportsBetting #BettingResults #FreePicks #BettingCommunity #ScottysEdge"
+    caption += "\U0001f4f1 @scottys_edge | \U0001f4ac discord.gg/JQ6rRfuN\n\n"
+
+    # Add tags for results posts
+    results_tags = ['@sportscenter', '@espn', '@bleacherreport',
+                    '@actionnetworkhq', '@betmgm', '@draftkings']
+    results_hashtags = ['#SportsBetting', '#BettingResults', '#FreePicks',
+                        '#BettingCommunity', '#ScottysEdge', '#SportsAnalytics',
+                        '#BettingModel', '#DataDriven', '#Transparency',
+                        '#SportsBettingPicks', '#BettingRecord']
+
+    caption += " ".join(results_tags) + "\n\n"
+    caption += " ".join(results_hashtags)
 
     return post_to_instagram(card_paths, caption)
 
