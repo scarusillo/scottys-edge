@@ -2761,7 +2761,7 @@ def cmd_setup_scheduler(args):
   ══════════════════════════════════════════════════════════════
 
   STEP 1: Make sure env variables are set permanently:
-    setx ODDS_API_KEY "d2daef33b0aefde24bd8d88273c88ed8"
+    setx ODDS_API_KEY "your_odds_api_key_here"
     setx GMAIL_APP_PASSWORD "your16charpassword"
 
   STEP 2: Open CMD as Administrator and run these 4 commands:

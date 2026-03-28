@@ -7,14 +7,14 @@ SETUP (one-time, 30 seconds):
   3. Copy the 16-character password
   4. Set environment variable: set GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx
 
-Your Gmail address: carusillo.scott@gmail.com
+Your Gmail address: set via GMAIL_ADDRESS env var or default below
 """
 import smtplib, os, sys
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
-GMAIL_ADDRESS = 'carusillo.scott@gmail.com'
+GMAIL_ADDRESS = os.environ.get('GMAIL_ADDRESS', 'carusillo.scott@gmail.com')
 GMAIL_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD', '')
 
 def send_email(subject, body, to_addr=None, attachment_path=None):
