@@ -695,16 +695,21 @@ def motivation_adjustment(conn, home, away, sport, commence):
     # Adapt thresholds per sport's scoring scale
     # v17: Raised guard to boost >= 1.5 — small bounce-backs (1.0) were 0W-3L
     # at the +0.8/+1.0 level. Only severe blowout bounce-backs are profitable.
+    # v18: Removed sub-1.5 tiers — they were always blocked by the
+    # boost >= 1.5 guard below, but their existence let the loop match
+    # a margin (e.g. hockey -4) and break before any adjustment was
+    # applied, creating dead-code confusion.  Now only severe blowouts
+    # remain, each with boost >= 1.5 so the guard always passes.
     if 'basketball' in sport:
-        bounce_thresholds = [(-29, 2.0), (-19, 1.0)]   # Basketball: same as NFL scale
+        bounce_thresholds = [(-29, 2.0)]                 # Basketball: 29pt loss = severe
     elif 'soccer' in sport:
-        bounce_thresholds = [(-4, 1.5), (-3, 0.75)]     # Soccer: 3-goal loss = blowout
+        bounce_thresholds = [(-4, 1.5)]                  # Soccer: 4-goal loss = blowout
     elif 'icehockey' in sport:
-        bounce_thresholds = [(-5, 1.5), (-4, 0.75)]     # Hockey: 4-goal loss = blowout
+        bounce_thresholds = [(-5, 1.5)]                  # Hockey: 5-goal loss = blowout
     elif 'baseball' in sport:
-        bounce_thresholds = [(-10, 1.5), (-7, 0.75)]    # Baseball: 7-run loss = ugly
+        bounce_thresholds = [(-10, 1.5)]                 # Baseball: 10-run loss = ugly
     else:
-        bounce_thresholds = [(-29, 2.0), (-19, 1.0)]
+        bounce_thresholds = [(-29, 2.0)]
 
     if h_margin is not None:
         for threshold, boost in bounce_thresholds:

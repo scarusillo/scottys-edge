@@ -1538,6 +1538,7 @@ def generate_predictions(conn, sport=None, date=None):
                         if imp is None:
                             imp = american_to_implied_prob(draw_odds)
                         edge = (draw_prob - imp) * 100 if imp else 0
+                        edge = min(edge, 25.0)  # v18: cap at 25%
                         stars = get_star_rating(edge)
                         if edge >= min_pv and stars > 0:
                             seen.add(k)
@@ -1568,7 +1569,7 @@ def generate_predictions(conn, sport=None, date=None):
                 if ml_implied is None:
                     ml_implied = american_to_implied_prob(hml)
                 if ml_implied and spread_win_prob:
-                    cross_edge = (spread_win_prob - ml_implied) * 100
+                    cross_edge = min((spread_win_prob - ml_implied) * 100, 25.0)  # v18: cap
                     if cross_edge > 8.0:
                         k = f"{eid}|X|{home}"
                         if k not in seen:
@@ -1595,7 +1596,7 @@ def generate_predictions(conn, sport=None, date=None):
                     if aml_implied is None and aml:
                         _, aml_implied, _ = devig_ml_odds(hml, aml)
                     if aml_implied and away_spread_prob:
-                        cross_edge_a = (away_spread_prob - aml_implied) * 100
+                        cross_edge_a = min((away_spread_prob - aml_implied) * 100, 25.0)  # v18: cap
                         if cross_edge_a > 8.0:
                             k = f"{eid}|X|{away}"
                             if k not in seen:
@@ -1894,6 +1895,11 @@ def generate_predictions(conn, sport=None, date=None):
     seen_event_market = {}
     all_picks.sort(key=lambda x: x['star_rating']*100 + x['edge_pct'], reverse=True)
     for p in all_picks:
+        # v18: Block heavy favorites — odds worse than -180 are un-bettable
+        from config import MIN_ODDS
+        p_odds = p.get('odds')
+        if p_odds is not None and p_odds < MIN_ODDS:
+            continue
         is_ml = p.get('market_type') == 'MONEYLINE'
         min_stars = 1.0 if is_ml else 2.0
         if p['star_rating'] < min_stars:
@@ -1925,6 +1931,9 @@ def _mk(sp, eid, commence, home, away, mtype, sel, book, line, odds, ms, prob, i
     # This lets favorites with real key number value get meaningful units
     # instead of being killed by tiny probability edges.
     actual_edge = max(prob_edge, pv_edge, 0)
+
+    # v18: Cap spread edge at 25% (same as totals) — anything above is a data issue
+    actual_edge = min(actual_edge, 25.0)
 
     # v17: Model-vs-market divergence penalty for spreads
     # When model heavily disagrees with market, reduce edge (market is likely right)
@@ -1958,6 +1967,8 @@ def _mk(sp, eid, commence, home, away, mtype, sel, book, line, odds, ms, prob, i
     }
 
 def _mk_ml(sp, eid, commence, home, away, sel, book, odds, ms, prob, imp, edge, stars, timing, t_r):
+    # v18: Cap ML edge at 25% (same as totals/spreads) — anything above is a data issue
+    edge = min(edge, 25.0)
     units = kelly_units(edge_pct=edge, odds=odds)
     kl = kelly_label(units)
     return {
