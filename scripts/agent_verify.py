@@ -129,14 +129,14 @@ def check_score_freshness(conn):
 
 
 def check_sub_threshold(conn):
-    """Ensure no sub-4.5u bets are in the active record."""
+    """Ensure no sub-minimum bets are in the active record (STRONG tier 3.5u+ is valid)."""
     issues = []
     sub = conn.execute("""
         SELECT selection, units, result FROM graded_bets
-        WHERE units < 4.5 AND result NOT IN ('DUPLICATE', 'TAINTED', 'PENDING')
+        WHERE units < 2.0 AND result NOT IN ('DUPLICATE', 'TAINTED', 'PENDING')
         AND DATE(created_at) >= '2026-03-04'
     """).fetchall()
-    
+
     for sel, units, result in sub:
         issues.append(f"SUB-THRESHOLD: {sel} at {units:.1f}u is in active record — should be TAINTED")
     

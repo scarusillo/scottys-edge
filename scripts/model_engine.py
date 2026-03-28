@@ -48,7 +48,7 @@ from scottys_edge import (
 
 # Context engine — schedule, travel, line movement, altitude, splits
 try:
-    from context_engine import get_context_adjustments
+    from context_engine import get_context_adjustments, line_movement_signal
     HAS_CONTEXT = True
 except ImportError:
     HAS_CONTEXT = False
@@ -1192,9 +1192,22 @@ def generate_predictions(conn, sport=None, date=None):
                             # Standard 1/8 Kelly undersizes soccer bets.
                             if 'soccer' in sp:
                                 pick['units'] = kelly_units(edge_pct=wa['point_value_pct'], odds=mkt_hs_odds, fraction=0.333)
-                            if ctx and ctx['summary']:
-                                pick['context'] = ctx['summary']
-                                pick['context_adj'] = ctx['spread_adj']
+                            # Build context: base factors + per-pick line movement
+                            _ctx_parts = [ctx['summary']] if ctx and ctx['summary'] else []
+                            if HAS_CONTEXT:
+                                try:
+                                    _lm_move, _lm_sig, _lm_conf = line_movement_signal(
+                                        conn, eid, f"{home} {mkt_hs:+.1f}", 'spreads')
+                                    if _lm_sig == 'SHARP_AGREE':
+                                        _ctx_parts.append(f"Sharp money agrees ({_lm_move:+.1f})")
+                                    elif _lm_sig == 'PUBLIC_SIDE':
+                                        _ctx_parts.append(f"Public side ({_lm_move:+.1f})")
+                                except Exception:
+                                    pass
+                            if _ctx_parts:
+                                pick['context'] = ' | '.join(_ctx_parts)
+                                if ctx:
+                                    pick['context_adj'] = ctx['spread_adj']
                             seen.add(k)
                             all_picks.append(pick)
                     else: skip_w += 1
@@ -1218,9 +1231,22 @@ def generate_predictions(conn, sport=None, date=None):
                             # Soccer Kelly boost (same as home spread)
                             if 'soccer' in sp:
                                 pick['units'] = kelly_units(edge_pct=wa['point_value_pct'], odds=mkt_as_odds, fraction=0.333)
-                            if ctx and ctx['summary']:
-                                pick['context'] = ctx['summary']
-                                pick['context_adj'] = ctx['spread_adj']
+                            # Build context: base factors + per-pick line movement
+                            _ctx_parts = [ctx['summary']] if ctx and ctx['summary'] else []
+                            if HAS_CONTEXT:
+                                try:
+                                    _lm_move, _lm_sig, _lm_conf = line_movement_signal(
+                                        conn, eid, f"{away} {mkt_as:+.1f}", 'spreads')
+                                    if _lm_sig == 'SHARP_AGREE':
+                                        _ctx_parts.append(f"Sharp money agrees ({_lm_move:+.1f})")
+                                    elif _lm_sig == 'PUBLIC_SIDE':
+                                        _ctx_parts.append(f"Public side ({_lm_move:+.1f})")
+                                except Exception:
+                                    pass
+                            if _ctx_parts:
+                                pick['context'] = ' | '.join(_ctx_parts)
+                                if ctx:
+                                    pick['context_adj'] = ctx['spread_adj']
                             seen.add(k)
                             all_picks.append(pick)
                     else: skip_w += 1

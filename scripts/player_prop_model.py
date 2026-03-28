@@ -44,6 +44,13 @@ DEFAULT_STD = {
     'pts': 6.0, 'reb': 2.5, 'ast': 2.0, 'threes': 1.2,
     'blk': 0.8, 'stl': 0.7,
     'sog': 1.5, 'hockey_pts': 0.8, 'blocked_shots': 0.8,
+    # MLB batting — high variance sports, these are empirical ranges
+    'hits': 0.9, 'hr': 0.5, 'rbi': 1.2, 'runs': 0.8,
+    'walks': 0.7, 'batter_k': 0.9, 'total_bases': 1.5,
+    'stolen_bases': 0.4, 'at_bats': 0.8,
+    # MLB pitching
+    'pitcher_k': 2.5, 'pitcher_outs': 4.0, 'pitcher_ip': 1.5,
+    'pitcher_er': 1.5, 'pitcher_h_allowed': 1.8, 'pitcher_bb': 1.0,
 }
 
 # Context multipliers
@@ -52,10 +59,12 @@ HOME_BOOST = 1.02
 AWAY_PENALTY = 0.98
 
 # Edge thresholds
-# Backtest 3/23: 30% → 189W-82L (69.7%) +809.7u +59.8% ROI, ~10 picks/day
-# At 6% everything is profitable but 28 picks/day is too many.
-# 30% keeps only highest conviction. Cap at 5 per card for subscriber experience.
-MIN_EDGE_PCT = 30.0
+# Backtest 3/23: 30% worked on stale lines but overconfidence cap (0.75 prob)
+# limits max live edge to ~22.6%. 30% is mathematically unreachable.
+# Live graded data: 20-30% edge is 6W-3L +15.7u (sweet spot).
+# 15-20% is 3W-2L -0.8u (breakeven). Set to 18% — captures the profitable
+# range while the MAX_PROP_PICKS=5 cap keeps volume manageable.
+MIN_EDGE_PCT = 18.0
 MIN_STARS = 2.0
 MAX_PROP_PICKS = 5  # Max props per card (top N by edge)
 
@@ -390,7 +399,11 @@ def generate_prop_projections(conn=None):
         WHERE market IN ('player_points','player_rebounds','player_assists','player_threes',
                          'player_blocks','player_steals',
                          'player_shots_on_goal','player_power_play_points','player_blocked_shots',
-                         'player_shots','player_shots_on_target')
+                         'player_shots','player_shots_on_target',
+                         'batter_hits','batter_total_bases','batter_home_runs','batter_rbis',
+                         'batter_runs_scored','batter_strikeouts','batter_stolen_bases','batter_walks',
+                         'pitcher_strikeouts','pitcher_outs','pitcher_hits_allowed',
+                         'pitcher_earned_runs','pitcher_walks')
         AND commence_time >= ?
         ORDER BY commence_time
     """, (window_start,)).fetchall()

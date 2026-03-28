@@ -35,6 +35,15 @@ PROP_LABEL = {
     'player_blocked_shots': 'BLK_SHOTS',
     # Soccer markets
     'player_shots': 'SHOTS', 'player_shots_on_target': 'SOT',
+    # MLB batting
+    'batter_hits': 'HITS', 'batter_total_bases': 'TOTAL_BASES',
+    'batter_home_runs': 'HOME_RUNS', 'batter_rbis': 'RBIS',
+    'batter_runs_scored': 'RUNS', 'batter_strikeouts': 'STRIKEOUTS',
+    'batter_stolen_bases': 'STOLEN_BASES', 'batter_walks': 'WALKS',
+    # MLB pitching
+    'pitcher_strikeouts': 'PITCHER_STRIKEOUTS', 'pitcher_outs': 'PITCHER_OUTS',
+    'pitcher_hits_allowed': 'HITS_ALLOWED', 'pitcher_earned_runs': 'EARNED_RUNS',
+    'pitcher_walks': 'PITCHER_WALKS',
 }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -326,6 +335,15 @@ STAT_TYPE_MAP = {
     'player_blocked_shots': 'blk_shots',
     # Soccer
     'player_shots': 'shots', 'player_shots_on_target': 'sot',
+    # MLB batting
+    'batter_hits': 'hits', 'batter_total_bases': 'total_bases',
+    'batter_home_runs': 'hr', 'batter_rbis': 'rbi',
+    'batter_runs_scored': 'runs', 'batter_strikeouts': 'batter_k',
+    'batter_stolen_bases': 'stolen_bases', 'batter_walks': 'walks',
+    # MLB pitching
+    'pitcher_strikeouts': 'pitcher_k', 'pitcher_outs': 'pitcher_outs',
+    'pitcher_hits_allowed': 'pitcher_h_allowed',
+    'pitcher_earned_runs': 'pitcher_er', 'pitcher_walks': 'pitcher_bb',
 }
 
 # Sport-specific minimum books for consensus.

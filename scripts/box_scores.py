@@ -39,12 +39,14 @@ ESPN_SUMMARY = {
     'basketball_nba': 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event={}',
     'basketball_ncaab': 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/summary?event={}',
     'icehockey_nhl': 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/summary?event={}',
+    'baseball_mlb': 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event={}',
 }
 
 ESPN_SCOREBOARD = {
     'basketball_nba': 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates={}',
     'basketball_ncaab': 'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates={}',
     'icehockey_nhl': 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates={}',
+    'baseball_mlb': 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates={}',
 }
 
 # Map our prop market types to ESPN box score stat column names
@@ -65,6 +67,26 @@ HOCKEY_STAT_MAP = {
     'player_points': 'PTS',     # Hockey points (G+A)
     'player_power_play_points': 'PPP',
     'player_blocked_shots': 'BS',
+}
+
+# ESPN MLB batting columns: H-AB, AB, R, H, RBI, HR, BB, K, #P, AVG, OBP, SLG
+# ESPN MLB pitching columns: IP, H, R, ER, BB, K, HR, PC-ST, ERA, PC
+BASEBALL_BATTING_MAP = {
+    'H': 'hits',
+    'HR': 'hr',
+    'RBI': 'rbi',
+    'R': 'runs',
+    'BB': 'walks',
+    'K': 'batter_k',
+    'AB': 'at_bats',
+}
+
+BASEBALL_PITCHING_MAP = {
+    'K': 'pitcher_k',
+    'IP': 'pitcher_ip',
+    'ER': 'pitcher_er',
+    'H': 'pitcher_h_allowed',
+    'BB': 'pitcher_bb',
 }
 
 
@@ -287,6 +309,79 @@ def _parse_hockey_box(data, sport, espn_id, game_date):
     return rows
 
 
+def _parse_baseball_box(data, sport, espn_id, game_date):
+    """Parse MLB box score into player stat rows (batting + pitching)."""
+    rows = []
+    boxscore = data.get('boxscore', {})
+    players_sections = boxscore.get('players', [])
+
+    for section in players_sections:
+        team_name = section.get('team', {}).get('displayName', '')
+        for stat_group in section.get('statistics', []):
+            group_type = stat_group.get('type', '')  # 'batting' or 'pitching'
+            stat_names = stat_group.get('names', []) or stat_group.get('labels', [])
+            idx_map = {name: i for i, name in enumerate(stat_names)}
+
+            if group_type == 'batting':
+                stat_mapping = BASEBALL_BATTING_MAP
+            elif group_type == 'pitching':
+                stat_mapping = BASEBALL_PITCHING_MAP
+            else:
+                continue
+
+            for athlete_data in stat_group.get('athletes', []):
+                player_name = athlete_data.get('athlete', {}).get('displayName', '')
+                stats = athlete_data.get('stats', [])
+
+                if not player_name or not stats or len(stats) < len(stat_names):
+                    continue
+
+                now = datetime.now().isoformat()
+
+                for espn_col, our_stat in stat_mapping.items():
+                    if espn_col not in idx_map:
+                        continue
+                    raw_val = stats[idx_map[espn_col]]
+
+                    # Parse: IP can be "5.2" (5 innings + 2 outs), PC-ST is "80-53"
+                    if isinstance(raw_val, str) and '-' in raw_val and espn_col != 'IP':
+                        try:
+                            val = float(raw_val.split('-')[0])
+                        except ValueError:
+                            continue
+                    else:
+                        try:
+                            val = float(raw_val)
+                        except (ValueError, TypeError):
+                            continue
+
+                    # Convert IP: ESPN shows 5.2 = 5 innings + 2 outs = 5.67
+                    if our_stat == 'pitcher_ip':
+                        whole = int(val)
+                        frac = val - whole
+                        val = whole + (frac * 10 / 3.0)  # .1 = 1 out = 0.33, .2 = 2 outs = 0.67
+
+                    # Compute pitcher outs from IP for the prop market
+                    if our_stat == 'pitcher_ip':
+                        outs = int(val) * 3 + round((val % 1) * 3)
+                        rows.append((now, game_date, sport, espn_id,
+                                     team_name, player_name, 'pitcher_outs', float(outs)))
+
+                    rows.append((
+                        now, game_date, sport, espn_id,
+                        team_name, player_name, our_stat, val
+                    ))
+
+                # Total bases = 1*singles + 2*doubles + 3*triples + 4*HR
+                # ESPN doesn't give doubles/triples directly, but TB = H + XBH breakdown
+                # Simpler: TB is often on the Odds API as batter_total_bases
+                # We can approximate from H and HR: TB >= H (since HR=4 bases, single=1)
+                # For now, store H and HR; the prop model uses these directly
+                # Total bases would need the full hit breakdown which ESPN doesn't give cleanly
+
+    return rows
+
+
 def fetch_box_scores(conn, sport, game_date):
     """Fetch box scores for all completed games on a given date."""
     ensure_table(conn)
@@ -323,6 +418,8 @@ def fetch_box_scores(conn, sport, game_date):
             rows = _parse_basketball_box(data, sport, espn_id, date_str)
         elif 'hockey' in sport:
             rows = _parse_hockey_box(data, sport, espn_id, date_str)
+        elif 'baseball' in sport:
+            rows = _parse_baseball_box(data, sport, espn_id, date_str)
         else:
             continue
 
@@ -485,6 +582,21 @@ PROP_TO_STAT = {
     'SOG': 'sog',
     'PPP': 'ppp',
     'BLK_SHOTS': 'blocked_shots',
+    # MLB batting
+    'HITS': 'hits', 'HIT': 'hits',
+    'HOME_RUNS': 'hr', 'HRS': 'hr', 'HOME RUNS': 'hr',
+    'RBIS': 'rbi', 'RBI': 'rbi',
+    'RUNS': 'runs', 'RUNS_SCORED': 'runs',
+    'WALKS': 'walks',
+    'STRIKEOUTS': 'batter_k', 'BATTER_STRIKEOUTS': 'batter_k',
+    'TOTAL_BASES': 'total_bases',
+    'STOLEN_BASES': 'stolen_bases',
+    # MLB pitching
+    'PITCHER_STRIKEOUTS': 'pitcher_k', 'PITCHER_KS': 'pitcher_k',
+    'PITCHER_OUTS': 'pitcher_outs', 'OUTS': 'pitcher_outs',
+    'EARNED_RUNS': 'pitcher_er',
+    'HITS_ALLOWED': 'pitcher_h_allowed',
+    'PITCHER_WALKS': 'pitcher_bb',
 }
 
 

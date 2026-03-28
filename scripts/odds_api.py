@@ -654,6 +654,7 @@ def fetch_props(sport, event_id=None):
         'soccer_france_ligue_one': 'player_shots,player_shots_on_target,player_assists',
         'soccer_uefa_champs_league': 'player_shots,player_shots_on_target,player_assists',
         'soccer_usa_mls': 'player_shots,player_shots_on_target,player_assists',
+        'baseball_mlb': 'batter_hits,batter_total_bases,batter_home_runs,batter_rbis,batter_runs_scored,batter_strikeouts,pitcher_strikeouts,pitcher_outs,pitcher_hits_allowed,pitcher_earned_runs',
     }
     prop_markets = PROP_MARKETS_BY_SPORT.get(sport, 'player_points,player_assists')
     

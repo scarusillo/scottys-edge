@@ -57,6 +57,7 @@ SPORT_MAP = {
     'ligamx': 'soccer_mexico_ligamx', 'liga_mx': 'soccer_mexico_ligamx',
     'ncaa_baseball': 'baseball_ncaa', 'college_baseball': 'baseball_ncaa',
     'cbb_base': 'baseball_ncaa', 'ncaabb': 'baseball_ncaa',
+    'mlb': 'baseball_mlb',
     # Tennis: special alias → triggers dynamic tournament detection
     'tennis': 'tennis_auto', 'atp': 'tennis_auto', 'wta': 'tennis_auto',
 }
@@ -66,8 +67,8 @@ SPORT_MAP = {
 # referee, congestion, home/away splits). Divergence cap raised 0.75→1.0.
 # ML still disabled in model_engine.py. MLS totals still disabled.
 _DISABLED_SPORTS = set()
-ALL_SPORTS = [s for s in set(SPORT_MAP.values()) if s not in _DISABLED_SPORTS]
-PROP_SPORTS = ['basketball_nba', 'icehockey_nhl']
+ALL_SPORTS = [s for s in set(SPORT_MAP.values()) if s not in _DISABLED_SPORTS and s != 'tennis_auto']
+PROP_SPORTS = ['basketball_nba', 'icehockey_nhl', 'baseball_mlb']
 # v12 FIX: Soccer props removed to save API budget. Soccer prop markets
 # (shots, shots on target) are thinly covered by US books — rarely produce
 # actionable edges. Saves ~150 usage per run × 2 runs = 300/day.
@@ -463,7 +464,7 @@ def cmd_run(args):
         posted_event_ids = set(row[3] for row in already_posted if row[3])
         posted_keys = set()
         for row in already_posted:
-            sport, mtype, sel = row
+            sport, mtype, sel = row[0], row[1], row[2]
             # Strip line numbers to get just the side/team
             if mtype == 'SPREAD':
                 side = _re.sub(r'\s*[+-]?\d+\.?\d*$', '', sel).strip()
@@ -555,7 +556,6 @@ def cmd_run(args):
     if all_picks:
         all_picks = _validate_picks(all_picks)
         save_picks_to_db(conn, all_picks)
-    conn.close()
     print_picks(all_picks)
     _log.info(f"Step 6: Predictions complete | {len(all_picks)} picks")
 
@@ -634,15 +634,13 @@ def cmd_run(args):
                         caption_text += "\n\n" + "TWITTER THREADS (copy-paste each tweet separately):\n" + "="*40 + thread_text
 
                     # v17: Growth playbook — accounts to engage, ready-to-post content
-                    _db = sqlite3.connect(DB_PATH)
-                    _season = _db.execute("""
+                    _season = conn.execute("""
                         SELECT SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END),
                                SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END),
                                SUM(pnl_units)
                         FROM graded_bets WHERE DATE(created_at) >= '2026-03-04'
                         AND result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5
                     """).fetchone()
-                    _db.close()
                     _sw, _sl, _sp = _season[0] or 0, _season[1] or 0, _season[2] or 0
                     _wr = _sw/(_sw+_sl)*100 if (_sw+_sl) > 0 else 0
                     # Use all today's picks (including earlier runs) for the caption playbook
@@ -759,6 +757,7 @@ TONIGHT'S CHECKLIST:
         else:
             print("  No picks to format.")
 
+    conn.close()
     _log.info(f"=== {run_type} Run END | {len(all_picks)} picks ===")
 
 
@@ -1616,8 +1615,8 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # Only apply surcharge to sports where early bets are unproven/losing.
         timing = p.get('timing', 'EARLY')
         if timing == 'EARLY' and 'soccer' not in sport:
-            # Baseball + NHL exempt — early lines are reliable in these sports
-            if 'baseball' not in sport and 'hockey' not in sport:
+            # Baseball + NHL + Tennis exempt — early lines are reliable in these sports
+            if 'baseball' not in sport and 'hockey' not in sport and 'tennis' not in sport:
                 min_edge += 5.0
         
         _min_u = MIN_UNITS
@@ -1653,6 +1652,11 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             # at 5%+ edge without context. Allow soccer through at 5%+ edge.
             elif 'soccer' in sport and edge >= 5.0:
                 pass  # Allow through — soccer Elo edges are proven
+            # Tennis exception: Same rationale as soccer — no B2B, no rest,
+            # no revenge in tennis. Surface-split Elo IS the signal.
+            # Context rarely fires for individual sport. Allow at 15%+ edge.
+            elif 'tennis' in sport and edge >= 15.0:
+                pass  # Allow through — tennis Elo edges are the signal
             else:
                 return False
         
@@ -1713,7 +1717,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # But NBA small dogs are part of our 10W-4L record — don't over-filter.
         # Split by market tier: sharp markets trust the model, soft markets tighten.
         line = p.get('line')
-        if mtype == 'SPREAD' and line is not None and line > 0:
+        if mtype == 'SPREAD' and line is not None and line > 0 and 'tennis' not in sport:
             is_sharp = sport in SHARP_MARKETS
             if line <= 3.5:
                 # Small dogs: sharp markets (NBA/NHL) keep normal threshold
@@ -2517,9 +2521,13 @@ def cmd_grade(args):
         if not email_ok:
             print("  ❌ EMAIL FAILED — grades were saved but not delivered. Check GMAIL_APP_PASSWORD env var.")
 
-        # Email 2: Plain text captions (separate email so you can copy from phone)
+        # Email 2: Captions + PNG cards (so you can copy captions & post images from phone)
         if results_caption:
-            send_email(f"Social Captions - {today}", results_caption)
+            if card_paths:
+                from emailer import _send_multi_attachment
+                _send_multi_attachment(f"Social Captions - {today}", results_caption, card_paths)
+            else:
+                send_email(f"Social Captions - {today}", results_caption)
             print("  Captions email sent")
 
         # Email 3: Daily diagnostic (warnings + factor analysis)

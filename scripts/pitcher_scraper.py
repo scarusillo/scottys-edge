@@ -28,6 +28,9 @@ Usage:
 """
 import sqlite3, json, os, sys, io, time, math
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
+_ET = ZoneInfo('America/New_York')
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 from collections import defaultdict
@@ -365,7 +368,7 @@ def build_pitching_quality(verbose=True):
     for home, away, h_score, a_score, commence in rows:
         try:
             dt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
-            dow = dt.weekday()  # 0=Mon through 6=Sun
+            dow = dt.astimezone(_ET).weekday()  # 0=Mon through 6=Sun (local ET)
         except (ValueError, AttributeError):
             continue
 
@@ -487,7 +490,7 @@ def get_pitcher_context(conn, home, away, commence_time=None):
     if commence_time:
         try:
             dt = datetime.fromisoformat(commence_time.replace('Z', '+00:00'))
-            dow = dt.weekday()
+            dow = dt.astimezone(_ET).weekday()  # Convert UTC to ET before weekday
         except (ValueError, AttributeError):
             pass
 

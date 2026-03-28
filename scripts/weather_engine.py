@@ -150,14 +150,48 @@ LIGUE_1_VENUES = {
     'Toulouse': (43.583, 1.435),
 }
 
+# MLB venues (all outdoor except Tropicana Field — included anyway, retractable roof)
+MLB_VENUES = {
+    'Arizona Diamondbacks': (33.4455, -112.0667),
+    'Atlanta Braves': (33.8907, -84.4678),
+    'Baltimore Orioles': (39.2838, -76.6216),
+    'Boston Red Sox': (42.3467, -71.0972),
+    'Chicago Cubs': (41.9484, -87.6553),
+    'Chicago White Sox': (41.8299, -87.6338),
+    'Cincinnati Reds': (39.0974, -84.5065),
+    'Cleveland Guardians': (41.4962, -81.6852),
+    'Colorado Rockies': (39.7559, -104.9942),
+    'Detroit Tigers': (42.3390, -83.0485),
+    'Houston Astros': (29.7573, -95.3555),
+    'Kansas City Royals': (39.0517, -94.4803),
+    'Los Angeles Angels': (33.8003, -117.8827),
+    'Los Angeles Dodgers': (34.0739, -118.2400),
+    'Miami Marlins': (25.7781, -80.2196),
+    'Milwaukee Brewers': (43.0280, -87.9712),
+    'Minnesota Twins': (44.9817, -93.2776),
+    'New York Mets': (40.7571, -73.8458),
+    'New York Yankees': (40.8296, -73.9262),
+    'Oakland Athletics': (38.5802, -121.5064),
+    'Philadelphia Phillies': (39.9061, -75.1665),
+    'Pittsburgh Pirates': (40.4469, -80.0058),
+    'San Diego Padres': (32.7076, -117.1570),
+    'San Francisco Giants': (37.7786, -122.3893),
+    'Seattle Mariners': (47.5914, -122.3325),
+    'St. Louis Cardinals': (38.6226, -90.1928),
+    'Tampa Bay Rays': (27.7682, -82.6534),
+    'Texas Rangers': (32.7512, -97.0832),
+    'Toronto Blue Jays': (43.6414, -79.3894),
+    'Washington Nationals': (38.8730, -77.0074),
+}
+
 # ═══════════════════════════════════════════════════════════════════
 # OUTDOOR SPORTS — only these check weather
 # ═══════════════════════════════════════════════════════════════════
 OUTDOOR_SPORTS = {
-    'baseball_ncaa', 'soccer_epl', 'soccer_usa_mls',
+    'baseball_ncaa', 'baseball_mlb', 'soccer_epl', 'soccer_usa_mls',
     'soccer_germany_bundesliga', 'soccer_france_ligue_one',
     'soccer_italy_serie_a', 'soccer_spain_la_liga',
-    'soccer_uefa_champs_league',
+    'soccer_uefa_champs_league', 'soccer_mexico_ligamx',
 }
 
 # Indoor sports — skip weather entirely
@@ -170,6 +204,7 @@ def _get_venue_coords(home_team, sport):
     """Get lat/lon for the home team's venue."""
     # Map sport to venue dict
     VENUE_MAP = {
+        'baseball_mlb': MLB_VENUES,
         'soccer_usa_mls': MLS_VENUES,
         'soccer_epl': EPL_VENUES,
         'soccer_spain_la_liga': LA_LIGA_VENUES,
