@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scotty's Edge | Data-Driven Sports Picks</title>
+<meta name="description" content="Model-driven sports betting picks with full transparency. Every pick tracked, every loss shown. NBA, NHL, NCAAB, MLB, Soccer, Tennis.">
+<meta name="theme-color" content="#0d1117">
+<meta property="og:title" content="Scotty's Edge | Data-Driven Sports Picks">
+<meta property="og:description" content="87W-57L | +70.2u | 60.4% Win Rate. Every pick tracked since day one.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@Scottys_edge">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0d1117;
+  --bg-card: #141e2a;
+  --bg-card-alt: #1a2636;
+  --green: #00e676;
+  --green-dim: rgba(0, 230, 118, 0.15);
+  --red: #ff5252;
+  --red-dim: rgba(255, 82, 82, 0.15);
+  --white: #ffffff;
+  --white-80: #cccccc;
+  --white-60: #999999;
+  --white-40: #666666;
+  --white-25: #404040;
+  --white-10: #1a1a1a;
+  --accent: #00e676;
+  --radius: 12px;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Typography ── */
+h1, h2, h3, .stat-number {
+  font-family: 'Bebas Neue', sans-serif;
+}
+
+.section-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--white-40);
+  margin-bottom: 12px;
+}
+
+/* ── Layout ── */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+section {
+  padding: 80px 0;
+}
+
+/* ── Animations ── */
+.fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Header / Nav ── */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: rgba(13, 17, 23, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding: 16px 0;
+}
+
+.site-header .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px;
+  color: var(--white);
+  text-decoration: none;
+  letter-spacing: 2px;
+}
+.nav-logo span {
+  color: var(--green);
+}
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+  list-style: none;
+}
+.nav-links a {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white-60);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.nav-links a:hover {
+  color: var(--green);
+}
+
+.nav-cta {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 8px 20px;
+  background: var(--green);
+  color: var(--bg);
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: opacity 0.3s;
+  cursor: pointer;
+}
+.nav-cta:hover {
+  opacity: 0.85;
+}
+
+.mobile-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+.mobile-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--white);
+  margin: 5px 0;
+  transition: all 0.3s;
+}
+
+/* ── Hero ── */
+.hero {
+  padding: 160px 0 100px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(circle, rgba(0, 230, 118, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(56px, 10vw, 96px);
+  letter-spacing: 6px;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.hero-logo span {
+  color: var(--green);
+}
+
+.hero-subtitle {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--white-60);
+  margin-bottom: 6px;
+}
+
+.hero-tagline {
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  color: var(--white-40);
+  margin-bottom: 48px;
+}
+
+/* ── Stats Banner ── */
+.stats-banner {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 24px 32px;
+  text-align: center;
+  min-width: 140px;
+}
+
+.stat-number {
+  font-size: 42px;
+  line-height: 1;
+  letter-spacing: 1px;
+}
+.stat-number.positive { color: var(--green); }
+.stat-number.record { color: var(--white); }
+
+.stat-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white-40);
+  margin-top: 6px;
+}
+
+.hero-since {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: var(--white-25);
+  text-transform: uppercase;
+  margin-bottom: 36px;
+}
+
+.hero-cta {
+  display: inline-block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  padding: 16px 48px;
+  background: var(--green);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.3s;
+  cursor: pointer;
+}
+.hero-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 230, 118, 0.25);
+}
+
+/* ── How It Works ── */
+.how-it-works {
+  background: var(--bg);
+}
+
+.section-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 48px;
+  letter-spacing: 3px;
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.pillar {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  text-align: center;
+  transition: transform 0.3s, border-color 0.3s;
+}
+.pillar:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 230, 118, 0.2);
+}
+
+.pillar-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  background: var(--green-dim);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pillar-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke: var(--green);
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pillar h3 {
+  font-size: 28px;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.pillar p {
+  font-size: 15px;
+  color: var(--white-60);
+  line-height: 1.7;
+}
+
+/* ── Sports Covered ── */
+.sports-section {
+  background: var(--bg);
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.sports-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+}
+
+.sport-badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  color: var(--white-80);
+  transition: border-color 0.3s, color 0.3s;
+}
+.sport-badge:hover {
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.sport-badge.basketball { border-left: 3px solid #ff6432; }
+.sport-badge.hockey { border-left: 3px solid #3296ff; }
+.sport-badge.baseball { border-left: 3px solid #78b43c; }
+.sport-badge.soccer { border-left: 3px solid #8232c8; }
+.sport-badge.tennis { border-left: 3px solid #c8c832; }
+
+/* ── Results ── */
+.results-section {
+  background: var(--bg);
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.results-placeholder {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.result-card-placeholder {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 60px 32px;
+  text-align: center;
+}
+
+.result-card-placeholder p {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white-40);
+}
+
+/* ── Track Record Table ── */
+.track-record {
+  background: var(--bg);
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.record-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Barlow', sans-serif;
+}
+
+.record-table thead th {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--white-40);
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.record-table tbody td {
+  padding: 14px 16px;
+  font-size: 15px;
+  color: var(--white-80);
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
+.record-table tbody tr:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.record-table .sport-name {
+  font-weight: 600;
+  color: var(--white);
+}
+
+.record-table .overall-row td {
+  font-weight: 700;
+  color: var(--white);
+  border-bottom: 2px solid rgba(0, 230, 118, 0.2);
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+.positive { color: var(--green); }
+.negative { color: var(--red); }
+
+/* ── Signup ── */
+.signup-section {
+  background: linear-gradient(180deg, var(--bg) 0%, #0a0f14 100%);
+  border-top: 1px solid rgba(255,255,255,0.04);
+  text-align: center;
+}
+
+.signup-box {
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 48px 40px;
+}
+
+.signup-box h2 {
+  font-size: 44px;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.signup-box .signup-desc {
+  font-size: 16px;
+  color: var(--white-60);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.signup-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.signup-form input[type="email"] {
+  flex: 1;
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--white);
+  outline: none;
+  transition: border-color 0.3s;
+}
+.signup-form input[type="email"]::placeholder {
+  color: var(--white-40);
+}
+.signup-form input[type="email"]:focus {
+  border-color: var(--green);
+}
+
+.signup-form button {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 14px 32px;
+  background: var(--green);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.3s, transform 0.2s;
+  white-space: nowrap;
+}
+.signup-form button:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.signup-note {
+  font-size: 12px;
+  color: var(--white-25);
+  line-height: 1.5;
+}
+
+/* ── Socials ── */
+.socials-section {
+  background: #0a0f14;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.socials-row {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  color: var(--white-60);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.social-link:hover {
+  color: var(--green);
+}
+.social-link svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+}
+
+/* ── Footer ── */
+.site-footer {
+  background: #0a0f14;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  padding: 32px 0;
+  text-align: center;
+}
+
+.footer-disclaimer {
+  font-size: 11px;
+  color: var(--white-25);
+  line-height: 1.7;
+  max-width: 800px;
+  margin: 0 auto 16px;
+}
+
+.footer-copy {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: var(--white-25);
+  text-transform: uppercase;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-cta.desktop { display: none; }
+  .mobile-toggle { display: block; }
+
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(13, 17, 23, 0.97);
+    padding: 20px 24px;
+    gap: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .hero { padding: 120px 0 60px; }
+  .hero-logo { font-size: clamp(42px, 12vw, 72px); }
+
+  .stats-banner {
+    gap: 8px;
+  }
+  .stat-card {
+    padding: 16px 20px;
+    min-width: 110px;
+  }
+  .stat-number { font-size: 32px; }
+
+  .pillars {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  section { padding: 60px 0; }
+  .section-title { font-size: 36px; }
+
+  .signup-box { padding: 32px 24px; }
+  .signup-form {
+    flex-direction: column;
+  }
+  .signup-form button {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .record-table { font-size: 13px; }
+  .record-table thead th,
+  .record-table tbody td { padding: 10px 8px; }
+}
+
+@media (max-width: 480px) {
+  .stat-card { min-width: 90px; padding: 12px 14px; }
+  .stat-number { font-size: 26px; }
+  .stat-label { font-size: 10px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<header class="site-header">
+  <div class="container">
+    <a href="#" class="nav-logo">SCOTTY'S <span>EDGE</span></a>
+    <nav>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#sports">Sports</a></li>
+        <li><a href="#results">Results</a></li>
+        <li><a href="#record">Record</a></li>
+        <li><a href="#signup">Get Picks</a></li>
+      </ul>
+    </nav>
+    <a href="#signup" class="nav-cta desktop">Subscribe</a>
+    <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="container">
+    <div class="fade-in">
+      <h1 class="hero-logo">SCOTTY'S <span>EDGE</span></h1>
+      <p class="hero-subtitle">Data-Driven Sports Picks</p>
+      <p class="hero-tagline">Every pick tracked. Every loss shown.</p>
+    </div>
+
+    <div class="stats-banner fade-in">
+      <div class="stat-card">
+        <div class="stat-number record">87-57</div>
+        <div class="stat-label">Record</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number positive">+70.2u</div>
+        <div class="stat-label">Profit</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number positive">60.4%</div>
+        <div class="stat-label">Win Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number positive">+9.9%</div>
+        <div class="stat-label">ROI</div>
+      </div>
+    </div>
+
+    <p class="hero-since fade-in">Tracked since March 4, 2026</p>
+
+    <a href="#signup" class="hero-cta fade-in">Get Free Picks</a>
+  </div>
+</section>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="how-it-works" id="how-it-works">
+  <div class="container">
+    <p class="section-label fade-in" style="text-align:center;">The Process</p>
+    <h2 class="section-title fade-in">How It Works</h2>
+
+    <div class="pillars">
+      <div class="pillar fade-in">
+        <div class="pillar-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>Model-Driven</h3>
+        <p>Our algorithm analyzes odds across 8+ sportsbooks, Elo ratings, contextual factors, and closing line value to find real edges.</p>
+      </div>
+      <div class="pillar fade-in">
+        <div class="pillar-icon">
+          <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h3>Full Transparency</h3>
+        <p>Every pick tracked since day one. Wins AND losses. Verified record with CLV analysis. No hidden results, no cherry-picking.</p>
+      </div>
+      <div class="pillar fade-in">
+        <div class="pillar-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <h3>Multi-Sport</h3>
+        <p>NBA, NHL, NCAA Basketball, College Baseball, MLB, Soccer, Tennis -- wherever the data finds an edge, we fire.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SPORTS ── -->
+<section class="sports-section" id="sports">
+  <div class="container">
+    <p class="section-label fade-in" style="text-align:center;">Coverage</p>
+    <h2 class="section-title fade-in">Sports We Cover</h2>
+
+    <div class="sports-grid fade-in">
+      <div class="sport-badge basketball">NBA</div>
+      <div class="sport-badge hockey">NHL</div>
+      <div class="sport-badge basketball">NCAAB</div>
+      <div class="sport-badge baseball">College Baseball</div>
+      <div class="sport-badge baseball">MLB</div>
+      <div class="sport-badge soccer">EPL</div>
+      <div class="sport-badge soccer">Serie A</div>
+      <div class="sport-badge soccer">La Liga</div>
+      <div class="sport-badge soccer">MLS</div>
+      <div class="sport-badge tennis">Tennis</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── RESULTS ── -->
+<section class="results-section" id="results">
+  <div class="container">
+    <p class="section-label fade-in" style="text-align:center;">Performance</p>
+    <h2 class="section-title fade-in">Latest Results</h2>
+
+    <div class="results-placeholder fade-in" id="results-cards">
+      <div class="result-card-placeholder">
+        <p>Results update daily</p>
+      </div>
+      <div class="result-card-placeholder">
+        <p>Results update daily</p>
+      </div>
+      <div class="result-card-placeholder">
+        <p>Results update daily</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TRACK RECORD ── -->
+<section class="track-record" id="record">
+  <div class="container">
+    <p class="section-label fade-in" style="text-align:center;">Verified</p>
+    <h2 class="section-title fade-in">Track Record</h2>
+
+    <div class="fade-in" style="overflow-x: auto;">
+      <table class="record-table">
+        <thead>
+          <tr>
+            <th>Sport</th>
+            <th>Record</th>
+            <th>Units</th>
+            <th>Win Rate</th>
+            <th>ROI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="overall-row">
+            <td class="sport-name">Overall</td>
+            <td>87W - 57L</td>
+            <td class="positive">+70.2u</td>
+            <td class="positive">60.4%</td>
+            <td class="positive">+9.9%</td>
+          </tr>
+          <tr>
+            <td class="sport-name">NBA</td>
+            <td>32W - 22L</td>
+            <td class="positive">+22.1u</td>
+            <td class="positive">59.3%</td>
+            <td class="positive">+8.2%</td>
+          </tr>
+          <tr>
+            <td class="sport-name">NHL</td>
+            <td>18W - 11L</td>
+            <td class="positive">+16.8u</td>
+            <td class="positive">62.1%</td>
+            <td class="positive">+11.4%</td>
+          </tr>
+          <tr>
+            <td class="sport-name">NCAAB</td>
+            <td>14W - 10L</td>
+            <td class="positive">+12.4u</td>
+            <td class="positive">58.3%</td>
+            <td class="positive">+8.6%</td>
+          </tr>
+          <tr>
+            <td class="sport-name">College Baseball</td>
+            <td>10W - 5L</td>
+            <td class="positive">+9.2u</td>
+            <td class="positive">66.7%</td>
+            <td class="positive">+13.1%</td>
+          </tr>
+          <tr>
+            <td class="sport-name">Soccer</td>
+            <td>8W - 6L</td>
+            <td class="positive">+5.8u</td>
+            <td class="positive">57.1%</td>
+            <td class="positive">+6.9%</td>
+          </tr>
+          <tr>
+            <td class="sport-name">Tennis</td>
+            <td>5W - 3L</td>
+            <td class="positive">+3.9u</td>
+            <td class="positive">62.5%</td>
+            <td class="positive">+9.7%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ── SIGNUP ── -->
+<section class="signup-section" id="signup">
+  <div class="container">
+    <div class="signup-box fade-in">
+      <h2>Get Free Daily Picks</h2>
+      <p class="signup-desc">Join 0+ bettors getting model-driven picks delivered to their inbox every day.</p>
+
+      <form class="signup-form" action="#" method="POST">
+        <input type="email" name="email" placeholder="Enter your email" required>
+        <button type="submit">Subscribe</button>
+      </form>
+
+      <p class="signup-note">Free forever. Unsubscribe anytime. Not gambling advice. 21+ only.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── SOCIALS ── -->
+<section class="socials-section">
+  <div class="container">
+    <p class="section-label" style="text-align:center; margin-bottom: 24px;">Follow Us</p>
+    <div class="socials-row">
+      <a href="https://instagram.com/scottys_edge" target="_blank" rel="noopener" class="social-link">
+        <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        @scottys_edge
+      </a>
+      <a href="https://discord.gg/JQ6rRfuN" target="_blank" rel="noopener" class="social-link">
+        <svg viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.42 0 1.333-.947 2.418-2.157 2.418z"/></svg>
+        Discord
+      </a>
+      <a href="https://twitter.com/Scottys_edge" target="_blank" rel="noopener" class="social-link">
+        <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        @Scottys_edge
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="site-footer">
+  <div class="container">
+    <p class="footer-disclaimer">Not gambling advice. For entertainment and informational purposes only. Past performance does not guarantee future results. Please gamble responsibly. If you or someone you know has a gambling problem, call 1-800-GAMBLER. Must be 21+ and located in a legal jurisdiction. Scotty's Edge does not accept or place bets on behalf of users.</p>
+    <p class="footer-copy">&copy; 2026 Scotty's Edge</p>
+  </div>
+</footer>
+
+<script>
+// Mobile nav toggle
+const toggle = document.getElementById('mobileToggle');
+const navLinks = document.getElementById('navLinks');
+toggle.addEventListener('click', () => {
+  navLinks.classList.toggle('open');
+});
+// Close mobile nav on link click
+navLinks.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', () => navLinks.classList.remove('open'));
+});
+
+// Fade-in on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

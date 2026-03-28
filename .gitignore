@@ -20,6 +20,10 @@ scripts/*.bak
 *.html
 *.jfif
 
+# But keep the landing page
+!docs/
+!docs/**
+
 # Logs
 *.log
 picks_log.jsonl
