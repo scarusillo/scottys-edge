@@ -524,6 +524,10 @@ def evaluate_props(conn=None):
                 elif side == 'UNDER' and history['over_rate'] < 0.45:
                     hist_bonus = min(5.0, (0.5 - history['over_rate']) * 20)
 
+            # Skip high-odds props — no graded data above +200
+            if ce['odds'] > 200:
+                continue
+
             # FINAL EDGE: Base consensus edge + bonuses from confirming signals
             # v11 fix: was base*0.50 which killed every edge under 11%.
             # Now: full base edge + capped bonuses from movement/stale/history.
@@ -533,6 +537,7 @@ def evaluate_props(conn=None):
                 min(stale_bonus * 0.20, 4.0) +             # Stale line bonus (capped)
                 min(hist_bonus * 0.15, 3.0)                # Historical tendency (capped)
             )
+            final_edge = min(final_edge, 25.0)  # Cap extreme edges
 
             if final_edge < 5.5:
                 continue

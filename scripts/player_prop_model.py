@@ -67,6 +67,8 @@ AWAY_PENALTY = 0.98
 MIN_EDGE_PCT = 18.0
 MIN_STARS = 2.0
 MAX_PROP_PICKS = 5  # Max props per card (top N by edge)
+MAX_PROP_ODDS = 200  # No props above +200 (no data to support higher)
+MAX_PROP_EDGE = 25.0  # Cap edge like game lines — extreme edges are overestimates
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -497,10 +499,15 @@ def generate_prop_projections(conn=None):
             if book not in NY_LEGAL_BOOKS:
                 continue
 
+            # Skip high-odds props — no data to support +200 and beyond
+            if odds > MAX_PROP_ODDS:
+                continue
+
             edge, capped_prob = calculate_prop_edge(
                 proj['projection'], proj['std'], line, odds,
                 season_values=proj.get('values'),
             )
+            edge = min(edge, MAX_PROP_EDGE)  # Cap extreme edges
             if edge < MIN_EDGE_PCT:
                 continue
 
