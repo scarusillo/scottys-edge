@@ -555,6 +555,57 @@ def cmd_run(args):
     # ═══ VALIDATION — Catch logical errors before saving ═══
     if all_picks:
         all_picks = _validate_picks(all_picks)
+
+        # ═══ PRE-SAVE CONCENTRATION CHECK — Safety net ═══
+        # Catches concentration risk that slipped past filters (e.g., cross-run accumulation).
+        # Checks existing bets + new picks combined. Blocks and warns, doesn't silently drop.
+        try:
+            _today_str = datetime.now().strftime('%Y-%m-%d')
+            _existing = conn.execute("""
+                SELECT sport, side_type, COUNT(*) as cnt, SUM(units) as u
+                FROM bets WHERE DATE(created_at) = ? AND units >= 3.5
+                GROUP BY sport, side_type
+            """, (_today_str,)).fetchall()
+            _dir_totals = {}
+            _sport_totals = {}
+            for _sp, _side, _cnt, _u in _existing:
+                _dir_totals[f"{_sp}|{_side}"] = _cnt
+                _sport_totals[_sp] = _sport_totals.get(_sp, 0) + _u
+
+            _blocked = []
+            _passed = []
+            for p in all_picks:
+                sp = p.get('sport', '')
+                mtype = p.get('market_type', '')
+                sel = p.get('selection', '')
+                units = p.get('units', 5.0)
+                # Infer side
+                if mtype == 'TOTAL':
+                    side = 'OVER' if 'OVER' in sel.upper() else 'UNDER'
+                elif mtype == 'SPREAD':
+                    side = 'DOG' if (p.get('line', 0) or 0) > 0 else 'FAVORITE'
+                elif mtype == 'MONEYLINE':
+                    side = 'DOG' if (p.get('odds', -110) or -110) > 0 else 'FAVORITE'
+                else:
+                    side = ''
+                dir_key = f"{sp}|{side}"
+                dir_count = _dir_totals.get(dir_key, 0)
+                sport_units = _sport_totals.get(sp, 0)
+
+                if dir_count >= 4:
+                    print(f"  ⚠ CONCENTRATION BLOCK: {sel[:50]} — {dir_count} {side} picks already for {sp}")
+                    _blocked.append(p)
+                else:
+                    _dir_totals[dir_key] = dir_count + 1
+                    _sport_totals[sp] = sport_units + units
+                    _passed.append(p)
+
+            if _blocked:
+                print(f"  Concentration check: blocked {len(_blocked)}, passed {len(_passed)}")
+            all_picks = _passed
+        except Exception as e:
+            print(f"  Concentration check: {e}")
+
         save_picks_to_db(conn, all_picks)
     print_picks(all_picks)
     _log.info(f"Step 6: Predictions complete | {len(all_picks)} picks")
