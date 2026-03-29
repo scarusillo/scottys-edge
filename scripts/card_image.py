@@ -176,9 +176,8 @@ def _draw_timing_badge(draw, fonts, x, y, timing):
     return bw + 8*S
 
 def _get_desktop():
-    d = os.path.join(os.path.expanduser('~'), 'Desktop')
-    if not os.path.exists(d):
-        d = os.path.join(os.path.expanduser('~'), 'OneDrive', 'Desktop')
+    d = os.path.join(os.path.dirname(__file__), '..', 'data', 'cards')
+    os.makedirs(d, exist_ok=True)
     return d
 
 def _finalize(img, y):

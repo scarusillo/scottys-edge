@@ -1305,11 +1305,10 @@ def _generate_results_html(report_text):
 </body>
 </html>"""
     
-    desktop = os.path.join(os.path.expanduser('~'), 'Desktop')
-    if not os.path.exists(desktop):
-        desktop = os.path.join(os.path.expanduser('~'), 'OneDrive', 'Desktop')
-    
-    filepath = os.path.join(desktop, 'scottys_edge_results.html')
+    cards_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'cards')
+    os.makedirs(cards_dir, exist_ok=True)
+
+    filepath = os.path.join(cards_dir, 'scottys_edge_results.html')
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(html)
     print(f"  📊 Results card saved: {filepath}")
