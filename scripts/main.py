@@ -2584,6 +2584,20 @@ def cmd_grade(args):
         except Exception as e:
             print(f"  Instagram results: {e}")
 
+        # Auto-generate and post results Reel
+        try:
+            from reel_generator import generate_results_reel, post_reel
+            _reel_conn = sqlite3.connect(db)
+            reel_path = generate_results_reel(_reel_conn)
+            _reel_conn.close()
+            if reel_path:
+                _game_date_r = conn.execute("SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5").fetchone()
+                _reel_caption = "Every pick tracked. Every loss shown.\n\nFollow for daily model-driven picks.\n\n"
+                _reel_caption += "#SportsBetting #FreePicks #BettingPicks #BettingResults #ScottysEdge"
+                post_reel(reel_path, _reel_caption)
+        except Exception as e:
+            print(f"  Reel: {e}")
+
     # Auto-update landing page stats (GitHub Pages)
     try:
         from update_landing_page import get_stats, update_html
