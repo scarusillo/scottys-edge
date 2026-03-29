@@ -1627,7 +1627,21 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             # Baseball + NHL + Tennis exempt — early lines are reliable in these sports
             if 'baseball' not in sport and 'hockey' not in sport and 'tennis' not in sport:
                 min_edge += 5.0
-        
+
+        # ── Friday surcharge: college baseball ──
+        # Data: Friday college baseball is 3W-7L, -24u. First game of weekend
+        # series — pitching rotations and lineups are least predictable.
+        # Aces pitch Fridays but markets already price that; the real issue is
+        # lineup uncertainty and early-season roster flux.
+        # +3% edge requirement filters marginal Friday plays.
+        if sport == 'baseball_ncaa' and datetime.now().strftime('%A') == 'Friday':
+            min_edge += 3.0
+            # Tag context so it's traceable in graded_bets
+            _existing_ctx = p.get('context', '')
+            _fri_tag = 'Fri series-opener surcharge (+3%)'
+            if _fri_tag not in _existing_ctx:
+                p['context'] = f"{_existing_ctx} | {_fri_tag}" if _existing_ctx else _fri_tag
+
         _min_u = MIN_UNITS
         if not (p.get('units', 0) >= _min_u and p.get('edge_pct', 0) >= min_edge):
             return False

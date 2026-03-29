@@ -537,7 +537,7 @@ def evaluate_props(conn=None):
                 min(stale_bonus * 0.20, 4.0) +             # Stale line bonus (capped)
                 min(hist_bonus * 0.15, 3.0)                # Historical tendency (capped)
             )
-            final_edge = min(final_edge, 25.0)  # Cap extreme edges
+            final_edge = min(final_edge, 20.0)  # Cap extreme edges
 
             if final_edge < 5.5:
                 continue

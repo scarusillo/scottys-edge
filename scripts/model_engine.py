@@ -674,8 +674,8 @@ def calculate_point_value_totals(model_total, market_total, sport):
     # At -110 odds, implied prob = 52.4%. Edge = prob - 0.524
     edge_pct = (prob - 0.524) * 100.0
     
-    # Cap at 25% for totals (realistic ceiling — anything above is a data issue)
-    return round(max(0.0, min(edge_pct, 25.0)), 1)
+    # Cap at 20% for totals (realistic ceiling — anything above is a data issue)
+    return round(max(0.0, min(edge_pct, 20.0)), 1)
 
 
 def _total_prob(diff, sport):
@@ -1538,7 +1538,7 @@ def generate_predictions(conn, sport=None, date=None):
                         if imp is None:
                             imp = american_to_implied_prob(draw_odds)
                         edge = (draw_prob - imp) * 100 if imp else 0
-                        edge = min(edge, 25.0)  # v18: cap at 25%
+                        edge = min(edge, 20.0)  # v20: cap at 20%
                         stars = get_star_rating(edge)
                         if edge >= min_pv and stars > 0:
                             seen.add(k)
@@ -1569,7 +1569,7 @@ def generate_predictions(conn, sport=None, date=None):
                 if ml_implied is None:
                     ml_implied = american_to_implied_prob(hml)
                 if ml_implied and spread_win_prob:
-                    cross_edge = min((spread_win_prob - ml_implied) * 100, 25.0)  # v18: cap
+                    cross_edge = min((spread_win_prob - ml_implied) * 100, 20.0)  # v20: cap at 20%
                     if cross_edge > 8.0:
                         k = f"{eid}|X|{home}"
                         if k not in seen:
@@ -1596,7 +1596,7 @@ def generate_predictions(conn, sport=None, date=None):
                     if aml_implied is None and aml:
                         _, aml_implied, _ = devig_ml_odds(hml, aml)
                     if aml_implied and away_spread_prob:
-                        cross_edge_a = min((away_spread_prob - aml_implied) * 100, 25.0)  # v18: cap
+                        cross_edge_a = min((away_spread_prob - aml_implied) * 100, 20.0)  # v20: cap at 20%
                         if cross_edge_a > 8.0:
                             k = f"{eid}|X|{away}"
                             if k not in seen:
@@ -1932,8 +1932,8 @@ def _mk(sp, eid, commence, home, away, mtype, sel, book, line, odds, ms, prob, i
     # instead of being killed by tiny probability edges.
     actual_edge = max(prob_edge, pv_edge, 0)
 
-    # v18: Cap spread edge at 25% (same as totals) — anything above is a data issue
-    actual_edge = min(actual_edge, 25.0)
+    # v20: Cap spread edge at 20% — 25% cap bets were 33W-25L 6.8% ROI vs 12.5% below cap
+    actual_edge = min(actual_edge, 20.0)
 
     # v17: Model-vs-market divergence penalty for spreads
     # When model heavily disagrees with market, reduce edge (market is likely right)
@@ -1967,8 +1967,8 @@ def _mk(sp, eid, commence, home, away, mtype, sel, book, line, odds, ms, prob, i
     }
 
 def _mk_ml(sp, eid, commence, home, away, sel, book, odds, ms, prob, imp, edge, stars, timing, t_r):
-    # v18: Cap ML edge at 25% (same as totals/spreads) — anything above is a data issue
-    edge = min(edge, 25.0)
+    # v20: Cap ML edge at 20% — inflated edges at 25% cap showed 0.0 CLV
+    edge = min(edge, 20.0)
     units = kelly_units(edge_pct=edge, odds=odds)
     kl = kelly_label(units)
     return {

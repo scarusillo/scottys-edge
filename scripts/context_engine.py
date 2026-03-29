@@ -923,15 +923,15 @@ def pace_of_play_adjustment(conn, home, away, sport):
     if h_avg:
         h_pace = (h_avg - league_avg) / league_stdev  # Z-score
         if abs(h_pace) >= 0.5:  # At least half a stdev from average
-            # Convert to points: each 1 stdev = ~2 pts adjustment (split between teams)
-            h_adj = h_pace * 1.0  # Half of 2 pts since two teams contribute
+            # Convert to points: v21 halved from 1.0 to 0.5 (pace was too aggressive)
+            h_adj = h_pace * 0.5  # ~1 pt per stdev (was 2 pts, caused -17u on fast-paced)
             adj += h_adj
             reasons['home_pace'] = round(h_adj, 1)
     
     if a_avg:
         a_pace = (a_avg - league_avg) / league_stdev
         if abs(a_pace) >= 0.5:
-            a_adj = a_pace * 1.0
+            a_adj = a_pace * 0.5
             adj += a_adj
             reasons['away_pace'] = round(a_adj, 1)
     
