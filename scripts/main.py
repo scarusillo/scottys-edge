@@ -1977,12 +1977,26 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         except Exception:
             pass
 
+    def _infer_side(p):
+        """Infer side_type from pick data (picks don't have side_type until saved)."""
+        mtype = p.get('market_type', '')
+        sel = p.get('selection', '')
+        line = p.get('line', 0)
+        if mtype == 'TOTAL':
+            return 'OVER' if 'OVER' in sel.upper() else 'UNDER'
+        elif mtype == 'SPREAD':
+            return 'DOG' if (line or 0) > 0 else 'FAVORITE'
+        elif mtype == 'MONEYLINE':
+            odds = p.get('odds', -110)
+            return 'DOG' if odds > 0 else 'FAVORITE'
+        return p.get('side_type', '')
+
     sport_soft_counts = {}
     sport_dir_counts = dict(_existing_dir_counts)  # Start from existing bets
     soft_final = []
     for p in soft_deduped:
         sp = p.get('sport', '')
-        side = p.get('side_type', '')
+        side = _infer_side(p)
         dir_key = f"{sp}|{side}"
         if sport_soft_counts.get(sp, 0) >= MAX_PER_SPORT_SOFT:
             continue
