@@ -1956,17 +1956,43 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
 
     # ── Apply caps ──
     # Soft markets: cap at 10 total, max 5 per sport (prevents NCAAB flooding)
+    # v21: Same-direction cap — max 4 per sport per direction (OVER/UNDER/DOG/FAV)
+    # Prevents all-under or all-over loading on a single sport.
     MAX_SOFT_PICKS = 10
     MAX_PER_SPORT_SOFT = 5
+    MAX_PER_SPORT_DIRECTION = 4  # v21: 7 unders on 3/29 showed directional risk
+
+    # Pre-load today's existing bets to count across runs
+    _existing_dir_counts = {}  # key: "sport|direction" → count
+    if conn is not None:
+        try:
+            _today = datetime.now().strftime('%Y-%m-%d')
+            _today_bets = conn.execute("""
+                SELECT sport, side_type FROM bets
+                WHERE DATE(created_at) = ? AND units >= 3.5
+            """, (_today,)).fetchall()
+            for _sp, _side in _today_bets:
+                _dir_key = f"{_sp}|{_side or ''}"
+                _existing_dir_counts[_dir_key] = _existing_dir_counts.get(_dir_key, 0) + 1
+        except Exception:
+            pass
+
     sport_soft_counts = {}
+    sport_dir_counts = dict(_existing_dir_counts)  # Start from existing bets
     soft_final = []
     for p in soft_deduped:
         sp = p.get('sport', '')
+        side = p.get('side_type', '')
+        dir_key = f"{sp}|{side}"
         if sport_soft_counts.get(sp, 0) >= MAX_PER_SPORT_SOFT:
+            continue
+        if sport_dir_counts.get(dir_key, 0) >= MAX_PER_SPORT_DIRECTION:
+            print(f"  DIRECTION CAP: skipped {p['selection'][:50]} — already have {sport_dir_counts[dir_key]} {side} picks for {sp}")
             continue
         if len(soft_final) >= MAX_SOFT_PICKS:
             break
         sport_soft_counts[sp] = sport_soft_counts.get(sp, 0) + 1
+        sport_dir_counts[dir_key] = sport_dir_counts.get(dir_key, 0) + 1
         soft_final.append(p)
     
     # Sharp markets: cap of 4, best edges across NBA/NHL/EPL/La Liga
