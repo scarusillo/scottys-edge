@@ -2584,27 +2584,24 @@ def cmd_grade(args):
         except Exception as e:
             print(f"  Instagram results: {e}")
 
-        # Auto-generate and post results Reel
+        # Generate results Reel (saved to data/cards/ but NOT auto-posted yet)
         try:
-            from reel_generator import generate_results_reel, post_reel
+            from reel_generator import generate_results_reel
             _reel_conn = sqlite3.connect(db)
-            reel_path = generate_results_reel(_reel_conn)
+            generate_results_reel(_reel_conn)
             _reel_conn.close()
-            if reel_path:
-                _game_date_r = conn.execute("SELECT MAX(DATE(created_at)) FROM graded_bets WHERE result NOT IN ('DUPLICATE','PENDING','TAINTED') AND units >= 3.5").fetchone()
-                _reel_caption = "Every pick tracked. Every loss shown.\n\nFollow for daily model-driven picks.\n\n"
-                _reel_caption += "#SportsBetting #FreePicks #BettingPicks #BettingResults #ScottysEdge"
-                post_reel(reel_path, _reel_caption)
         except Exception as e:
             print(f"  Reel: {e}")
 
-    # Auto-update landing page stats (GitHub Pages)
+    # Auto-update landing page stats + results (GitHub Pages)
     try:
-        from update_landing_page import get_stats, update_html
+        from update_landing_page import get_stats, get_recent_results, build_results_html, update_html
         _lp_conn = sqlite3.connect(db)
         _lp_overall, _lp_sports = get_stats(_lp_conn)
+        _lp_days = get_recent_results(_lp_conn, days=3)
         _lp_conn.close()
-        _w, _l, _pnl, _wp, _roi = update_html(_lp_overall, _lp_sports)
+        _lp_results_html = build_results_html(_lp_days)
+        _w, _l, _pnl, _wp, _roi = update_html(_lp_overall, _lp_sports, results_html=_lp_results_html)
         import subprocess as _sp
         _sp.run(['git', '-C', os.path.join(os.path.dirname(__file__), '..'), 'add', 'docs/index.html'], capture_output=True)
         _sp.run(['git', '-C', os.path.join(os.path.dirname(__file__), '..'), 'commit', '-m',
