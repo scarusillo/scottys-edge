@@ -501,32 +501,13 @@ def post_to_instagram(image_paths, caption, also_story=True):
 
     import time
 
-    # Build usertags for photo tagging (accounts appear when you tap the image)
-    usertags = []
-    try:
-        from instagrapi.types import Usertag
-        # Tag betting/sports accounts — spreads them across the image
-        tag_accounts = ['sportscenter', 'espn', 'bleacherreport',
-                        'draftkings', 'fanduel', 'betmgm']
-        positions = [(0.2, 0.8), (0.5, 0.8), (0.8, 0.8),
-                     (0.2, 0.9), (0.5, 0.9), (0.8, 0.9)]
-        for acct, pos in zip(tag_accounts, positions):
-            try:
-                user = cl.user_info_by_username(acct)
-                usertags.append(Usertag(user=user, x=pos[0], y=pos[1]))
-                time.sleep(2)  # Rate limit protection
-            except Exception:
-                pass  # Skip if account not found
-    except ImportError:
-        pass  # Usertag not available in this version
+    # NOTE: Photo usertags removed — looking up accounts via user_info_by_username
+    # triggers Instagram bot detection. Stick to @mentions in caption text only.
 
     success = False
     try:
         if len(valid_paths) == 1:
-            if usertags:
-                media = cl.photo_upload(valid_paths[0], caption, usertags=usertags)
-            else:
-                media = cl.photo_upload(valid_paths[0], caption)
+            media = cl.photo_upload(valid_paths[0], caption)
         else:
             media = cl.album_upload(valid_paths, caption)
 
