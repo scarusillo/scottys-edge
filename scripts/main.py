@@ -2585,6 +2585,22 @@ def cmd_grade(args):
         except Exception as e:
             print(f"  Instagram results: {e}")
 
+    # Auto-update landing page stats (GitHub Pages)
+    try:
+        from update_landing_page import get_stats, update_html
+        _lp_conn = sqlite3.connect(db)
+        _lp_overall, _lp_sports = get_stats(_lp_conn)
+        _lp_conn.close()
+        _w, _l, _pnl, _wp, _roi = update_html(_lp_overall, _lp_sports)
+        import subprocess as _sp
+        _sp.run(['git', '-C', os.path.join(os.path.dirname(__file__), '..'), 'add', 'docs/index.html'], capture_output=True)
+        _sp.run(['git', '-C', os.path.join(os.path.dirname(__file__), '..'), 'commit', '-m',
+                 f'Update landing page stats: {_w}W-{_l}L +{_pnl}u'], capture_output=True)
+        _sp.run(['git', '-C', os.path.join(os.path.dirname(__file__), '..'), 'push'], capture_output=True)
+        print(f"  Landing page updated: {_w}W-{_l}L | +{_pnl}u | {_wp}% | ROI +{_roi}%")
+    except Exception as e:
+        print(f"  Landing page: {e}")
+
     # Twitter results thread
     # Sync DB to OneDrive for cloud agent access
     try:
