@@ -392,25 +392,96 @@ section {
   border-top: 1px solid rgba(255,255,255,0.04);
 }
 
-.results-placeholder {
+.results-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 20px;
 }
 
-.result-card-placeholder {
+.result-card {
   background: var(--bg-card);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: var(--radius);
-  padding: 60px 32px;
-  text-align: center;
+  padding: 28px 24px 20px;
 }
 
-.result-card-placeholder p {
+.result-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.result-card-date {
   font-family: 'Barlow Condensed', sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   letter-spacing: 2px;
   text-transform: uppercase;
+  color: var(--white-40);
+}
+
+.result-card-record {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--white-80);
+}
+
+.result-card-pnl {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.result-card-pnl.positive { color: var(--green); }
+.result-card-pnl.negative { color: var(--red); }
+
+.result-card-picks {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.result-card-picks li {
+  font-size: 13px;
+  color: var(--white-60);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.4;
+}
+
+.pick-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pick-icon.win {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.pick-icon.loss {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
+.pick-icon.push {
+  background: rgba(255,255,255,0.08);
   color: var(--white-40);
 }
 
@@ -779,17 +850,80 @@ section {
     <p class="section-label fade-in" style="text-align:center;">Performance</p>
     <h2 class="section-title fade-in">Latest Results</h2>
 
-    <div class="results-placeholder fade-in" id="results-cards">
-      <div class="result-card-placeholder">
-        <p>Results update daily</p>
+    <!-- RESULTS-START -->
+    <div class="results-grid fade-in" id="results-cards">
+      <div class="result-card">
+        <div class="result-card-header">
+          <span class="result-card-date">Mar 28, 2026</span>
+          <span class="result-card-record">13W-7L-1P</span>
+        </div>
+        <div class="result-card-pnl positive">+19.0u</div>
+        <ul class="result-card-picks">
+          <li><span class="pick-icon win">W</span>Oklahoma Sooners@Texas Longhorns UNDER 11…</li>
+          <li><span class="pick-icon win">W</span>Auburn Tigers@Alabama Crimson Tide UNDER…</li>
+          <li><span class="pick-icon win">W</span>NC State Wolfpack@Georgia Tech Yellow Jac…</li>
+          <li><span class="pick-icon win">W</span>Oregon Ducks@UC Santa Barbara Gauchos UND…</li>
+          <li><span class="pick-icon loss">L</span>Michigan Wolverines@Rutgers Scarlet Knigh…</li>
+          <li><span class="pick-icon loss">L</span>Stanford Cardinal@Virginia Tech Hokies OV…</li>
+          <li><span class="pick-icon loss">L</span>Kansas Jayhawks@Cincinnati Bearcats OVER…</li>
+          <li><span class="pick-icon win">W</span>Winnipeg Jets@Colorado Avalanche OVER 5.5</li>
+          <li><span class="pick-icon win">W</span>Cleveland Guardians@Seattle Mariners OVER…</li>
+          <li><span class="pick-icon win">W</span>Kentucky Wildcats@LSU Tigers UNDER 12.5</li>
+          <li><span class="pick-icon win">W</span>Philadelphia Flyers +1.5</li>
+          <li><span class="pick-icon win">W</span>Texas Tech Red Raiders@TCU Horned Frogs O…</li>
+          <li><span class="pick-icon loss">L</span>Indiana Hoosiers@Nebraska Cornhuskers UND…</li>
+          <li><span class="pick-icon win">W</span>South Carolina Gamecocks@Georgia Bulldogs…</li>
+          <li><span class="pick-icon win">W</span>West Virginia Mountaineers ML</li>
+          <li><span class="pick-icon loss">L</span>Seattle Kraken@Buffalo Sabres OVER 6.0</li>
+          <li><span class="pick-icon push">P</span>Ottawa Senators@Tampa Bay Lightning OVER…</li>
+          <li><span class="pick-icon loss">L</span>Vancouver Canucks +1.5</li>
+          <li><span class="pick-icon loss">L</span>New Jersey Devils +1.5</li>
+          <li><span class="pick-icon win">W</span>Dallas Stars@Pittsburgh Penguins OVER 5.5</li>
+          <li><span class="pick-icon win">W</span>Florida Gators ML</li>
+        </ul>
       </div>
-      <div class="result-card-placeholder">
-        <p>Results update daily</p>
+      <div class="result-card">
+        <div class="result-card-header">
+          <span class="result-card-date">Mar 27, 2026</span>
+          <span class="result-card-record">4W-8L</span>
+        </div>
+        <div class="result-card-pnl negative">-23.9u</div>
+        <ul class="result-card-picks">
+          <li><span class="pick-icon loss">L</span>Tennessee Volunteers@Vanderbilt Commodore…</li>
+          <li><span class="pick-icon loss">L</span>Utah Jazz@Denver Nuggets UNDER 247.5</li>
+          <li><span class="pick-icon loss">L</span>Florida Gators@Arkansas Razorbacks UNDER…</li>
+          <li><span class="pick-icon loss">L</span>Auburn Tigers@Alabama Crimson Tide UNDER…</li>
+          <li><span class="pick-icon win">W</span>Jiri Lehecka +2.5</li>
+          <li><span class="pick-icon win">W</span>California Golden Bears@Wake Forest Demon…</li>
+          <li><span class="pick-icon loss">L</span>West Virginia Mountaineers ML</li>
+          <li><span class="pick-icon win">W</span>Texas Tech Red Raiders@TCU Horned Frogs O…</li>
+          <li><span class="pick-icon loss">L</span>East Carolina Pirates@UTSA Roadrunners OV…</li>
+          <li><span class="pick-icon loss">L</span>South Florida Bulls@Charlotte 49ers UNDER…</li>
+          <li><span class="pick-icon win">W</span>Rutgers Scarlet Knights ML</li>
+          <li><span class="pick-icon loss">L</span>Chicago Blackhawks +1.5</li>
+        </ul>
       </div>
-      <div class="result-card-placeholder">
-        <p>Results update daily</p>
+      <div class="result-card">
+        <div class="result-card-header">
+          <span class="result-card-date">Mar 26, 2026</span>
+          <span class="result-card-record">7W-3L</span>
+        </div>
+        <div class="result-card-pnl positive">+6.7u</div>
+        <ul class="result-card-picks">
+          <li><span class="pick-icon win">W</span>Seattle Kraken@Tampa Bay Lightning OVER 6…</li>
+          <li><span class="pick-icon loss">L</span>Oklahoma Sooners@Texas Longhorns UNDER 11…</li>
+          <li><span class="pick-icon win">W</span>Miami Hurricanes@Clemson Tigers OVER 10.5</li>
+          <li><span class="pick-icon loss">L</span>Washington Capitals@Utah Mammoth UNDER 6.5</li>
+          <li><span class="pick-icon win">W</span>Winnipeg Jets +1.5</li>
+          <li><span class="pick-icon loss">L</span>Chicago Blackhawks +1.5</li>
+          <li><span class="pick-icon win">W</span>Calgary Flames +1.5</li>
+          <li><span class="pick-icon win">W</span>Pittsburgh Penguins +1.5</li>
+          <li><span class="pick-icon win">W</span>Detroit Pistons ML</li>
+          <li><span class="pick-icon win">W</span>New Jersey Devils@Nashville Predators OVE…</li>
+        </ul>
       </div>
     </div>
+    <!-- RESULTS-END -->
   </div>
 </section>
 
