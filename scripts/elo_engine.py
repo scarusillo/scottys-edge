@@ -853,7 +853,25 @@ def get_tennis_elo(conn, tournament_key):
     """
     from config import TENNIS_SURFACES
 
-    surface = TENNIS_SURFACES.get(tournament_key, 'hard')
+    surface = TENNIS_SURFACES.get(tournament_key)
+    if surface is None:
+        # Infer surface from tournament name for dynamically detected tournaments
+        _tk = tournament_key.lower()
+        _CLAY = ['french_open', 'roland_garros', 'monte_carlo', 'madrid',
+                 'italian_open', 'rome', 'barcelona', 'hamburg', 'rio',
+                 'buenos_aires', 'lyon', 'bastad', 'kitzbuhel', 'umag',
+                 'gstaad', 'geneva', 'marrakech', 'bucharest', 'parma',
+                 'palermo', 'prague', 'rabat', 'strasbourg', 'lausanne',
+                 'portoroz', 'bogota', 'istanbul', 'budapest']
+        _GRASS = ['wimbledon', 'queens', 'halle', 'eastbourne', 'berlin',
+                  'bad_homburg', 'nottingham', 'mallorca', 's_hertogenbosch',
+                  'birmingham', 'libema']
+        if any(kw in _tk for kw in _CLAY):
+            surface = 'clay'
+        elif any(kw in _tk for kw in _GRASS):
+            surface = 'grass'
+        else:
+            surface = 'hard'
     tour = 'atp' if '_atp_' in tournament_key else 'wta'
     elo_key = f'tennis_{tour}_{surface}'
     return get_elo_ratings(conn, elo_key), elo_key

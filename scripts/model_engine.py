@@ -897,11 +897,27 @@ def generate_predictions(conn, sport=None, date=None):
 
         cfg = SPORT_CONFIG.get(sp)
         if cfg is None:
-            # Unknown sport (e.g., new tennis tournament) — use hard court defaults
             if 'tennis' in sp:
-                cfg = _TENNIS_PARAMS['hard']
+                # Infer surface from tournament name — paramount for correct Elo + model params
+                _sp_lower = sp.lower()
+                _CLAY_KEYWORDS = ['french_open', 'roland_garros', 'monte_carlo', 'madrid',
+                                  'italian_open', 'rome', 'barcelona', 'hamburg', 'rio',
+                                  'buenos_aires', 'lyon', 'bastad', 'kitzbuhel', 'umag',
+                                  'gstaad', 'geneva', 'marrakech', 'bucharest', 'parma',
+                                  'palermo', 'prague', 'rabat', 'strasbourg', 'lausanne',
+                                  'portoroz', 'bogota', 'istanbul', 'budapest']
+                _GRASS_KEYWORDS = ['wimbledon', 'queens', 'halle', 'stuttgart_grass',
+                                   'eastbourne', 'berlin', 'bad_homburg', 'nottingham',
+                                   'mallorca', 's_hertogenbosch', 'birmingham', 'libema']
+                if any(kw in _sp_lower for kw in _CLAY_KEYWORDS):
+                    _surface = 'clay'
+                elif any(kw in _sp_lower for kw in _GRASS_KEYWORDS):
+                    _surface = 'grass'
+                else:
+                    _surface = 'hard'  # Most tournaments are hard court
+                cfg = dict(_TENNIS_PARAMS[_surface])
                 SPORT_CONFIG[sp] = cfg
-                print(f"    Auto-config: {sp} using hard court defaults")
+                print(f"    Auto-config: {sp} → {_surface} court")
             else:
                 print(f"    ⚠ Unknown sport: {sp} — skipping")
                 continue
