@@ -1770,6 +1770,23 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         if mtype == 'SPREAD' and 'hockey' in sport and odds <= -200:
             return False  # Too much juice on puck line — -200+ is breakeven at best
 
+        # ── NHL puck line dog Elo floor ──
+        # Data: Blackhawks (Elo 1431) 1W-4L -15u as puck line dog, 60% blowout rate
+        # when losing. Bottom-tier teams get blown out too often for +1.5 to cover.
+        # model_spread conversion doesn't produce large enough spreads for these teams.
+        # Elo floor of 1450 would have saved 15u net.
+        sel = p.get('selection', '')
+        line = p.get('line')
+        if mtype == 'SPREAD' and 'hockey' in sport and line is not None and line > 0:
+            team_name = sel.rsplit(' ', 1)[0].strip() if sel else ''
+            if team_name and conn:
+                elo_row = conn.execute(
+                    "SELECT elo FROM elo_ratings WHERE sport='icehockey_nhl' AND team=?",
+                    (team_name,)
+                ).fetchone()
+                if elo_row and elo_row[0] < 1450:
+                    return False  # Block bottom-tier NHL dogs from puck line — blowout rate too high
+
         # ── Early NCAAB block ──
         # Data: Early NCAAB is 4W-7L, -33.9% ROI. Lines haven't settled.
         # The 8% surcharge wasn't enough. Block early NCAAB entirely.
@@ -2307,6 +2324,21 @@ def cmd_grade(args):
             try: fetch_scores(sp, days_back=3)
             except: pass
     except: pass
+
+    # v21 FIX: Odds API scores endpoint often returns 0 results for tennis.
+    # ESPN scraper reliably returns completed match scores (FREE).
+    print("  Fetching ESPN tennis scores...")
+    try:
+        from historical_scores import fetch_tennis_scores
+        for tour in ('atp', 'wta'):
+            try:
+                t_new = fetch_tennis_scores(tour, days_back=5, verbose=False)
+                if t_new:
+                    print(f"  ESPN tennis ({tour.upper()}): {t_new} new results")
+            except Exception as e:
+                print(f"  ESPN tennis ({tour.upper()}): {e}")
+    except Exception as e:
+        print(f"  ESPN tennis scores: {e}")
 
     # v12 FIX: Odds API doesn't return college baseball scores.
     # Fetch from ESPN scraper instead. No API cost.
