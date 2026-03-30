@@ -49,7 +49,8 @@ def upload_to_github():
          COMPRESSED_PATH,
          '--title', f'Database Snapshot — {datetime.now().strftime("%Y-%m-%d %H:%M")}',
          '--notes', f'Auto-uploaded by sync_db_to_cloud.py\nSize: {os.path.getsize(COMPRESSED_PATH)/(1024*1024):.0f} MB compressed',
-         '--latest=false'],
+         '--latest=false',
+         '--draft=false'],
         capture_output=True, text=True
     )
 
