@@ -1682,20 +1682,9 @@ def generate_predictions(conn, sport=None, date=None):
                                 pass
                         
                         # Weather adjustment for outdoor sports (baseball, soccer)
-                        weather_adj = 0.0
-                        weather_info = {}
-                        if HAS_WEATHER and ('baseball' in sp or 'soccer' in sp):
-                            try:
-                                weather_adj, weather_info = get_weather_adjustment(home, sp, commence)
-                                if weather_adj != 0:
-                                    # Cap: ±1.5 runs baseball, ±0.3 goals soccer
-                                    if 'baseball' in sp:
-                                        weather_adj = max(-1.5, min(1.5, weather_adj))
-                                    else:
-                                        weather_adj = max(-0.3, min(0.3, weather_adj))
-                                    model_total += weather_adj
-                            except Exception:
-                                pass
+                        # Weather adjustment is applied in context_engine.py (not here)
+                        # to avoid double-counting. Context engine adds it to total_adj
+                        # which gets applied to model_total downstream.
 
                         # Referee tendency adjustment
                         ref_adj = 0.0
@@ -1754,8 +1743,7 @@ def generate_predictions(conn, sport=None, date=None):
                                         ctx_parts.append(ctx_total['summary'])
                                     if pitcher_ctx and pitcher_ctx['summary']:
                                         ctx_parts.append(pitcher_ctx['summary'])
-                                    if weather_adj != 0:
-                                        ctx_parts.append(f"Weather {weather_adj:+.1f}")
+                                    # Weather context is already in ctx_total['summary'] from context_engine
                                     if ref_adj != 0 and ref_info:
                                         ctx_parts.append(ref_info)
                                     if ctx_parts:
@@ -1803,8 +1791,7 @@ def generate_predictions(conn, sport=None, date=None):
                                             ctx_parts.append(ctx_total['summary'])
                                         if pitcher_ctx and pitcher_ctx['summary']:
                                             ctx_parts.append(pitcher_ctx['summary'])
-                                        if weather_adj != 0:
-                                            ctx_parts.append(f"Weather {weather_adj:+.1f}")
+                                        # Weather context is already in ctx_total['summary'] from context_engine
                                         if ref_adj != 0 and ref_info:
                                             ctx_parts.append(ref_info)
                                         if ctx_parts:
