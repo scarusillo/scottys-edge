@@ -895,7 +895,16 @@ def generate_predictions(conn, sport=None, date=None):
         if seeded:
             print(f"    + Auto-seeded {seeded} unrated teams (from results + market data)")
 
-        cfg = SPORT_CONFIG[sp]
+        cfg = SPORT_CONFIG.get(sp)
+        if cfg is None:
+            # Unknown sport (e.g., new tennis tournament) — use hard court defaults
+            if 'tennis' in sp:
+                cfg = _TENNIS_PARAMS['hard']
+                SPORT_CONFIG[sp] = cfg
+                print(f"    Auto-config: {sp} using hard court defaults")
+            else:
+                print(f"    ⚠ Unknown sport: {sp} — skipping")
+                continue
         seen = set()
         skip_nr = skip_div = skip_w = 0
 
