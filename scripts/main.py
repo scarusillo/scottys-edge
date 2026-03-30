@@ -2702,6 +2702,18 @@ def cmd_grade(args):
     except Exception as e:
         print(f"  Landing page: {e}")
 
+    # Export briefing data for cloud agent (lightweight JSON, not full DB)
+    try:
+        from export_briefing_data import export_data
+        export_data()
+        import subprocess as _bp
+        _bp.run(['git', '-C', os.path.join(os.path.dirname(__file__), '..'), 'add', 'data/briefing_data.json'], capture_output=True)
+        _bp.run(['git', '-C', os.path.join(os.path.dirname(__file__), '..'), 'commit', '-m',
+                 f'Update briefing data {datetime.now().strftime("%Y-%m-%d")}'], capture_output=True)
+        _bp.run(['git', '-C', os.path.join(os.path.dirname(__file__), '..'), 'push'], capture_output=True)
+    except Exception as e:
+        print(f"  Briefing data export: {e}")
+
     # Twitter results thread
     # Sync DB to OneDrive for cloud agent access
     try:
