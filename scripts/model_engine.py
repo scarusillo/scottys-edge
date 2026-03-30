@@ -1686,16 +1686,10 @@ def generate_predictions(conn, sport=None, date=None):
                         # to avoid double-counting. Context engine adds it to total_adj
                         # which gets applied to model_total downstream.
 
-                        # Referee tendency adjustment
+                        # Referee adjustment is applied in context_engine.py (not here)
+                        # to avoid double-counting. Context engine adds it to total_adj.
                         ref_adj = 0.0
                         ref_info = ''
-                        if HAS_REFEREE:
-                            try:
-                                ref_adj, ref_info = get_ref_adjustment(home, away, sp, conn)
-                                if ref_adj != 0:
-                                    model_total += ref_adj
-                            except Exception:
-                                pass
 
                         # Reduce Kelly fraction for MEDIUM confidence totals
                         totals_kelly_frac = 0.125 if total_conf == 'HIGH' else 0.0625
