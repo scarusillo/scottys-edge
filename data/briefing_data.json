@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-30 05:55",
+  "generated_at": "2026-03-30 07:12",
   "game_date": "2026-03-29",
   "yesterday": [
     {
@@ -261,14 +261,32 @@
       "closing_line": 16.5,
       "event_id": "8ee2c4b6025cbf949f50d0b11662ef1d",
       "dt": "2026-03-29"
+    },
+    {
+      "selection": "Jannik Sinner -4.5",
+      "sport": "tennis_atp_miami_open",
+      "market_type": "SPREAD",
+      "side_type": "FAVORITE",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.0,
+      "edge_pct": 15.56,
+      "odds": -145.0,
+      "units": 5.0,
+      "context_factors": "P1 fatigue (+0.00) | P2 fatigue (-0.30)",
+      "context_confirmed": 1,
+      "model_spread": 7.27,
+      "closing_line": -4.5,
+      "event_id": "23816b92085c3bb99a75425a7e466d36",
+      "dt": "2026-03-29"
     }
   ],
   "season": {
     "result": "LOSS",
     "W": 108,
-    "L": 70,
-    "pnl": 92.8,
-    "wagered": 869.5
+    "L": 71,
+    "pnl": 87.8,
+    "wagered": 874.5
   },
   "by_sport": [
     {
@@ -322,8 +340,8 @@
     {
       "sport": "tennis_atp_miami_open",
       "W": 1,
-      "L": 0,
-      "pnl": 3.9
+      "L": 1,
+      "pnl": -1.1
     }
   ],
   "context_health": [
@@ -763,8 +781,8 @@
     {
       "bucket": "BELOW_CAP",
       "W": 39,
-      "L": 27,
-      "pnl": 5.3,
+      "L": 28,
+      "pnl": 0.3,
       "avg_clv": -0.1
     }
   ],
@@ -926,13 +944,7 @@
       "pnl": -4.5
     }
   ],
-  "ungraded": [
-    {
-      "selection": "Jannik Sinner -4.5",
-      "sport": "tennis_atp_miami_open",
-      "dt": "2026-03-29"
-    }
-  ],
+  "ungraded": [],
   "last_10": [
     "WIN",
     "WIN",
@@ -942,7 +954,7 @@
     "LOSS",
     "WIN",
     "LOSS",
-    "WIN",
+    "LOSS",
     "WIN"
   ],
   "streak": 2,
