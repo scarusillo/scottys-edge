@@ -2184,7 +2184,10 @@ def generate_predictions(conn, sport=None, date=None):
                 ml_implied, aml_dv, _ = devig_ml_odds(hml, aml)
                 if ml_implied is None:
                     ml_implied = american_to_implied_prob(hml)
-                if ml_implied and spread_win_prob:
+                if ml_implied and spread_win_prob and 'soccer' not in sp:
+                    # v21: Soccer cross-market ML disabled — 0W-8L historically.
+                    # Soccer dog MLs leak through here even though direct ML is blocked.
+                    # Shadow-tracked: agent monitors if this changes.
                     cross_edge = min((spread_win_prob - ml_implied) * 100, 20.0)  # v20: cap at 20%
                     if cross_edge > 8.0:
                         k = f"{eid}|X|{home}"
