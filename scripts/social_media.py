@@ -641,7 +641,7 @@ def post_results_to_instagram(card_paths, report_text=None):
     caption += " ".join(results_tags) + "\n\n"
     caption += " ".join(results_hashtags)
 
-    return post_to_instagram(card_paths, caption)
+    return post_to_instagram(card_paths, caption, also_story=False)  # Feed only — stories are for picks
 
 
 # ═══════════════════════════════════════════════════════════════════
