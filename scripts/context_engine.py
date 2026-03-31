@@ -2171,32 +2171,42 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
             elif 'cross_country' in k:
                 spread_summaries.append(f"Cross-country trip ({v:+.1f})")
     
-    # 5. Altitude (affects SPREAD or TOTAL depending on market)
+    # 5. Altitude — SHADOW FACTOR (2W-3L, -6.1u as of v21)
+    # Still calculated and recorded, but adjustment zeroed out.
     alt_adj, alt_info = altitude_adjustment(home, market_type)
     if alt_adj != 0:
+        # SHADOW: record but do NOT add to total_spread_adj or total_total_adj
         if market_type == 'TOTAL':
-            total_total_adj += alt_adj
-            total_summaries.append(f"Altitude ({alt_adj:+.1f})")
+            total_summaries.append(f"[SHADOW] Altitude ({alt_adj:+.1f})")
         else:
-            total_spread_adj += alt_adj
-            spread_summaries.append(f"Altitude ({alt_adj:+.1f})")
+            spread_summaries.append(f"[SHADOW] Altitude ({alt_adj:+.1f})")
         all_factors['altitude'] = alt_info
     
     # 6. Motivation (affects SPREAD)
+    # SHADOW FACTORS: away_bounceback (3W-4L, -11.5u) and away_revenge (5W-5L, -4.4u)
+    # are recorded but zeroed out. Home bounce-back and home revenge still active.
+    # Letdown spots remain fully active.
+    SHADOW_MOTIVATION = {'away_bounceback', 'away_revenge'}
     mot_adj, mot_info = motivation_adjustment(conn, home, away, sport, commence)
-    if mot_adj != 0:
-        total_spread_adj += mot_adj
+    if mot_adj != 0 or mot_info:
+        # Compute shadow-adjusted motivation adj (subtract shadow factors)
+        shadow_adj = sum(v for k, v in mot_info.items() if k in SHADOW_MOTIVATION)
+        active_adj = mot_adj - shadow_adj
+        if active_adj != 0:
+            total_spread_adj += active_adj
         all_factors['motivation'] = mot_info
         for k, v in mot_info.items():
+            is_shadow = k in SHADOW_MOTIVATION
+            prefix = "[SHADOW] " if is_shadow else ""
             if 'letdown' in k:
                 team_side = 'Home' if 'home' in k else 'Away'
-                spread_summaries.append(f"{team_side} letdown spot ({v:+.1f})")
+                spread_summaries.append(f"{prefix}{team_side} letdown spot ({v:+.1f})")
             elif 'bounceback' in k:
                 team_side = 'Home' if 'home' in k else 'Away'
-                spread_summaries.append(f"{team_side} bounce-back ({v:+.1f})")
+                spread_summaries.append(f"{prefix}{team_side} bounce-back ({v:+.1f})")
             elif 'revenge' in k:
                 team_side = 'Home' if 'home' in k else 'Away'
-                spread_summaries.append(f"{team_side} revenge game ({v:+.1f})")
+                spread_summaries.append(f"{prefix}{team_side} revenge game ({v:+.1f})")
 
     # 6b. Baseball Series Context (affects SPREAD)
     if 'baseball' in sport:
@@ -2218,16 +2228,31 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
                     spread_summaries.append("Rubber match — tight game expected")
 
     # 7. Pace of Play (affects TOTAL only)
+    # SHADOW: Home fast-paced (3W-7L, -22.4u) — home_pace > 0 is shadowed.
+    # Home slow-paced and all away pace remain active.
     pace_adj, pace_info = pace_of_play_adjustment(conn, home, away, sport)
-    if pace_adj != 0:
-        total_total_adj += pace_adj
+    if pace_adj != 0 or pace_info:
+        home_pace_val = pace_info.get('home_pace', 0)
+        home_fast_shadow = home_pace_val > 0  # Only shadow when home is FAST
+        shadow_amt = home_pace_val if home_fast_shadow else 0
+        active_pace_adj = pace_adj - shadow_amt
+        if active_pace_adj != 0:
+            total_total_adj += active_pace_adj
         all_factors['pace'] = pace_info
         if pace_info.get('home_pace') and pace_info.get('away_pace'):
-            desc = 'fast' if pace_adj > 0 else 'slow'
-            total_summaries.append(f"Both teams {desc}-paced ({pace_adj:+.1f})")
+            if home_fast_shadow:
+                # Home fast is shadow, but away is active — show both separately
+                total_summaries.append(f"[SHADOW] Home fast-paced ({home_pace_val:+.1f})")
+                away_val = pace_info['away_pace']
+                desc = 'fast' if away_val > 0 else 'slow'
+                total_summaries.append(f"Away {desc}-paced ({away_val:+.1f})")
+            else:
+                desc = 'fast' if pace_adj > 0 else 'slow'
+                total_summaries.append(f"Both teams {desc}-paced ({pace_adj:+.1f})")
         elif pace_info.get('home_pace'):
-            desc = 'fast' if pace_info['home_pace'] > 0 else 'slow'
-            total_summaries.append(f"Home {desc}-paced ({pace_info['home_pace']:+.1f})")
+            desc = 'fast' if home_pace_val > 0 else 'slow'
+            prefix = "[SHADOW] " if home_fast_shadow else ""
+            total_summaries.append(f"{prefix}Home {desc}-paced ({home_pace_val:+.1f})")
         elif pace_info.get('away_pace'):
             desc = 'fast' if pace_info['away_pace'] > 0 else 'slow'
             total_summaries.append(f"Away {desc}-paced ({pace_info['away_pace']:+.1f})")
@@ -2271,11 +2296,16 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
             all_factors['familiarity'] = fam_info
             total_summaries.append(f"Division familiarity ({fam_total:+.1f})")
     
-    # 11. Recent Form — DISABLED
-    # Added in session 14, immediately went 1W-4L (-14.4u) on home hot streaks.
-    # Hot/cold streaks are already priced by the market. Using them as "context"
-    # let garbage picks through the soft market filter. Removing entirely.
-    # form_adj, form_info = _recent_form_adjustment(conn, home, away, sport, commence)
+    # 11. Recent Form — SHADOW FACTOR (home hot streak: 1W-2L, -5.4u)
+    # Hot/cold streaks are already priced by the market. Re-enabled as shadow
+    # to track would-have-been performance without influencing picks.
+    form_adj, form_info = _recent_form_adjustment(conn, home, away, sport, commence)
+    if form_info:
+        all_factors['form'] = form_info
+        for k, v in form_info.items():
+            team_side = 'Home' if 'home' in k else 'Away'
+            desc = 'hot streak' if 'hot' in k else 'cold streak'
+            spread_summaries.append(f"[SHADOW] {team_side} {desc} ({v:+.1f})")
     
     # 12. Scoring Trend — DISABLED
     # Added in session 14, double-counts with estimate_model_total which already
