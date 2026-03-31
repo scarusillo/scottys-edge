@@ -995,22 +995,41 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
         FROM team_pitching_quality WHERE team=?
     """, (away,)).fetchone()
 
-    # Check for named starters from ESPN data (most recent on this day of week)
-    home_starter_row = conn.execute("""
-        SELECT pitcher_name, era, innings_pitched, earned_runs
-        FROM pitcher_stats
-        WHERE team=? AND is_starter=1
-        AND CAST(strftime('%w', game_date) AS INTEGER) = ?
-        ORDER BY game_date DESC LIMIT 1
-    """, (home, (dow + 1) % 7)).fetchone()  # SQLite %w: 0=Sun, Python weekday: 0=Mon
+    # Check for named starters
+    home_starter_row = None
+    away_starter_row = None
 
-    away_starter_row = conn.execute("""
-        SELECT pitcher_name, era, innings_pitched, earned_runs
-        FROM pitcher_stats
-        WHERE team=? AND is_starter=1
-        AND CAST(strftime('%w', game_date) AS INTEGER) = ?
-        ORDER BY game_date DESC LIMIT 1
-    """, (away, (dow + 1) % 7)).fetchone()
+    if sport == 'baseball_mlb':
+        # MLB: Use ESPN probable pitchers (confirmed starters for today)
+        today_str = datetime.now(_ET).strftime('%Y-%m-%d')
+        prob = conn.execute("""
+            SELECT home_pitcher, away_pitcher, home_pitcher_season_era, away_pitcher_season_era
+            FROM mlb_probable_pitchers
+            WHERE game_date = ? AND home = ? AND away = ?
+            ORDER BY fetched_at DESC LIMIT 1
+        """, (today_str, home, away)).fetchone()
+        if prob:
+            if prob[0]:
+                home_starter_row = (prob[0], prob[2], None, None)  # (name, era, ip, er)
+            if prob[1]:
+                away_starter_row = (prob[1], prob[3], None, None)
+    else:
+        # College baseball: day-of-week matching from pitcher_stats (no probable pitchers data)
+        home_starter_row = conn.execute("""
+            SELECT pitcher_name, era, innings_pitched, earned_runs
+            FROM pitcher_stats
+            WHERE team=? AND is_starter=1
+            AND CAST(strftime('%w', game_date) AS INTEGER) = ?
+            ORDER BY game_date DESC LIMIT 1
+        """, (home, (dow + 1) % 7)).fetchone()  # SQLite %w: 0=Sun, Python weekday: 0=Mon
+
+        away_starter_row = conn.execute("""
+            SELECT pitcher_name, era, innings_pitched, earned_runs
+            FROM pitcher_stats
+            WHERE team=? AND is_starter=1
+            AND CAST(strftime('%w', game_date) AS INTEGER) = ?
+            ORDER BY game_date DESC LIMIT 1
+        """, (away, (dow + 1) % 7)).fetchone()
 
     # Use pitcher_stats ERA only if pitcher has 3+ starts. Otherwise fall back to
     # box_scores ERA (includes 2025 data). A 1-start ERA (e.g., 12.27) is noise.
