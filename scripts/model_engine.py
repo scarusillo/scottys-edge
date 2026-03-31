@@ -445,6 +445,94 @@ def _weighted_team_stats(conn, team, sport, elo_ratings=None, min_games=5):
     }
 
 
+def _mlb_pitcher_era_adjustment(conn, mlb_pitcher_info):
+    """
+    Adjust MLB total based on probable starter ERA vs league average.
+
+    Concept: MLB average ERA ~4.00. Pitchers better than average suppress
+    scoring (total goes down); worse than average inflate scoring (total up).
+
+    Formula per pitcher:
+        pitcher_deviation = (ERA - 4.00) / 4.00   (% above/below average)
+        run_adj = pitcher_deviation * 1.5          (scaled to runs impact)
+
+    Total adj = home_pitcher_adj + away_pitcher_adj, capped at +/-2.0 runs.
+
+    Returns (adjustment, context_string) or (0.0, '') if no data.
+    """
+    LEAGUE_AVG_ERA = 4.00
+    SCALE_FACTOR = 1.5  # Each 1.0 ERA above avg -> ~0.375 more runs allowed
+    MAX_ADJ = 2.0
+
+    if not mlb_pitcher_info:
+        return 0.0, ''
+
+    home_pitcher = mlb_pitcher_info.get('home_pitcher')
+    away_pitcher = mlb_pitcher_info.get('away_pitcher')
+
+    # Get ERA for each pitcher: prefer box_scores season ERA, fall back to ESPN ERA
+    def _get_best_era(pitcher_name, espn_era):
+        """Get best available ERA: box_scores first, then ESPN."""
+        if pitcher_name:
+            try:
+                row = conn.execute("""
+                    SELECT ROUND(
+                        SUM(CASE WHEN stat_type='pitcher_er' THEN stat_value ELSE 0 END) * 9.0 /
+                        NULLIF(SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END), 0)
+                    , 2) as era,
+                    SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END) as total_ip
+                    FROM box_scores
+                    WHERE sport='baseball_mlb'
+                    AND player LIKE ?
+                    AND stat_type IN ('pitcher_er', 'pitcher_ip')
+                """, (f"%{pitcher_name}%",)).fetchone()
+                if row and row[0] is not None and row[1] and row[1] >= 10:
+                    return row[0]  # Enough IP for reliable ERA
+            except Exception:
+                pass
+        # Fall back to ESPN ERA from probable pitchers table
+        if espn_era is not None:
+            return espn_era
+        return None  # No data — will use league average (no adjustment)
+
+    home_era = _get_best_era(home_pitcher, mlb_pitcher_info.get('home_era'))
+    away_era = _get_best_era(away_pitcher, mlb_pitcher_info.get('away_era'))
+
+    # Calculate adjustments (use league avg if no ERA available = zero adj for that side)
+    h_era = home_era if home_era is not None else LEAGUE_AVG_ERA
+    a_era = away_era if away_era is not None else LEAGUE_AVG_ERA
+
+    home_dev = (h_era - LEAGUE_AVG_ERA) / LEAGUE_AVG_ERA
+    away_dev = (a_era - LEAGUE_AVG_ERA) / LEAGUE_AVG_ERA
+
+    home_run_adj = home_dev * SCALE_FACTOR
+    away_run_adj = away_dev * SCALE_FACTOR
+
+    total_adj = home_run_adj + away_run_adj
+    total_adj = max(-MAX_ADJ, min(MAX_ADJ, total_adj))
+    total_adj = round(total_adj, 2)
+
+    # Build context string
+    ctx_parts = []
+    if home_pitcher and home_era is not None:
+        ctx_parts.append(f"{home_pitcher} {home_era:.2f}")
+    elif home_pitcher:
+        ctx_parts.append(f"{home_pitcher} ?.??")
+    if away_pitcher and away_era is not None:
+        ctx_parts.append(f"{away_pitcher} {away_era:.2f}")
+    elif away_pitcher:
+        ctx_parts.append(f"{away_pitcher} ?.??")
+
+    if ctx_parts and total_adj != 0:
+        ctx_str = f"Pitching: {' vs '.join(ctx_parts)} ({total_adj:+.1f})"
+    elif ctx_parts:
+        ctx_str = f"Pitching: {' vs '.join(ctx_parts)} (avg)"
+    else:
+        ctx_str = ''
+
+    return total_adj, ctx_str
+
+
 def estimate_model_total(home, away, ratings, sport, conn):
     """
     Estimate game total from team scoring history.
@@ -1712,7 +1800,21 @@ def generate_predictions(conn, sport=None, date=None):
                                     model_total += pitcher_ctx['total_adj']
                             except Exception:
                                 pass
-                        
+
+                        # ═══ MLB STARTER ERA ADJUSTMENT ═══
+                        # Adjust total based on confirmed starter ERA vs league avg (4.00).
+                        # Elite pitchers suppress scoring; bad pitchers inflate it.
+                        # Uses box_scores season ERA (preferred) or ESPN ERA (fallback).
+                        _pitcher_era_ctx = ''
+                        if sp == 'baseball_mlb' and _mlb_pitcher_info:
+                            try:
+                                _era_adj, _pitcher_era_ctx = _mlb_pitcher_era_adjustment(
+                                    conn, _mlb_pitcher_info)
+                                if _era_adj != 0:
+                                    model_total += _era_adj
+                            except Exception:
+                                pass
+
                         # Weather adjustment for outdoor sports (baseball, soccer)
                         # Weather adjustment is applied in context_engine.py (not here)
                         # to avoid double-counting. Context engine adds it to total_adj
@@ -1772,6 +1874,8 @@ def generate_predictions(conn, sport=None, date=None):
                                         ctx_parts.append(ctx_total['summary'])
                                     if pitcher_ctx and pitcher_ctx['summary']:
                                         ctx_parts.append(pitcher_ctx['summary'])
+                                    if _pitcher_era_ctx:
+                                        ctx_parts.append(_pitcher_era_ctx)
                                     # Weather context is already in ctx_total['summary'] from context_engine
                                     if ref_adj != 0 and ref_info:
                                         ctx_parts.append(ref_info)
@@ -1820,6 +1924,8 @@ def generate_predictions(conn, sport=None, date=None):
                                             ctx_parts.append(ctx_total['summary'])
                                         if pitcher_ctx and pitcher_ctx['summary']:
                                             ctx_parts.append(pitcher_ctx['summary'])
+                                        if _pitcher_era_ctx:
+                                            ctx_parts.append(_pitcher_era_ctx)
                                         # Weather context is already in ctx_total['summary'] from context_engine
                                         if ref_adj != 0 and ref_info:
                                             ctx_parts.append(ref_info)
