@@ -2308,6 +2308,95 @@ def cmd_props(args):
     print_props(picks)
 
 
+def _generate_kling_prompt(conn):
+    """Generate a Kling 3.0 video prompt based on today's graded results."""
+    bets = conn.execute("""
+        SELECT sport, result, pnl_units FROM graded_bets
+        WHERE DATE(created_at) = (
+            SELECT MAX(DATE(created_at)) FROM graded_bets
+            WHERE result IN ('WIN','LOSS') AND units >= 3.5
+        )
+        AND result IN ('WIN','LOSS') AND units >= 3.5
+    """).fetchall()
+
+    if not bets:
+        return
+
+    # Group by sport
+    sport_labels = {
+        'basketball_nba': ('NBA', 'basketball player in orange jersey dribbling a ball, well-lit with orange spotlight'),
+        'icehockey_nhl': ('NHL', 'hockey player in blue jersey skating with a stick, well-lit with blue spotlight'),
+        'baseball_ncaa': ('College Baseball', 'college baseball player in white uniform swinging a bat, well-lit with green spotlight'),
+        'baseball_mlb': ('MLB', 'baseball player in pinstripe uniform pitching, well-lit with red spotlight'),
+        'basketball_ncaab': ('NCAAB', 'college basketball player shooting, well-lit with orange spotlight'),
+    }
+
+    sport_records = {}
+    for sp, result, pnl in bets:
+        label = sport_labels.get(sp, (sp, 'athlete'))[0]
+        if 'soccer' in sp:
+            label = 'Soccer'
+        elif 'tennis' in sp:
+            label = 'Tennis'
+        if label not in sport_records:
+            sport_records[label] = {'W': 0, 'L': 0}
+        if result == 'WIN':
+            sport_records[label]['W'] += 1
+        else:
+            sport_records[label]['L'] += 1
+
+    # Season totals
+    season = conn.execute("""
+        SELECT SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END),
+               SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END)
+        FROM graded_bets WHERE DATE(created_at) >= '2026-03-04'
+        AND result IN ('WIN','LOSS') AND units >= 3.5
+    """).fetchone()
+    tw, tl = season[0] or 0, season[1] or 0
+    twp = round(tw / (tw + tl) * 100) if (tw + tl) > 0 else 0
+
+    # Build athlete scenes
+    scenes = []
+    scene_num = 2
+    time_per = min(3, 9 // len(sport_records)) if sport_records else 3
+    t = 3
+    for label, rec in sport_records.items():
+        sp_key = [k for k, v in sport_labels.items() if v[0] == label]
+        athlete_desc = sport_labels.get(sp_key[0], ('', 'athlete'))[1] if sp_key else 'athlete walking through'
+        record_str = f"{rec['W']}-{rec['L']}"
+        color = 'green' if rec['W'] > rec['L'] else ('red' if rec['L'] > rec['W'] else 'white')
+        scenes.append(f'Scene {scene_num} ({t}-{t+time_per}s): A {athlete_desc}. The LED scoreboard behind shows "{record_str}" in {color} numbers.')
+        scene_num += 1
+        t += time_per
+
+    total_w = sum(r['W'] for r in sport_records.values())
+    total_l = sum(r['L'] for r in sport_records.values())
+
+    prompt = f"""Cinematic vertical video (9:16), 15 seconds. Dark sports broadcast studio with green neon lighting.
+
+Scene 1 (0-3s): Camera enters a dark premium sports studio. A large neon sign on the wall reads "SCOTTY'S EDGE" with EDGE glowing bright green neon and SCOTTY'S in white neon tubes. The sign flickers on dramatically. Green neon light reflects off glossy black floors. Slow cinematic camera push toward the sign. A LED scoreboard below the sign shows "{total_w}-{total_l}" in large white numbers.
+
+{chr(10).join(scenes)}
+
+Scene {scene_num} ({t}-15s): Camera slowly pulls back to reveal the full studio. The neon "SCOTTY'S EDGE" sign glows on the wall. Scoreboard shows large green glowing numbers "{tw}-{tl}" with "{twp}%" below it pulsing green. All green neon lighting pulses slowly. Premium broadcast sign-off. Cinematic fade.
+
+Style: Dark ESPN SportsCenter studio. Athletes are fully visible and well-lit with sport-specific colored lighting, NOT silhouettes. Green neon is the signature accent color. Numbers appear on LED scoreboards within the studio. Smooth slow camera movements. Premium sports broadcast quality."""
+
+    # Save prompt to file and email
+    prompt_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'cards', 'kling_prompt.txt')
+    with open(prompt_path, 'w', encoding='utf-8') as f:
+        f.write(prompt)
+    print(f"  Kling prompt saved: {prompt_path}")
+
+    # Email the prompt
+    try:
+        from emailer import send_email
+        send_email(f"Kling Video Prompt — {datetime.now().strftime('%Y-%m-%d')}", prompt)
+        print("  Kling prompt emailed")
+    except Exception:
+        pass
+
+
 def cmd_grade(args):
     import sqlite3
     from datetime import datetime
@@ -2693,28 +2782,21 @@ def cmd_grade(args):
         except Exception as e:
             print(f"  Diagnostic: {e}")
 
-    # Post results to Discord + Instagram
+    # Post results to Discord (NOT Instagram — user posts manually with AI video)
     if report:
         try:
             from social_media import post_results_social
             post_results_social(report)
         except Exception as e:
             print(f"  Discord results: {e}")
-        try:
-            from social_media import post_results_to_instagram
-            if card_paths:
-                post_results_to_instagram(card_paths, report)
-        except Exception as e:
-            print(f"  Instagram results: {e}")
 
-        # Generate results Reel (saved to data/cards/ but NOT auto-posted yet)
+        # Generate Kling video prompt with today's results
         try:
-            from reel_generator import generate_results_reel
-            _reel_conn = sqlite3.connect(db)
-            generate_results_reel(_reel_conn)
-            _reel_conn.close()
+            _kling_conn = sqlite3.connect(db)
+            _generate_kling_prompt(_kling_conn)
+            _kling_conn.close()
         except Exception as e:
-            print(f"  Reel: {e}")
+            print(f"  Kling prompt: {e}")
 
     # Auto-update landing page stats + results (GitHub Pages)
     try:

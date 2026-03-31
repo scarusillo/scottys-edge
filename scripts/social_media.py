@@ -585,20 +585,32 @@ def _get_sport_tags(picks):
 
 
 def post_picks_to_instagram(card_paths, picks):
-    """Post picks card to Instagram feed + story with auto-generated caption."""
-    try:
-        from card_image import generate_caption
-        caption = generate_caption(picks)
-    except Exception as e:
-        caption = "Today's picks are live. Link in bio for full card."
-        print(f"  Instagram: Caption generation failed ({e}), using default")
+    """Post picks card to Instagram STORY ONLY (not feed — feed reserved for results + video)."""
+    cl = _get_ig_client()
+    if not cl:
+        return False
 
-    # Add sport-specific tags
-    account_tags, hashtags = _get_sport_tags(picks)
-    caption += "\n\n" + " ".join(account_tags)
-    caption += "\n\n" + " ".join(hashtags[:15])  # Instagram allows max 30 hashtags
+    import time
 
-    return post_to_instagram(card_paths, caption)
+    if isinstance(card_paths, str):
+        card_paths = [card_paths]
+
+    valid_paths = _prepare_for_ig(card_paths)
+    if not valid_paths:
+        print("  Instagram: No valid image files found")
+        return False
+
+    # Post each card as a story
+    for path in valid_paths:
+        try:
+            story_path = _make_story_image(path)
+            story = cl.photo_upload_to_story(story_path)
+            print(f"  Instagram Story: Posted picks (media pk={story.pk})")
+            time.sleep(5)
+        except Exception as e:
+            print(f"  Instagram Story: Pick post failed — {e}")
+
+    return True
 
 
 def post_results_to_instagram(card_paths, report_text=None):
