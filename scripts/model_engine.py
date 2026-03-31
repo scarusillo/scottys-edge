@@ -67,6 +67,13 @@ try:
 except ImportError:
     HAS_PITCHER = False
 
+# MLB probable pitchers — gate MLB picks on confirmed starters
+try:
+    from pitcher_scraper import get_mlb_probable_starters
+    HAS_MLB_PITCHERS = True
+except ImportError:
+    HAS_MLB_PITCHERS = False
+
 # Weather engine — wind, rain, cold adjustments for outdoor totals
 try:
     from weather_engine import get_weather_adjustment
@@ -972,6 +979,31 @@ def generate_predictions(conn, sport=None, date=None):
             mkt_hs, mkt_hs_odds, mkt_hs_book = g[4], g[5], g[6]
             mkt_as, mkt_as_odds, mkt_as_book = g[7], g[8], g[9]
             hml, hml_book, aml, aml_book = g[16], g[17], g[18], g[19]
+
+            # ═══ MLB PITCHER GATE: Skip games without confirmed starters ═══
+            # Pitching is THE dominant factor in MLB. Betting a total or spread
+            # without knowing both starters is flying blind. College baseball
+            # is exempt because ESPN rarely lists college probables.
+            _mlb_pitcher_info = None
+            if sp == 'baseball_mlb' and HAS_MLB_PITCHERS:
+                try:
+                    _game_date = None
+                    if commence:
+                        try:
+                            _gdt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
+                            _game_date = _gdt.astimezone(ZoneInfo('America/New_York')).strftime('%Y-%m-%d')
+                        except (ValueError, AttributeError):
+                            pass
+                    _mlb_pitcher_info = get_mlb_probable_starters(conn, home, away, _game_date)
+                    if not _mlb_pitcher_info.get('both_confirmed', False):
+                        print(f"    \u26a0 MLB pick skipped: no pitcher data for "
+                              f"{away} @ {home} ({_mlb_pitcher_info.get('summary', 'TBD')})")
+                        continue  # Skip entire game — no picks without both starters
+                except Exception as _pe:
+                    # If pitcher lookup fails, still skip — err on side of caution
+                    print(f"    \u26a0 MLB pick skipped: pitcher lookup error for "
+                          f"{away} @ {home}: {_pe}")
+                    continue
 
             # ═══ SOCCER ELO ML: DISABLED v13 — backtest 0W-8L (-100% ROI) ═══
             # ml_scale 1.5 + dog cap +180 still couldn't fix it. Model fundamentally

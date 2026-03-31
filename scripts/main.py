@@ -325,9 +325,14 @@ def cmd_run(args):
     if any('baseball' in s for s in sports):
         print("\n⚾ Step 4b: Pitcher data (FREE)...")
         try:
-            from pitcher_scraper import scrape_pitcher_data, build_pitching_quality
+            from pitcher_scraper import scrape_pitcher_data, build_pitching_quality, scrape_mlb_pitchers
             scrape_pitcher_data(days_back=3, verbose=True)
             build_pitching_quality(verbose=True)
+            # MLB probable pitchers — MUST run before predictions so the
+            # pitcher gate in model_engine can skip games with TBD starters
+            if any(s == 'baseball_mlb' for s in sports):
+                print("  Fetching MLB probable pitchers...")
+                scrape_mlb_pitchers(verbose=True)
         except Exception as e:
             print(f"  Pitcher scraper: {e}")
 
@@ -2498,9 +2503,12 @@ def cmd_grade(args):
     print("  Updating pitcher data...")
     try:
         from pitcher_scraper import scrape_pitcher_data, build_pitching_quality
+        from pitcher_scraper import scrape_mlb_pitchers, scrape_mlb_pitcher_history
         scrape_pitcher_data(days_back=3, verbose=False)
+        scrape_mlb_pitcher_history(days_back=3, verbose=False)
         build_pitching_quality(verbose=False)
-        print("  Pitcher data updated")
+        scrape_mlb_pitchers(verbose=False)
+        print("  Pitcher data updated (college + MLB)")
     except Exception as e:
         print(f"  Pitcher data: {e}")
 

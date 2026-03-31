@@ -44,6 +44,8 @@ DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.d
 
 ESPN_SCOREBOARD = 'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/scoreboard'
 ESPN_SUMMARY = 'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/summary?event={}'
+ESPN_MLB_SCOREBOARD = 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard'
+ESPN_MLB_SUMMARY = 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event={}'
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
 
 SEASON_START = '2026-02-14'
@@ -434,6 +436,463 @@ def build_pitching_quality(verbose=True):
 
 
 # ═══════════════════════════════════════════════════════════════════
+# MLB PROBABLE PITCHERS (from ESPN scoreboard API)
+# ═══════════════════════════════════════════════════════════════════
+
+def _ensure_mlb_probables_table(conn):
+    """Create MLB probable pitchers table if it doesn't exist."""
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS mlb_probable_pitchers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            game_date TEXT NOT NULL,
+            espn_event_id TEXT NOT NULL,
+            home TEXT NOT NULL,
+            away TEXT NOT NULL,
+            home_pitcher TEXT,
+            away_pitcher TEXT,
+            home_pitcher_id TEXT,
+            away_pitcher_id TEXT,
+            home_pitcher_record TEXT,
+            away_pitcher_record TEXT,
+            home_pitcher_era REAL,
+            away_pitcher_era REAL,
+            home_pitcher_season_era REAL,
+            away_pitcher_season_era REAL,
+            home_pitcher_season_k9 REAL,
+            away_pitcher_season_k9 REAL,
+            home_pitcher_season_whip REAL,
+            away_pitcher_season_whip REAL,
+            home_pitcher_season_ip REAL,
+            away_pitcher_season_ip REAL,
+            fetched_at TEXT,
+            UNIQUE(espn_event_id)
+        )
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_mlb_pp_date
+        ON mlb_probable_pitchers(game_date)
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_mlb_pp_teams
+        ON mlb_probable_pitchers(home, away, game_date)
+    """)
+    conn.commit()
+
+
+def _calc_pitcher_season_stats(conn, pitcher_name, team):
+    """
+    Calculate a pitcher's season stats from pitcher_stats table.
+
+    Returns dict with era, k9, whip, ip or None if no data.
+    Primary source: pitcher_stats table (populated from ESPN box scores).
+    """
+    # Try pitcher-specific data first (most accurate)
+    ps_rows = conn.execute("""
+        SELECT innings_pitched, earned_runs, strikeouts, hits, walks
+        FROM pitcher_stats
+        WHERE pitcher_name=? AND is_starter=1
+        AND innings_pitched IS NOT NULL AND innings_pitched > 0
+        ORDER BY game_date DESC LIMIT 15
+    """, (pitcher_name,)).fetchall()
+
+    if ps_rows and len(ps_rows) >= 2:
+        total_ip = sum(r[0] for r in ps_rows if r[0])
+        total_er = sum(r[1] for r in ps_rows if r[1] is not None)
+        total_k = sum(r[2] for r in ps_rows if r[2] is not None)
+        total_h = sum(r[3] for r in ps_rows if r[3] is not None)
+        total_bb = sum(r[4] for r in ps_rows if r[4] is not None)
+        if total_ip > 0:
+            return {
+                'era': round(total_er * 9.0 / total_ip, 2),
+                'k9': round(total_k * 9.0 / total_ip, 2),
+                'whip': round((total_h + total_bb) / total_ip, 2),
+                'ip': round(total_ip, 1),
+            }
+
+    # Fallback: any starter data for this team
+    team_rows = conn.execute("""
+        SELECT innings_pitched, earned_runs, strikeouts, hits, walks
+        FROM pitcher_stats
+        WHERE team=? AND is_starter=1
+        AND innings_pitched IS NOT NULL AND innings_pitched > 0
+        ORDER BY game_date DESC LIMIT 20
+    """, (team,)).fetchall()
+
+    if team_rows and len(team_rows) >= 2:
+        total_ip = sum(r[0] for r in team_rows if r[0])
+        total_er = sum(r[1] for r in team_rows if r[1] is not None)
+        total_k = sum(r[2] for r in team_rows if r[2] is not None)
+        total_h = sum(r[3] for r in team_rows if r[3] is not None)
+        total_bb = sum(r[4] for r in team_rows if r[4] is not None)
+        if total_ip > 0:
+            return {
+                'era': round(total_er * 9.0 / total_ip, 2),
+                'k9': round(total_k * 9.0 / total_ip, 2),
+                'whip': round((total_h + total_bb) / total_ip, 2),
+                'ip': round(total_ip, 1),
+            }
+
+    return None
+
+
+def scrape_mlb_pitchers(conn=None, verbose=True):
+    """
+    Fetch today's MLB probable pitchers from ESPN scoreboard API.
+
+    ESPN provides probable starting pitchers in the scoreboard response
+    at: events[].competitions[].competitors[].probables[]
+
+    Returns count of games with pitcher data stored.
+    """
+    close_conn = False
+    if conn is None:
+        conn = sqlite3.connect(DB_PATH)
+        close_conn = True
+
+    _ensure_mlb_probables_table(conn)
+
+    today = datetime.now(_ET).strftime('%Y%m%d')
+    today_iso = datetime.now(_ET).strftime('%Y-%m-%d')
+
+    url = f"{ESPN_MLB_SCOREBOARD}?dates={today}"
+    data = _fetch_json(url)
+    if not data:
+        if verbose:
+            print("  \u26a0 MLB scoreboard fetch failed")
+        if close_conn:
+            conn.close()
+        return 0
+
+    events = data.get('events', [])
+    if verbose:
+        print(f"  \u26be MLB: {len(events)} games on scoreboard")
+
+    games_stored = 0
+    games_no_pitcher = 0
+
+    for event in events:
+        eid = event.get('id', '')
+        comps = event.get('competitions', [{}])[0].get('competitors', [])
+
+        home_team = away_team = ''
+        home_pitcher = away_pitcher = None
+        home_pitcher_id = away_pitcher_id = ''
+        home_record = away_record = ''
+        home_era = away_era = None
+
+        for c in comps:
+            team_name = c.get('team', {}).get('displayName', '')
+            is_home = c.get('homeAway') == 'home'
+
+            # Extract probable pitcher
+            probables = c.get('probables', [])
+            pitcher_name = None
+            pitcher_id = ''
+            pitcher_record = ''
+            pitcher_era = None
+
+            for prob in probables:
+                if prob.get('abbreviation') == 'SP' or prob.get('name') == 'probableStartingPitcher':
+                    athlete = prob.get('athlete', {})
+                    pitcher_name = athlete.get('fullName') or athlete.get('displayName')
+                    pitcher_id = str(athlete.get('id', ''))
+                    pitcher_record = prob.get('record', '')
+
+                    # Extract ERA from statistics array
+                    for stat in prob.get('statistics', []):
+                        if stat.get('abbreviation') == 'ERA' or stat.get('name') == 'ERA':
+                            try:
+                                pitcher_era = float(stat.get('displayValue', 0))
+                            except (ValueError, TypeError):
+                                pass
+                    break
+
+            if is_home:
+                home_team = team_name
+                home_pitcher = pitcher_name
+                home_pitcher_id = pitcher_id
+                home_record = pitcher_record
+                home_era = pitcher_era
+            else:
+                away_team = team_name
+                away_pitcher = pitcher_name
+                away_pitcher_id = pitcher_id
+                away_record = pitcher_record
+                away_era = pitcher_era
+
+        # Check if we have pitchers for both teams
+        if not home_pitcher or not away_pitcher:
+            games_no_pitcher += 1
+            if verbose:
+                missing = []
+                if not home_pitcher:
+                    missing.append(home_team or 'HOME')
+                if not away_pitcher:
+                    missing.append(away_team or 'AWAY')
+                print(f"    \u26a0 {away_team} @ {home_team}: TBD pitcher ({', '.join(missing)})")
+            continue
+
+        # Look up season stats from box_scores/pitcher_stats
+        home_stats = _calc_pitcher_season_stats(conn, home_pitcher, home_team)
+        away_stats = _calc_pitcher_season_stats(conn, away_pitcher, away_team)
+
+        # Store
+        try:
+            conn.execute("""
+                INSERT OR REPLACE INTO mlb_probable_pitchers
+                    (game_date, espn_event_id, home, away,
+                     home_pitcher, away_pitcher,
+                     home_pitcher_id, away_pitcher_id,
+                     home_pitcher_record, away_pitcher_record,
+                     home_pitcher_era, away_pitcher_era,
+                     home_pitcher_season_era, away_pitcher_season_era,
+                     home_pitcher_season_k9, away_pitcher_season_k9,
+                     home_pitcher_season_whip, away_pitcher_season_whip,
+                     home_pitcher_season_ip, away_pitcher_season_ip,
+                     fetched_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (
+                today_iso, eid, home_team, away_team,
+                home_pitcher, away_pitcher,
+                home_pitcher_id, away_pitcher_id,
+                home_record, away_record,
+                home_era, away_era,
+                home_stats['era'] if home_stats else None,
+                away_stats['era'] if away_stats else None,
+                home_stats['k9'] if home_stats else None,
+                away_stats['k9'] if away_stats else None,
+                home_stats['whip'] if home_stats else None,
+                away_stats['whip'] if away_stats else None,
+                home_stats['ip'] if home_stats else None,
+                away_stats['ip'] if away_stats else None,
+                datetime.now().isoformat(),
+            ))
+            games_stored += 1
+
+            if verbose:
+                h_era_str = f" ({home_era:.2f} ERA)" if home_era else ""
+                a_era_str = f" ({away_era:.2f} ERA)" if away_era else ""
+                print(f"    \u2705 {away_team} @ {home_team}: "
+                      f"{away_pitcher}{a_era_str} vs {home_pitcher}{h_era_str}")
+        except sqlite3.Error as e:
+            if verbose:
+                print(f"    \u274c DB error for {away_team} @ {home_team}: {e}")
+
+    conn.commit()
+
+    if verbose:
+        print(f"\n  \u26be MLB pitchers: {games_stored} games with both starters, "
+              f"{games_no_pitcher} games with TBD")
+
+    if close_conn:
+        conn.close()
+
+    return games_stored
+
+
+def get_mlb_probable_starters(conn, home, away, game_date=None):
+    """
+    Get MLB probable starters for a game.
+
+    Returns dict with:
+        - home_pitcher: name or None
+        - away_pitcher: name or None
+        - home_era: ESPN ERA or None
+        - away_era: ESPN ERA or None
+        - both_confirmed: True if both starters are known
+        - summary: human-readable string
+
+    Used by model_engine to gate MLB picks.
+    """
+    if game_date is None:
+        game_date = datetime.now(_ET).strftime('%Y-%m-%d')
+
+    # Check if table exists
+    try:
+        conn.execute("SELECT 1 FROM mlb_probable_pitchers LIMIT 1")
+    except sqlite3.OperationalError:
+        return {'home_pitcher': None, 'away_pitcher': None,
+                'home_era': None, 'away_era': None,
+                'both_confirmed': False, 'summary': 'No MLB pitcher data table'}
+
+    row = conn.execute("""
+        SELECT home_pitcher, away_pitcher, home_pitcher_era, away_pitcher_era,
+               home_pitcher_season_era, away_pitcher_season_era,
+               home_pitcher_season_k9, away_pitcher_season_k9,
+               home_pitcher_season_whip, away_pitcher_season_whip
+        FROM mlb_probable_pitchers
+        WHERE home=? AND away=? AND game_date=?
+        ORDER BY fetched_at DESC LIMIT 1
+    """, (home, away, game_date)).fetchone()
+
+    if not row:
+        # Try fuzzy match (team names may differ slightly between APIs)
+        row = conn.execute("""
+            SELECT home_pitcher, away_pitcher, home_pitcher_era, away_pitcher_era,
+                   home_pitcher_season_era, away_pitcher_season_era,
+                   home_pitcher_season_k9, away_pitcher_season_k9,
+                   home_pitcher_season_whip, away_pitcher_season_whip
+            FROM mlb_probable_pitchers
+            WHERE game_date=?
+            AND (home LIKE ? OR home LIKE ?)
+            AND (away LIKE ? OR away LIKE ?)
+            ORDER BY fetched_at DESC LIMIT 1
+        """, (game_date,
+              f"%{home.split()[-1]}%", f"%{home}%",
+              f"%{away.split()[-1]}%", f"%{away}%")).fetchone()
+
+    if not row:
+        return {'home_pitcher': None, 'away_pitcher': None,
+                'home_era': None, 'away_era': None,
+                'both_confirmed': False,
+                'summary': f'No pitcher data for {away} @ {home}'}
+
+    hp, ap = row[0], row[1]
+    h_era = row[2] or row[4]  # ESPN ERA, fallback to season ERA
+    a_era = row[3] or row[5]
+    both = hp is not None and ap is not None
+
+    parts = []
+    if hp:
+        era_s = f" ({h_era:.2f})" if h_era else ""
+        parts.append(f"{home} SP: {hp}{era_s}")
+    if ap:
+        era_s = f" ({a_era:.2f})" if a_era else ""
+        parts.append(f"{away} SP: {ap}{era_s}")
+
+    return {
+        'home_pitcher': hp,
+        'away_pitcher': ap,
+        'home_era': h_era,
+        'away_era': a_era,
+        'home_k9': row[6],
+        'away_k9': row[7],
+        'home_whip': row[8],
+        'away_whip': row[9],
+        'both_confirmed': both,
+        'summary': ' | '.join(parts) if parts else 'No pitcher data',
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# MLB HISTORICAL PITCHER SCRAPING (from completed game box scores)
+# ═══════════════════════════════════════════════════════════════════
+
+def scrape_mlb_pitcher_history(days_back=None, verbose=True):
+    """
+    Scrape MLB pitcher data from ESPN completed game summaries.
+    Stores into pitcher_stats table (same as college baseball).
+    Returns count of new pitcher records inserted.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    ensure_tables(conn)
+
+    MLB_SEASON_START = '2026-03-26'  # Opening Day 2026
+
+    if days_back:
+        start = datetime.now() - timedelta(days=days_back)
+    else:
+        start = datetime.strptime(MLB_SEASON_START, '%Y-%m-%d')
+
+    end = datetime.now() - timedelta(days=1)
+
+    if verbose:
+        total_days = (end - start).days + 1
+        print(f"  \u26be MLB: Scanning {total_days} days for pitcher history...")
+
+    total_games = 0
+    games_with_data = 0
+    pitchers_inserted = 0
+
+    current = start
+    while current <= end:
+        date_str = current.strftime('%Y%m%d')
+
+        # Fetch MLB scoreboard for completed games
+        url = f"{ESPN_MLB_SCOREBOARD}?dates={date_str}"
+        data = _fetch_json(url)
+        if not data:
+            current += timedelta(days=1)
+            continue
+
+        for event in data.get('events', []):
+            status = event.get('status', {}).get('type', {}).get('completed', False)
+            if not status:
+                continue
+
+            eid = event.get('id', '')
+            total_games += 1
+
+            # Skip if we already have pitcher data for this game
+            existing = conn.execute(
+                "SELECT COUNT(*) FROM pitcher_stats WHERE espn_event_id=?",
+                (eid,)
+            ).fetchone()[0]
+            if existing > 0:
+                continue
+
+            # Fetch game summary for box score
+            summary = _fetch_json(ESPN_MLB_SUMMARY.format(eid))
+            if not summary:
+                time.sleep(0.3)
+                continue
+
+            game_date = event.get('date', '')[:10]
+            pitchers = _parse_pitchers_from_summary(summary, eid, game_date)
+
+            if pitchers:
+                games_with_data += 1
+                for p in pitchers:
+                    try:
+                        conn.execute("""
+                            INSERT OR IGNORE INTO pitcher_stats
+                                (game_date, espn_event_id, team, pitcher_name,
+                                 espn_athlete_id, is_starter, innings_pitched,
+                                 hits, runs, earned_runs, walks, strikeouts,
+                                 home_runs, pitch_count, era, fetched_at)
+                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                        """, (
+                            p['game_date'], p['espn_event_id'], p['team'],
+                            p['pitcher_name'], p['espn_athlete_id'], p['is_starter'],
+                            p['innings_pitched'], p['hits'], p['runs'],
+                            p['earned_runs'], p['walks'], p['strikeouts'],
+                            p['home_runs'], p['pitch_count'], p['era'],
+                            datetime.now().isoformat()
+                        ))
+                        pitchers_inserted += 1
+                    except sqlite3.IntegrityError:
+                        pass
+
+                if verbose:
+                    starters = [p for p in pitchers if p['is_starter']]
+                    starter_names = ', '.join(p['pitcher_name'] for p in starters)
+                    comps = event.get('competitions', [{}])[0].get('competitors', [])
+                    home = away = ''
+                    for c in comps:
+                        name = c.get('team', {}).get('displayName', '')
+                        if c.get('homeAway') == 'home':
+                            home = name
+                        else:
+                            away = name
+                    print(f"    \u2705 {away} @ {home} ({game_date}) \u2014 "
+                          f"{len(pitchers)} pitchers, starters: {starter_names}")
+
+            time.sleep(0.3)
+
+        current += timedelta(days=1)
+        time.sleep(0.25)
+
+    conn.commit()
+
+    if verbose:
+        print(f"\n  \u26be MLB pitcher history: {total_games} games scanned, "
+              f"{games_with_data} with data, {pitchers_inserted} new records")
+
+    conn.close()
+    return pitchers_inserted
+
+
+# ═══════════════════════════════════════════════════════════════════
 # MODEL INTEGRATION — get_pitcher_context()
 # ═══════════════════════════════════════════════════════════════════
 
@@ -749,17 +1208,25 @@ def main():
                 pass
 
     print("="*60)
-    print("  PITCHER SCRAPER — ESPN College Baseball")
+    print("  PITCHER SCRAPER — ESPN Baseball (College + MLB)")
     print(f"  {datetime.now().strftime('%Y-%m-%d %I:%M %p')}")
     print("="*60)
 
-    # Step 1: Scrape ESPN pitcher data
-    print("\n📊 Step 1: Scraping ESPN box scores for pitcher data...")
+    # Step 1: Scrape ESPN pitcher data (college)
+    print("\n📊 Step 1: Scraping ESPN box scores for college pitcher data...")
     scrape_pitcher_data(days_back=days_back)
+
+    # Step 1b: Scrape MLB pitcher history from completed games
+    print("\n📊 Step 1b: Scraping MLB pitcher history...")
+    scrape_mlb_pitcher_history(days_back=days_back or 7)
 
     # Step 2: Build day-of-week pitching quality from results
     print("\n📈 Step 2: Building day-of-week pitching quality...")
     build_pitching_quality()
+
+    # Step 3: Fetch today's MLB probable pitchers
+    print("\n⚾ Step 3: Fetching MLB probable pitchers...")
+    scrape_mlb_pitchers()
 
     print("\n✅ Done!")
 
