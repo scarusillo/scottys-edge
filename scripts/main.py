@@ -1617,10 +1617,11 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     # ── Filter: Only highest conviction picks make the card ──
     # No artificial caps — quality thresholds control output volume.
     # On a big Saturday slate: ~8-15 picks. Weeknight: ~2-5.
+    # v21: Raised from 15% — 8-16% edge bucket is -15.9u, 20%+ is +82.2u
     MARKET_MIN_EDGE = {
-        'TOTAL': 15.0,       # Was 20% — real total edges are 12-18%, 20 killed almost all
-        'SPREAD': 15.0,      # Was 13% — edge 13-15% is 3W-3L -7.6u. 15%+ is profitable.
-        'MONEYLINE': 15.0,   # Same bar as spreads. Sub-15% ML is losing.
+        'TOTAL': 18.0,       # v21: Was 15% — sub-18% totals are losing
+        'SPREAD': 18.0,      # v21: Was 15% — sub-18% spreads are losing
+        'MONEYLINE': 18.0,   # v21: Was 15% — sub-18% ML is losing
     }
     # v14: Baseball totals are the model's best market (37W-23L +45u +19.3% ROI).
     # 8-13% bucket is profitable (13W-10L). Lower threshold to capture it.
@@ -1639,15 +1640,14 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     # Bundesliga 63.8% overs, UCL 72.8%. Model correctly identifies
     # over/under tendencies from team attack/defense rates.
     SOCCER_TOTAL_MIN_EDGE = 5.0
-    MIN_UNITS = 3.5  # v17: Lowered from 4.5 to include STRONG picks (was max-play only)
-    # ELITE (5u) = highest conviction. STRONG (3.5-4.5u) = solid plays.
-    # HIGH tier remains excluded — was 3W-7L -22.5u (-46.9% ROI).
-    REQUIRED_CONFIDENCE = ('ELITE', 'STRONG')
+    # v21: STRONG was 3W-7L -22.5u, HIGH was 3W-4L -7.5u. Only MAX PLAYs.
+    MIN_UNITS = 5.0  # v21: Raised from 3.5 — ELITE (5u) only
+    REQUIRED_CONFIDENCE = ('ELITE',)
 
     def _passes_filter(p):
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
-        min_edge = MARKET_MIN_EDGE.get(mtype, 15.0)  # Was 13.0 — 13-15% bucket is 2W-4L -14.4u
+        min_edge = MARKET_MIN_EDGE.get(mtype, 18.0)  # v21: Raised from 15% — 8-16% edge bucket is -15.9u
         # v16: Soccer spreads DISABLED — backtest 80W-86L -70u.
         # Only totals are profitable (92W-62L +104u, 59.7%).
         # EPL/Ligue 1 spreads showed profit but not enough sample to trust yet.
@@ -1661,10 +1661,9 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             min_edge = BASEBALL_TOTAL_MIN_EDGE
         # Walters ML: Elo-backed moneyline picks use Elo probability directly.
         # Was 8% — too low. Elo ML at 8-15% edge is 3W-4L -12.6u.
-        # Keep at 15% (same as SPREAD/MONEYLINE base). Elo-only bets are
-        # already blocked by the Elo-only filter above; this covers Elo+context.
+        # v21: Raised from 15% to 18% — same as SPREAD/MONEYLINE base.
         if mtype == 'MONEYLINE' and 'Elo' in str(p.get('context', '')):
-            min_edge = 15.0
+            min_edge = 18.0
         
         # Early bets by sport (post-rebuild):
         #   Baseball EARLY: 18W-7L +41.6u — lines settle early, no surcharge needed
@@ -1695,10 +1694,8 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         _min_u = MIN_UNITS
         if not (p.get('units', 0) >= _min_u and p.get('edge_pct', 0) >= min_edge):
             return False
-        # v17: ELITE + STRONG confidence pass. HIGH tier remains blocked
-        # (was 3W-7L -22.5u). STRONG picks at 3.5-4.5u add volume.
-        # 4.5u anyway, but belt-and-suspenders.
-        if p.get('confidence') not in ('ELITE', 'STRONG', None):
+        # v21: ELITE only. STRONG was 3W-7L -22.5u, HIGH was 3W-4L -7.5u.
+        if p.get('confidence') not in ('ELITE', None):
             return False
         
         # v17: Soft market context requirement.
@@ -1717,8 +1714,8 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             # v14: March Madness exception. Tournament neutral-site games
             # don't trigger context (no B2B, no home/away rest). The Elo
             # spread itself is the signal. Allow picks through at 15% edge.
-            if _is_march_madness and edge >= 15.0:
-                pass  # Allow through — tournament games earn trust from Elo
+            if _is_march_madness and edge >= 18.0:
+                pass  # v21: Raised from 15% — tournament games earn trust from Elo
             # Soccer exception: European soccer lines are set by sharp global
             # books. Context rarely fires (no B2B, no revenge in soccer). The
             # Elo spread edge IS the signal. Backtest: EPL +21%, L1 +27% ROI
@@ -1728,8 +1725,8 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             # Tennis exception: Same rationale as soccer — no B2B, no rest,
             # no revenge in tennis. Surface-split Elo IS the signal.
             # Context rarely fires for individual sport. Allow at 15%+ edge.
-            elif 'tennis' in sport and edge >= 15.0:
-                pass  # Allow through — tennis Elo edges are the signal
+            elif 'tennis' in sport and edge >= 18.0:
+                pass  # v21: Raised from 15% — tennis Elo edges are the signal
             else:
                 return False
         
@@ -1770,11 +1767,11 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         if mtype == 'SPREAD' and 'hockey' in sport and odds <= -200:
             return False  # Too much juice on puck line — -200+ is breakeven at best
 
-        # ── NHL puck line dog Elo floor ──
-        # Data: Blackhawks (Elo 1431) 1W-4L -15u as puck line dog, 60% blowout rate
-        # when losing. Bottom-tier teams get blown out too often for +1.5 to cover.
-        # model_spread conversion doesn't produce large enough spreads for these teams.
-        # Elo floor of 1450 would have saved 15u net.
+        # ── NHL spread dog Elo floor ──
+        # v21: Raised from 1450 — Calgary (1460) lost by 7 on +2.5. Bottom ~5 teams blocked.
+        # Blackhawks (Elo 1431) 1W-4L -15u as puck line dog, 60% blowout rate
+        # when losing. Bottom-tier teams get blown out too often for ANY spread
+        # to cover. Blocks all spread dogs (any line > 0: +1.5, +2.5, etc.) when Elo < 1475.
         sel = p.get('selection', '')
         line = p.get('line')
         if mtype == 'SPREAD' and 'hockey' in sport and line is not None and line > 0:
@@ -1784,8 +1781,8 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                     "SELECT elo FROM elo_ratings WHERE sport='icehockey_nhl' AND team=?",
                     (team_name,)
                 ).fetchone()
-                if elo_row and elo_row[0] < 1450:
-                    return False  # Block bottom-tier NHL dogs from puck line — blowout rate too high
+                if elo_row and elo_row[0] < 1475:
+                    return False  # v21: Block bottom ~5 NHL dogs from ALL spread lines — blowout rate too high
 
         # ── Early NCAAB block ──
         # Data: Early NCAAB is 4W-7L, -33.9% ROI. Lines haven't settled.
