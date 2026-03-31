@@ -490,10 +490,15 @@ def _mlb_pitcher_era_adjustment(conn, mlb_pitcher_info):
                     return row[0]  # Enough IP for reliable ERA
             except Exception:
                 pass
-        # Fall back to ESPN ERA from probable pitchers table
-        if espn_era is not None:
+        # Fall back to ESPN ERA — but only with enough sample size
+        # Early season ERA is noise. Need 30+ IP (5-6 quality starts) minimum
+        # to trust the number. Below that, treat as league average.
+        side = 'home' if pitcher_name == home_pitcher else 'away'
+        season_ip = mlb_pitcher_info.get(f"{side}_season_ip", 0)
+        if espn_era is not None and season_ip and season_ip >= 30:
             return espn_era
-        return None  # No data — will use league average (no adjustment)
+        # Not enough data — use league average (no adjustment for this pitcher)
+        return None
 
     home_era = _get_best_era(home_pitcher, mlb_pitcher_info.get('home_era'))
     away_era = _get_best_era(away_pitcher, mlb_pitcher_info.get('away_era'))
