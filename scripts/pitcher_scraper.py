@@ -1012,13 +1012,38 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
         ORDER BY game_date DESC LIMIT 1
     """, (away, (dow + 1) % 7)).fetchone()
 
-    if home_starter_row:
-        result['home_starter'] = home_starter_row[0]
-        result['home_starter_era'] = home_starter_row[1]
+    # Use pitcher_stats ERA only if pitcher has 3+ starts. Otherwise fall back to
+    # box_scores ERA (includes 2025 data). A 1-start ERA (e.g., 12.27) is noise.
+    def _reliable_era(starter_row):
+        if not starter_row:
+            return None, None
+        name = starter_row[0]
+        ps_era = starter_row[1]
+        # Check how many starts this pitcher has in pitcher_stats
+        start_count = conn.execute(
+            "SELECT COUNT(*) FROM pitcher_stats WHERE pitcher_name=? AND is_starter=1", (name,)
+        ).fetchone()[0]
+        if start_count >= 3 and ps_era is not None:
+            return name, ps_era
+        # Fall back to box_scores ERA (2025+2026 combined, requires 30+ IP)
+        try:
+            bs = conn.execute("""
+                SELECT ROUND(SUM(CASE WHEN stat_type='pitcher_er' THEN stat_value ELSE 0 END) * 9.0 /
+                       NULLIF(SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END), 0), 2),
+                       SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END)
+                FROM box_scores WHERE sport='baseball_mlb' AND player LIKE ?
+                AND stat_type IN ('pitcher_er','pitcher_ip')
+            """, (f"%{name}%",)).fetchone()
+            if bs and bs[0] is not None and bs[1] and bs[1] >= 30:
+                return name, bs[0]
+        except Exception:
+            pass
+        return name, ps_era  # Last resort: use whatever we have
 
+    if home_starter_row:
+        result['home_starter'], result['home_starter_era'] = _reliable_era(home_starter_row)
     if away_starter_row:
-        result['away_starter'] = away_starter_row[0]
-        result['away_starter_era'] = away_starter_row[1]
+        result['away_starter'], result['away_starter_era'] = _reliable_era(away_starter_row)
 
     # Calculate pitching adjustments
     # Use day-specific data if available (3+ games), else overall
