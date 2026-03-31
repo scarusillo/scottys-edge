@@ -1622,11 +1622,11 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     # ── Filter: Only highest conviction picks make the card ──
     # No artificial caps — quality thresholds control output volume.
     # On a big Saturday slate: ~8-15 picks. Weeknight: ~2-5.
-    # v21: Raised from 15% — 8-16% edge bucket is -15.9u, 20%+ is +82.2u
+    # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
     MARKET_MIN_EDGE = {
-        'TOTAL': 18.0,       # v21: Was 15% — sub-18% totals are losing
-        'SPREAD': 18.0,      # v21: Was 15% — sub-18% spreads are losing
-        'MONEYLINE': 18.0,   # v21: Was 15% — sub-18% ML is losing
+        'TOTAL': 20.0,       # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
+        'SPREAD': 20.0,      # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
+        'MONEYLINE': 20.0,   # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
     }
     # v14: Baseball totals are the model's best market (37W-23L +45u +19.3% ROI).
     # 8-13% bucket is profitable (13W-10L). Lower threshold to capture it.
@@ -1652,7 +1652,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     def _passes_filter(p):
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
-        min_edge = MARKET_MIN_EDGE.get(mtype, 18.0)  # v21: Raised from 15% — 8-16% edge bucket is -15.9u
+        min_edge = MARKET_MIN_EDGE.get(mtype, 20.0)  # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
         # v16: Soccer spreads DISABLED — backtest 80W-86L -70u.
         # Only totals are profitable (92W-62L +104u, 59.7%).
         # EPL/Ligue 1 spreads showed profit but not enough sample to trust yet.
@@ -1668,7 +1668,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # Was 8% — too low. Elo ML at 8-15% edge is 3W-4L -12.6u.
         # v21: Raised from 15% to 18% — same as SPREAD/MONEYLINE base.
         if mtype == 'MONEYLINE' and 'Elo' in str(p.get('context', '')):
-            min_edge = 18.0
+            min_edge = 20.0  # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
         
         # Early bets by sport (post-rebuild):
         #   Baseball EARLY: 18W-7L +41.6u — lines settle early, no surcharge needed
@@ -1715,12 +1715,12 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         edge = p.get('edge_pct', 0)
         _is_march_madness = (sport == 'basketball_ncaab'
             and (datetime.now().month == 3 or (datetime.now().month == 4 and datetime.now().day <= 7)))
-        if is_soft and not has_context and edge < 18.0:
+        if is_soft and not has_context and edge < 20.0:  # v21: Raised from 18%
             # v14: March Madness exception. Tournament neutral-site games
             # don't trigger context (no B2B, no home/away rest). The Elo
             # spread itself is the signal. Allow picks through at 15% edge.
-            if _is_march_madness and edge >= 18.0:
-                pass  # v21: Raised from 15% — tournament games earn trust from Elo
+            if _is_march_madness and edge >= 20.0:
+                pass  # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
             # Soccer exception: European soccer lines are set by sharp global
             # books. Context rarely fires (no B2B, no revenge in soccer). The
             # Elo spread edge IS the signal. Backtest: EPL +21%, L1 +27% ROI
@@ -1730,8 +1730,8 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             # Tennis exception: Same rationale as soccer — no B2B, no rest,
             # no revenge in tennis. Surface-split Elo IS the signal.
             # Context rarely fires for individual sport. Allow at 15%+ edge.
-            elif 'tennis' in sport and edge >= 18.0:
-                pass  # v21: Raised from 15% — tennis Elo edges are the signal
+            elif 'tennis' in sport and edge >= 20.0:
+                pass  # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
             else:
                 return False
         
