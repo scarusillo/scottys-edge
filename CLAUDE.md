@@ -1,5 +1,13 @@
 # Scotty's Edge Betting Model
 
+## First Thing Every Session
+
+At the start of every conversation, pull the latest code and check the morning briefing:
+```bash
+cd /c/Users/carus/OneDrive/Desktop/scottys_edge/betting_model && git pull && cat data/morning_briefing.md
+```
+Summarize any action items or issues from the briefing before the user asks. This briefing is auto-generated after every grade and contains: yesterday's results, loss analysis, context health, shadow factors, edge cap performance, concentration risk, and recommended actions.
+
 ## Quick Reference
 
 ```bash
