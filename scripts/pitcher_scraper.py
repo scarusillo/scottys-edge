@@ -46,6 +46,8 @@ ESPN_SCOREBOARD = 'https://site.api.espn.com/apis/site/v2/sports/baseball/colleg
 ESPN_SUMMARY = 'https://site.api.espn.com/apis/site/v2/sports/baseball/college-baseball/summary?event={}'
 ESPN_MLB_SCOREBOARD = 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard'
 ESPN_MLB_SUMMARY = 'https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event={}'
+ESPN_NHL_SCOREBOARD = 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard'
+ESPN_NHL_SUMMARY = 'https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/summary?event={}'
 HEADERS = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
 
 SEASON_START = '2026-02-14'
@@ -1179,6 +1181,456 @@ def analyze_rotations(team_filter=None, verbose=True):
                   f"({avg_total:.1f} total), {team_count} teams")
 
     conn.close()
+
+
+# ═══════════════════════════════════════════════════════════════════
+# NHL GOALIE SCRAPING — Probable starters + historical stats
+# ═══════════════════════════════════════════════════════════════════
+
+def _ensure_nhl_goalies_table(conn):
+    """Create NHL probable goalies table if it doesn't exist."""
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS nhl_probable_goalies (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            game_date TEXT NOT NULL,
+            espn_event_id TEXT NOT NULL,
+            home TEXT NOT NULL,
+            away TEXT NOT NULL,
+            home_goalie TEXT,
+            away_goalie TEXT,
+            home_goalie_id TEXT,
+            away_goalie_id TEXT,
+            home_goalie_status TEXT,
+            away_goalie_status TEXT,
+            fetched_at TEXT,
+            UNIQUE(espn_event_id)
+        )
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_nhl_pg_date
+        ON nhl_probable_goalies(game_date)
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_nhl_pg_teams
+        ON nhl_probable_goalies(home, away, game_date)
+    """)
+    # Goalie game stats — scraped from ESPN game summaries
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS nhl_goalie_stats (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            game_date TEXT NOT NULL,
+            espn_event_id TEXT NOT NULL,
+            team TEXT NOT NULL,
+            goalie_name TEXT NOT NULL,
+            espn_athlete_id TEXT,
+            goals_against INTEGER,
+            shots_against INTEGER,
+            saves INTEGER,
+            save_pct REAL,
+            time_on_ice TEXT,
+            is_starter INTEGER DEFAULT 0,
+            fetched_at TEXT,
+            UNIQUE(espn_event_id, team, goalie_name)
+        )
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_nhl_gs_goalie
+        ON nhl_goalie_stats(goalie_name, game_date)
+    """)
+    conn.commit()
+
+
+def scrape_nhl_goalies(conn=None, verbose=True):
+    """
+    Fetch today's NHL probable starting goalies from ESPN scoreboard API.
+
+    ESPN provides probable starting goalies in the scoreboard response
+    at: events[].competitions[].competitors[].probables[]
+    with name='probableStartingGoalie' and status (Confirmed/Expected/Probable).
+
+    Returns count of games with goalie data stored.
+    """
+    close_conn = False
+    if conn is None:
+        conn = sqlite3.connect(DB_PATH)
+        close_conn = True
+
+    _ensure_nhl_goalies_table(conn)
+
+    today = datetime.now(_ET).strftime('%Y%m%d')
+    today_iso = datetime.now(_ET).strftime('%Y-%m-%d')
+
+    url = f"{ESPN_NHL_SCOREBOARD}?dates={today}"
+    data = _fetch_json(url)
+    if not data:
+        if verbose:
+            print("  \u26a0 NHL scoreboard fetch failed")
+        if close_conn:
+            conn.close()
+        return 0
+
+    events = data.get('events', [])
+    if verbose:
+        print(f"  \U0001f3d2 NHL: {len(events)} games on scoreboard")
+
+    games_stored = 0
+    games_no_goalie = 0
+
+    for event in events:
+        eid = event.get('id', '')
+        comps = event.get('competitions', [{}])[0].get('competitors', [])
+
+        home_team = away_team = ''
+        home_goalie = away_goalie = None
+        home_goalie_id = away_goalie_id = ''
+        home_status = away_status = ''
+
+        for c in comps:
+            team_name = c.get('team', {}).get('displayName', '')
+            is_home = c.get('homeAway') == 'home'
+
+            # Extract probable starting goalie
+            probables = c.get('probables', [])
+            goalie_name = None
+            goalie_id = ''
+            goalie_status = ''
+
+            for prob in probables:
+                if prob.get('name') == 'probableStartingGoalie':
+                    athlete = prob.get('athlete', {})
+                    goalie_name = athlete.get('fullName') or athlete.get('displayName')
+                    goalie_id = str(athlete.get('id', ''))
+                    goalie_status = prob.get('status', {}).get('name', 'Unknown')
+                    break
+
+            if is_home:
+                home_team = team_name
+                home_goalie = goalie_name
+                home_goalie_id = goalie_id
+                home_status = goalie_status
+            else:
+                away_team = team_name
+                away_goalie = goalie_name
+                away_goalie_id = goalie_id
+                away_status = goalie_status
+
+        if not home_goalie or not away_goalie:
+            games_no_goalie += 1
+            if verbose:
+                missing = []
+                if not home_goalie:
+                    missing.append(home_team or 'HOME')
+                if not away_goalie:
+                    missing.append(away_team or 'AWAY')
+                print(f"    \u26a0 {away_team} @ {home_team}: TBD goalie ({', '.join(missing)})")
+            continue
+
+        # Store
+        try:
+            conn.execute("""
+                INSERT OR REPLACE INTO nhl_probable_goalies
+                    (game_date, espn_event_id, home, away,
+                     home_goalie, away_goalie,
+                     home_goalie_id, away_goalie_id,
+                     home_goalie_status, away_goalie_status,
+                     fetched_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)
+            """, (
+                today_iso, eid, home_team, away_team,
+                home_goalie, away_goalie,
+                home_goalie_id, away_goalie_id,
+                home_status, away_status,
+                datetime.now(_ET).isoformat()
+            ))
+            conn.commit()
+            games_stored += 1
+            if verbose:
+                print(f"    {away_team} @ {home_team}: "
+                      f"{away_goalie} ({away_status}) vs {home_goalie} ({home_status})")
+        except Exception as e:
+            if verbose:
+                print(f"    \u26a0 DB error for {away_team} @ {home_team}: {e}")
+
+    if verbose:
+        print(f"  NHL goalies: {games_stored} games stored, "
+              f"{games_no_goalie} missing goalie data")
+
+    if close_conn:
+        conn.close()
+    return games_stored
+
+
+def scrape_nhl_goalie_history(days_back=30, verbose=True):
+    """
+    Backfill NHL goalie stats from completed game summaries.
+
+    Fetches ESPN game summaries for recent NHL games and extracts
+    goalie box score data (GA, SA, SV, SV%, TOI) for each goalie.
+    The starter is the goalie with the most TOI in each game.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    _ensure_nhl_goalies_table(conn)
+
+    end_date = datetime.now(_ET)
+    start_date = end_date - timedelta(days=days_back)
+    games_scraped = 0
+    goalies_stored = 0
+
+    if verbose:
+        print(f"  Scanning NHL games from {start_date.strftime('%Y-%m-%d')} "
+              f"to {end_date.strftime('%Y-%m-%d')}...")
+
+    current = start_date
+    while current <= end_date:
+        date_str = current.strftime('%Y%m%d')
+        url = f"{ESPN_NHL_SCOREBOARD}?dates={date_str}"
+        data = _fetch_json(url)
+        if not data:
+            current += timedelta(days=1)
+            continue
+
+        for event in data.get('events', []):
+            eid = event.get('id', '')
+            status = event.get('competitions', [{}])[0].get('status', {}).get('type', {}).get('state', '')
+            if status != 'post':
+                continue  # Only completed games
+
+            # Check if we already have stats for this game
+            existing = conn.execute(
+                "SELECT COUNT(*) FROM nhl_goalie_stats WHERE espn_event_id=?",
+                (eid,)).fetchone()[0]
+            if existing > 0:
+                continue
+
+            # Fetch game summary for goalie box scores
+            summary_url = ESPN_NHL_SUMMARY.format(eid)
+            summary = _fetch_json(summary_url)
+            if not summary:
+                continue
+
+            bs = summary.get('boxscore', {})
+            for team_block in bs.get('players', []):
+                team_name = team_block.get('team', {}).get('displayName', '')
+                for stat_group in team_block.get('statistics', []):
+                    if stat_group.get('name', '').lower() != 'goalies':
+                        continue
+
+                    labels = stat_group.get('labels', [])
+                    # Map label positions
+                    label_idx = {l: i for i, l in enumerate(labels)}
+
+                    max_toi_mins = 0
+                    starter_name = None
+                    athletes_data = []
+
+                    for athlete in stat_group.get('athletes', []):
+                        a_info = athlete.get('athlete', {})
+                        g_name = a_info.get('displayName', '')
+                        g_id = str(a_info.get('id', ''))
+                        stats = athlete.get('stats', [])
+
+                        ga = int(stats[label_idx['GA']]) if 'GA' in label_idx and label_idx['GA'] < len(stats) else 0
+                        sa = int(stats[label_idx['SA']]) if 'SA' in label_idx and label_idx['SA'] < len(stats) else 0
+                        sv = int(stats[label_idx['SV']]) if 'SV' in label_idx and label_idx['SV'] < len(stats) else 0
+                        sv_pct_str = stats[label_idx['SV%']] if 'SV%' in label_idx and label_idx['SV%'] < len(stats) else '0'
+                        toi = stats[label_idx['TOI']] if 'TOI' in label_idx and label_idx['TOI'] < len(stats) else '0:00'
+
+                        try:
+                            sv_pct = float(sv_pct_str)
+                        except (ValueError, TypeError):
+                            sv_pct = 0.0
+
+                        # Parse TOI to minutes for starter detection
+                        toi_mins = 0
+                        try:
+                            parts = toi.split(':')
+                            toi_mins = int(parts[0]) + int(parts[1]) / 60 if len(parts) == 2 else 0
+                        except (ValueError, IndexError):
+                            pass
+
+                        athletes_data.append({
+                            'name': g_name, 'id': g_id,
+                            'ga': ga, 'sa': sa, 'sv': sv,
+                            'sv_pct': sv_pct, 'toi': toi,
+                            'toi_mins': toi_mins
+                        })
+
+                        if toi_mins > max_toi_mins:
+                            max_toi_mins = toi_mins
+                            starter_name = g_name
+
+                    # Store all goalies, marking starter
+                    for gd in athletes_data:
+                        is_starter = 1 if gd['name'] == starter_name else 0
+                        try:
+                            conn.execute("""
+                                INSERT OR REPLACE INTO nhl_goalie_stats
+                                    (game_date, espn_event_id, team, goalie_name,
+                                     espn_athlete_id, goals_against, shots_against,
+                                     saves, save_pct, time_on_ice, is_starter, fetched_at)
+                                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                            """, (
+                                current.strftime('%Y-%m-%d'), eid, team_name,
+                                gd['name'], gd['id'],
+                                gd['ga'], gd['sa'], gd['sv'],
+                                gd['sv_pct'], gd['toi'], is_starter,
+                                datetime.now(_ET).isoformat()
+                            ))
+                            goalies_stored += 1
+                        except Exception:
+                            pass
+
+            conn.commit()
+            games_scraped += 1
+            time.sleep(0.3)  # Be polite to ESPN
+
+        current += timedelta(days=1)
+
+    if verbose:
+        print(f"  NHL goalie history: {games_scraped} games, {goalies_stored} goalie lines stored")
+
+    conn.close()
+    return games_scraped
+
+
+def get_nhl_goalie_stats(conn, goalie_name):
+    """
+    Get a goalie's season stats from nhl_goalie_stats table.
+
+    Returns dict with:
+        - gaa: Goals Against Average
+        - sv_pct: Save Percentage
+        - games: Games played (starts)
+    Or None if insufficient data.
+
+    Requires 10+ starts before returning stats (same logic as
+    MLB pitcher 30 IP minimum for reliability).
+    """
+    MIN_GAMES = 10
+
+    try:
+        conn.execute("SELECT 1 FROM nhl_goalie_stats LIMIT 1")
+    except sqlite3.OperationalError:
+        return None
+
+    # Get aggregate stats for this goalie (starter appearances only)
+    row = conn.execute("""
+        SELECT
+            COUNT(*) as games,
+            SUM(goals_against) as total_ga,
+            SUM(shots_against) as total_sa,
+            SUM(saves) as total_sv
+        FROM nhl_goalie_stats
+        WHERE goalie_name = ?
+        AND is_starter = 1
+    """, (goalie_name,)).fetchone()
+
+    if not row or row[0] < MIN_GAMES:
+        # Try fuzzy match on last name
+        last_name = goalie_name.split()[-1] if goalie_name else ''
+        if last_name:
+            row = conn.execute("""
+                SELECT
+                    COUNT(*) as games,
+                    SUM(goals_against) as total_ga,
+                    SUM(shots_against) as total_sa,
+                    SUM(saves) as total_sv
+                FROM nhl_goalie_stats
+                WHERE goalie_name LIKE ?
+                AND is_starter = 1
+            """, (f"%{last_name}%",)).fetchone()
+
+    if not row or row[0] < MIN_GAMES:
+        return None
+
+    games, total_ga, total_sa, total_sv = row
+    gaa = round(total_ga / games, 2) if games > 0 else 0.0
+    sv_pct = round(total_sv / total_sa, 3) if total_sa and total_sa > 0 else 0.0
+
+    return {
+        'gaa': gaa,
+        'sv_pct': sv_pct,
+        'games': games,
+    }
+
+
+def get_nhl_probable_goalies(conn, home, away, game_date=None):
+    """
+    Get NHL probable starting goalies for a game.
+
+    Returns dict with:
+        - home_goalie: name or None
+        - away_goalie: name or None
+        - home_goalie_stats: dict with gaa/sv_pct/games or None
+        - away_goalie_stats: dict with gaa/sv_pct/games or None
+        - both_confirmed: True if both goalies are known
+        - summary: human-readable string
+
+    Used by model_engine to gate NHL picks and adjust totals.
+    """
+    if game_date is None:
+        game_date = datetime.now(_ET).strftime('%Y-%m-%d')
+
+    # Check if table exists
+    try:
+        conn.execute("SELECT 1 FROM nhl_probable_goalies LIMIT 1")
+    except sqlite3.OperationalError:
+        return {'home_goalie': None, 'away_goalie': None,
+                'home_goalie_stats': None, 'away_goalie_stats': None,
+                'both_confirmed': False, 'summary': 'No NHL goalie data table'}
+
+    row = conn.execute("""
+        SELECT home_goalie, away_goalie, home_goalie_status, away_goalie_status
+        FROM nhl_probable_goalies
+        WHERE home=? AND away=? AND game_date=?
+        ORDER BY fetched_at DESC LIMIT 1
+    """, (home, away, game_date)).fetchone()
+
+    if not row:
+        # Try fuzzy match (team names may differ slightly between APIs)
+        row = conn.execute("""
+            SELECT home_goalie, away_goalie, home_goalie_status, away_goalie_status
+            FROM nhl_probable_goalies
+            WHERE game_date=?
+            AND (home LIKE ? OR home LIKE ?)
+            AND (away LIKE ? OR away LIKE ?)
+            ORDER BY fetched_at DESC LIMIT 1
+        """, (game_date,
+              f"%{home.split()[-1]}%", f"%{home}%",
+              f"%{away.split()[-1]}%", f"%{away}%")).fetchone()
+
+    if not row:
+        return {'home_goalie': None, 'away_goalie': None,
+                'home_goalie_stats': None, 'away_goalie_stats': None,
+                'both_confirmed': False,
+                'summary': f'No goalie data for {away} @ {home}'}
+
+    hg, ag = row[0], row[1]
+    h_status, a_status = row[2] or '', row[3] or ''
+    both = hg is not None and ag is not None
+
+    # Look up season stats for each goalie
+    h_stats = get_nhl_goalie_stats(conn, hg) if hg else None
+    a_stats = get_nhl_goalie_stats(conn, ag) if ag else None
+
+    parts = []
+    if hg:
+        stat_s = f" ({h_stats['gaa']:.2f} GAA, {h_stats['sv_pct']:.3f} SV%)" if h_stats else ""
+        parts.append(f"{home} G: {hg}{stat_s}")
+    if ag:
+        stat_s = f" ({a_stats['gaa']:.2f} GAA, {a_stats['sv_pct']:.3f} SV%)" if a_stats else ""
+        parts.append(f"{away} G: {ag}{stat_s}")
+
+    return {
+        'home_goalie': hg,
+        'away_goalie': ag,
+        'home_goalie_stats': h_stats,
+        'away_goalie_stats': a_stats,
+        'home_goalie_status': h_status,
+        'away_goalie_status': a_status,
+        'both_confirmed': both,
+        'summary': ' | '.join(parts) if parts else 'No goalie data',
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════

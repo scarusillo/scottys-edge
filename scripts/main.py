@@ -336,6 +336,15 @@ def cmd_run(args):
         except Exception as e:
             print(f"  Pitcher scraper: {e}")
 
+    # Step 4b2: NHL goalie data (FREE — ESPN scoreboard)
+    if any(s == 'icehockey_nhl' for s in sports):
+        print("\n\U0001f3d2 Step 4b2: NHL goalie data (FREE)...")
+        try:
+            from pitcher_scraper import scrape_nhl_goalies
+            scrape_nhl_goalies(verbose=True)
+        except Exception as e:
+            print(f"  NHL goalie scraper: {e}")
+
     # Step 4c: Referee/official data (FREE — ESPN game summaries)
     print("\n🏛️ Step 4c: Referee data (FREE)...")
     try:
@@ -2511,6 +2520,16 @@ def cmd_grade(args):
         print("  Pitcher data updated (college + MLB)")
     except Exception as e:
         print(f"  Pitcher data: {e}")
+
+    # NHL goalie data update (FREE — ESPN scoreboard)
+    print("  Updating NHL goalie data...")
+    try:
+        from pitcher_scraper import scrape_nhl_goalies, scrape_nhl_goalie_history
+        scrape_nhl_goalies(verbose=False)
+        scrape_nhl_goalie_history(days_back=3, verbose=False)
+        print("  NHL goalie data updated")
+    except Exception as e:
+        print(f"  NHL goalie data: {e}")
 
     # Referee data update (FREE — ESPN game summaries)
     print("  Updating referee data...")

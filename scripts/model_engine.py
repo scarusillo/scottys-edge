@@ -74,6 +74,13 @@ try:
 except ImportError:
     HAS_MLB_PITCHERS = False
 
+# NHL probable goalies — gate NHL picks on confirmed starters
+try:
+    from pitcher_scraper import get_nhl_probable_goalies
+    HAS_NHL_GOALIES = True
+except ImportError:
+    HAS_NHL_GOALIES = False
+
 # Weather engine — wind, rain, cold adjustments for outdoor totals
 try:
     from weather_engine import get_weather_adjustment
@@ -532,6 +539,71 @@ def _mlb_pitcher_era_adjustment(conn, mlb_pitcher_info):
         ctx_str = f"Pitching: {' vs '.join(ctx_parts)} ({total_adj:+.1f})"
     elif ctx_parts:
         ctx_str = f"Pitching: {' vs '.join(ctx_parts)} (avg)"
+    else:
+        ctx_str = ''
+
+    return total_adj, ctx_str
+
+
+def _nhl_goalie_adjustment(conn, nhl_goalie_info):
+    """
+    Adjust NHL total based on starting goalie GAA vs league average.
+
+    NHL average GAA is ~2.80. Elite goalies suppress scoring (total down);
+    bad goalies inflate scoring (total up).
+
+    Formula per goalie:
+        goalie_deviation = (GAA - 2.80) / 2.80   (% above/below average)
+        goal_adj = goalie_deviation * 1.2         (scaled to goal impact)
+
+    Total adj = home_goalie_adj + away_goalie_adj, capped at +/-1.0 goals.
+    NHL totals are tighter than MLB, so the cap is lower.
+
+    Returns (adjustment, context_string) or (0.0, '') if no data.
+    """
+    LEAGUE_AVG_GAA = 2.80
+    SCALE_FACTOR = 1.2   # Each 1.0 GAA above avg -> ~0.43 more goals allowed
+    MAX_ADJ = 1.0
+
+    if not nhl_goalie_info:
+        return 0.0, ''
+
+    h_stats = nhl_goalie_info.get('home_goalie_stats')
+    a_stats = nhl_goalie_info.get('away_goalie_stats')
+    home_goalie = nhl_goalie_info.get('home_goalie', '')
+    away_goalie = nhl_goalie_info.get('away_goalie', '')
+
+    # Calculate adjustments
+    # Home goalie's GAA affects how many goals the AWAY team scores
+    # Away goalie's GAA affects how many goals the HOME team scores
+    h_gaa = h_stats['gaa'] if h_stats else LEAGUE_AVG_GAA
+    a_gaa = a_stats['gaa'] if a_stats else LEAGUE_AVG_GAA
+
+    home_dev = (h_gaa - LEAGUE_AVG_GAA) / LEAGUE_AVG_GAA
+    away_dev = (a_gaa - LEAGUE_AVG_GAA) / LEAGUE_AVG_GAA
+
+    home_goal_adj = home_dev * SCALE_FACTOR
+    away_goal_adj = away_dev * SCALE_FACTOR
+
+    total_adj = home_goal_adj + away_goal_adj
+    total_adj = max(-MAX_ADJ, min(MAX_ADJ, total_adj))
+    total_adj = round(total_adj, 2)
+
+    # Build context string
+    ctx_parts = []
+    if home_goalie and h_stats:
+        ctx_parts.append(f"{home_goalie} {h_stats['gaa']:.2f}")
+    elif home_goalie:
+        ctx_parts.append(f"{home_goalie} ?.??")
+    if away_goalie and a_stats:
+        ctx_parts.append(f"{away_goalie} {a_stats['gaa']:.2f}")
+    elif away_goalie:
+        ctx_parts.append(f"{away_goalie} ?.??")
+
+    if ctx_parts and total_adj != 0:
+        ctx_str = f"Goalies: {' vs '.join(ctx_parts)} ({total_adj:+.1f})"
+    elif ctx_parts:
+        ctx_str = f"Goalies: {' vs '.join(ctx_parts)} (avg)"
     else:
         ctx_str = ''
 
@@ -1098,6 +1170,31 @@ def generate_predictions(conn, sport=None, date=None):
                           f"{away} @ {home}: {_pe}")
                     continue
 
+            # ═══ NHL GOALIE GATE: Skip games without confirmed starters ═══
+            # The starting goalie is the single biggest factor in NHL game outcomes.
+            # A .920 vs .900 SV% goalie is ~0.5 goals/game difference.
+            # Without knowing both starters, our total model is unreliable.
+            _nhl_goalie_info = None
+            if sp == 'icehockey_nhl' and HAS_NHL_GOALIES:
+                try:
+                    _game_date = None
+                    if commence:
+                        try:
+                            _gdt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
+                            _game_date = _gdt.astimezone(ZoneInfo('America/New_York')).strftime('%Y-%m-%d')
+                        except (ValueError, AttributeError):
+                            pass
+                    _nhl_goalie_info = get_nhl_probable_goalies(conn, home, away, _game_date)
+                    if not _nhl_goalie_info.get('both_confirmed', False):
+                        print(f"    \u26a0 NHL pick skipped: no goalie data for "
+                              f"{away} @ {home} ({_nhl_goalie_info.get('summary', 'TBD')})")
+                        continue  # Skip entire game — no picks without both starters
+                except Exception as _ge:
+                    # If goalie lookup fails, still skip — err on side of caution
+                    print(f"    \u26a0 NHL pick skipped: goalie lookup error for "
+                          f"{away} @ {home}: {_ge}")
+                    continue
+
             # ═══ SOCCER ELO ML: DISABLED v13 — backtest 0W-8L (-100% ROI) ═══
             # ml_scale 1.5 + dog cap +180 still couldn't fix it. Model fundamentally
             # overestimates underdog win probability. All 8 remaining picks lost.
@@ -1344,6 +1441,8 @@ def generate_predictions(conn, sport=None, date=None):
                                 pick['units'] = kelly_units(edge_pct=wa['point_value_pct'], odds=mkt_hs_odds, fraction=0.333)
                             # Build context: base factors + per-pick line movement
                             _ctx_parts = [ctx['summary']] if ctx and ctx['summary'] else []
+                            if sp == 'icehockey_nhl' and _nhl_goalie_info and _nhl_goalie_info.get('summary'):
+                                _ctx_parts.append(f"GOALIE: {_nhl_goalie_info['summary']}")
                             if HAS_CONTEXT:
                                 try:
                                     _lm_move, _lm_sig, _lm_conf = line_movement_signal(
@@ -1383,6 +1482,8 @@ def generate_predictions(conn, sport=None, date=None):
                                 pick['units'] = kelly_units(edge_pct=wa['point_value_pct'], odds=mkt_as_odds, fraction=0.333)
                             # Build context: base factors + per-pick line movement
                             _ctx_parts = [ctx['summary']] if ctx and ctx['summary'] else []
+                            if sp == 'icehockey_nhl' and _nhl_goalie_info and _nhl_goalie_info.get('summary'):
+                                _ctx_parts.append(f"GOALIE: {_nhl_goalie_info['summary']}")
                             if HAS_CONTEXT:
                                 try:
                                     _lm_move, _lm_sig, _lm_conf = line_movement_signal(
@@ -1820,6 +1921,20 @@ def generate_predictions(conn, sport=None, date=None):
                             except Exception:
                                 pass
 
+                        # ═══ NHL GOALIE GAA ADJUSTMENT ═══
+                        # Adjust total based on confirmed starter GAA vs league avg (2.80).
+                        # Elite goalies suppress scoring; bad goalies inflate it.
+                        # Uses nhl_goalie_stats season GAA (10+ starts minimum).
+                        _goalie_gaa_ctx = ''
+                        if sp == 'icehockey_nhl' and _nhl_goalie_info:
+                            try:
+                                _gaa_adj, _goalie_gaa_ctx = _nhl_goalie_adjustment(
+                                    conn, _nhl_goalie_info)
+                                if _gaa_adj != 0:
+                                    model_total += _gaa_adj
+                            except Exception:
+                                pass
+
                         # Weather adjustment for outdoor sports (baseball, soccer)
                         # Weather adjustment is applied in context_engine.py (not here)
                         # to avoid double-counting. Context engine adds it to total_adj
@@ -1881,6 +1996,8 @@ def generate_predictions(conn, sport=None, date=None):
                                         ctx_parts.append(pitcher_ctx['summary'])
                                     if _pitcher_era_ctx:
                                         ctx_parts.append(_pitcher_era_ctx)
+                                    if _goalie_gaa_ctx:
+                                        ctx_parts.append(_goalie_gaa_ctx)
                                     # Weather context is already in ctx_total['summary'] from context_engine
                                     if ref_adj != 0 and ref_info:
                                         ctx_parts.append(ref_info)
@@ -1931,6 +2048,8 @@ def generate_predictions(conn, sport=None, date=None):
                                             ctx_parts.append(pitcher_ctx['summary'])
                                         if _pitcher_era_ctx:
                                             ctx_parts.append(_pitcher_era_ctx)
+                                        if _goalie_gaa_ctx:
+                                            ctx_parts.append(_goalie_gaa_ctx)
                                         # Weather context is already in ctx_total['summary'] from context_engine
                                         if ref_adj != 0 and ref_info:
                                             ctx_parts.append(ref_info)
