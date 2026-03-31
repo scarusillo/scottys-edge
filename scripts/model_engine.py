@@ -243,6 +243,163 @@ def devig_ml_odds(home_odds, away_odds, draw_odds=None):
     
     return h_fair, a_fair, d_fair
 
+def _tennis_surface_from_sport(sport_key):
+    """Infer tennis surface from a sport/tournament key."""
+    _sp_lower = sport_key.lower()
+    _CLAY = ['french_open', 'roland_garros', 'monte_carlo', 'madrid',
+             'italian_open', 'rome', 'barcelona', 'hamburg', 'rio',
+             'buenos_aires', 'lyon', 'bastad', 'kitzbuhel', 'umag',
+             'gstaad', 'geneva', 'marrakech', 'bucharest', 'parma',
+             'palermo', 'prague', 'rabat', 'strasbourg', 'lausanne',
+             'portoroz', 'bogota', 'istanbul', 'budapest',
+             'chile_open', 'argentina_open', 'tiriac', 'hassan',
+             'clay_court', 'open_occitanie']
+    _GRASS = ['wimbledon', 'queens', 'halle', 'eastbourne', 'berlin',
+              'bad_homburg', 'nottingham', 'mallorca', 's_hertogenbosch',
+              'birmingham', 'libema']
+    if any(kw in _sp_lower for kw in _CLAY):
+        return 'clay'
+    elif any(kw in _sp_lower for kw in _GRASS):
+        return 'grass'
+    else:
+        return 'hard'
+
+
+def _tennis_h2h_adjustment(conn, player1, player2, sport):
+    """
+    Calculate head-to-head adjustment for tennis matchups.
+
+    Checks historical results between two players. If one player dominates
+    the H2H record (65%+ win rate over 3+ matches), applies a spread
+    adjustment toward the dominant player.
+
+    Also checks surface-specific H2H when possible (e.g., clay-only record
+    may differ from hard-court record).
+
+    Args:
+        conn: SQLite connection
+        player1: Home player name (from odds)
+        player2: Away player name (from odds)
+        sport: Sport key (e.g., 'tennis_atp_miami_open')
+
+    Returns:
+        (adjustment, context_string)
+        adjustment: spread adjustment in games (negative = favors player1/home)
+        context_string: human-readable summary, empty if no significant H2H
+    """
+    if conn is None or not sport.startswith('tennis_'):
+        return 0.0, ""
+
+    # Query all completed tennis matches between these two players.
+    # Use LIKE for fuzzy matching since names may have slight variations
+    # across different tournament entries.
+    try:
+        rows = conn.execute("""
+            SELECT home, away, home_score, away_score, winner, sport
+            FROM results
+            WHERE sport LIKE 'tennis%' AND completed = 1
+            AND ((home = ? AND away = ?)
+                 OR (home = ? AND away = ?))
+        """, (player1, player2, player2, player1)).fetchall()
+    except Exception:
+        return 0.0, ""
+
+    if len(rows) < 3:
+        return 0.0, ""
+
+    # Determine surface of the current match
+    current_surface = _tennis_surface_from_sport(sport)
+
+    # Count overall H2H and surface-specific H2H
+    p1_wins_all = 0
+    p2_wins_all = 0
+    p1_wins_surface = 0
+    p2_wins_surface = 0
+    surface_matches = 0
+
+    for home, away, h_score, a_score, winner, r_sport in rows:
+        # Determine winner
+        if winner == player1:
+            p1_wins_all += 1
+        elif winner == player2:
+            p2_wins_all += 1
+        elif h_score is not None and a_score is not None:
+            # Fallback: use scores if winner field is missing
+            if (home == player1 and h_score > a_score) or (away == player1 and a_score > h_score):
+                p1_wins_all += 1
+            else:
+                p2_wins_all += 1
+        else:
+            continue
+
+        # Check if this match was on the same surface
+        match_surface = _tennis_surface_from_sport(r_sport)
+        if match_surface == current_surface:
+            surface_matches += 1
+            if winner == player1:
+                p1_wins_surface += 1
+            elif winner == player2:
+                p2_wins_surface += 1
+            elif (home == player1 and (h_score or 0) > (a_score or 0)) or \
+                 (away == player1 and (a_score or 0) > (h_score or 0)):
+                p1_wins_surface += 1
+            else:
+                p2_wins_surface += 1
+
+    total_all = p1_wins_all + p2_wins_all
+    if total_all < 3:
+        return 0.0, ""
+
+    # Prefer surface-specific H2H if 3+ matches on same surface
+    if surface_matches >= 3:
+        total = p1_wins_surface + p2_wins_surface
+        p1_wins = p1_wins_surface
+        p2_wins = p2_wins_surface
+        surface_label = f" on {current_surface}"
+    else:
+        total = total_all
+        p1_wins = p1_wins_all
+        p2_wins = p2_wins_all
+        surface_label = ""
+
+    if total < 3:
+        return 0.0, ""
+
+    # Check for dominance (65%+ win rate)
+    p1_pct = p1_wins / total
+    p2_pct = p2_wins / total
+
+    if max(p1_pct, p2_pct) < 0.65:
+        return 0.0, ""
+
+    # Calculate adjustment
+    # dominance_factor ranges from 0.0 (50%) to 1.0 (100%)
+    # adjustment = dominance_factor * 1.5 games, capped at 2.0
+    if p1_pct > p2_pct:
+        dominant, dominated = player1, player2
+        dom_wins, dom_losses = p1_wins, p2_wins
+        dominance = (p1_pct - 0.5) * 2.0
+        # Negative adjustment = favors home (player1)
+        raw_adj = -dominance * 1.5
+    else:
+        dominant, dominated = player2, player1
+        dom_wins, dom_losses = p2_wins, p1_wins
+        dominance = (p2_pct - 0.5) * 2.0
+        # Positive adjustment = favors away (player2)
+        raw_adj = dominance * 1.5
+
+    # Cap at +/- 2.0 games
+    adj = max(-2.0, min(2.0, round(raw_adj, 2)))
+
+    # Short names for context (last name only)
+    def _short(name):
+        parts = name.split()
+        return parts[-1] if parts else name
+
+    ctx = f"H2H: {_short(dominant)} leads {_short(dominated)} {dom_wins}-{dom_losses}{surface_label} ({adj:+.1f})"
+    return adj, ctx
+
+
 def get_latest_ratings(conn, sport):
     rows = conn.execute("""
         SELECT team, base_rating, home_court, rest_adjust, injury_adjust,
@@ -1590,6 +1747,19 @@ def generate_predictions(conn, sport=None, date=None):
                 except Exception as e:
                     pass  # Context is supplementary — don't crash on errors
 
+            # ═══ TENNIS H2H ADJUSTMENT ═══
+            # Some matchups are heavily lopsided regardless of Elo.
+            # e.g., Djokovic owns Nadal on hard but Nadal dominates on clay.
+            # Elo is a general rating — H2H captures matchup-specific edges.
+            _h2h_ctx = ""
+            if sp.startswith('tennis_'):
+                try:
+                    _h2h_adj, _h2h_ctx = _tennis_h2h_adjustment(conn, home, away, sp)
+                    if _h2h_adj != 0:
+                        ms += _h2h_adj  # Already signed: negative = favors home, positive = favors away
+                except Exception:
+                    pass
+
             h_inj, h_cl, h_imp = get_team_injury_context(conn, home, sp)
             a_inj, a_cl, a_imp = get_team_injury_context(conn, away, sp)
 
@@ -1626,6 +1796,8 @@ def generate_predictions(conn, sport=None, date=None):
                                 pick['units'] = kelly_units(edge_pct=wa['point_value_pct'], odds=mkt_hs_odds, fraction=0.333)
                             # Build context: base factors + per-pick line movement
                             _ctx_parts = [ctx['summary']] if ctx and ctx['summary'] else []
+                            if _h2h_ctx:
+                                _ctx_parts.append(_h2h_ctx)
                             if sp == 'icehockey_nhl' and _nhl_goalie_info and _nhl_goalie_info.get('summary'):
                                 _ctx_parts.append(f"GOALIE: {_nhl_goalie_info['summary']}")
                             if HAS_CONTEXT:
@@ -1667,6 +1839,8 @@ def generate_predictions(conn, sport=None, date=None):
                                 pick['units'] = kelly_units(edge_pct=wa['point_value_pct'], odds=mkt_as_odds, fraction=0.333)
                             # Build context: base factors + per-pick line movement
                             _ctx_parts = [ctx['summary']] if ctx and ctx['summary'] else []
+                            if _h2h_ctx:
+                                _ctx_parts.append(_h2h_ctx)
                             if sp == 'icehockey_nhl' and _nhl_goalie_info and _nhl_goalie_info.get('summary'):
                                 _ctx_parts.append(f"GOALIE: {_nhl_goalie_info['summary']}")
                             if HAS_CONTEXT:
@@ -1923,10 +2097,13 @@ def generate_predictions(conn, sport=None, date=None):
                                 round(h_prob_ml, 4), round(h_imp_ml, 4),
                                 round(h_edge_ml, 2), stars, timing, t_r)
                             if pick:
+                                _ml_ctx_parts = []
                                 if ctx and ctx['summary']:
-                                    pick['context'] = ctx['summary'] + ' | Elo probability edge'
-                                else:
-                                    pick['context'] = 'Elo probability edge'
+                                    _ml_ctx_parts.append(ctx['summary'])
+                                if _h2h_ctx:
+                                    _ml_ctx_parts.append(_h2h_ctx)
+                                _ml_ctx_parts.append('Elo probability edge')
+                                pick['context'] = ' | '.join(_ml_ctx_parts)
                                 all_picks.append(pick)
 
                 # AWAY ML
@@ -1947,10 +2124,13 @@ def generate_predictions(conn, sport=None, date=None):
                                 round(a_prob_ml, 4), round(a_imp_ml, 4),
                                 round(a_edge_ml, 2), stars, timing, t_r)
                             if pick:
+                                _ml_ctx_parts = []
                                 if ctx and ctx['summary']:
-                                    pick['context'] = ctx['summary'] + ' | Elo probability edge'
-                                else:
-                                    pick['context'] = 'Elo probability edge'
+                                    _ml_ctx_parts.append(ctx['summary'])
+                                if _h2h_ctx:
+                                    _ml_ctx_parts.append(_h2h_ctx)
+                                _ml_ctx_parts.append('Elo probability edge')
+                                pick['context'] = ' | '.join(_ml_ctx_parts)
                                 all_picks.append(pick)
 
             # DRAW (soccer only — 3-way market)
