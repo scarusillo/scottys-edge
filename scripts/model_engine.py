@@ -649,6 +649,87 @@ def _mlb_park_factor_adjustment(conn, home_team):
         return 0.0, ''
 
 
+def _mlb_bullpen_adjustment(conn, home_team, away_team):
+    """
+    Adjust MLB total based on aggregate bullpen ERA vs league average.
+
+    Starters pitch ~5-6 IP; the bullpen handles the last 3-4 innings (~40%).
+    A dominant bullpen (sub-3.00 ERA) suppresses scoring; a bad bullpen
+    (4.50+ ERA) inflates it.
+
+    Relievers are identified as pitchers with avg IP < 4.0 across their
+    appearances (starters average 5-6 IP, relievers average 1-2 IP).
+
+    Formula:
+        combined_deviation = ((home_bp_era - 3.80) + (away_bp_era - 3.80)) / 2
+        adjustment = combined_deviation * 0.4  (bullpen pitches ~40% of innings)
+        Capped at +/- 0.8 runs.
+
+    Requires 30+ total reliever IP per team for reliable data.
+
+    Returns (adjustment, context_string) or (0.0, '') if insufficient data.
+    """
+    LEAGUE_AVG_BP_ERA = 3.80
+    SCALE_FACTOR = 0.4   # Bullpen pitches ~40% of innings
+    MAX_ADJ = 0.8
+    MIN_IP = 30           # Minimum total reliever IP per team
+
+    def _team_bullpen_era(team):
+        """Calculate aggregate bullpen ERA for a team from box_scores."""
+        try:
+            rows = conn.execute("""
+                SELECT player,
+                       AVG(CASE WHEN stat_type='pitcher_ip' THEN stat_value END) as avg_ip,
+                       SUM(CASE WHEN stat_type='pitcher_er' THEN stat_value END) as total_er,
+                       SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value END) as total_ip
+                FROM box_scores
+                WHERE sport='baseball_mlb' AND team LIKE ?
+                AND stat_type IN ('pitcher_er', 'pitcher_ip')
+                GROUP BY player
+                HAVING avg_ip < 4.0 AND total_ip >= 5
+            """, (f"%{team}%",)).fetchall()
+
+            if not rows:
+                return None, 0
+
+            total_er = sum(r[2] for r in rows if r[2] is not None)
+            total_ip = sum(r[3] for r in rows if r[3] is not None)
+
+            if total_ip < MIN_IP:
+                return None, total_ip
+
+            bp_era = round((total_er * 9.0) / total_ip, 2)
+            return bp_era, total_ip
+        except Exception:
+            return None, 0
+
+    try:
+        home_bp_era, home_ip = _team_bullpen_era(home_team)
+        away_bp_era, away_ip = _team_bullpen_era(away_team)
+
+        if home_bp_era is None or away_bp_era is None:
+            return 0.0, ''
+
+        # Combined deviation from league average
+        combined_dev = ((home_bp_era - LEAGUE_AVG_BP_ERA) + (away_bp_era - LEAGUE_AVG_BP_ERA)) / 2.0
+        adj = combined_dev * SCALE_FACTOR
+        adj = max(-MAX_ADJ, min(MAX_ADJ, adj))
+        adj = round(adj, 2)
+
+        if adj == 0.0:
+            return 0.0, ''
+
+        # Short team names for context string
+        home_short = home_team.split()[-1] if ' ' in home_team else home_team
+        away_short = away_team.split()[-1] if ' ' in away_team else away_team
+        ctx = f"Bullpen: {home_short} {home_bp_era:.2f} vs {away_short} {away_bp_era:.2f} ({adj:+.1f})"
+
+        return adj, ctx
+
+    except Exception:
+        return 0.0, ''
+
+
 def _nhl_goalie_adjustment(conn, nhl_goalie_info):
     """
     Adjust NHL total based on starting goalie GAA vs league average.
@@ -2039,6 +2120,20 @@ def generate_predictions(conn, sport=None, date=None):
                             except Exception:
                                 pass
 
+                        # ═══ MLB BULLPEN ERA ADJUSTMENT ═══
+                        # Adjust total based on aggregate bullpen ERA vs league avg (3.80).
+                        # Dominant bullpens suppress scoring; bad bullpens inflate it.
+                        # Stacks with starter ERA + park factor + weather.
+                        _bullpen_ctx = ''
+                        if sp == 'baseball_mlb':
+                            try:
+                                _bp_adj, _bullpen_ctx = _mlb_bullpen_adjustment(
+                                    conn, home, away)
+                                if _bp_adj != 0:
+                                    model_total += _bp_adj
+                            except Exception:
+                                pass
+
                         # ═══ NHL GOALIE GAA ADJUSTMENT ═══
                         # Adjust total based on confirmed starter GAA vs league avg (2.80).
                         # Elite goalies suppress scoring; bad goalies inflate it.
@@ -2116,6 +2211,8 @@ def generate_predictions(conn, sport=None, date=None):
                                         ctx_parts.append(_pitcher_era_ctx)
                                     if _park_factor_ctx:
                                         ctx_parts.append(_park_factor_ctx)
+                                    if _bullpen_ctx:
+                                        ctx_parts.append(_bullpen_ctx)
                                     if _goalie_gaa_ctx:
                                         ctx_parts.append(_goalie_gaa_ctx)
                                     # Weather context is already in ctx_total['summary'] from context_engine
@@ -2170,6 +2267,8 @@ def generate_predictions(conn, sport=None, date=None):
                                             ctx_parts.append(_pitcher_era_ctx)
                                         if _park_factor_ctx:
                                             ctx_parts.append(_park_factor_ctx)
+                                        if _bullpen_ctx:
+                                            ctx_parts.append(_bullpen_ctx)
                                         if _goalie_gaa_ctx:
                                             ctx_parts.append(_goalie_gaa_ctx)
                                         # Weather context is already in ctx_total['summary'] from context_engine
