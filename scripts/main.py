@@ -1637,9 +1637,9 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         'SPREAD': 20.0,      # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
         'MONEYLINE': 20.0,   # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
     }
-    # v14: Baseball totals are the model's best market (37W-23L +45u +19.3% ROI).
-    # 8-13% bucket is profitable (13W-10L). Lower threshold to capture it.
-    BASEBALL_TOTAL_MIN_EDGE = 10.0
+    # v21: All sports unified at 20%. Baseball totals were 10% but the edge
+    # cap analysis showed below-20% picks are net negative across all sports.
+    BASEBALL_TOTAL_MIN_EDGE = 20.0
     # Soccer spreads: backtest profitable at 5%+ edge across EPL (+21% ROI),
     # Ligue 1 (+27% ROI). Soccer point values are inherently smaller
     # (spreads ±0.25 to ±1.5 vs basketball ±3 to ±15), so 13% threshold
