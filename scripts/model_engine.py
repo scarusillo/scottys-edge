@@ -545,6 +545,110 @@ def _mlb_pitcher_era_adjustment(conn, mlb_pitcher_info):
     return total_adj, ctx_str
 
 
+# ═══ MLB PARK FACTOR MAPPING ═══
+MLB_PARK_NAMES = {
+    'Arizona Diamondbacks': 'Chase Field',
+    'Athletics': 'Sacramento (Sutter Health Park)',
+    'Atlanta Braves': 'Truist Park',
+    'Baltimore Orioles': 'Camden Yards',
+    'Boston Red Sox': 'Fenway Park',
+    'Chicago Cubs': 'Wrigley Field',
+    'Chicago White Sox': 'Guaranteed Rate Field',
+    'Cincinnati Reds': 'Great American Ball Park',
+    'Cleveland Guardians': 'Progressive Field',
+    'Colorado Rockies': 'Coors Field',
+    'Detroit Tigers': 'Comerica Park',
+    'Houston Astros': 'Minute Maid Park',
+    'Kansas City Royals': 'Kauffman Stadium',
+    'Los Angeles Angels': 'Angel Stadium',
+    'Los Angeles Dodgers': 'Dodger Stadium',
+    'Miami Marlins': 'LoanDepot Park',
+    'Milwaukee Brewers': 'American Family Field',
+    'Minnesota Twins': 'Target Field',
+    'New York Mets': 'Citi Field',
+    'New York Yankees': 'Yankee Stadium',
+    'Philadelphia Phillies': 'Citizens Bank Park',
+    'Pittsburgh Pirates': 'PNC Park',
+    'San Diego Padres': 'Petco Park',
+    'San Francisco Giants': 'Oracle Park',
+    'Seattle Mariners': 'T-Mobile Park',
+    'St. Louis Cardinals': 'Busch Stadium',
+    'Tampa Bay Rays': 'Tropicana Field',
+    'Texas Rangers': 'Globe Life Field',
+    'Toronto Blue Jays': 'Rogers Centre',
+    'Washington Nationals': 'Nationals Park',
+}
+
+
+def _mlb_park_factor_adjustment(conn, home_team):
+    """
+    Adjust MLB total based on historical park scoring vs league average.
+
+    The market already partially prices park effects (everyone knows Coors
+    is a hitter's park), so we divide the raw park deviation by 2 to capture
+    only the RESIDUAL edge the market may not fully account for.
+
+    Formula:
+        park_avg = average actual_total for games at this home team's park
+        league_avg = average actual_total across all MLB games
+        adjustment = (park_avg - league_avg) / 2, capped at +/- 1.5 runs
+
+    Requires 30+ home games for reliable park factor.
+
+    Returns (adjustment, context_string) or (0.0, '') if insufficient data.
+    """
+    MAX_ADJ = 1.5
+    MIN_GAMES = 30
+    MARKET_DIVISOR = 2  # Market already partially prices parks
+
+    try:
+        # Park average for this home team
+        row = conn.execute("""
+            SELECT COUNT(*), AVG(actual_total)
+            FROM results
+            WHERE sport = 'baseball_mlb'
+              AND home = ?
+              AND actual_total IS NOT NULL
+        """, (home_team,)).fetchone()
+
+        if not row or row[0] < MIN_GAMES or row[1] is None:
+            return 0.0, ''
+
+        park_games = row[0]
+        park_avg = row[1]
+
+        # League average across all MLB games
+        league_row = conn.execute("""
+            SELECT AVG(actual_total)
+            FROM results
+            WHERE sport = 'baseball_mlb'
+              AND actual_total IS NOT NULL
+        """).fetchone()
+
+        if not league_row or league_row[0] is None:
+            return 0.0, ''
+
+        league_avg = league_row[0]
+
+        # Calculate adjustment: halved because market already partially prices parks
+        raw_dev = park_avg - league_avg
+        adj = raw_dev / MARKET_DIVISOR
+        adj = max(-MAX_ADJ, min(MAX_ADJ, adj))
+        adj = round(adj, 2)
+
+        if adj == 0.0:
+            return 0.0, ''
+
+        # Build context string with park name
+        park_name = MLB_PARK_NAMES.get(home_team, home_team)
+        ctx = f"Park: {park_name} ({adj:+.1f})"
+
+        return adj, ctx
+
+    except Exception:
+        return 0.0, ''
+
+
 def _nhl_goalie_adjustment(conn, nhl_goalie_info):
     """
     Adjust NHL total based on starting goalie GAA vs league average.
@@ -1921,6 +2025,20 @@ def generate_predictions(conn, sport=None, date=None):
                             except Exception:
                                 pass
 
+                        # ═══ MLB PARK FACTOR ADJUSTMENT ═══
+                        # Adjust total based on historical park scoring vs league average.
+                        # Halved because market already partially prices park effects.
+                        # Stacks with pitcher ERA and weather adjustments.
+                        _park_factor_ctx = ''
+                        if sp == 'baseball_mlb':
+                            try:
+                                _park_adj, _park_factor_ctx = _mlb_park_factor_adjustment(
+                                    conn, home)
+                                if _park_adj != 0:
+                                    model_total += _park_adj
+                            except Exception:
+                                pass
+
                         # ═══ NHL GOALIE GAA ADJUSTMENT ═══
                         # Adjust total based on confirmed starter GAA vs league avg (2.80).
                         # Elite goalies suppress scoring; bad goalies inflate it.
@@ -1996,6 +2114,8 @@ def generate_predictions(conn, sport=None, date=None):
                                         ctx_parts.append(pitcher_ctx['summary'])
                                     if _pitcher_era_ctx:
                                         ctx_parts.append(_pitcher_era_ctx)
+                                    if _park_factor_ctx:
+                                        ctx_parts.append(_park_factor_ctx)
                                     if _goalie_gaa_ctx:
                                         ctx_parts.append(_goalie_gaa_ctx)
                                     # Weather context is already in ctx_total['summary'] from context_engine
@@ -2048,6 +2168,8 @@ def generate_predictions(conn, sport=None, date=None):
                                             ctx_parts.append(pitcher_ctx['summary'])
                                         if _pitcher_era_ctx:
                                             ctx_parts.append(_pitcher_era_ctx)
+                                        if _park_factor_ctx:
+                                            ctx_parts.append(_park_factor_ctx)
                                         if _goalie_gaa_ctx:
                                             ctx_parts.append(_goalie_gaa_ctx)
                                         # Weather context is already in ctx_total['summary'] from context_engine
