@@ -1694,9 +1694,12 @@ def generate_predictions(conn, sport=None, date=None):
                         # Reduce Kelly fraction for MEDIUM confidence totals
                         totals_kelly_frac = 0.125 if total_conf == 'HIGH' else 0.0625
 
+                        # MLB: skip totals with near-zero model divergence (< 0.5 runs)
+                        _mlb_skip_total = (sp == 'baseball_mlb' and abs(model_total - over_total) < 0.5)
+
                         # OVER
                         k = f"{eid}|T|OVER"
-                        if k not in seen:
+                        if k not in seen and not _mlb_skip_total:
                             total_diff = model_total - over_total
                             if total_diff > 0:  # Model says higher scoring
                                 pv = calculate_point_value_totals(model_total, over_total, sp)
@@ -1744,7 +1747,7 @@ def generate_predictions(conn, sport=None, date=None):
                                         all_picks[-1]['context'] = ' | '.join(ctx_parts)
 
                         # UNDER
-                        if under_total is not None and under_odds is not None:
+                        if under_total is not None and under_odds is not None and not _mlb_skip_total:
                             k = f"{eid}|T|UNDER"
                             if k not in seen:
                                 total_diff_u = under_total - model_total

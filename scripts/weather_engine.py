@@ -194,6 +194,18 @@ OUTDOOR_SPORTS = {
     'soccer_uefa_champs_league', 'soccer_mexico_ligamx',
 }
 
+# MLB teams with domed or retractable roof stadiums — weather irrelevant
+ROOF_TEAMS = {
+    'Arizona Diamondbacks',      # Chase Field — retractable roof
+    'Tampa Bay Rays',            # Tropicana Field — dome
+    'Houston Astros',            # Minute Maid Park — retractable roof
+    'Seattle Mariners',          # T-Mobile Park — retractable roof
+    'Texas Rangers',             # Globe Life Field — retractable roof
+    'Toronto Blue Jays',         # Rogers Centre — retractable roof
+    'Miami Marlins',             # loanDepot Park — retractable roof
+    'Milwaukee Brewers',         # American Family Field — retractable roof
+}
+
 # Indoor sports — skip weather entirely
 INDOOR_SPORTS = {
     'basketball_nba', 'basketball_ncaab', 'icehockey_nhl',
@@ -309,10 +321,14 @@ def get_weather_adjustment(home_team, sport, commence=None):
     """
     if sport in INDOOR_SPORTS:
         return 0.0, {}
-    
+
     if sport not in OUTDOOR_SPORTS:
         return 0.0, {}
-    
+
+    # Skip domed/retractable roof MLB stadiums — no weather effect
+    if home_team in ROOF_TEAMS:
+        return 0.0, {}
+
     coords = _get_venue_coords(home_team, sport)
     if not coords:
         return 0.0, {}

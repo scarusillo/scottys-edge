@@ -573,8 +573,8 @@ ALTITUDE_VENUES = {
     # NBA — v17: halved total_adj (was 1.5/1.0), altitude totals were 1W-2L
     'Denver Nuggets': {'altitude': 5280, 'spread_adj': 0.5, 'total_adj': 0.75},
     'Utah Jazz': {'altitude': 4226, 'spread_adj': 0.3, 'total_adj': 0.5},
-    # NHL
-    'Colorado Avalanche': {'altitude': 5280, 'spread_adj': 0.0, 'total_adj': 0.3},
+    # NHL — v21: disabled altitude for hockey (no ball flight physics, -6.1u trend)
+    'Colorado Avalanche': {'altitude': 5280, 'spread_adj': 0.0, 'total_adj': 0.0},
     # MLS — v17: halved total_adj
     'Colorado Rapids': {'altitude': 5280, 'spread_adj': 0.5, 'total_adj': 0.5},
     'Real Salt Lake': {'altitude': 4226, 'spread_adj': 0.3, 'total_adj': 0.25},
