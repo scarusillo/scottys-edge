@@ -1,299 +1,187 @@
 {
-  "generated_at": "2026-03-30 09:04",
-  "game_date": "2026-03-29",
+  "generated_at": "2026-03-31 05:16",
+  "game_date": "2026-03-30",
   "yesterday": [
     {
-      "selection": "Ian Happ OVER 0.5 RBIS",
-      "sport": "baseball_mlb",
-      "market_type": "PROP",
-      "side_type": "PROP_OVER",
-      "result": "WIN",
-      "pnl_units": 6.4,
-      "clv": null,
-      "edge_pct": 25.0,
-      "odds": 128.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": null,
-      "event_id": "1cc0a701f7797bb7a857a7b86d813bc3",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "California Golden Bears@Wake Forest Demon Deacons UNDER 14.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "WIN",
-      "pnl_units": 5.0,
-      "clv": 0.0,
-      "edge_pct": 20.0,
-      "odds": 100.0,
-      "units": 5.0,
-      "context_factors": "Away slow-paced (-0.3) | Sunday game | Wake Forest Demon Deacons allows 6.8 R/sunday | California Golden Bears allows 4.7 R/sunday | Pitching edge: California Golden Bears (-0.6 pts)",
-      "context_confirmed": 1,
-      "model_spread": -2.02,
-      "closing_line": 14.5,
-      "event_id": "911a2c64c609bae137504235895d2bbb",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "Michigan Wolverines@Rutgers Scarlet Knights UNDER 13.0",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "WIN",
-      "pnl_units": 4.35,
-      "clv": 0.0,
-      "edge_pct": 20.0,
-      "odds": -115.0,
-      "units": 5.0,
-      "context_factors": "Sunday game | Rutgers Scarlet Knights allows 4.2 R/sunday | Michigan Wolverines allows 6.0 R/sunday | Pitching edge: Rutgers Scarlet Knights (+0.5 pts)",
-      "context_confirmed": 1,
-      "model_spread": -0.08000000000000002,
-      "closing_line": 13.0,
-      "event_id": "8be3dfbb6f7908ff7a6ef60d0f7633f4",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "Colorado Rockies@Miami Marlins UNDER 8.5",
-      "sport": "baseball_mlb",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "WIN",
-      "pnl_units": 4.17,
-      "clv": 3.0,
-      "edge_pct": 25.0,
-      "odds": -120.0,
-      "units": 5.0,
-      "context_factors": "Home slow-paced (-0.5) | Weather: light rain, 16mph wind (-2.5) | Sunday game | Weather -1.5",
-      "context_confirmed": 1,
-      "model_spread": -1.51,
-      "closing_line": 5.5,
-      "event_id": "d9fde1830516f8d110396de3488df17b",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "Chicago White Sox@Milwaukee Brewers OVER 7.5",
+      "selection": "Colorado Rockies@Toronto Blue Jays OVER 8.0",
       "sport": "baseball_mlb",
       "market_type": "TOTAL",
       "side_type": "OVER",
       "result": "WIN",
-      "pnl_units": 4.09,
-      "clv": 9.0,
-      "edge_pct": 17.6,
+      "pnl_units": 3.64,
+      "clv": -1.5,
+      "edge_pct": 15.6,
       "odds": -110.0,
-      "units": 4.5,
-      "context_factors": "Away fast-paced (+0.9) | Weather: 13mph wind (-0.5) | Sunday game | Weather -0.5",
+      "units": 4.0,
+      "context_factors": "Midweek game",
       "context_confirmed": 1,
-      "model_spread": -0.54,
-      "closing_line": 16.5,
-      "event_id": "24c5b56e3ca8ad6f391c82da33200b32",
-      "dt": "2026-03-29"
+      "model_spread": -2.31,
+      "closing_line": 6.5,
+      "event_id": "0ead2ddb81bd23c5cf3c8bf29237af4b",
+      "dt": "2026-03-30"
     },
     {
-      "selection": "Nashville Predators +1.5",
+      "selection": "Toronto Maple Leafs +1.5",
       "sport": "icehockey_nhl",
       "market_type": "SPREAD",
       "side_type": "DOG",
       "result": "WIN",
-      "pnl_units": 2.76,
-      "clv": 0.0,
-      "edge_pct": 15.0,
-      "odds": -145.0,
-      "units": 4.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": -0.5,
-      "closing_line": 1.5,
-      "event_id": "1790fa92fa3f53f9547a2114c06cfbed",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "Boston Bruins +1.5",
-      "sport": "icehockey_nhl",
-      "market_type": "SPREAD",
-      "side_type": "DOG",
-      "result": "WIN",
-      "pnl_units": 2.22,
-      "clv": -1.0,
-      "edge_pct": 19.52,
-      "odds": -180.0,
-      "units": 4.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": 0.0,
-      "closing_line": 2.5,
-      "event_id": "709a97a11c79cdacda229a81aa0f7fdd",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "South Florida Bulls@Charlotte 49ers UNDER 13.0",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "PUSH",
-      "pnl_units": 0.0,
-      "clv": 0.0,
-      "edge_pct": 20.0,
-      "odds": -115.0,
-      "units": 5.0,
-      "context_factors": "Sunday game | Charlotte 49ers allows 5.2 R/sunday | South Florida Bulls allows 5.0 R/sunday | Pitching edge: South Florida Bulls (-0.1 pts)",
-      "context_confirmed": 1,
-      "model_spread": -0.67,
-      "closing_line": 13.0,
-      "event_id": "18db1eb54d01318edaeb26586585ecf9",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "Virginia Tech Hokies ML",
-      "sport": "baseball_ncaa",
-      "market_type": "MONEYLINE",
-      "side_type": "FAVORITE",
-      "result": "LOSS",
-      "pnl_units": -4.0,
-      "clv": 2.1,
-      "edge_pct": 15.4,
-      "odds": -115.0,
-      "units": 4.0,
-      "context_factors": "West coast early start (+0.8) | Cross-country trip (+0.5) | Rubber match (1-1) | Series blowout adj (-0.3) | Rubber match \u2014 tight game expected",
-      "context_confirmed": 1,
-      "model_spread": -1.4100000000000001,
-      "closing_line": null,
-      "event_id": "9b16408ace1c7357825220c0b2c4d175",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "Chicago Blackhawks +1.5",
-      "sport": "icehockey_nhl",
-      "market_type": "SPREAD",
-      "side_type": "DOG",
-      "result": "LOSS",
-      "pnl_units": -5.0,
+      "pnl_units": 3.33,
       "clv": 0.0,
       "edge_pct": 18.0,
-      "odds": -175.0,
+      "odds": -150.0,
       "units": 5.0,
-      "context_factors": "Home on B2B (-1.0) | Home letdown spot (-0.2) | Away bounce-back (-1.5)",
+      "context_factors": "Cross-country trip (+0.5) | Home letdown spot (-0.2)",
       "context_confirmed": 1,
-      "model_spread": -0.5900000000000001,
+      "model_spread": -0.8600000000000001,
       "closing_line": 1.5,
-      "event_id": "4b1b7e72da2cb32b6056a2feee9187c4",
-      "dt": "2026-03-29",
+      "event_id": "13095d16b56b868a3d8966899240afe5",
+      "dt": "2026-03-30"
+    },
+    {
+      "selection": "St. Louis Cardinals ML (cross-mkt)",
+      "sport": "baseball_mlb",
+      "market_type": "MONEYLINE",
+      "side_type": "DOG",
+      "result": "LOSS",
+      "pnl_units": -3.5,
+      "clv": -0.9,
+      "edge_pct": 16.62,
+      "odds": 130.0,
+      "units": 3.5,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": -1.24,
+      "closing_line": null,
+      "event_id": "2f906e6f0a0b0f77103ad3de874d8d6c",
+      "dt": "2026-03-30",
       "actual_score": {
-        "home": "New Jersey Devils",
-        "away": "Chicago Blackhawks",
-        "home_score": 5,
-        "away_score": 3,
-        "actual_total": 8,
-        "actual_margin": 2
+        "home": "St. Louis Cardinals",
+        "away": "New York Mets",
+        "home_score": 2,
+        "away_score": 4,
+        "actual_total": 6,
+        "actual_margin": -2
       }
     },
     {
-      "selection": "Tennessee Volunteers@Vanderbilt Commodores UNDER 12.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
+      "selection": "Boston Celtics ML",
+      "sport": "basketball_nba",
+      "market_type": "MONEYLINE",
+      "side_type": "DOG",
       "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 20.0,
-      "odds": -110.0,
-      "units": 5.0,
-      "context_factors": "Sunday game | Vanderbilt Commodores allows 6.0 R/sunday | Tennessee Volunteers allows 5.0 R/sunday | Pitching edge: Tennessee Volunteers (-0.3 pts)",
+      "pnl_units": -3.5,
+      "clv": 15.5,
+      "edge_pct": 15.93,
+      "odds": 120.0,
+      "units": 3.5,
+      "context_factors": "Elo probability edge",
       "context_confirmed": 1,
-      "model_spread": -0.02,
-      "closing_line": 12.5,
-      "event_id": "998818e5452f8a4afb8ee66101309c76",
-      "dt": "2026-03-29"
+      "model_spread": 2.4,
+      "closing_line": null,
+      "event_id": "6faf1f26b1e369d008c889f78e15732b",
+      "dt": "2026-03-30",
+      "actual_score": {
+        "home": "Atlanta Hawks",
+        "away": "Boston Celtics",
+        "home_score": 112,
+        "away_score": 102,
+        "actual_total": 214,
+        "actual_margin": 10
+      }
     },
     {
-      "selection": "South Carolina Gamecocks@Georgia Bulldogs UNDER 14.0",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": -2.5,
-      "edge_pct": 20.0,
-      "odds": -115.0,
-      "units": 5.0,
-      "context_factors": "Both teams slow-paced (-0.7) | Sunday game | Georgia Bulldogs allows 3.2 R/sunday | South Carolina Gamecocks allows 5.8 R/sunday | Pitching edge: Georgia Bulldogs (+0.8 pts)",
-      "context_confirmed": 1,
-      "model_spread": -2.06,
-      "closing_line": 16.5,
-      "event_id": "307ef31f201c354656466e0e74337a38",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "Kentucky Wildcats@LSU Tigers UNDER 13.0",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": -14.5,
-      "edge_pct": 20.0,
-      "odds": -115.0,
-      "units": 5.0,
-      "context_factors": "Sunday game | LSU Tigers allows 3.2 R/sunday | Kentucky Wildcats allows 4.1 R/sunday | Pitching edge: LSU Tigers (+0.2 pts)",
-      "context_confirmed": 1,
-      "model_spread": -0.46,
-      "closing_line": 27.5,
-      "event_id": "f44681e48f5c6b0ccdaa140e0f0423cd",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "Pittsburgh Panthers@Louisville Cardinals UNDER 16.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 17.9,
-      "odds": -102.0,
-      "units": 5.0,
-      "context_factors": "Home fast-paced (+0.3) | Sunday game | Louisville Cardinals allows 6.2 R/sunday | Pittsburgh Panthers allows 4.8 R/sunday | Pitching edge: Pittsburgh Panthers (-0.4 pts)",
-      "context_confirmed": 1,
-      "model_spread": 0.42000000000000004,
-      "closing_line": 16.5,
-      "event_id": "8ee2c4b6025cbf949f50d0b11662ef1d",
-      "dt": "2026-03-29"
-    },
-    {
-      "selection": "Jannik Sinner -4.5",
-      "sport": "tennis_atp_miami_open",
+      "selection": "Calgary Flames +2.5",
+      "sport": "icehockey_nhl",
       "market_type": "SPREAD",
-      "side_type": "FAVORITE",
+      "side_type": "DOG",
+      "result": "LOSS",
+      "pnl_units": -4.5,
+      "clv": 0.0,
+      "edge_pct": 16.0,
+      "odds": -135.0,
+      "units": 4.5,
+      "context_factors": "Home letdown spot (-0.2)",
+      "context_confirmed": 1,
+      "model_spread": -0.55,
+      "closing_line": 2.5,
+      "event_id": "29827972b39eb13518d4cd9fd2962bbe",
+      "dt": "2026-03-30",
+      "actual_score": {
+        "home": "Colorado Avalanche",
+        "away": "Calgary Flames",
+        "home_score": 9,
+        "away_score": 2,
+        "actual_total": 11,
+        "actual_margin": 7
+      }
+    },
+    {
+      "selection": "Detroit Tigers@Arizona Diamondbacks UNDER 9.0",
+      "sport": "baseball_mlb",
+      "market_type": "TOTAL",
+      "side_type": "UNDER",
       "result": "LOSS",
       "pnl_units": -5.0,
       "clv": 0.0,
-      "edge_pct": 15.56,
-      "odds": -145.0,
+      "edge_pct": 20.0,
+      "odds": -104.0,
       "units": 5.0,
-      "context_factors": "P1 fatigue (+0.00) | P2 fatigue (-0.30)",
+      "context_factors": "Weather: light rain, 11mph wind (-1.5) | Midweek game | Weather -1.5",
       "context_confirmed": 1,
-      "model_spread": 7.27,
-      "closing_line": -4.5,
-      "event_id": "23816b92085c3bb99a75425a7e466d36",
-      "dt": "2026-03-29"
+      "model_spread": 1.05,
+      "closing_line": 9.0,
+      "event_id": "24e5dec72a26c2b5304dda6d4fc9b9d4",
+      "dt": "2026-03-30",
+      "actual_score": {
+        "home": "Arizona Diamondbacks",
+        "away": "Detroit Tigers",
+        "home_score": 9,
+        "away_score": 6,
+        "actual_total": 15,
+        "actual_margin": 3
+      }
+    },
+    {
+      "selection": "New York Yankees@Seattle Mariners OVER 7.5",
+      "sport": "baseball_mlb",
+      "market_type": "TOTAL",
+      "side_type": "OVER",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.0,
+      "edge_pct": 18.6,
+      "odds": -115.0,
+      "units": 5.0,
+      "context_factors": "Midweek game",
+      "context_confirmed": 1,
+      "model_spread": -0.009999999999999981,
+      "closing_line": 7.5,
+      "event_id": "27331c71f78dcb268af96a5483952ca2",
+      "dt": "2026-03-30",
+      "actual_score": {
+        "home": "Seattle Mariners",
+        "away": "New York Yankees",
+        "home_score": 2,
+        "away_score": 1,
+        "actual_total": 3,
+        "actual_margin": 1
+      }
     }
   ],
   "season": {
     "result": "LOSS",
-    "W": 108,
-    "L": 71,
-    "pnl": 87.8,
-    "wagered": 874.5
+    "W": 110,
+    "L": 76,
+    "pnl": 73.3,
+    "wagered": 905.0
   },
   "by_sport": [
     {
       "sport": "baseball_mlb",
-      "W": 4,
-      "L": 0,
-      "pnl": 19.4
+      "W": 5,
+      "L": 3,
+      "pnl": 9.6
     },
     {
       "sport": "baseball_ncaa",
@@ -304,8 +192,8 @@
     {
       "sport": "basketball_nba",
       "W": 21,
-      "L": 15,
-      "pnl": 14.3
+      "L": 16,
+      "pnl": 10.8
     },
     {
       "sport": "basketball_ncaab",
@@ -315,9 +203,9 @@
     },
     {
       "sport": "icehockey_nhl",
-      "W": 28,
-      "L": 16,
-      "pnl": 14.8
+      "W": 29,
+      "L": 17,
+      "pnl": 13.7
     },
     {
       "sport": "soccer_germany_bundesliga",
@@ -400,6 +288,15 @@
       "trending": "WORSE"
     },
     {
+      "factor": "Elo probability edge",
+      "W": 7,
+      "L": 7,
+      "pnl": -3.8,
+      "first_half_pnl": -7.6,
+      "second_half_pnl": 3.8,
+      "trending": "BETTER"
+    },
+    {
       "factor": "Away slow-paced",
       "W": 10,
       "L": 9,
@@ -436,15 +333,6 @@
       "trending": "WORSE"
     },
     {
-      "factor": "Elo probability edge",
-      "W": 7,
-      "L": 6,
-      "pnl": -0.3,
-      "first_half_pnl": -2.6,
-      "second_half_pnl": 2.3,
-      "trending": "BETTER"
-    },
-    {
       "factor": "Away 3-in-5",
       "W": 2,
       "L": 1,
@@ -463,13 +351,13 @@
       "trending": "BETTER"
     },
     {
-      "factor": "Cross-country trip",
-      "W": 6,
-      "L": 3,
-      "pnl": 7.4,
-      "first_half_pnl": 5.0,
-      "second_half_pnl": 2.4,
-      "trending": "STABLE"
+      "factor": "Home letdown spot",
+      "W": 11,
+      "L": 6,
+      "pnl": 8.1,
+      "first_half_pnl": 12.9,
+      "second_half_pnl": -4.8,
+      "trending": "WORSE"
     },
     {
       "factor": "Home on B2B",
@@ -481,21 +369,21 @@
       "trending": "STABLE"
     },
     {
-      "factor": "Home letdown spot",
-      "W": 10,
-      "L": 5,
-      "pnl": 9.3,
-      "first_half_pnl": 17.9,
-      "second_half_pnl": -8.6,
-      "trending": "WORSE"
-    },
-    {
       "factor": "Away letdown spot",
       "W": 12,
       "L": 8,
       "pnl": 9.7,
       "first_half_pnl": 16.5,
       "second_half_pnl": -6.8,
+      "trending": "WORSE"
+    },
+    {
+      "factor": "Cross-country trip",
+      "W": 7,
+      "L": 3,
+      "pnl": 10.7,
+      "first_half_pnl": 9.6,
+      "second_half_pnl": 1.1,
       "trending": "WORSE"
     },
     {
@@ -515,6 +403,15 @@
       "first_half_pnl": 3.8,
       "second_half_pnl": 8.0,
       "trending": "BETTER"
+    },
+    {
+      "factor": "Midweek game",
+      "W": 7,
+      "L": 3,
+      "pnl": 12.5,
+      "first_half_pnl": 11.8,
+      "second_half_pnl": 0.7,
+      "trending": "WORSE"
     },
     {
       "factor": "Division familiarity",
@@ -571,15 +468,6 @@
       "trending": "WORSE"
     },
     {
-      "factor": "Midweek game",
-      "W": 6,
-      "L": 1,
-      "pnl": 18.9,
-      "first_half_pnl": 3.7,
-      "second_half_pnl": 15.2,
-      "trending": "BETTER"
-    },
-    {
       "factor": "Away fast-paced",
       "W": 7,
       "L": 2,
@@ -630,6 +518,13 @@
       "pnl": -14.3
     },
     {
+      "day_of_week": "Monday",
+      "sport": "baseball_mlb",
+      "W": 1,
+      "L": 3,
+      "pnl": -9.9
+    },
+    {
       "day_of_week": "Saturday",
       "sport": "basketball_ncaab",
       "W": 1,
@@ -663,6 +558,13 @@
       "W": 1,
       "L": 1,
       "pnl": -2.2
+    },
+    {
+      "day_of_week": "Monday",
+      "sport": "icehockey_nhl",
+      "W": 1,
+      "L": 1,
+      "pnl": -1.2
     },
     {
       "day_of_week": "Friday",
@@ -721,6 +623,13 @@
       "pnl": 9.2
     },
     {
+      "day_of_week": "Monday",
+      "sport": "basketball_nba",
+      "W": 10,
+      "L": 7,
+      "pnl": 9.7
+    },
+    {
       "day_of_week": "Thursday",
       "sport": "basketball_nba",
       "W": 3,
@@ -733,13 +642,6 @@
       "W": 4,
       "L": 0,
       "pnl": 13.0
-    },
-    {
-      "day_of_week": "Monday",
-      "sport": "basketball_nba",
-      "W": 10,
-      "L": 6,
-      "pnl": 13.2
     },
     {
       "day_of_week": "Sunday",
@@ -774,16 +676,16 @@
     {
       "bucket": "AT_CAP",
       "W": 69,
-      "L": 43,
-      "pnl": 87.6,
+      "L": 44,
+      "pnl": 82.6,
       "avg_clv": 0.9
     },
     {
       "bucket": "BELOW_CAP",
-      "W": 39,
-      "L": 28,
-      "pnl": 0.3,
-      "avg_clv": -0.1
+      "W": 41,
+      "L": 32,
+      "pnl": -9.3,
+      "avg_clv": 0.1
     }
   ],
   "concentration_risk": [
@@ -855,16 +757,16 @@
     {
       "sport": "baseball_mlb",
       "side_type": "OVER",
-      "W": 2,
-      "L": 0,
-      "pnl": 8.8
+      "W": 3,
+      "L": 1,
+      "pnl": 7.5
     },
     {
       "sport": "baseball_mlb",
       "side_type": "UNDER",
       "W": 1,
-      "L": 0,
-      "pnl": 4.2
+      "L": 1,
+      "pnl": -0.8
     },
     {
       "sport": "baseball_ncaa",
@@ -946,17 +848,17 @@
   ],
   "ungraded": [],
   "last_10": [
-    "WIN",
-    "WIN",
-    "LOSS",
-    "LOSS",
-    "LOSS",
     "LOSS",
     "WIN",
     "LOSS",
     "LOSS",
-    "WIN"
+    "LOSS",
+    "WIN",
+    "LOSS",
+    "WIN",
+    "WIN",
+    "LOSS"
   ],
-  "streak": 2,
-  "streak_type": "WIN"
+  "streak": 1,
+  "streak_type": "LOSS"
 }
