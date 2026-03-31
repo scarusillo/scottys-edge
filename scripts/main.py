@@ -2782,13 +2782,22 @@ def cmd_grade(args):
         except Exception as e:
             print(f"  Diagnostic: {e}")
 
-    # Post results to Discord (NOT Instagram — user posts manually with AI video)
+    # Post results to Discord + Instagram (carousel: wins, losses, stats cards)
+    # Video Reel is posted separately by user with Kling AI video
     if report:
         try:
             from social_media import post_results_social
             post_results_social(report)
         except Exception as e:
             print(f"  Discord results: {e}")
+
+        # Instagram: post results cards as carousel (NOT video — that's separate)
+        try:
+            from social_media import post_results_to_instagram
+            if card_paths:
+                post_results_to_instagram(card_paths, report)
+        except Exception as e:
+            print(f"  Instagram results carousel: {e}")
 
         # Generate Kling video prompt with today's results
         try:
