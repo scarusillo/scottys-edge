@@ -2405,7 +2405,20 @@ def generate_predictions(conn, sport=None, date=None):
                                         all_picks[-1]['context'] = ' | '.join(ctx_parts)
 
                         # UNDER
-                        if under_total is not None and under_odds is not None and not _mlb_skip_total:
+                        # v22: NCAA baseball UNDER filters — surgical fix for -10.7u bleed
+                        # Friday UNDERs: 2W-5L, -17.7u. Lines 12.5+: 8W-10L, -15.4u.
+                        # Saturday UNDERs (8W-3L, +17.9u) and lines 10.5-12 (9W-5L, +11.4u) stay.
+                        _block_ncaa_under = False
+                        if sp == 'baseball_ncaa' and under_total is not None:
+                            try:
+                                _game_et = datetime.fromisoformat(commence.replace('Z', '+00:00')).astimezone(EASTERN)
+                                if _game_et.strftime('%A') == 'Friday':
+                                    _block_ncaa_under = True
+                            except:
+                                pass
+                            if under_total > 12.0:
+                                _block_ncaa_under = True
+                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _block_ncaa_under:
                             k = f"{eid}|T|UNDER"
                             if k not in seen:
                                 total_diff_u = under_total - model_total

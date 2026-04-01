@@ -2774,7 +2774,22 @@ def cmd_grade(args):
                 results_html_content = None
                 print(f"  Results HTML: {e}")
 
-        grade_report = (report or "") + agent_block
+        # Generate Kling video prompt so it can be included in the email
+        kling_section = ""
+        try:
+            _kling_conn = sqlite3.connect(db)
+            _generate_kling_prompt(_kling_conn)
+            _kling_conn.close()
+            _kling_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'cards', 'kling_prompt.txt')
+            if os.path.exists(_kling_path):
+                with open(_kling_path, 'r', encoding='utf-8') as _kf:
+                    _kling_text = _kf.read()
+                kling_section = f"\n\n{'='*60}\n  KLING VIDEO PROMPT\n{'='*60}\n\n{_kling_text}"
+                print(f"  Kling prompt saved + included in grade email")
+        except Exception as e:
+            print(f"  Kling prompt: {e}")
+
+        grade_report = (report or "") + agent_block + kling_section
         email_ok = send_grading_email(grade_report, html_body=results_html_content, attachment_paths=card_paths)
         if not email_ok:
             print("  ❌ EMAIL FAILED — grades were saved but not delivered. Check GMAIL_APP_PASSWORD env var.")
@@ -2823,13 +2838,7 @@ def cmd_grade(args):
         except Exception as e:
             print(f"  Instagram results carousel: {e}")
 
-        # Generate Kling video prompt with today's results
-        try:
-            _kling_conn = sqlite3.connect(db)
-            _generate_kling_prompt(_kling_conn)
-            _kling_conn.close()
-        except Exception as e:
-            print(f"  Kling prompt: {e}")
+        # Kling prompt already generated and included in grade email above
 
     # Auto-update landing page stats + results (GitHub Pages)
     try:

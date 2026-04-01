@@ -525,6 +525,46 @@ def grade_bets(conn, days_back=3):
                                 break
             
             if not score:
+                # v22 FIX: Retry with fresh connection — concurrent grade processes
+                # can cause INSERT OR REPLACE race where rows are momentarily invisible.
+                try:
+                    fresh = sqlite3.connect(DB_PATH, timeout=15)
+                    score = fresh.execute("""
+                        SELECT home_score, away_score, home, away, completed
+                        FROM results
+                        WHERE event_id = ? AND completed = 1 AND sport = ?
+                        LIMIT 1
+                    """, (eid, sport)).fetchone()
+                    fresh.close()
+                    if score:
+                        print(f"  ✓ Found score on retry: {sel} ({sport})")
+                except:
+                    pass
+
+            if not score:
+                # v22: Parse team names from selection as last resort
+                # Selection format: "Away Team@Home Team OVER/UNDER X.X" or "Team Name +/-X.X"
+                import re as _re
+                sel_teams = _re.split(r'\s+(?:OVER|UNDER|ML|\+|-)\s*', sel)[0] if sel else ''
+                if '@' in sel_teams:
+                    parts = sel_teams.split('@')
+                    if len(parts) == 2:
+                        sel_away, sel_home = parts[0].strip(), parts[1].strip()
+                        bet_date = created[:10] if created else None
+                        if bet_date:
+                            score = conn.execute("""
+                                SELECT home_score, away_score, home, away, completed
+                                FROM results
+                                WHERE sport=? AND completed=1
+                                AND ((home=? AND away=?) OR (home=? AND away=?))
+                                AND DATE(commence_time) BETWEEN DATE(?) AND DATE(?, '+1 day')
+                                ORDER BY commence_time DESC LIMIT 1
+                            """, (sport, sel_home, sel_away, sel_away, sel_home,
+                                  bet_date, bet_date)).fetchone()
+                            if score:
+                                print(f"  ✓ Matched by selection name: {sel} ({sport})")
+
+            if not score:
                 print(f"  ⚠ No score found: {sel} ({sport}) — event ID mismatch, team lookup failed")
                 continue
 

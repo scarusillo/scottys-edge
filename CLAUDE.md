@@ -2,11 +2,17 @@
 
 ## First Thing Every Session
 
-At the start of every conversation, pull the latest code and check the morning briefing:
+At the start of every conversation, pull the latest code, check the morning briefing, and check for cloud agent GitHub Issues:
 ```bash
 cd /c/Users/carus/OneDrive/Desktop/scottys_edge/betting_model && git pull && cat data/morning_briefing.md
 ```
-Summarize any action items or issues from the briefing before the user asks. This briefing is auto-generated after every grade and contains: yesterday's results, loss analysis, context health, shadow factors, edge cap performance, concentration risk, and recommended actions.
+Then check for agent reports (committed to the repo by cloud agents):
+```bash
+cat data/agent_morning_briefing.md 2>/dev/null | head -80
+cat data/agent_code_audit.md 2>/dev/null | head -40
+cat data/agent_line_movement.md 2>/dev/null | head -60
+```
+Summarize any action items from the briefing AND the agent reports before the user asks. The 3 cloud agents commit reports daily: Morning Briefing (5:30am), Code Auditor (6:00am), Line Movement Scout (4:00pm). Reports land via `git pull`.
 
 ## Quick Reference
 

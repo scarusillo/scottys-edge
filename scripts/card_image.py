@@ -278,7 +278,11 @@ def _render_picks_slide(picks, fonts, section_label, show_units_explain=True):
         draw.text((tx,y+name_y),sel_text,fill=WHITE,font=sel_font)
         draw.text((tx,y+matchup_y),matchup,fill=WHITE_40,font=pdf)
         draw.text((tx,y+book_y),p.get('book',''),fill=WHITE_40,font=pbf)
-        if ctx: draw.text((tx,y+ctx_y),ctx,fill=GREEN,font=pcf)
+        if ctx:
+            _ctx_max = CARD_WIDTH - PADDING*2 - 22*S - 10*S
+            while draw.textlength(ctx, font=pcf) > _ctx_max and len(ctx) > 10:
+                ctx = ctx.rsplit(' | ', 1)[0] + '...' if ' | ' in ctx else ctx[:len(ctx)-4] + '...'
+            draw.text((tx,y+ctx_y),ctx,fill=GREEN,font=pcf)
         rx=CARD_WIDTH-PADDING-22*S
         os_=f"{p['odds']:+.0f}"; ow=draw.textlength(os_,font=of)
         draw.text((rx-ow,y+odds_y),os_,fill=WHITE,font=of)
@@ -404,7 +408,11 @@ def _render_picks_slide_grouped(items, fonts, section_label, show_units_explain=
         draw.text((tx,y+name_y),sel_text,fill=WHITE,font=sel_font)
         draw.text((tx,y+matchup_y),matchup,fill=WHITE_40,font=pdf)
         draw.text((tx,y+book_y),p.get('book',''),fill=WHITE_40,font=pbf)
-        if ctx: draw.text((tx,y+ctx_y),ctx,fill=GREEN,font=pcf)
+        if ctx:
+            _ctx_max = CARD_WIDTH - PADDING*2 - 22*S - 10*S
+            while draw.textlength(ctx, font=pcf) > _ctx_max and len(ctx) > 10:
+                ctx = ctx.rsplit(' | ', 1)[0] + '...' if ' | ' in ctx else ctx[:len(ctx)-4] + '...'
+            draw.text((tx,y+ctx_y),ctx,fill=GREEN,font=pcf)
         rx=CARD_WIDTH-PADDING-22*S
         os_=f"{p['odds']:+.0f}"; ow=draw.textlength(os_,font=of)
         draw.text((rx-ow,y+odds_y),os_,fill=WHITE,font=of)

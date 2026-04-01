@@ -23,6 +23,44 @@ zeroed out so they do not influence picks.
 - **Away pace (fast or slow)** — still applied
 - **All other context factors** (travel, refs, H2H, familiarity, weather, etc.)
 
+## Model Changes Log (for agent reference)
+
+### v22 — 2026-04-01
+
+**NCAA Baseball UNDER filters (model_engine.py):**
+- **Block all Friday NCAA baseball UNDERs** — were 2W-5L, -17.7u
+- **Block NCAA baseball UNDERs with line > 12.0** — lines 12.5+ were 8W-10L, -15.4u
+- Kept picks (Saturday/midweek, lines ≤ 12.0): 7W-2L, +19.1u (78%)
+- Net backtest impact: +29.8u saved
+
+**Grader resilience (grader.py):**
+- Fresh-connection retry when primary score lookup fails
+- Selection-name parsing fallback (extracts teams from bet selection string)
+- Fixes race condition where concurrent grade processes could miss scores
+
+**Schedule changes:**
+- Grade moved from logon-trigger to 4:00am daily (BettingModel_Grade_4AM)
+- Cloud agent moved from 5:00am to 4:45am ET (after grade pushes data)
+
+### Issues Already Resolved — Do NOT Re-Recommend
+
+- **Friday game factor (-22.6u):** Driven almost entirely by NCAA baseball UNDERs (now blocked). Remaining Friday non-baseball is 11W-9L (-0.6u) — no action needed.
+- **NCAA Baseball UNDER concentration (7-8 per day):** Direction cap (max 4) was added 3/29. New UNDER filters further reduce volume.
+- **Away bounce-back shadow bug (Islanders 3/31):** Code was correct, stale bytecache from scheduled task. One-time issue.
+- **BELOW_CAP picks (-11.1u drag):** Already fixed by v21 (3/31) which raised all edge floors to 20%. Only 2 below-cap picks since v21, both winners. The -11.1u was all pre-v21 history. No further action needed.
+
+### Active Monitoring — Agent Should Track These Daily
+
+**Home letdown spot** — Was profitable early (+15.7u first half) but second half is -9.1u and fading fast. Still active (not shadowed). If cumulative second-half P/L drops below -15u, recommend shadowing. Query:
+```sql
+SELECT result, pnl_units, created_at FROM graded_bets
+WHERE context_factors LIKE '%Home letdown%' AND DATE(created_at) >= '2026-03-18'
+```
+
+**Away letdown spot** — Similar fade: +16.5u first half, -2.4u second half. Nearly flat. Monitor — if second-half P/L goes below -10u, recommend shadowing.
+
+**Midweek game** — Almost done contributing: +13.9u first half, +1.2u second half. Not urgent but track.
+
 ## How to Query Shadow Performance
 
 Look for `[SHADOW]` in the `context_factors` column of `graded_bets`:
@@ -32,18 +70,6 @@ SELECT result, pick, context_factors, units
 FROM graded_bets
 WHERE context_factors LIKE '%[SHADOW]%'
 ORDER BY date DESC;
-```
-
-To check if a shadow factor would have improved a pick:
-
-```sql
-SELECT
-  result,
-  SUM(CASE WHEN result='W' THEN units ELSE -units END) as net_units,
-  COUNT(*) as picks
-FROM graded_bets
-WHERE context_factors LIKE '%[SHADOW] Home fast-paced%'
-  AND date >= '2026-03-29';
 ```
 
 ## Re-enabling a Factor
