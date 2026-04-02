@@ -101,40 +101,102 @@ def detect_line_movement(conn):
 
 
 def evaluate_picks():
-    """Run the model on current odds and return picks."""
+    """Run the model on current odds, apply same filters as cmd_run."""
     conn = sqlite3.connect(DB_PATH)
-    
+
     from model_engine import generate_predictions
-    
-    all_picks = []
+
+    # Step 1: Generate raw predictions per sport
+    game_picks = []
     for sp in ALL_SPORTS:
         picks = generate_predictions(conn, sport=sp)
-        all_picks.extend(picks)
-    
-    conn.close()
-    return all_picks
+        game_picks.extend(picks)
 
+    # Step 2: Apply merge/filter (edge thresholds, confidence, unit minimums)
+    try:
+        from main import _merge_and_select
+        all_picks = _merge_and_select(game_picks, [], conn=conn)
+    except Exception as e:
+        print(f"  Merge filter error: {e}")
+        all_picks = game_picks
 
-def get_existing_picks_today():
-    """Get picks already saved today to avoid duplicates."""
-    conn = sqlite3.connect(DB_PATH)
-    existing = conn.execute("""
-        SELECT selection, sport FROM bets 
-        WHERE DATE(created_at) = DATE('now')
-    """).fetchall()
-    conn.close()
-    return set(f"{sel}|{sport}" for sel, sport in existing)
+    # Step 3: Dedup against existing bets today (same logic as cmd_run)
+    import re as _re
+    today_str = datetime.now().strftime('%Y-%m-%d')
+    already_posted = conn.execute("""
+        SELECT sport, market_type, selection, event_id FROM bets
+        WHERE created_at >= ? AND result IS NULL
+    """, (today_str,)).fetchall()
 
+    posted_event_ids = set(row[3] for row in already_posted if row[3])
+    posted_keys = set()
+    for row in already_posted:
+        sport, mtype, sel = row[0], row[1], row[2]
+        if mtype == 'SPREAD':
+            side = _re.sub(r'\s*[+-]?\d+\.?\d*$', '', sel).strip()
+        elif mtype == 'TOTAL':
+            side = _re.sub(r'\s+\d+\.?\d*$', '', sel).strip()
+        elif mtype == 'MONEYLINE':
+            side = sel.replace(' ML', '').replace(' (cross-mkt)', '').strip()
+        else:
+            side = sel
+        posted_keys.add(f"{sport}|{mtype}|{side}")
 
-def find_new_max_plays(all_picks, existing_keys):
-    """Find MAX PLAYs that haven't been saved yet today."""
-    new_plays = []
+    new_picks = []
     for p in all_picks:
-        if p.get('units', 0) >= 4.5:
-            key = f"{p['selection']}|{p.get('sport', '')}"
-            if key not in existing_keys:
-                new_plays.append(p)
-    return new_plays
+        sport = p.get('sport', '')
+        mtype = p.get('market_type', '')
+        sel = p.get('selection', '')
+        if mtype == 'SPREAD':
+            side = _re.sub(r'\s*[+-]?\d+\.?\d*$', '', sel).strip()
+        elif mtype == 'TOTAL':
+            side = _re.sub(r'\s+\d+\.?\d*$', '', sel).strip()
+        elif mtype == 'MONEYLINE':
+            side = sel.replace(' ML', '').replace(' (cross-mkt)', '').strip()
+        else:
+            side = sel
+        key = f"{sport}|{mtype}|{side}"
+        if key in posted_keys:
+            continue
+        if p.get('event_id') in posted_event_ids and mtype != 'PROP':
+            print(f"  CONCENTRATION CAP: skipped {sel[:50]} — already have a bet on this game")
+            continue
+        new_picks.append(p)
+        posted_keys.add(key)
+
+    # Step 4: Concentration check (max 4 same-direction per sport)
+    _existing_dirs = conn.execute("""
+        SELECT sport, side_type, COUNT(*) as cnt
+        FROM bets WHERE DATE(created_at) = ? AND units >= 3.5
+        GROUP BY sport, side_type
+    """, (today_str,)).fetchall()
+    _dir_totals = {}
+    for _sp, _side, _cnt in _existing_dirs:
+        _dir_totals[f"{_sp}|{_side}"] = _cnt
+
+    final_picks = []
+    for p in new_picks:
+        sp = p.get('sport', '')
+        mtype = p.get('market_type', '')
+        sel = p.get('selection', '')
+        if mtype == 'TOTAL':
+            side = 'OVER' if 'OVER' in sel.upper() else 'UNDER'
+        elif mtype == 'SPREAD':
+            side = 'DOG' if (p.get('line', 0) or 0) > 0 else 'FAVORITE'
+        elif mtype == 'MONEYLINE':
+            side = 'DOG' if (p.get('odds', -110) or -110) > 0 else 'FAVORITE'
+        else:
+            side = ''
+        dir_key = f"{sp}|{side}"
+        if _dir_totals.get(dir_key, 0) >= 4:
+            print(f"  CONCENTRATION BLOCK: {sel[:50]} — {_dir_totals[dir_key]} {side} already for {sp}")
+            continue
+        _dir_totals[dir_key] = _dir_totals.get(dir_key, 0) + 1
+        final_picks.append(p)
+
+    conn.close()
+    print(f"  After filters: {len(game_picks)} raw → {len(all_picks)} filtered → {len(final_picks)} new")
+    return final_picks
 
 
 def save_and_notify(new_plays, all_picks, do_email=True):
@@ -237,56 +299,24 @@ def run_single_cycle(do_email=True, dry_run=False):
     else:
         print("\n  No significant line movement detected")
     
-    # Step 3: Evaluate picks
+    # Step 3: Evaluate picks (filtered, deduped, concentration-checked)
     print("\n  Evaluating picks...")
-    all_picks = evaluate_picks()
-    
-    max_plays = [p for p in all_picks if p.get('units', 0) >= 4.5]
-    print(f"  Found {len(all_picks)} total picks, {len(max_plays)} MAX PLAYs")
-    
-    for p in sorted(all_picks, key=lambda x: x.get('units', 0), reverse=True)[:10]:
-        tier = "MAX" if p['units'] >= 4.5 else "STR" if p['units'] >= 4.0 else "---"
-        print(f"    {tier} {p['units']:.1f}u {p['edge_pct']:.1f}%  {p['selection']:35s} {p.get('sport','').split('_')[-1]}")
-    
+    new_plays = evaluate_picks()
+
+    if new_plays:
+        for p in sorted(new_plays, key=lambda x: x.get('units', 0), reverse=True):
+            print(f"    {p['units']:.1f}u {p['edge_pct']:.1f}%  {p['selection']:35s} {p.get('sport','').split('_')[-1]}")
+
     if dry_run:
         print("\n  DRY RUN — not saving or emailing")
-        return len(max_plays)
-    
-    # Step 4: Check for new MAX PLAYs
-    existing = get_existing_picks_today()
-    new_plays = find_new_max_plays(all_picks, existing)
-    
+        return len(new_plays)
+
     if new_plays:
-        print(f"\n  {len(new_plays)} NEW MAX PLAYs not yet saved!")
-        save_and_notify(new_plays, all_picks, do_email=do_email)
+        print(f"\n  {len(new_plays)} NEW picks found!")
+        save_and_notify(new_plays, new_plays, do_email=do_email)
     else:
-        if max_plays:
-            print(f"\n  {len(max_plays)} MAX PLAYs already saved — no new edges")
-        else:
-            # Check if we should send no-edge card
-            # Only send at specific times (11am, 5:30pm) to avoid spam
-            if now.hour in (11, 17) and now.minute < 30:
-                print("\n  No MAX PLAYs — generating no-edge card")
-                if do_email:
-                    try:
-                        from card_image import generate_card_image, generate_caption
-                        from emailer import send_picks_email, send_email
-                        
-                        no_edge_path = generate_card_image([])
-                        hour = now.hour
-                        run_type = "Morning" if hour < 12 else "Afternoon" if hour < 17 else "Evening"
-                        send_picks_email("No plays — model didn't find enough edge.", run_type, attachment_path=no_edge_path)
-                        
-                        caption = generate_caption([])
-                        if caption:
-                            today = now.strftime('%Y-%m-%d')
-                            send_email(f"Social Captions - {run_type} {today}", caption)
-                        print("  No-edge card sent")
-                    except Exception as e:
-                        print(f"  No-edge email: {e}")
-            else:
-                print("\n  No MAX PLAYs this cycle — waiting for next")
-    
+        print("\n  No new picks this cycle — waiting for next")
+
     return len(new_plays)
 
 
