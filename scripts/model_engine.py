@@ -1586,6 +1586,13 @@ def generate_predictions(conn, sport=None, date=None):
                                     pick['context'] = 'Soccer Elo ML — direct probability edge'
                                     all_picks.append(pick)
 
+            # ═══ INJURY DATA — fetch BEFORE any pick generation ═══
+            # Must happen before Elo ML, spreads, and totals so all paths
+            # have access to injury context. Previously fetched after Elo ML,
+            # which caused blind picks (e.g., Spurs ML with Wembanyama out).
+            h_inj, h_cl, h_imp = get_team_injury_context(conn, home, sp)
+            a_inj, a_cl, a_imp = get_team_injury_context(conn, away, sp)
+
             # DIVERGENCE CHECK — run on RAW model spread (before context)
             # Context adjustments are our REASON for disagreeing with the market,
             # not a sign of model error. Only the base model should be checked.
@@ -1661,6 +1668,23 @@ def generate_predictions(conn, sport=None, date=None):
                     home_prob = elo_win_probability(home, away, elo_data, sp, neutral_site=_neutral)
                     if home_prob is not None:
                         away_prob = 1.0 - home_prob
+
+                        # ═══ INJURY ADJUSTMENT FOR ELO ML ═══
+                        # Elo ratings reflect historical performance WITH key players.
+                        # If a star is out, Elo overstates the team's strength.
+                        # Convert point impact to probability shift:
+                        #   5.0 pts impact ≈ 8-10% win probability swing (NBA/NHL).
+                        #   Scale: 1.5% win prob per point of injury impact.
+                        _inj_prob_shift = (a_imp - h_imp) * 0.015  # Positive = home advantage
+                        if abs(_inj_prob_shift) >= 0.01:
+                            home_prob = max(0.05, min(0.95, home_prob + _inj_prob_shift))
+                            away_prob = 1.0 - home_prob
+
+                        # Hard gate: block ML pick if the PICKED team has a star out
+                        # (5.0+ point impact = MVP-caliber player missing)
+                        _home_star_out = h_imp >= 5.0
+                        _away_star_out = a_imp >= 5.0
+
                         h_fair, a_fair, _ = devig_ml_odds(hml, aml)
                         if h_fair and a_fair:
                             # Mismatch dampening: Elo compresses toward 50% and
@@ -1673,7 +1697,7 @@ def generate_predictions(conn, sport=None, date=None):
                             # Home ML
                             h_edge = (home_prob - h_fair) * 100 * _elo_w
                             k_h = f"{eid}|M|{home}"
-                            if k_h not in seen and h_edge >= _min:
+                            if k_h not in seen and h_edge >= _min and not _home_star_out:
                                 stars = get_star_rating(h_edge)
                                 if stars > 0:
                                     timing, t_r = bet_timing_advice(ms, mkt_hs or 0)
@@ -1684,11 +1708,15 @@ def generate_predictions(conn, sport=None, date=None):
                                         round(h_edge, 2), stars, timing, t_r)
                                     if pick:
                                         pick['context'] = 'Elo probability edge'
+                                        if h_imp > 0 or a_imp > 0:
+                                            pick['context'] += f' | Injuries: {home} -{h_imp:.1f}pts, {away} -{a_imp:.1f}pts'
                                         all_picks.append(pick)
+                            elif _home_star_out and h_edge >= _min:
+                                print(f"    ⚠ INJURY GATE: {home} ML blocked — star player out ({h_imp:.1f} pts impact)")
                             # Away ML
                             a_edge = (away_prob - a_fair) * 100 * _elo_w
                             k_a = f"{eid}|M|{away}"
-                            if k_a not in seen and a_edge >= _min:
+                            if k_a not in seen and a_edge >= _min and not _away_star_out:
                                 stars = get_star_rating(a_edge)
                                 if stars > 0:
                                     timing, t_r = bet_timing_advice(-ms, mkt_as or 0)
@@ -1699,7 +1727,11 @@ def generate_predictions(conn, sport=None, date=None):
                                         round(a_edge, 2), stars, timing, t_r)
                                     if pick:
                                         pick['context'] = 'Elo probability edge'
+                                        if h_imp > 0 or a_imp > 0:
+                                            pick['context'] += f' | Injuries: {home} -{h_imp:.1f}pts, {away} -{a_imp:.1f}pts'
                                         all_picks.append(pick)
+                            elif _away_star_out and a_edge >= _min:
+                                print(f"    ⚠ INJURY GATE: {away} ML blocked — star player out ({a_imp:.1f} pts impact)")
                 skip_div += 1; continue
             
             # v12 FIX: If no spread line (common in baseball), check divergence via ML
@@ -1707,15 +1739,15 @@ def generate_predictions(conn, sport=None, date=None):
             # and produce phantom 25-30% edges on thin data.
             if mkt_hs is None and hml is not None and aml is not None:
                 # Infer market spread from ML odds
-                h_imp = american_to_implied_prob(hml)
-                a_imp = american_to_implied_prob(aml)
-                if h_imp and a_imp:
+                _h_ml_imp = american_to_implied_prob(hml)
+                _a_ml_imp = american_to_implied_prob(aml)
+                if _h_ml_imp and _a_ml_imp:
                     # Rough ML-to-spread conversion using same ml_scale
                     import math as _m
                     ml_sc = cfg.get('ml_scale', 7.5)
-                    # If h_imp > a_imp, home is favored → negative implied spread
-                    if h_imp > 0.01 and h_imp < 0.99:
-                        implied_spread = -ml_sc * _m.log(h_imp / (1 - h_imp))
+                    # If _h_ml_imp > _a_ml_imp, home is favored → negative implied spread
+                    if _h_ml_imp > 0.01 and _h_ml_imp < 0.99:
+                        implied_spread = -ml_sc * _m.log(_h_ml_imp / (1 - _h_ml_imp))
                         if abs(ms - implied_spread) > max_div:
                             skip_div += 1; continue
 
@@ -1746,14 +1778,7 @@ def generate_predictions(conn, sport=None, date=None):
                 except Exception:
                     pass
 
-            h_inj, h_cl, h_imp = get_team_injury_context(conn, home, sp)
-            a_inj, a_cl, a_imp = get_team_injury_context(conn, away, sp)
-
-            # v17: Adjust model spread for injury differential
-            # If away team has 7.5 pts of injuries and home has 2.5,
-            # that's a 5.0 pt swing toward home (ms becomes more negative).
-            # Only apply the NET differential — market partially prices injuries
-            # so we use 50% of the raw differential to avoid over-counting.
+            # Injury data already fetched above (before Elo ML)
             inj_diff = a_imp - h_imp  # Positive = away more hurt = home advantage
             inj_spread_adj = round(inj_diff * 0.5, 2)  # 50% weight — market prices some
             ms_inj = ms - inj_spread_adj if abs(inj_spread_adj) >= 0.5 else ms
@@ -2042,6 +2067,16 @@ def generate_predictions(conn, sport=None, date=None):
                     h_prob_ml = spread_to_win_prob(ms_inj, sp)
                     a_prob_ml = 1.0 - h_prob_ml
 
+                # ═══ INJURY ADJUSTMENT FOR WALTERS ML ═══
+                _inj_prob_shift = (a_imp - h_imp) * 0.015
+                if abs(_inj_prob_shift) >= 0.01:
+                    h_prob_ml = max(0.05, min(0.95, h_prob_ml + _inj_prob_shift))
+                    a_prob_ml = 1.0 - h_prob_ml
+
+                # Hard gate: block ML pick if picked team has star out
+                _home_star_out = h_imp >= 5.0
+                _away_star_out = a_imp >= 5.0
+
                 # De-vig market ML odds (soccer includes draw)
                 if 'soccer' in sp:
                     h_prob_ml, draw_prob_ml, a_prob_ml = soccer_ml_probs(ms, sp)
@@ -2072,6 +2107,8 @@ def generate_predictions(conn, sport=None, date=None):
                         pass  # v13: ALL soccer ML disabled — backtest 0W-8L. Edge lives in spreads only.
                     elif _tennis_ml_cap and abs(hml) > _tennis_ml_cap:
                         pass  # Tennis: line too wide, skip
+                    elif _home_star_out:
+                        print(f"    ⚠ INJURY GATE: {home} ML blocked — star player out ({h_imp:.1f} pts impact)")
                     else:
                         h_edge_ml = (h_prob_ml - h_imp_ml) * 100 * _walters_elo_w
                         stars = get_star_rating(h_edge_ml)
@@ -2089,6 +2126,8 @@ def generate_predictions(conn, sport=None, date=None):
                                 if _h2h_ctx:
                                     _ml_ctx_parts.append(_h2h_ctx)
                                 _ml_ctx_parts.append('Elo probability edge')
+                                if h_imp > 0 or a_imp > 0:
+                                    _ml_ctx_parts.append(f'Injuries: {home} -{h_imp:.1f}pts, {away} -{a_imp:.1f}pts')
                                 pick['context'] = ' | '.join(_ml_ctx_parts)
                                 all_picks.append(pick)
 
@@ -2099,6 +2138,8 @@ def generate_predictions(conn, sport=None, date=None):
                         pass  # v13: ALL soccer ML disabled — backtest 0W-8L. Edge lives in spreads only.
                     elif _tennis_ml_cap and abs(aml) > _tennis_ml_cap:
                         pass  # Tennis: line too wide, skip
+                    elif _away_star_out:
+                        print(f"    ⚠ INJURY GATE: {away} ML blocked — star player out ({a_imp:.1f} pts impact)")
                     else:
                         a_edge_ml = (a_prob_ml - a_imp_ml) * 100 * _walters_elo_w
                         stars = get_star_rating(a_edge_ml)
@@ -2243,6 +2284,15 @@ def generate_predictions(conn, sport=None, date=None):
                     # Estimate model total from team ratings + league average
                     model_total = estimate_model_total(home, away, ratings, sp, conn)
                     if model_total is not None:
+                        # ═══ INJURY ADJUSTMENT FOR TOTALS ═══
+                        # Missing scorers reduce expected scoring. A 20ppg NBA player
+                        # out lowers the total. Use 50% of impact (market prices some).
+                        # Only apply to sports where individual scoring matters.
+                        if sp in ('basketball_nba', 'basketball_ncaab', 'icehockey_nhl'):
+                            _inj_total_adj = (h_imp + a_imp) * 0.5  # Both teams' injuries reduce total
+                            if _inj_total_adj >= 0.5:
+                                model_total -= _inj_total_adj
+
                         # Apply context adjustments to total (pace, refs, altitude, H2H)
                         ctx_total = None
                         if HAS_CONTEXT:
