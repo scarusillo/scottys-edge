@@ -198,6 +198,18 @@ def export_data():
 
     conn.close()
 
+    # Shadow blocked picks — concentration cap performance tracking
+    shadow_blocked = []
+    try:
+        _sb_rows = conn.execute("""
+            SELECT created_at, sport, event_id, selection, market_type, line, odds, edge_pct, units
+            FROM shadow_blocked_picks
+            ORDER BY created_at DESC LIMIT 100
+        """).fetchall()
+        shadow_blocked = [dict(r) for r in _sb_rows]
+    except Exception:
+        pass  # Table may not exist yet
+
     data = {
         'generated_at': now.strftime('%Y-%m-%d %H:%M'),
         'game_date': game_date,
@@ -213,6 +225,7 @@ def export_data():
         'last_10': last_10,
         'streak': streak,
         'streak_type': last_10[0] if last_10 else 'N/A',
+        'shadow_blocked_picks': shadow_blocked,
     }
 
     with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:

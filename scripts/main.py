@@ -616,6 +616,56 @@ def cmd_run(args):
 
             if _blocked:
                 print(f"  Concentration check: blocked {len(_blocked)}, passed {len(_passed)}")
+                # ═══ SHADOW LOG: Track blocked picks for performance monitoring ═══
+                # These had real edge but hit the concentration cap.
+                # The morning briefing agent monitors whether we're leaving money on the table.
+                try:
+                    conn.execute("""CREATE TABLE IF NOT EXISTS shadow_blocked_picks (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        created_at TEXT, sport TEXT, event_id TEXT, selection TEXT,
+                        market_type TEXT, book TEXT, line REAL, odds REAL,
+                        edge_pct REAL, units REAL, reason TEXT
+                    )""")
+                    for _bp in _blocked:
+                        # Skip tainted picks (star player out)
+                        _bp_sport = _bp.get('sport', '')
+                        _bp_sel = _bp.get('selection', '')
+                        _bp_eid = _bp.get('event_id', '')
+                        _is_tainted = False
+                        try:
+                            _inj_rows = conn.execute("""
+                                SELECT SUM(point_impact) FROM injuries
+                                WHERE sport=? AND report_date=? AND status IN ('Out','OUT','Doubtful','DOUBTFUL')
+                                AND team IN (
+                                    SELECT home FROM odds WHERE event_id=? LIMIT 1
+                                )
+                            """, (_bp_sport, _today_str, _bp_eid)).fetchone()
+                            # Also check if the picked team specifically has a star out
+                            # For ML picks, the team is in the selection
+                            if _bp.get('market_type') == 'MONEYLINE':
+                                for _word in _bp_sel.replace(' ML', '').split():
+                                    _team_inj = conn.execute("""
+                                        SELECT SUM(point_impact) FROM injuries
+                                        WHERE sport=? AND report_date=? AND team LIKE ?
+                                        AND status IN ('Out','OUT','Doubtful','DOUBTFUL')
+                                    """, (_bp_sport, _today_str, f'%{_word}%')).fetchone()
+                                    if _team_inj and _team_inj[0] and _team_inj[0] >= 5.0:
+                                        _is_tainted = True
+                                        break
+                        except Exception:
+                            pass
+                        if _is_tainted:
+                            continue  # Don't track tainted picks
+                        conn.execute("""INSERT INTO shadow_blocked_picks
+                            (created_at, sport, event_id, selection, market_type, book, line, odds, edge_pct, units, reason)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                            (datetime.now().isoformat(), _bp.get('sport',''), _bp.get('event_id',''),
+                             _bp.get('selection',''), _bp.get('market_type',''), _bp.get('book',''),
+                             _bp.get('line'), _bp.get('odds'), _bp.get('edge_pct', 0),
+                             _bp.get('units', 0), 'CONCENTRATION_CAP'))
+                    conn.commit()
+                except Exception as _shadow_e:
+                    print(f"  Shadow log: {_shadow_e}")
             all_picks = _passed
         except Exception as e:
             print(f"  Concentration check: {e}")
