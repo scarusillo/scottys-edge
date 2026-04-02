@@ -477,6 +477,19 @@ def generate_prop_projections(conn=None):
             continue
         opponent = away if player_team == home else home
 
+        # ═══ INJURY GATE: Skip props for players ruled Out/Doubtful ═══
+        try:
+            _inj_status = conn.execute("""
+                SELECT status FROM injuries
+                WHERE sport=? AND player LIKE ? AND report_date=?
+                AND status IN ('Out','OUT','Doubtful','DOUBTFUL')
+                LIMIT 1
+            """, (sport, f'%{player.split()[-1]}%', datetime.now(timezone.utc).strftime('%Y-%m-%d'))).fetchone()
+            if _inj_status:
+                continue  # Player ruled out — skip prop
+        except Exception:
+            pass
+
         # Project this player's stat
         proj = project_player_stat(conn, player, stat_type, sport,
                                    player_team, opponent, home, away, commence)

@@ -456,7 +456,27 @@ def evaluate_props(conn=None):
     picks = []
     signal_counts = {'consensus': 0, 'movement': 0, 'stale': 0, 'history': 0}
 
+    # ═══ INJURY GATE: Pre-load today's Out/Doubtful players ═══
+    _today = now_utc.strftime('%Y-%m-%d')
+    _out_players = set()
+    try:
+        _out_rows = conn.execute("""
+            SELECT LOWER(player) FROM injuries
+            WHERE report_date=? AND status IN ('Out','OUT','Doubtful','DOUBTFUL')
+        """, (_today,)).fetchall()
+        _out_players = set(r[0] for r in _out_rows)
+    except Exception:
+        pass
+
     for (eid, player, market, line_val), book_lines in grouped.items():
+        # ═══ INJURY GATE: Skip props for Out/Doubtful players ═══
+        if player.lower() in _out_players:
+            continue
+        # Also check last name match (injury DB may have full name vs prop has display name)
+        _last_name = player.split()[-1].lower() if player else ''
+        if any(_last_name in op and len(_last_name) > 3 for op in _out_players):
+            continue
+
         pl_list = [v for v in book_lines.values() if v.get('book')]
         sport = game_info.get(eid, {}).get('sport', '')
         _min_books = MIN_BOOKS_BY_SPORT.get(sport, MIN_BOOKS_FOR_CONSENSUS)
