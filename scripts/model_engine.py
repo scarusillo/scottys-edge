@@ -2157,6 +2157,8 @@ def generate_predictions(conn, sport=None, date=None):
                                 if _h2h_ctx:
                                     _ml_ctx_parts.append(_h2h_ctx)
                                 _ml_ctx_parts.append('Elo probability edge')
+                                if h_imp > 0 or a_imp > 0:
+                                    _ml_ctx_parts.append(f'Injuries: {home} -{h_imp:.1f}pts, {away} -{a_imp:.1f}pts')
                                 pick['context'] = ' | '.join(_ml_ctx_parts)
                                 all_picks.append(pick)
 
