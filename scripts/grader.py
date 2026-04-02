@@ -74,7 +74,7 @@ def ensure_tables(conn):
         if col not in existing:
             try:
                 conn.execute(f"ALTER TABLE graded_bets ADD COLUMN {col} {dtype}")
-            except:
+            except Exception:
                 pass
     conn.commit()
 
@@ -409,7 +409,7 @@ def grade_bets(conn, days_back=3):
                     if abs((datetime.strptime(bet_date, '%Y-%m-%d') - datetime.strptime(result_date, '%Y-%m-%d')).days) > 2:
                         print(f"  ⚠ Date mismatch: {sel} bet={bet_date} result={result_date} — skipping stale match")
                         score = None
-                except:
+                except Exception:
                     pass
 
         if not score:
@@ -538,7 +538,7 @@ def grade_bets(conn, days_back=3):
                     fresh.close()
                     if score:
                         print(f"  ✓ Found score on retry: {sel} ({sport})")
-                except:
+                except Exception:
                     pass
 
             if not score:

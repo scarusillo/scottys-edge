@@ -18,7 +18,7 @@ Strategy:
 
 ESPN endpoints (free, no auth):
   Summary: /apis/site/v2/sports/baseball/college-baseball/summary?event={id}
-  Scoreboard: /apis/site/v2/sports/baseball/college-baseball/scoreboard?dates={YYYYMMDD}&groups=50&limit=900
+  Scoreboard: /apis/site/v2/sports/baseball/college-baseball/scoreboard?dates={YYYYMMDD}&limit=900
 
 Usage:
     python pitcher_scraper.py                    # Backfill full season
@@ -132,7 +132,7 @@ def _fetch_json(url):
 
 def _get_completed_game_ids(date_str):
     """Get ESPN event IDs for completed games on a date."""
-    url = f"{ESPN_SCOREBOARD}?dates={date_str}&groups=50&limit=900"
+    url = f"{ESPN_SCOREBOARD}?dates={date_str}&limit=900"
     data = _fetch_json(url)
     if not data:
         return []

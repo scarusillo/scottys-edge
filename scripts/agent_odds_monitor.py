@@ -35,7 +35,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.d
 
 ALL_SPORTS = [
     'basketball_nba', 'basketball_ncaab', 'icehockey_nhl',
-    'baseball_ncaa',
+    'baseball_mlb', 'baseball_ncaa',
     'soccer_epl', 'soccer_italy_serie_a', 'soccer_spain_la_liga',
     'soccer_germany_bundesliga', 'soccer_france_ligue_one',
     'soccer_uefa_champs_league', 'soccer_usa_mls',
@@ -68,19 +68,19 @@ def detect_line_movement(conn):
     
     # Get the two most recent snapshots for each game
     games = conn.execute("""
-        SELECT DISTINCT event_id, home, away, sport 
-        FROM odds 
-        WHERE DATE(timestamp) = DATE('now')
+        SELECT DISTINCT event_id, home, away, sport
+        FROM odds
+        WHERE snapshot_date = DATE('now')
     """).fetchall()
-    
+
     for eid, home, away, sport in games:
         # Get latest and previous spread for home team
         rows = conn.execute("""
-            SELECT line, odds, timestamp FROM odds
-            WHERE event_id=? AND market_type='SPREAD' AND selection=?
-            ORDER BY timestamp DESC LIMIT 2
-        """, (eid, f"{home} spread")).fetchall()
-        
+            SELECT line, odds, snapshot_date || ' ' || snapshot_time FROM odds
+            WHERE event_id=? AND market='SPREAD' AND selection=?
+            ORDER BY snapshot_date DESC, snapshot_time DESC LIMIT 2
+        """, (eid, home)).fetchall()
+
         if len(rows) >= 2:
             current_line, current_odds, current_time = rows[0]
             prev_line, prev_odds, prev_time = rows[1]
@@ -138,13 +138,7 @@ def find_new_max_plays(all_picks, existing_keys):
 
 
 def save_and_notify(new_plays, all_picks, do_email=True):
-    """Alert Scott to new edges found between scheduled runs.
-
-    IMPORTANT: Does NOT save to DB or generate cards/captions.
-    Only the 11AM and 5:30PM cmd_run generate postable picks.
-    The odds monitor is an ALERT system only — Scott decides
-    whether to post these via an ad-hoc run.
-    """
+    """Save new picks to DB, generate card, post IG story, email, Discord."""
     if not new_plays:
         return
 
@@ -152,30 +146,70 @@ def save_and_notify(new_plays, all_picks, do_email=True):
     for p in new_plays:
         print(f"    {p['units']:.1f}u  {p['selection']:40s} {p.get('sport','')}")
 
-    if not do_email:
-        return
-
-    # Send alert email (text only, no card, no caption)
+    # Step 1: Save picks to DB
     try:
-        from emailer import send_email
-        from model_engine import picks_to_text
-
-        hour = datetime.now().hour
-        if hour < 12: run_type = "Morning"
-        elif hour < 17: run_type = "Afternoon"
-        else: run_type = "Evening"
-
-        text = f"ODDS MONITOR — {len(new_plays)} new edge(s) detected\n\n"
-        text += "These are NOT saved or posted yet.\n"
-        text += "Run 'python main.py run --email' to generate cards and save picks.\n\n"
-        for p in new_plays:
-            text += f"  {p['units']:.1f}u  {p['selection']}  ({p.get('sport','').split('_')[-1].upper()})\n"
-            text += f"         Edge: {p.get('edge_pct', 0):.1f}%  |  Odds: {p.get('odds', 0):+.0f}  |  {p.get('book', '')}\n\n"
-
-        send_email(f"Edge Alert - {run_type} {datetime.now().strftime('%Y-%m-%d')}", text)
-        print("  Alert email sent (no picks saved)")
+        from model_engine import save_picks_to_db
+        conn = sqlite3.connect(DB_PATH)
+        save_picks_to_db(conn, new_plays)
+        conn.close()
+        print(f"  Saved {len(new_plays)} picks to DB")
     except Exception as e:
-        print(f"  Email error: {e}")
+        print(f"  DB save error: {e}")
+
+    # Step 2: Log picks
+    try:
+        from pick_logger import log_picks
+        hour = datetime.now().hour
+        run_type = "Morning" if hour < 12 else "Afternoon" if hour < 17 else "Evening"
+        log_picks(new_plays, run_type)
+    except Exception as e:
+        print(f"  Pick log error: {e}")
+
+    # Step 3: Generate PNG card
+    png_card_path = None
+    try:
+        from card_image import generate_card_image
+        png_card_path = generate_card_image(new_plays)
+        if png_card_path:
+            print(f"  Card: {png_card_path}")
+    except Exception as e:
+        print(f"  Card error: {e}")
+
+    # Step 4: Post to Discord
+    try:
+        from social_media import post_picks_social
+        post_picks_social(new_plays)
+    except Exception as e:
+        print(f"  Discord error: {e}")
+
+    # Step 5: Post to Instagram story
+    if png_card_path:
+        try:
+            from social_media import post_picks_to_instagram
+            post_picks_to_instagram([png_card_path], new_plays)
+        except Exception as e:
+            print(f"  Instagram error: {e}")
+
+    # Step 6: Email
+    if do_email:
+        try:
+            from emailer import send_picks_email, send_email
+            from card_image import generate_caption
+            from model_engine import picks_to_text
+
+            hour = datetime.now().hour
+            run_type = "Morning" if hour < 12 else "Afternoon" if hour < 17 else "Evening"
+            today = datetime.now().strftime('%Y-%m-%d')
+
+            text = picks_to_text(new_plays)
+            send_picks_email(text, run_type, attachment_path=png_card_path)
+
+            caption = generate_caption(new_plays)
+            if caption:
+                send_email(f"Social Captions - {run_type} {today}", caption)
+            print("  Email sent")
+        except Exception as e:
+            print(f"  Email error: {e}")
 
 
 def run_single_cycle(do_email=True, dry_run=False):

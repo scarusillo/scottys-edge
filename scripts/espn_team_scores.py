@@ -135,7 +135,7 @@ def fetch_missing_score(team_name, sport, bet_date):
     from datetime import datetime as _dt, timedelta as _td
     try:
         next_date = (_dt.strptime(bet_date, '%Y-%m-%d') + _td(days=1)).strftime('%Y-%m-%d')
-    except:
+    except Exception:
         next_date = bet_date
     for event in events:
         event_date = str(event.get('date', ''))[:10]
@@ -165,7 +165,7 @@ def fetch_missing_score(team_name, sport, bet_date):
                 elif score_data is not None:
                     try:
                         score = int(float(str(score_data)))
-                    except:
+                    except Exception:
                         score = 0
                 else:
                     score = 0

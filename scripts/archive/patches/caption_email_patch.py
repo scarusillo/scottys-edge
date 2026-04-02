@@ -112,7 +112,7 @@ PATCHES.append(('main.py',
             try:
                 from card_image import generate_caption
                 ig_caption = generate_caption(all_picks)
-            except:
+            except Exception:
                 ig_caption = ""
             caption_block = ""
             if ig_caption:

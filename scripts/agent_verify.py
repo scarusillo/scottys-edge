@@ -122,9 +122,9 @@ def check_score_freshness(conn):
                            datetime.strptime(game_date, '%Y-%m-%d')).days)
                 if diff > 2:
                     issues.append(f"STALE SCORE: {sel} — bet {bet_date}, score from {game_date} ({diff} days apart)")
-            except:
+            except Exception:
                 pass
-    
+
     return issues
 
 

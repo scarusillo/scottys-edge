@@ -63,7 +63,7 @@ def get_api_key():
         conn.close()
         if row and row[0]:
             return row[0]
-    except:
+    except Exception:
         pass
     raise ValueError("No ODDS_API_KEY found. Set via environment variable or database settings.")
 
@@ -209,7 +209,7 @@ def _capture_openers(conn, odds_rows, sport):
                 """, (now.strftime('%Y-%m-%d'), sport, eid, book, market,
                       sel, line, odds, now.isoformat()))
                 inserted += 1
-        except:
+        except Exception:
             pass
     if inserted > 0:
         conn.commit()
@@ -816,7 +816,7 @@ def fetch_props(sport, event_id=None):
                         UPDATE prop_openers SET opening_under_odds=?
                         WHERE event_id=? AND player=? AND market=? AND opening_under_odds IS NULL
                     """, (orow[7], orow[2], orow[3], orow[4]))
-            except:
+            except Exception:
                 pass
 
         conn.commit()

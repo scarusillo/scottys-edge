@@ -17,7 +17,7 @@ Setup:
 import os
 import json
 import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # ═══════════════════════════════════════════════════════════════════
 # DISCORD
@@ -67,7 +67,7 @@ def post_to_discord(picks):
                 gt = datetime.fromisoformat(p['commence'].replace('Z', '+00:00'))
                 est = _to_eastern(gt)
                 game_time = est.strftime('%I:%M %p')
-            except:
+            except Exception:
                 pass
         
         line = f"{tier} {icon} **{p['selection']}** ({odds_str}) • {p['units']:.0f}u {kl}"
@@ -170,7 +170,7 @@ def post_results_to_discord(report_text):
     try:
         pl_val = float(pl_str)
         color = 0x00e676 if pl_val >= 0 else 0xff5252
-    except:
+    except Exception:
         color = 0x666666
     
     now = datetime.now()

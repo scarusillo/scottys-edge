@@ -76,7 +76,7 @@ def get_log_summary():
         for line in f:
             try:
                 picks.append(json.loads(line))
-            except:
+            except Exception:
                 pass
 
     if not picks:
@@ -113,7 +113,7 @@ def get_log_summary():
             for line in f:
                 try:
                     grades.append(json.loads(line))
-                except:
+                except Exception:
                     pass
         if grades:
             wins = sum(1 for g in grades if g.get('result') == 'WIN')

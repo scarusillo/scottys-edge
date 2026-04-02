@@ -209,6 +209,17 @@ def create_db():
         profit          REAL,
         closing_line    REAL,
         clv             REAL,           -- closing line value
+        -- metadata for analysis
+        side_type       TEXT,
+        spread_bucket   TEXT,
+        edge_bucket     TEXT,
+        timing          TEXT,
+        context_factors TEXT,
+        context_confirmed INT,
+        context_adj     REAL,
+        market_tier     TEXT,
+        model_spread    REAL,
+        day_of_week     TEXT,
         FOREIGN KEY(event_id) REFERENCES results(event_id)
     )""")
     c.execute("CREATE INDEX IF NOT EXISTS idx_bets_date ON bets(created_at)")
@@ -285,7 +296,16 @@ def create_db():
         pnl_units       REAL,
         closing_line    REAL,
         clv             REAL,
-        created_at      TEXT
+        created_at      TEXT,
+        side_type       TEXT,
+        spread_bucket   TEXT,
+        edge_bucket     TEXT,
+        timing          TEXT,
+        context_factors TEXT,
+        context_confirmed INT,
+        market_tier     TEXT,
+        model_spread    REAL,
+        day_of_week     TEXT
     )""")
     c.execute("CREATE INDEX IF NOT EXISTS idx_gb_date ON graded_bets(created_at)")
 

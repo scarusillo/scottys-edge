@@ -40,10 +40,9 @@ DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.d
 
 from scottys_edge import (
     scottys_edge_assessment, calculate_point_value, get_star_rating,
-    vig_adjusted_spread, recommend_spread_or_ml, bet_timing_advice,
-    stack_injury_multiplier, minimum_play_threshold, stars_to_units,
+    vig_adjusted_spread, bet_timing_advice,
+    minimum_play_threshold,
     kelly_units, kelly_label,
-    SOFT_MARKETS, SHARP_MARKETS,
 )
 
 # Context engine — schedule, travel, line movement, altitude, splits
@@ -55,7 +54,7 @@ except ImportError:
 
 # Elo engine integration (independent ratings from game results)
 try:
-    from elo_engine import get_elo_ratings, blended_spread, elo_predicted_spread, ELO_CONFIG
+    from elo_engine import get_elo_ratings, blended_spread, ELO_CONFIG
     HAS_ELO = True
 except ImportError:
     HAS_ELO = False
@@ -81,19 +80,6 @@ try:
 except ImportError:
     HAS_NHL_GOALIES = False
 
-# Weather engine — wind, rain, cold adjustments for outdoor totals
-try:
-    from weather_engine import get_weather_adjustment
-    HAS_WEATHER = True
-except ImportError:
-    HAS_WEATHER = False
-
-# Referee tendencies — official-specific total deviation adjustments
-try:
-    from referee_engine import get_ref_adjustment
-    HAS_REFEREE = True
-except ImportError:
-    HAS_REFEREE = False
 
 SPORT_CONFIG = {
     'basketball_ncaab': {
@@ -1448,7 +1434,7 @@ def generate_predictions(conn, sport=None, date=None):
                     game_time = datetime.fromisoformat(commence.replace('Z', '+00:00'))
                     if game_time < now_utc - timedelta(minutes=5):
                         continue
-                except:
+                except Exception:
                     pass
 
             ms = compute_model_spread(home, away, ratings, sp)
@@ -2414,7 +2400,7 @@ def generate_predictions(conn, sport=None, date=None):
                                 _game_et = datetime.fromisoformat(commence.replace('Z', '+00:00')).astimezone(EASTERN)
                                 if _game_et.strftime('%A') == 'Friday':
                                     _block_ncaa_under = True
-                            except:
+                            except Exception:
                                 pass
                             if under_total > 12.0:
                                 _block_ncaa_under = True
@@ -2792,7 +2778,7 @@ def _ensure_bet_columns(conn):
         if col not in existing:
             try:
                 conn.execute(f"ALTER TABLE bets ADD COLUMN {col} {dtype}")
-            except:
+            except Exception:
                 pass
     conn.commit()
 
@@ -2920,7 +2906,7 @@ def print_picks(picks, title="TODAY'S PICKS"):
                         day_label = 'TOMORROW'
                     else:
                         day_label = est.strftime('%a %m/%d')
-                except:
+                except Exception:
                     est_time = p['commence'][:16].replace('T',' ')
             print(f"\n  {tier_icon} {p['selection']}")
             print(f"     {p['home']} vs {p['away']} | {day_label} {est_time} {tz_label}")
@@ -3029,7 +3015,7 @@ def _render_sport_group(lines, sport_label, icon, sport_picks):
                 gt = datetime.fromisoformat(p['commence'].replace('Z','+00:00'))
                 est = _to_eastern(gt)
                 game_time = est.strftime('%I:%M %p') + f' {tz_label}'
-            except:
+            except Exception:
                 game_time = ''
         lines.append(f"")
         lines.append(f"  {tier_icon} {p['selection']}")

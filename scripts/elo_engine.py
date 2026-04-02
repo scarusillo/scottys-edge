@@ -573,7 +573,7 @@ def get_elo_ratings(conn, sport):
             FROM elo_ratings WHERE sport=?
         """, (sport,)).fetchall()
         return {r[0]: {'elo': r[1], 'games': r[2], 'confidence': r[3], 'sos': r[4]} for r in rows}
-    except:
+    except Exception:
         return {}
 
 

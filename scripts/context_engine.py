@@ -119,7 +119,7 @@ def _days_since_last_game(conn, team, sport, before_date):
         game_date = datetime.fromisoformat(before_date.replace('Z', '+00:00'))
         diff = (game_date - last_game).total_seconds() / 86400
         return diff
-    except:
+    except Exception:
         return None
 
 
@@ -128,7 +128,7 @@ def _games_in_window(conn, team, sport, before_date, days_back):
     try:
         game_date = datetime.fromisoformat(before_date.replace('Z', '+00:00'))
         window_start = (game_date - timedelta(days=days_back)).isoformat()
-    except:
+    except Exception:
         return 0
     
     row = conn.execute("""
@@ -523,7 +523,7 @@ def travel_timezone_adjustment(home, away, commence, sport):
     try:
         game_time = datetime.fromisoformat(commence.replace('Z', '+00:00'))
         est_hour = (game_time - timedelta(hours=5)).hour
-    except:
+    except Exception:
         return 0.0, {}
     
     adj = 0.0
@@ -1678,7 +1678,7 @@ def ref_adjustment(conn, sport, event_id):
             WHERE event_id = ?
             ORDER BY created_at DESC LIMIT 1
         """, (event_id,)).fetchone()
-    except:
+    except Exception:
         # Table doesn't exist yet — that's fine
         return 0.0, 0.0, {}
     
@@ -2490,7 +2490,7 @@ def _cli_set_refs():
             gt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
             est = gt - timedelta(hours=5)
             time_str = est.strftime('%I:%M %p')
-        except:
+        except Exception:
             time_str = '?'
         
         print(f"  [{label}] {away} @ {home} | {time_str} EST | {status}")

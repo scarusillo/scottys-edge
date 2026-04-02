@@ -165,7 +165,7 @@ def cmd_opener(args):
                 f"Opening lines captured at {datetime.now().strftime('%I:%M %p EST')}.\n"
                 f"CLV baseline set for today's games.\n"
                 f"Picks coming at 11 AM and 5:30 PM.")
-        except: pass
+        except Exception: pass
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -915,7 +915,7 @@ def _generate_html_card(picks):
                     gt = datetime.fromisoformat(p['commence'].replace('Z', '+00:00'))
                     est = _to_eastern(gt)
                     game_time = est.strftime('%I:%M %p') + f' {tz}'
-                except:
+                except Exception:
                     pass
 
             conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
@@ -953,7 +953,7 @@ def _generate_html_card(picks):
                         gt = datetime.fromisoformat(p['commence'].replace('Z', '+00:00'))
                         est = _to_eastern(gt)
                         game_time = est.strftime('%I:%M %p') + f' {tz}'
-                    except:
+                    except Exception:
                         pass
                 conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
                 ctx_html = f'<div class="pick-context">📍 {p.get("context", "")}</div>' if p.get('context') else ''
@@ -1485,7 +1485,7 @@ def _social_media_card(picks):
                     gt = datetime.fromisoformat(p['commence'].replace('Z', '+00:00'))
                     est = _to_eastern(gt)
                     game_time = est.strftime('%I:%M %p')
-                except:
+                except Exception:
                     pass
             
             lines.append(f"  {icon} {p['selection']}")
@@ -2422,8 +2422,8 @@ def cmd_grade(args):
         from odds_api import fetch_scores
         for sp in ALL_SPORTS:
             try: fetch_scores(sp, days_back=3)
-            except: pass
-    except: pass
+            except Exception: pass
+    except Exception: pass
 
     # v21 FIX: Odds API scores endpoint often returns 0 results for tennis.
     # ESPN scraper reliably returns completed match scores (FREE).

@@ -94,7 +94,7 @@ def _font(fonts, style, size):
     path = fonts.get(style)
     if path:
         try: return ImageFont.truetype(path, size * S)
-        except: pass
+        except Exception: pass
     return ImageFont.load_default()
 
 def _to_eastern(utc_str):
@@ -104,7 +104,7 @@ def _to_eastern(utc_str):
         eastern = dt - timedelta(hours=offset)
         tz = 'EDT' if 3 <= dt.month <= 10 else 'EST'
         return eastern.strftime('%I:%M %p') + f' {tz}'
-    except: return ''
+    except Exception: return ''
 
 def _draw_divider(draw, y):
     mid = CARD_WIDTH // 2

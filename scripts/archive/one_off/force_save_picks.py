@@ -68,7 +68,7 @@ try:
     try:
         from card_image import generate_picks_html
         html_content = generate_picks_html(all_picks)
-    except:
+    except Exception:
         pass
     
     send_picks_email(text, "Evening", html_body=html_content, attachment_path=card_path)

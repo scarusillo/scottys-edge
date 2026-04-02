@@ -207,7 +207,7 @@ def get_line_movement(conn, event_id, player, market):
             'opening_over_odds': opener[1],
             'opening_under_odds': opener[2],
         }
-    except:
+    except Exception:
         return None
 
 
@@ -318,7 +318,7 @@ def get_player_history(conn, player, stat_type, limit=20):
             'avg_line': avg_line,
             'diff': avg_actual - avg_line,
         }
-    except:
+    except Exception:
         return None
 
 
@@ -423,7 +423,7 @@ def evaluate_props(conn=None):
             gt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
             if gt < now_utc - timedelta(minutes=5):
                 continue
-        except:
+        except Exception:
             pass
 
         # Parse player name and side
@@ -602,7 +602,7 @@ def evaluate_props(conn=None):
                 gt = datetime.fromisoformat(gi.get('commence', '').replace('Z', '+00:00'))
                 est = gt - timedelta(hours=5)
                 est_time = est.strftime('%I:%M %p EST')
-            except:
+            except Exception:
                 pass
 
             # Build notes showing signals
@@ -711,7 +711,7 @@ def _ensure_tables(conn):
             UNIQUE(event_id, player, stat_type))""")
 
         conn.commit()
-    except:
+    except Exception:
         pass  # Tables already exist
 
 

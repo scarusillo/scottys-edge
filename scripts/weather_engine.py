@@ -341,9 +341,9 @@ def get_weather_adjustment(home_team, sport, commence=None):
                 game_time = datetime.fromisoformat(commence.replace('Z', '+00:00'))
             else:
                 game_time = commence
-        except:
+        except Exception:
             pass
-    
+
     weather = _fetch_weather(coords[0], coords[1], game_time)
     if not weather:
         return 0.0, {}

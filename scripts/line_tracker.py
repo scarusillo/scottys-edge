@@ -163,7 +163,7 @@ def detect_movements(conn, lookback_hours=4):
         t1 = datetime.fromisoformat(previous_time.replace('Z', '+00:00'))
         t2 = datetime.fromisoformat(current_time.replace('Z', '+00:00'))
         hours = (t2 - t1).total_seconds() / 3600
-    except:
+    except Exception:
         hours = 3.0
 
     # Get spread lines from both snapshots

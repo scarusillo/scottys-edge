@@ -196,7 +196,7 @@ def _get_api_teams(conn, sport):
             for r in rows:
                 if r[0]:
                     teams.add(r[0])
-        except:
+        except Exception:
             pass
     return teams
 
@@ -433,7 +433,7 @@ def save_mappings(conn, sport, diag):
     # Ensure table has espn_name column
     try:
         conn.execute("ALTER TABLE team_aliases ADD COLUMN espn_name TEXT")
-    except:
+    except Exception:
         pass  # Column already exists
     
     name_map = dict(diag['matched'])
@@ -448,7 +448,7 @@ def save_mappings(conn, sport, diag):
                 INSERT OR REPLACE INTO team_aliases (sport, alias, canonical, espn_name)
                 VALUES (?, ?, ?, ?)
             """, (sport, espn_name, api_name, espn_name))
-        except:
+        except Exception:
             pass
     
     conn.commit()

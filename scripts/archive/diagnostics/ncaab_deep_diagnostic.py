@@ -108,7 +108,7 @@ for sel, result, pnl, ctx_factors, ctx_confirmed, model_sp, line, dt in all_ncaa
         if len(parts) > 1:
             try:
                 adj_val = float(parts[1].replace(')', '').replace('+', ''))
-            except:
+            except Exception:
                 pass
         
         if factor_name not in factor_perf:

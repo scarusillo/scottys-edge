@@ -49,7 +49,7 @@ print("=" * 50)
 
 try:
     from scottys_edge import SOFT_MARKETS, SHARP_MARKETS
-except:
+except Exception:
     SOFT_MARKETS = {'basketball_ncaab', 'soccer_usa_mls', 'soccer_germany_bundesliga', 
                     'soccer_france_ligue_one', 'soccer_italy_serie_a', 'soccer_uefa_champs_league',
                     'baseball_ncaa'}

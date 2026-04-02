@@ -95,7 +95,7 @@ def _load_name_mappings(conn):
         rows = conn.execute("SELECT espn_name, odds_api_name FROM team_aliases WHERE espn_name IS NOT NULL").fetchall()
         for espn, odds in rows:
             _name_cache[espn.lower()] = odds
-    except:
+    except Exception:
         pass  # Table might not have espn_name column yet
     
     # Hardcoded mappings for common mismatches
@@ -138,9 +138,9 @@ def _normalize_team_name(espn_name, conn, sport):
             if row:
                 _name_cache[key] = row[0]
                 return row[0]
-        except:
+        except Exception:
             pass
-    
+
     # Try substring match (ESPN "Celtics" → "Boston Celtics")
     try:
         words = espn_name.split()
@@ -156,7 +156,7 @@ def _normalize_team_name(espn_name, conn, sport):
             if row:
                 _name_cache[key] = row[0]
                 return row[0]
-    except:
+    except Exception:
         pass
     
     # Return as-is (will still be useful for Elo even without exact mapping)
@@ -711,7 +711,7 @@ def fetch_historical_odds_api(sport, days_back=30, verbose=True):
                     """, (sport, event_id, event.get('commence_time', ''),
                           home, away, closing_total, closing_total,
                           target.strftime('%Y-%m-%d')))
-                except:
+                except Exception:
                     pass
         
         time.sleep(0.5)  # Rate limiting

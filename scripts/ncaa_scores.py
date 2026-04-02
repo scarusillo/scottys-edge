@@ -165,7 +165,7 @@ def _parse_ncaa_html(html, sport):
             props = next_data.get('props', {}).get('pageProps', {})
             game_data = props.get('games', []) or props.get('scoreboard', {}).get('games', [])
             return _parse_ncaa_json({'games': game_data}, sport)
-        except:
+        except Exception:
             pass
     
     # Regex fallback: look for score patterns in HTML
@@ -206,7 +206,7 @@ def _normalize_ncaa_name(ncaa_name, conn, sport):
             """, (sport, f'%{ncaa_name.lower()}%', sport, f'%{ncaa_name.lower()}%')).fetchone()
             if row:
                 return row[0]
-        except:
+        except Exception:
             pass
     
     # Try last word (mascot)
@@ -222,7 +222,7 @@ def _normalize_ncaa_name(ncaa_name, conn, sport):
             """, (sport, f'%{school.lower()}%', f'%{mascot.lower()}%')).fetchone()
             if row:
                 return row[0]
-        except:
+        except Exception:
             pass
     
     return ncaa_name

@@ -63,7 +63,7 @@ def _est_time(commence):
         gt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
         est = gt - timedelta(hours=5)
         return est.strftime('%-I:%M%p').lower()
-    except:
+    except Exception:
         return ''
 
 

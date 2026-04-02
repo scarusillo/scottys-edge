@@ -153,7 +153,7 @@ PATCHES.append((
             with open(caption_path, 'w', encoding='utf-8') as f:
                 f.write(caption)
             print(f"  Saved to: {caption_path}")
-        except:
+        except Exception:
             pass""",
     "Add Twitter/Instagram caption generation to run pipeline"
 ))

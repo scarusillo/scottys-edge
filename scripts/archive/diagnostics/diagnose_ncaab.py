@@ -27,7 +27,7 @@ def diagnose():
     try:
         from elo_engine import get_elo_ratings, blended_spread
         HAS_ELO = True
-    except:
+    except Exception:
         HAS_ELO = False
 
     ratings = get_latest_ratings(conn, sport)
@@ -93,7 +93,7 @@ def diagnose():
                 if gt < now_utc - timedelta(minutes=30):
                     in_progress += 1
                     continue
-            except:
+            except Exception:
                 pass
 
         ms = compute_model_spread(home, away, ratings, sport)
