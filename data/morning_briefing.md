@@ -1,5 +1,5 @@
 # Scotty's Edge Morning Briefing
-**Date:** Thursday, April 02, 2026 | **Generated:** 05:22 AM ET
+**Date:** Thursday, April 02, 2026 | **Generated:** 05:25 AM ET
 **Game Date Graded:** 2026-04-01
 
 ---
@@ -146,4 +146,4 @@ Found 1 shadow-tagged picks.
 10. 1 loss(es) yesterday with CLV < -3% (MODEL ERROR). Review those matchups.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-02 05:22 ET*
+*Generated locally by export_briefing_data.py | 2026-04-02 05:25 ET*
