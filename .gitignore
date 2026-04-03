@@ -1,6 +1,8 @@
 # Database — too large for GitHub, contains local data
 data/*.db
 data/*.db-journal
+scripts/*.db
+scripts/*.db-journal
 
 # API keys and secrets
 .env

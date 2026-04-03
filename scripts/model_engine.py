@@ -80,6 +80,13 @@ try:
 except ImportError:
     HAS_NHL_GOALIES = False
 
+# Referee tendencies — dynamic adjustment from scraped ESPN data
+try:
+    from referee_engine import get_ref_adjustment
+    HAS_REF = True
+except ImportError:
+    HAS_REF = False
+
 
 SPORT_CONFIG = {
     'basketball_ncaab': {
@@ -1592,6 +1599,17 @@ def generate_predictions(conn, sport=None, date=None):
             # which caused blind picks (e.g., Spurs ML with Wembanyama out).
             h_inj, h_cl, h_imp = get_team_injury_context(conn, home, sp)
             a_inj, a_cl, a_imp = get_team_injury_context(conn, away, sp)
+
+            # ═══ REFEREE DATA — fetch BEFORE pick generation ═══
+            # Scrapes today's assigned officials from ESPN and computes
+            # total adjustment from historical tendencies (referee_engine).
+            # Data flows into context_engine.ref_adjustment() for totals picks.
+            ref_adj, ref_info = 0.0, ''
+            if HAS_REF:
+                try:
+                    ref_adj, ref_info = get_ref_adjustment(home, away, sp, conn)
+                except Exception:
+                    pass  # Ref data is supplementary — don't crash
 
             # DIVERGENCE CHECK — run on RAW model spread (before context)
             # Context adjustments are our REASON for disagreeing with the market,

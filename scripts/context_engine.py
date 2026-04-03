@@ -1662,65 +1662,33 @@ def soccer_home_away_adjustment(conn, home, away, sport):
         return 0.0, {}
 
 
-def ref_adjustment(conn, sport, event_id):
+def ref_adjustment(conn, sport, event_id, home=None, away=None):
     """
-    Look up referee assignment and compute total/spread adjustment.
-    
-    Checks ref_assignments table first (populated by user or scraper),
-    then falls back to nothing if refs aren't set.
-    
+    Look up referee assignment and compute total adjustment using dynamic
+    data from referee_engine (scraped ESPN tendencies, confidence-weighted).
+
+    Falls back to 0.0 if no ref data is available.
+
     Returns: (total_adj, spread_adj, reasons_dict)
     """
-    # Check if ref_assignments table exists and has data
+    if not home or not away:
+        return 0.0, 0.0, {}
+
     try:
-        refs_row = conn.execute("""
-            SELECT ref_names FROM ref_assignments
-            WHERE event_id = ?
-            ORDER BY created_at DESC LIMIT 1
-        """, (event_id,)).fetchone()
+        from referee_engine import get_ref_adjustment
+        total_adj, ref_info = get_ref_adjustment(home, away, sport, conn)
+        if total_adj == 0.0 and not ref_info:
+            return 0.0, 0.0, {}
+        reasons = {
+            'refs': ref_info,
+            'total_adj': total_adj,
+            'spread_adj': 0.0,
+        }
+        return total_adj, 0.0, reasons
+    except ImportError:
+        return 0.0, 0.0, {}
     except Exception:
-        # Table doesn't exist yet — that's fine
         return 0.0, 0.0, {}
-    
-    if not refs_row or not refs_row[0]:
-        return 0.0, 0.0, {}
-    
-    ref_names = [r.strip() for r in refs_row[0].split(',')]
-    
-    # Pick the right lookup table
-    if 'nba' in sport:
-        tendencies = NBA_REF_TENDENCIES
-    elif 'nhl' in sport:
-        tendencies = NHL_REF_TENDENCIES
-    else:
-        return 0.0, 0.0, {}
-    
-    total_adj = 0.0
-    spread_adj = 0.0
-    matched_refs = []
-    
-    for ref in ref_names:
-        if ref in tendencies:
-            t = tendencies[ref]
-            total_adj += t.get('total_adj', 0)
-            spread_adj += t.get('home_bias', 0)
-            matched_refs.append(f"{ref} ({t['style']})")
-    
-    if not matched_refs:
-        return 0.0, 0.0, {}
-    
-    # Average across crew (typically 3 refs, lead ref matters most)
-    num = len(matched_refs)
-    total_adj = round(total_adj / num, 1) if num > 1 else total_adj
-    spread_adj = round(spread_adj / num, 1) if num > 1 else spread_adj
-    
-    reasons = {
-        'refs': ', '.join(matched_refs),
-        'total_adj': total_adj,
-        'spread_adj': spread_adj,
-    }
-    
-    return total_adj, spread_adj, reasons
 
 
 def ensure_ref_table(conn):
@@ -2273,8 +2241,8 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
         total_summaries.append(f"H2H {direction}-scoring ({h2h_total:+.1f})")
         has_h2h = True
     
-    # 9. Referee Tendencies (TOTAL primarily, small SPREAD via home bias)
-    ref_total, ref_spread, ref_info = ref_adjustment(conn, sport, event_id)
+    # 9. Referee Tendencies (dynamic from scraped ESPN data via referee_engine)
+    ref_total, ref_spread, ref_info = ref_adjustment(conn, sport, event_id, home, away)
     if ref_total != 0 or ref_spread != 0:
         total_total_adj += ref_total
         total_spread_adj += ref_spread

@@ -616,9 +616,6 @@ def cmd_run(args):
 
             if _blocked:
                 print(f"  Concentration check: blocked {len(_blocked)}, passed {len(_passed)}")
-                # ═══ SHADOW LOG: Track blocked picks for performance monitoring ═══
-                # These had real edge but hit the concentration cap.
-                # The morning briefing agent monitors whether we're leaving money on the table.
                 try:
                     conn.execute("""CREATE TABLE IF NOT EXISTS shadow_blocked_picks (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -627,45 +624,16 @@ def cmd_run(args):
                         edge_pct REAL, units REAL, reason TEXT
                     )""")
                     for _bp in _blocked:
-                        # Skip tainted picks (star player out)
-                        _bp_sport = _bp.get('sport', '')
-                        _bp_sel = _bp.get('selection', '')
-                        _bp_eid = _bp.get('event_id', '')
-                        _is_tainted = False
-                        try:
-                            _inj_rows = conn.execute("""
-                                SELECT SUM(point_impact) FROM injuries
-                                WHERE sport=? AND report_date=? AND status IN ('Out','OUT','Doubtful','DOUBTFUL')
-                                AND team IN (
-                                    SELECT home FROM odds WHERE event_id=? LIMIT 1
-                                )
-                            """, (_bp_sport, _today_str, _bp_eid)).fetchone()
-                            # Also check if the picked team specifically has a star out
-                            # For ML picks, the team is in the selection
-                            if _bp.get('market_type') == 'MONEYLINE':
-                                for _word in _bp_sel.replace(' ML', '').split():
-                                    _team_inj = conn.execute("""
-                                        SELECT SUM(point_impact) FROM injuries
-                                        WHERE sport=? AND report_date=? AND team LIKE ?
-                                        AND status IN ('Out','OUT','Doubtful','DOUBTFUL')
-                                    """, (_bp_sport, _today_str, f'%{_word}%')).fetchone()
-                                    if _team_inj and _team_inj[0] and _team_inj[0] >= 5.0:
-                                        _is_tainted = True
-                                        break
-                        except Exception:
-                            pass
-                        if _is_tainted:
-                            continue  # Don't track tainted picks
                         conn.execute("""INSERT INTO shadow_blocked_picks
                             (created_at, sport, event_id, selection, market_type, book, line, odds, edge_pct, units, reason)
                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                             (datetime.now().isoformat(), _bp.get('sport',''), _bp.get('event_id',''),
                              _bp.get('selection',''), _bp.get('market_type',''), _bp.get('book',''),
                              _bp.get('line'), _bp.get('odds'), _bp.get('edge_pct', 0),
-                             _bp.get('units', 0), 'CONCENTRATION_CAP'))
+                             _bp.get('units', 0), 'CROSS_RUN_CAP'))
                     conn.commit()
-                except Exception as _shadow_e:
-                    print(f"  Shadow log: {_shadow_e}")
+                except Exception as _e:
+                    print(f"  Shadow log: {_e}")
             all_picks = _passed
         except Exception as e:
             print(f"  Concentration check: {e}")
@@ -2120,6 +2088,8 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             return 'DOG' if odds > 0 else 'FAVORITE'
         return p.get('side_type', '')
 
+    _shadow_blocked = []  # Track all cap-blocked picks for performance monitoring
+
     sport_soft_counts = {}
     sport_dir_counts = dict(_existing_dir_counts)  # Start from existing bets
     soft_final = []
@@ -2128,18 +2098,23 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         side = _infer_side(p)
         dir_key = f"{sp}|{side}"
         if sport_soft_counts.get(sp, 0) >= MAX_PER_SPORT_SOFT:
+            _shadow_blocked.append((p, 'SPORT_CAP'))
             continue
         if sport_dir_counts.get(dir_key, 0) >= MAX_PER_SPORT_DIRECTION:
             print(f"  DIRECTION CAP: skipped {p['selection'][:50]} — already have {sport_dir_counts[dir_key]} {side} picks for {sp}")
+            _shadow_blocked.append((p, 'DIRECTION_CAP'))
             continue
         if len(soft_final) >= MAX_SOFT_PICKS:
-            break
+            _shadow_blocked.append((p, 'TOTAL_SOFT_CAP'))
+            continue
         sport_soft_counts[sp] = sport_soft_counts.get(sp, 0) + 1
         sport_dir_counts[dir_key] = sport_dir_counts.get(dir_key, 0) + 1
         soft_final.append(p)
     
     # Sharp markets: cap of 4, best edges across NBA/NHL/EPL/La Liga
     sharp_final = sharp_deduped[:MAX_SHARP_PICKS]
+    for p in sharp_deduped[MAX_SHARP_PICKS:]:
+        _shadow_blocked.append((p, 'SHARP_CAP'))
     
     # ── Merge: soft first, then sharp ──
     game_final = soft_final + sharp_final
@@ -2157,10 +2132,12 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             # Already have a pick on this game — keep the higher edge
             if p.get('edge_pct', 0) > existing.get('edge_pct', 0):
                 game_capped.remove(existing)
+                _shadow_blocked.append((existing, 'GAME_CAP'))
                 game_event_best[eid] = p
                 game_capped.append(p)
                 print(f"  CONCENTRATION CAP: kept {p['selection'][:40]} over {existing['selection'][:40]} (same game)")
             else:
+                _shadow_blocked.append((p, 'GAME_CAP'))
                 print(f"  CONCENTRATION CAP: skipped {p['selection'][:40]} — already have {existing['selection'][:40]} on this game")
         else:
             game_event_best[eid] = p
@@ -2268,6 +2245,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     for p in prop_deduped:
         eid = p['event_id']
         if game_prop_counts.get(eid, 0) >= MAX_PROPS_PER_GAME:
+            _shadow_blocked.append((p, 'PROP_GAME_CAP'))
             continue
         game_prop_counts[eid] = game_prop_counts.get(eid, 0) + 1
         prop_game_capped.append(p)
@@ -2283,6 +2261,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         market_key = _get_prop_market_key(p)
         stat_game_key = f"{eid}|{market_key}"
         if stat_game_counts.get(stat_game_key, 0) >= MAX_SAME_STAT_PER_GAME:
+            _shadow_blocked.append((p, 'PROP_STAT_CAP'))
             continue
         stat_game_counts[stat_game_key] = stat_game_counts.get(stat_game_key, 0) + 1
         prop_final.append(p)
@@ -2314,9 +2293,31 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     prop_count = sum(1 for p in all_picks if p['market_type'] == 'PROP')
     print(f"\n  Selected: {len(all_picks)} picks ({soft_count} soft mkt, {sharp_count} sharp mkt, {prop_count} props)")
     if sharp_count:
-        sharp_sports = set(p['sport'].replace('basketball_','').replace('icehockey_','').replace('soccer_','').upper() 
+        sharp_sports = set(p['sport'].replace('basketball_','').replace('icehockey_','').replace('soccer_','').upper()
                           for p in all_picks if p.get('sport') in SHARP_MARKETS and p['market_type'] != 'PROP')
         print(f"    Sharp market picks ({sharp_count}/{MAX_SHARP_PICKS} max): {', '.join(sharp_sports)}")
+
+    # ── Shadow log: save all cap-blocked picks for performance tracking ──
+    if _shadow_blocked and conn is not None:
+        try:
+            conn.execute("""CREATE TABLE IF NOT EXISTS shadow_blocked_picks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at TEXT, sport TEXT, event_id TEXT, selection TEXT,
+                market_type TEXT, book TEXT, line REAL, odds REAL,
+                edge_pct REAL, units REAL, reason TEXT
+            )""")
+            for _bp, _reason in _shadow_blocked:
+                conn.execute("""INSERT INTO shadow_blocked_picks
+                    (created_at, sport, event_id, selection, market_type, book, line, odds, edge_pct, units, reason)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (datetime.now().isoformat(), _bp.get('sport',''), _bp.get('event_id',''),
+                     _bp.get('selection',''), _bp.get('market_type',''), _bp.get('book',''),
+                     _bp.get('line'), _bp.get('odds'), _bp.get('edge_pct', 0),
+                     _bp.get('units', 0), _reason))
+            conn.commit()
+            print(f"  Shadow log: {len(_shadow_blocked)} blocked picks saved for tracking")
+        except Exception as _e:
+            print(f"  Shadow log: {_e}")
 
     return all_picks
 

@@ -1632,11 +1632,13 @@ def daily_grade_and_report(conn=None):
             }
             subscriber_recap = generate_subscriber_recap(conn, graded, overall_stats)
             if subscriber_recap:
-                print(f"\n{'\u2500'*60}")
+                _sep = '\u2500' * 60
+                print(f"\n{_sep}")
                 print(f"  SUBSCRIBER RECAP")
-                print(f"{'\u2500'*60}")
-                print(f"  {subscriber_recap.replace(chr(10), chr(10) + '  ')}")
-                print(f"{'\u2500'*60}")
+                print(f"{_sep}")
+                indented = subscriber_recap.replace(chr(10), chr(10) + '  ')
+                print(f"  {indented}")
+                print(f"{_sep}")
         except Exception as e:
             print(f"  Subscriber recap: {e}")
 
