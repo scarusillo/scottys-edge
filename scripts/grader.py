@@ -651,20 +651,31 @@ def grade_bets(conn, days_back=3):
 
 def _market_key(market_type, selection=''):
     """Map our market_type to the odds table market key.
-    
+
     For props, we need to determine the specific market from the selection text.
     Selections look like: "LeBron James OVER 25.5 POINTS"
     """
     if market_type == 'PROP':
         sel_upper = (selection or '').upper()
-        if 'REBOUNDS' in sel_upper or 'REB' in sel_upper:
-            return 'player_rebounds'
-        elif 'ASSISTS' in sel_upper or 'AST' in sel_upper:
-            return 'player_assists'
-        elif 'THREES' in sel_upper or '3PT' in sel_upper or 'THREE' in sel_upper:
-            return 'player_threes'
-        else:
-            return 'player_points'  # Default for props
+        # Match against all prop labels (same mapping as props_engine.PROP_LABEL)
+        PROP_MARKET_MAP = {
+            'POINTS': 'player_points', 'REBOUNDS': 'player_rebounds',
+            'ASSISTS': 'player_assists', 'THREES': 'player_threes',
+            'BLOCKS': 'player_blocks', 'STEALS': 'player_steals',
+            'SOG': 'player_shots_on_goal', 'PPP': 'player_power_play_points',
+            'BLK_SHOTS': 'player_blocked_shots',
+            'SHOTS': 'player_shots', 'SOT': 'player_shots_on_target',
+            'HITS': 'batter_hits', 'TOTAL_BASES': 'batter_total_bases',
+            'HOME_RUNS': 'batter_home_runs', 'RBIS': 'batter_rbis',
+            'RUNS': 'batter_runs_scored', 'STRIKEOUTS': 'pitcher_strikeouts',
+            'OUTS': 'pitcher_outs', 'HITS ALLOWED': 'pitcher_hits_allowed',
+            'EARNED RUNS': 'pitcher_earned_runs', 'WALKS': 'pitcher_walks',
+            'STOLEN_BASES': 'batter_stolen_bases',
+        }
+        for label, market in PROP_MARKET_MAP.items():
+            if label in sel_upper:
+                return market
+        return 'player_points'  # Default fallback
     
     return {
         'SPREAD': 'spreads',
