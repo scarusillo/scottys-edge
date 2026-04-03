@@ -147,7 +147,7 @@ SQLite at `data/betting_model.db`. Key tables:
 | 8:00 AM | `opener --email` | Capture opening lines for CLV |
 | 9:00 AM | `grade --email` | Grade yesterday + performance report |
 | 7:00 AM Sat/Sun | `run-soccer --email` | Weekend European soccer |
-| 8 AM - 11 PM (hourly) | `run --email` | 16 cycles/day, dedup filters old picks |
+| 6 AM - 8 PM (hourly) | `run --email` | 15 cycles/day, dedup filters old picks |
 
 ## External APIs
 
