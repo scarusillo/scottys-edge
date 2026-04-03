@@ -2753,7 +2753,13 @@ def save_picks_to_db(conn, picks):
     day_of_week = datetime.now().strftime('%A')  # Monday, Tuesday, etc.
     saved = 0
     dupes = 0
+    skipped_no_eid = 0
     for p in picks:
+        # Reject picks without event_id — these can't be graded or tracked
+        if not p.get('event_id'):
+            skipped_no_eid += 1
+            print(f"  ⚠ Skipped (no event_id): {p.get('selection', 'unknown')[:50]}")
+            continue
         # v12 FIX: Dedup by SIDE, not by full selection string.
         # Old logic: "Nebraska +1.5" != "Nebraska +0.0" → saved twice.
         # New logic: extract the team/side and match on that.
