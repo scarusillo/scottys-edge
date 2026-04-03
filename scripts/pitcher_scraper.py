@@ -1106,11 +1106,17 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
         # Capped at ±2.0
         result['total_adj'] = round(max(-2.0, min(2.0, combined_adj * 0.5)), 2)
 
-    # Day-of-week baseline adjustments (college baseball only)
-    # Friday aces suppress scoring, Sunday #3 starters allow more
-    # MLB Friday scoring is actually HIGHER than average — no DOW adj for MLB
+    # Day-of-week baseline adjustments
+    # College: Friday aces suppress scoring, Sunday #3 starters allow more
+    # MLB midweek (Mon/Wed): 1W-4L -16.4u on totals. Dampen to avoid these.
+    # MLB weekend: 3W-0L +13.0u — no adjustment needed.
     if sport == 'baseball_mlb':
-        dow_adj = 0.0
+        MLB_DOW_TOTAL_ADJ = {
+            'monday': -0.5,    # 1W-2L -6.4u — suppress
+            'wednesday': -0.5, # 0W-2L -10.0u — suppress
+        }
+        dow_name = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'][dow]
+        dow_adj = MLB_DOW_TOTAL_ADJ.get(dow_name, 0.0)
     else:
         DOW_TOTAL_ADJ = {
             'friday': -0.3,    # Aces → lower scoring (reduced from -0.5; market already prices this)
