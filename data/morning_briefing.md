@@ -1,5 +1,5 @@
 # Scotty's Edge Morning Briefing
-**Date:** Friday, April 03, 2026 | **Generated:** 07:03 AM ET
+**Date:** Friday, April 03, 2026 | **Generated:** 07:05 AM ET
 **Game Date Graded:** 2026-04-02
 
 ---
@@ -166,4 +166,4 @@ Found 1 shadow-tagged picks.
 7. baseball_ncaa UNDERs: 21W-20L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-03 07:03 ET*
+*Generated locally by export_briefing_data.py | 2026-04-03 07:05 ET*
