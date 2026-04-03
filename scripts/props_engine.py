@@ -41,9 +41,9 @@ PROP_LABEL = {
     'batter_runs_scored': 'RUNS', 'batter_strikeouts': 'STRIKEOUTS',
     'batter_stolen_bases': 'STOLEN_BASES', 'batter_walks': 'WALKS',
     # MLB pitching
-    'pitcher_strikeouts': 'PITCHER_STRIKEOUTS', 'pitcher_outs': 'PITCHER_OUTS',
-    'pitcher_hits_allowed': 'HITS_ALLOWED', 'pitcher_earned_runs': 'EARNED_RUNS',
-    'pitcher_walks': 'PITCHER_WALKS',
+    'pitcher_strikeouts': 'STRIKEOUTS', 'pitcher_outs': 'OUTS',
+    'pitcher_hits_allowed': 'HITS ALLOWED', 'pitcher_earned_runs': 'EARNED RUNS',
+    'pitcher_walks': 'WALKS',
 }
 
 # ═══════════════════════════════════════════════════════════════════
@@ -141,6 +141,26 @@ def find_consensus_edges(consensus, min_edge=3.0):
     if not consensus:
         return edges
 
+    # Line adjustment factor per point of difference from consensus.
+    # High-volume stats (points, rebounds) move ~4% per point.
+    # Low-volume / high-impact stats (pitcher outs, earned runs) move much more.
+    # Pitcher outs: 18.5 vs 17.5 = full inning difference (~15-20% swing).
+    market = consensus.get('market', '')
+    LINE_ADJ_FACTORS = {
+        'pitcher_outs': 0.15,           # 1 out line diff = ~15% prob shift
+        'pitcher_earned_runs': 0.12,    # 1 ER line diff = ~12% prob shift
+        'pitcher_hits_allowed': 0.08,   # 1 hit line diff = ~8% prob shift
+        'pitcher_walks': 0.10,
+        'pitcher_strikeouts': 0.08,
+        'batter_home_runs': 0.15,       # 0.5 vs 1.5 HR is massive
+        'batter_stolen_bases': 0.12,
+        'batter_hits': 0.10,
+        'player_blocks': 0.10,
+        'player_steals': 0.10,
+        'player_threes': 0.08,
+    }
+    line_adj_factor = LINE_ADJ_FACTORS.get(market, 0.04)
+
     for pl in consensus['lines']:
         book = pl['book']
         line = pl['line']
@@ -154,8 +174,7 @@ def find_consensus_edges(consensus, min_edge=3.0):
                 line_diff = consensus['consensus_line'] - line  # positive = this line is lower (easier over)
                 adj_prob = consensus['consensus_over_prob']
                 if line_diff != 0:
-                    # Each 0.5 point shift ~ 2-4% probability for points
-                    adj_prob = min(0.95, max(0.05, adj_prob + line_diff * 0.04))
+                    adj_prob = min(0.95, max(0.05, adj_prob + line_diff * line_adj_factor))
 
                 edge = (adj_prob - over_imp) * 100
                 if edge >= min_edge:
@@ -173,7 +192,7 @@ def find_consensus_edges(consensus, min_edge=3.0):
                 line_diff = line - consensus['consensus_line']  # positive = this line is higher (easier under)
                 adj_prob = consensus['consensus_under_prob']
                 if line_diff != 0:
-                    adj_prob = min(0.95, max(0.05, adj_prob + line_diff * 0.04))
+                    adj_prob = min(0.95, max(0.05, adj_prob + line_diff * line_adj_factor))
 
                 edge = (adj_prob - under_imp) * 100
                 if edge >= min_edge:
@@ -496,6 +515,7 @@ def evaluate_props(conn=None):
         consensus = compute_consensus(pl_list)
         if not consensus:
             continue
+        consensus['market'] = market  # Pass market type for line adjustment scaling
 
         consensus_edges = find_consensus_edges(consensus, min_edge=3.0)
         if consensus_edges:
