@@ -2676,8 +2676,9 @@ def _mk(sp, eid, commence, home, away, mtype, sel, book, line, odds, ms, prob, i
     # instead of being killed by tiny probability edges.
     actual_edge = max(prob_edge, pv_edge, 0)
 
-    # v20: Cap spread edge at 20% — 25% cap bets were 33W-25L 6.8% ROI vs 12.5% below cap
-    actual_edge = min(actual_edge, 20.0)
+    # v23: Cap at 30% — edges above 30% are noise (2W-4L -9.3u).
+    # 25-30% is the best bucket: 33W-20L +44u (62%). Let Kelly size naturally.
+    actual_edge = min(actual_edge, 30.0)
 
     # v17: Model-vs-market divergence penalty for spreads
     # When model heavily disagrees with market, reduce edge (market is likely right)
@@ -2711,8 +2712,8 @@ def _mk(sp, eid, commence, home, away, mtype, sel, book, line, odds, ms, prob, i
     }
 
 def _mk_ml(sp, eid, commence, home, away, sel, book, odds, ms, prob, imp, edge, stars, timing, t_r):
-    # v20: Cap ML edge at 20% — inflated edges at 25% cap showed 0.0 CLV
-    edge = min(edge, 20.0)
+    # v23: Cap at 30% — edges above 30% are noise (2W-4L -9.3u).
+    edge = min(edge, 30.0)
     units = kelly_units(edge_pct=edge, odds=odds)
     kl = kelly_label(units)
     return {

@@ -1647,17 +1647,23 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     MAX_SHARP_PICKS = 6   # v17: Was 4 — NHL can have 5+ puck lines on heavy nights (20W-9L +25.3u)
     
     # ── Filter: Only highest conviction picks make the card ──
-    # No artificial caps — quality thresholds control output volume.
-    # On a big Saturday slate: ~8-15 picks. Weeknight: ~2-5.
-    # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
-    MARKET_MIN_EDGE = {
-        'TOTAL': 20.0,       # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
-        'SPREAD': 20.0,      # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
-        'MONEYLINE': 20.0,   # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
+    # v23: Book-tier-aware edge thresholds.
+    # Data: Soft books (FD/Fanatics/Caesars) at 15-20% edge: 17W-8L +27u (68%).
+    #        Sharp books (DK/BetRivers/BetMGM) at 15-20%: 20W-19L -23.3u (51%).
+    # Soft book edges are real at lower thresholds. Sharp book edges are noise below 20%.
+    SOFT_BOOKS = {'FanDuel', 'Fanatics', 'Caesars'}
+    SHARP_BOOKS = {'DraftKings', 'BetRivers', 'BetMGM', 'ESPN BET', 'PointsBet'}
+    SOFT_BOOK_MIN_EDGE = {
+        'TOTAL': 15.0,
+        'SPREAD': 15.0,
+        'MONEYLINE': 15.0,
     }
-    # v21: All sports unified at 20%. Baseball totals were 10% but the edge
-    # cap analysis showed below-20% picks are net negative across all sports.
-    BASEBALL_TOTAL_MIN_EDGE = 20.0
+    SHARP_BOOK_MIN_EDGE = {
+        'TOTAL': 20.0,
+        'SPREAD': 20.0,
+        'MONEYLINE': 20.0,
+    }
+    BASEBALL_TOTAL_MIN_EDGE = 15.0  # Soft books; sharp books still get 20.0
     # Soccer spreads: backtest profitable at 5%+ edge across EPL (+21% ROI),
     # Ligue 1 (+27% ROI). Soccer point values are inherently smaller
     # (spreads ±0.25 to ±1.5 vs basketball ±3 to ±15), so 13% threshold
@@ -1672,14 +1678,21 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     # Bundesliga 63.8% overs, UCL 72.8%. Model correctly identifies
     # over/under tendencies from team attack/defense rates.
     SOCCER_TOTAL_MIN_EDGE = 5.0
-    # v21: STRONG was 3W-7L -22.5u, HIGH was 3W-4L -7.5u. Only MAX PLAYs.
-    MIN_UNITS = 5.0  # v21: Raised from 3.5 — ELITE (5u) only
-    REQUIRED_CONFIDENCE = ('ELITE',)
+    # v23: Kelly sizing now scales with edge. Soft books can fire at 15%+ edge
+    # which Kelly sizes to ~2-3u. Kept 3.0u minimum to filter weak edges.
+    # Sharp books still need 20%+ which naturally Kelly-sizes to 4-5u.
+    MIN_UNITS = 3.0  # v23: Lowered from 5.0 to allow Kelly-scaled soft book picks
+    REQUIRED_CONFIDENCE = ('ELITE', 'HIGH')  # v23: Allow HIGH for soft book 15-20% picks
 
     def _passes_filter(p):
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
-        min_edge = MARKET_MIN_EDGE.get(mtype, 20.0)  # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
+        book = p.get('book', '')
+        # v23: Book-tier-aware thresholds
+        if book in SOFT_BOOKS:
+            min_edge = SOFT_BOOK_MIN_EDGE.get(mtype, 15.0)
+        else:
+            min_edge = SHARP_BOOK_MIN_EDGE.get(mtype, 20.0)
         # v16: Soccer spreads DISABLED — backtest 80W-86L -70u.
         # Only totals are profitable (92W-62L +104u, 59.7%).
         # EPL/Ligue 1 spreads showed profit but not enough sample to trust yet.
@@ -1688,14 +1701,14 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # Soccer totals: backtest 92W-62L +104u at 59.7% — the real edge
         if mtype == 'TOTAL' and 'soccer' in sport:
             min_edge = SOCCER_TOTAL_MIN_EDGE
-        # v14: Baseball totals get lower threshold — backtest-proven edge
+        # v14: Baseball totals — soft books get 15%, sharp books stay at 20%
         if mtype == 'TOTAL' and 'baseball' in sport:
-            min_edge = BASEBALL_TOTAL_MIN_EDGE
+            min_edge = BASEBALL_TOTAL_MIN_EDGE if book in SOFT_BOOKS else 20.0
         # Walters ML: Elo-backed moneyline picks use Elo probability directly.
         # Was 8% — too low. Elo ML at 8-15% edge is 3W-4L -12.6u.
         # v21: Raised from 15% to 18% — same as SPREAD/MONEYLINE base.
         if mtype == 'MONEYLINE' and 'Elo' in str(p.get('context', '')):
-            min_edge = 20.0  # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
+            min_edge = 15.0 if book in SOFT_BOOKS else 20.0
         
         # Early bets by sport (post-rebuild):
         #   Baseball EARLY: 18W-7L +41.6u — lines settle early, no surcharge needed
@@ -1726,8 +1739,9 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         _min_u = MIN_UNITS
         if not (p.get('units', 0) >= _min_u and p.get('edge_pct', 0) >= min_edge):
             return False
-        # v21: ELITE only. STRONG was 3W-7L -22.5u, HIGH was 3W-4L -7.5u.
-        if p.get('confidence') not in ('ELITE', None):
+        # v23: ELITE + HIGH. HIGH allowed for soft book 15-20% edges (17W-8L +27u).
+        # STRONG still blocked (3W-7L -22.5u).
+        if p.get('confidence') not in REQUIRED_CONFIDENCE and p.get('confidence') is not None:
             return False
         
         # v17: Soft market context requirement.
@@ -1742,7 +1756,8 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         edge = p.get('edge_pct', 0)
         _is_march_madness = (sport == 'basketball_ncaab'
             and (datetime.now().month == 3 or (datetime.now().month == 4 and datetime.now().day <= 7)))
-        if is_soft and not has_context and edge < 20.0:  # v21: Raised from 18%
+        _ctx_min = 15.0 if book in SOFT_BOOKS else 20.0
+        if is_soft and not has_context and edge < _ctx_min:
             # v14: March Madness exception. Tournament neutral-site games
             # don't trigger context (no B2B, no home/away rest). The Elo
             # spread itself is the signal. Allow picks through at 15% edge.

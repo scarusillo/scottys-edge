@@ -196,19 +196,38 @@ def export_data():
             else:
                 break
 
-    conn.close()
-
     # Shadow blocked picks — concentration cap performance tracking
     shadow_blocked = []
     try:
         _sb_rows = conn.execute("""
-            SELECT created_at, sport, event_id, selection, market_type, line, odds, edge_pct, units
+            SELECT created_at, sport, event_id, selection, market_type, line, odds, edge_pct, units, reason
             FROM shadow_blocked_picks
             ORDER BY created_at DESC LIMIT 100
         """).fetchall()
         shadow_blocked = [dict(r) for r in _sb_rows]
     except Exception:
         pass  # Table may not exist yet
+
+    # Book performance — running tally by sportsbook
+    book_performance = []
+    try:
+        _bp_rows = conn.execute("""
+            SELECT book,
+                   COUNT(*) as bets,
+                   SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END) as wins,
+                   SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END) as losses,
+                   ROUND(SUM(profit), 1) as pnl,
+                   ROUND(SUM(units), 1) as wagered,
+                   ROUND(AVG(CASE WHEN clv IS NOT NULL THEN clv END), 2) as avg_clv
+            FROM bets
+            WHERE result IN ('WIN','LOSS','PUSH') AND units >= 3.0
+            GROUP BY book ORDER BY SUM(profit) DESC
+        """).fetchall()
+        book_performance = [dict(r) for r in _bp_rows]
+    except Exception:
+        pass
+
+    conn.close()
 
     data = {
         'generated_at': now.strftime('%Y-%m-%d %H:%M'),
@@ -226,6 +245,7 @@ def export_data():
         'streak': streak,
         'streak_type': last_10[0] if last_10 else 'N/A',
         'shadow_blocked_picks': shadow_blocked,
+        'book_performance': book_performance,
     }
 
     with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
