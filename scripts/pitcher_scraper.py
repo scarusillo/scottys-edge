@@ -1033,6 +1033,7 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
 
     # Use pitcher_stats ERA only if pitcher has 3+ starts. Otherwise fall back to
     # box_scores ERA (includes 2025 data). A 1-start ERA (e.g., 12.27) is noise.
+    # v23: Blend 80% season + 20% recent (last 10 days) to catch form changes.
     def _reliable_era(starter_row):
         if not starter_row:
             return None, None
@@ -1042,22 +1043,42 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
         start_count = conn.execute(
             "SELECT COUNT(*) FROM pitcher_stats WHERE pitcher_name=? AND is_starter=1", (name,)
         ).fetchone()[0]
+        season_era = None
         if start_count >= 3 and ps_era is not None:
-            return name, ps_era
-        # Fall back to box_scores ERA (2025+2026 combined, requires 30+ IP)
+            season_era = ps_era
+        if season_era is None:
+            # Fall back to box_scores ERA (2025+2026 combined, requires 30+ IP)
+            try:
+                bs = conn.execute("""
+                    SELECT ROUND(SUM(CASE WHEN stat_type='pitcher_er' THEN stat_value ELSE 0 END) * 9.0 /
+                           NULLIF(SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END), 0), 2),
+                           SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END)
+                    FROM box_scores WHERE sport='baseball_mlb' AND player LIKE ?
+                    AND stat_type IN ('pitcher_er','pitcher_ip')
+                """, (f"%{name}%",)).fetchone()
+                if bs and bs[0] is not None and bs[1] and bs[1] >= 30:
+                    season_era = bs[0]
+            except Exception:
+                pass
+        if season_era is None:
+            return name, ps_era  # Last resort: use whatever we have
+
+        # v23: Recent form blend — last 10 days, 80% season + 20% recent
         try:
-            bs = conn.execute("""
-                SELECT ROUND(SUM(CASE WHEN stat_type='pitcher_er' THEN stat_value ELSE 0 END) * 9.0 /
-                       NULLIF(SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END), 0), 2),
-                       SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END)
-                FROM box_scores WHERE sport='baseball_mlb' AND player LIKE ?
-                AND stat_type IN ('pitcher_er','pitcher_ip')
-            """, (f"%{name}%",)).fetchone()
-            if bs and bs[0] is not None and bs[1] and bs[1] >= 30:
-                return name, bs[0]
+            recent = conn.execute("""
+                SELECT ROUND(SUM(earned_runs) * 9.0 / NULLIF(SUM(innings_pitched), 0), 2),
+                       COUNT(*)
+                FROM pitcher_stats
+                WHERE pitcher_name = ? AND is_starter = 1
+                AND game_date >= DATE('now', '-10 days')
+            """, (name,)).fetchone()
+            if recent and recent[0] is not None and recent[1] >= 1:
+                blended = round(0.80 * season_era + 0.20 * recent[0], 2)
+                return name, blended
         except Exception:
             pass
-        return name, ps_era  # Last resort: use whatever we have
+
+        return name, season_era
 
     if home_starter_row:
         result['home_starter'], result['home_starter_era'] = _reliable_era(home_starter_row)
@@ -1597,8 +1618,29 @@ def get_nhl_goalie_stats(conn, goalie_name):
     gaa = round(total_ga / games, 2) if games > 0 else 0.0
     sv_pct = round(total_sv / total_sa, 3) if total_sa and total_sa > 0 else 0.0
 
+    # v23: Recent form — last 10 days of starts
+    # Blend: 80% season + 20% recent. Catches hot/cold streaks without overreacting.
+    recent_gaa = None
+    try:
+        recent_row = conn.execute("""
+            SELECT COUNT(*) as games, SUM(goals_against) as ga
+            FROM nhl_goalie_stats
+            WHERE goalie_name = ? AND is_starter = 1
+            AND game_date >= DATE('now', '-10 days')
+        """, (goalie_name,)).fetchone()
+        if recent_row and recent_row[0] >= 2:
+            recent_gaa = round(recent_row[1] / recent_row[0], 2)
+    except Exception:
+        pass
+
+    blended_gaa = gaa
+    if recent_gaa is not None:
+        blended_gaa = round(0.80 * gaa + 0.20 * recent_gaa, 2)
+
     return {
         'gaa': gaa,
+        'blended_gaa': blended_gaa,
+        'recent_gaa': recent_gaa,
         'sv_pct': sv_pct,
         'games': games,
     }

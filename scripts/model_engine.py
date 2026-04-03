@@ -911,8 +911,9 @@ def _nhl_goalie_adjustment(conn, nhl_goalie_info):
     # Calculate adjustments
     # Home goalie's GAA affects how many goals the AWAY team scores
     # Away goalie's GAA affects how many goals the HOME team scores
-    h_gaa = h_stats['gaa'] if h_stats else LEAGUE_AVG_GAA
-    a_gaa = a_stats['gaa'] if a_stats else LEAGUE_AVG_GAA
+    # v23: Use blended GAA (80% season + 20% last 10 days) if available
+    h_gaa = h_stats.get('blended_gaa', h_stats['gaa']) if h_stats else LEAGUE_AVG_GAA
+    a_gaa = a_stats.get('blended_gaa', a_stats['gaa']) if a_stats else LEAGUE_AVG_GAA
 
     home_dev = (h_gaa - LEAGUE_AVG_GAA) / LEAGUE_AVG_GAA
     away_dev = (a_gaa - LEAGUE_AVG_GAA) / LEAGUE_AVG_GAA
@@ -924,14 +925,20 @@ def _nhl_goalie_adjustment(conn, nhl_goalie_info):
     total_adj = max(-MAX_ADJ, min(MAX_ADJ, total_adj))
     total_adj = round(total_adj, 2)
 
-    # Build context string
+    # Build context string — show recent form if it diverges from season
     ctx_parts = []
     if home_goalie and h_stats:
-        ctx_parts.append(f"{home_goalie} {h_stats['gaa']:.2f}")
+        _hg_str = f"{home_goalie} {h_stats['gaa']:.2f}"
+        if h_stats.get('recent_gaa') is not None and abs(h_stats['recent_gaa'] - h_stats['gaa']) >= 0.3:
+            _hg_str += f" (recent {h_stats['recent_gaa']:.2f})"
+        ctx_parts.append(_hg_str)
     elif home_goalie:
         ctx_parts.append(f"{home_goalie} ?.??")
     if away_goalie and a_stats:
-        ctx_parts.append(f"{away_goalie} {a_stats['gaa']:.2f}")
+        _ag_str = f"{away_goalie} {a_stats['gaa']:.2f}"
+        if a_stats.get('recent_gaa') is not None and abs(a_stats['recent_gaa'] - a_stats['gaa']) >= 0.3:
+            _ag_str += f" (recent {a_stats['recent_gaa']:.2f})"
+        ctx_parts.append(_ag_str)
     elif away_goalie:
         ctx_parts.append(f"{away_goalie} ?.??")
 
