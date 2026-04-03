@@ -1105,6 +1105,20 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
         away_ra = away_overall[0]
         data_quality += 1
 
+    # v23: When we have a named starter with a reliable ERA, blend it into
+    # the team's R/allowed. Individual pitcher form is a stronger signal than
+    # team day-of-week averages. Blend: 60% team avg + 40% pitcher ERA.
+    # Only for NCAA where we don't have confirmed probable pitchers.
+    # MLB already uses confirmed starters directly.
+    if sport != 'baseball_mlb':
+        if result['home_starter_era'] is not None and home_ra is not None:
+            # Convert pitcher ERA to expected R/game (ERA ≈ ER/9IP, close to R/game for starters)
+            home_ra = round(0.60 * home_ra + 0.40 * result['home_starter_era'], 2)
+            data_quality += 1
+        if result['away_starter_era'] is not None and away_ra is not None:
+            away_ra = round(0.60 * away_ra + 0.40 * result['away_starter_era'], 2)
+            data_quality += 1
+
     if home_ra is not None:
         result['home_pitching_adj'] = round(home_ra - league_avg, 2)
     if away_ra is not None:
