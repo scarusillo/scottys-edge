@@ -1,50 +1,71 @@
 # Scotty's Edge Morning Briefing
-**Date:** Thursday, April 02, 2026 | **Generated:** 05:25 AM ET
-**Game Date Graded:** 2026-04-01
+**Date:** Friday, April 03, 2026 | **Generated:** 06:49 AM ET
+**Game Date Graded:** 2026-04-02
 
 ---
 ## Yesterday's Results
 
-**0W-2L-0P | -10.0u | RED DAY**
+**5W-5L-1P | -5.8u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Detroit Tigers@Arizona Diamondbacks OVER 7.5 | baseball_mlb | OVER | -112 | 5.0 | **L** | -5.0 | -6.0% |
-| Minnesota Twins@Kansas City Royals UNDER 8.5 | baseball_mlb | UNDER | -112 | 5.0 | **L** | -5.0 | 0.5% |
+| Montréal Canadiens@New York Rangers UNDER 6.5 | icehockey_nhl | UNDER | -120 | 5.0 | **W** | +4.2 | 2.0% |
+| Oregon Ducks@Michigan Wolverines UNDER 10.5 | baseball_ncaa | UNDER | -130 | 5.0 | **W** | +3.9 | 1.0% |
+| Notre Dame Fighting Irish@NC State Wolfpack O | baseball_ncaa | OVER | -130 | 5.0 | **W** | +3.9 | 1.0% |
+| South Alabama Jaguars@Coastal Carolina Chanti | baseball_ncaa | OVER | -130 | 5.0 | **W** | +3.9 | 0.0% |
+| Calgary Flames@Vegas Golden Knights OVER 5.5 | icehockey_nhl | OVER | -142 | 5.0 | **W** | +3.5 | 1.0% |
+| UAB Blazers@Florida Atlantic Owls OVER 9.0 | baseball_ncaa | OVER | -110 | 5.0 | **P** | +0.0 | -- |
+| Boston Bruins@Florida Panthers OVER 6.0 | icehockey_nhl | OVER | -118 | 5.0 | **L** | -5.0 | 1.5% |
+| Creighton Bluejays@UConn Huskies OVER 9.0 | baseball_ncaa | OVER | -115 | 5.0 | **L** | -5.0 | 0.0% |
+| Louisiana Ragin' Cajuns@James Madison Dukes O | baseball_ncaa | OVER | -115 | 5.0 | **L** | -5.0 | 0.0% |
+| Georgia Tech Yellow Jackets@California Golden | baseball_ncaa | UNDER | -115 | 5.0 | **L** | -5.0 | 1.0% |
+| Stetson Hatters@Jacksonville Dolphins OVER 8. | baseball_ncaa | OVER | +100 | 5.0 | **L** | -5.0 | -- |
 
 ---
 ## Loss Analysis
 
-### Detroit Tigers@Arizona Diamondbacks OVER 7.5
-- **Category:** MODEL ERROR
-- **Analysis:** Negative CLV (-6.0%) -- line moved against us. Model may have been wrong.
-- **Final Score:** Detroit Tigers 0 @ Arizona Diamondbacks 1
-- **Model Spread:** -0.1 | Actual Margin: +1
-- **Context:** Midweek game | Arizona Diamondbacks SP: Zac Gallen (5.88 ERA) | Detroit Tigers SP: Tarik Skubal (2.17 ERA) | Pitching: Zac Gallen 5.88 vs Tarik Skubal 2.17 (+0.0) | Park: Chase Field (+0.9) | Bullpen: Diamondbacks 5.01 vs Tigers 3.70 (+0.2)
-
-### Minnesota Twins@Kansas City Royals UNDER 8.5
+### Boston Bruins@Florida Panthers OVER 6.0
 - **Category:** VARIANCE
-- **Analysis:** Positive CLV (+0.5%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Minnesota Twins 9 @ Kansas City Royals 13
-- **Model Spread:** -0.2 | Actual Margin: +4
-- **Context:** Home slow-paced (-0.4) | Weather: 6mph wind (-1.0) | Midweek game | Kansas City Royals SP: Noah Cameron (2.79 ERA) | Minnesota Twins SP: Joe Ryan (2.70 ERA) | Pitching: Noah Cameron 2.79 vs Joe Ryan 2.70 (-0.9) | Park: Kauffman Stadium (-0.5) | Bullpen: Royals 3.56 vs Twins 4.28 (+0.1)
+- **Analysis:** Positive CLV (+1.5%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** Boston Bruins 1 @ Florida Panthers 2
+- **Model Spread:** +0.6 | Actual Margin: +1
+- **Context:** Away fast-paced (+0.3) | Goalies: Sergei Bobrovsky 3.58 vs Jeremy Swayman 2.71 (+0.3)
+
+### Creighton Bluejays@UConn Huskies OVER 9.0
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Context:** Midweek game | UConn Huskies allows 6.9 R/midweek | Creighton Bluejays allows 6.1 R/midweek | Pitching edge: Creighton Bluejays (-0.2 pts)
+
+### Louisiana Ragin' Cajuns@James Madison Dukes OVER 1
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Context:** Midweek game | James Madison Dukes allows 6.6 R/midweek | Louisiana Ragin' Cajuns allows 4.5 R/midweek | Pitching edge: Louisiana Ragin' Cajuns (-0.6 pts)
+
+### Georgia Tech Yellow Jackets@California Golden Bear
+- **Category:** VARIANCE
+- **Analysis:** Positive CLV (+1.0%) -- the line moved our way. Right side, wrong result.
+- **Context:** Home slow-paced (-0.3) | Midweek game | California Golden Bears allows 4.2 R/midweek | Georgia Tech Yellow Jackets allows 3.6 R/midweek | Pitching edge: Georgia Tech Yellow Jackets (-0.2 pts)
+
+### Stetson Hatters@Jacksonville Dolphins OVER 8.5
+- **Category:** NO CLV DATA
+- **Analysis:** No closing line available for comparison.
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **119W-83L** |
-| Win Rate | 58.9% |
-| P/L | **+75.6u** |
-| ROI | +7.7% |
-| Wagered | 985.0u |
+| Record | **124W-88L** |
+| Win Rate | 58.5% |
+| P/L | **+69.9u** |
+| ROI | +6.8% |
+| Wagered | 1035.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| baseball_ncaa | 41 | 28 | +35.3u |
-| icehockey_nhl | 32 | 17 | +24.5u |
+| icehockey_nhl | 34 | 18 | +27.2u |
+| baseball_ncaa | 44 | 32 | +26.9u |
 | basketball_ncaab | 16 | 12 | +13.8u |
 | basketball_nba | 21 | 16 | +10.8u |
 | baseball_mlb | 7 | 6 | +3.7u |
@@ -60,7 +81,6 @@
 |--------|--------|-----|
 | Home fast-paced | 3W-8L | -27.4u |
 | Friday game | 2W-6L | -22.6u |
-| Away slow-paced | 10W-10L | -8.1u |
 | Away bounce-back | 4W-4L | -8.0u |
 | Altitude | 2W-3L | -6.1u |
 | Home hot streak | 1W-2L | -5.4u |
@@ -68,6 +88,7 @@
 | Elo probability edge | 7W-7L | -3.8u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
+| Away slow-paced | 12W-10L | -0.0u |
 
 > Factors with consistent negative P/L may need weight adjustments or removal.
 
@@ -84,7 +105,7 @@ Found 1 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 76W-51L (59.8%) | +77.6u | 0.8 |
+| AT_CAP | 81W-56L (59.1%) | +71.8u | 0.8 |
 | BELOW_CAP | 43W-32L (57.3%) | -2.0u | 0.1 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -100,6 +121,7 @@ Found 1 shadow-tagged picks.
 | 2026-03-29 | baseball_ncaa | UNDER | 7 | 35.0u |
 | 2026-03-04 | basketball_ncaab | DOG | 6 | 29.0u |
 | 2026-03-14 | baseball_ncaa | DOG | 6 | 24.0u |
+| 2026-04-02 | baseball_ncaa | OVER | 6 | 30.0u |
 | 2026-03-04 | baseball_ncaa | DOG | 5 | 19.5u |
 | 2026-03-06 | basketball_ncaab | DOG | 5 | 23.5u |
 | 2026-03-19 | icehockey_nhl | DOG | 5 | 21.5u |
@@ -113,13 +135,13 @@ Found 1 shadow-tagged picks.
 |-------|------|---|---|-----|
 | baseball_mlb | OVER | 4 | 3 | +2.0u |
 | baseball_mlb | UNDER | 2 | 2 | -1.3u |
-| baseball_ncaa | OVER | 13 | 5 | +28.9u |
-| baseball_ncaa | UNDER | 20 | 19 | -10.7u |
+| baseball_ncaa | OVER | 15 | 8 | +21.6u |
+| baseball_ncaa | UNDER | 21 | 20 | -11.8u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 1 | 2 | -5.7u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
-| icehockey_nhl | OVER | 5 | 1 | +13.7u |
-| icehockey_nhl | UNDER | 8 | 4 | +10.6u |
+| icehockey_nhl | OVER | 6 | 2 | +12.2u |
+| icehockey_nhl | UNDER | 9 | 4 | +14.8u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | OVER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | UNDER | 1 | 0 | +3.2u |
@@ -128,22 +150,20 @@ Found 1 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS WIN WIN LOSS WIN WIN LOSS LOSS WIN
+- **Last 10:** LOSS LOSS WIN LOSS WIN LOSS WIN WIN LOSS WIN
 - **Current Streak:** 2 LOSS
 
 ---
 ## Action Items
 
-1. Big red day (-10.0u). Review if any model errors need parameter changes.
+1. Big red day (-5.8u). Review if any model errors need parameter changes.
 2. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
 3. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
 4. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
 5. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
-6. Factor 'Away slow-paced' has -8.1u P/L over 20 bets. Consider reducing weight.
-7. Factor 'Friday game' has -22.6u P/L over 8 bets. Consider reducing weight.
-8. Concentration risk detected. Review directional exposure limits.
-9. baseball_ncaa UNDERs: 20W-19L (-10.7u). Review totals model for this sport.
-10. 1 loss(es) yesterday with CLV < -3% (MODEL ERROR). Review those matchups.
+6. Factor 'Friday game' has -22.6u P/L over 8 bets. Consider reducing weight.
+7. Concentration risk detected. Review directional exposure limits.
+8. baseball_ncaa UNDERs: 21W-20L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-02 05:25 ET*
+*Generated locally by export_briefing_data.py | 2026-04-03 06:49 ET*
