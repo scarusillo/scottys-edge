@@ -1,14 +1,15 @@
 # Scotty's Edge Morning Briefing
-**Date:** Friday, April 03, 2026 | **Generated:** 06:49 AM ET
+**Date:** Friday, April 03, 2026 | **Generated:** 07:03 AM ET
 **Game Date Graded:** 2026-04-02
 
 ---
 ## Yesterday's Results
 
-**5W-5L-1P | -5.8u | RED DAY**
+**6W-5L-1P | -1.0u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
+| San Antonio Spurs ML | basketball_nba | away | +105 | 4.5 | **W** | +4.7 | -2.3% |
 | Montréal Canadiens@New York Rangers UNDER 6.5 | icehockey_nhl | UNDER | -120 | 5.0 | **W** | +4.2 | 2.0% |
 | Oregon Ducks@Michigan Wolverines UNDER 10.5 | baseball_ncaa | UNDER | -130 | 5.0 | **W** | +3.9 | 1.0% |
 | Notre Dame Fighting Irish@NC State Wolfpack O | baseball_ncaa | OVER | -130 | 5.0 | **W** | +3.9 | 1.0% |
@@ -55,19 +56,19 @@
 
 | Metric | Value |
 |--------|-------|
-| Record | **124W-88L** |
-| Win Rate | 58.5% |
-| P/L | **+69.9u** |
-| ROI | +6.8% |
-| Wagered | 1035.0u |
+| Record | **125W-88L** |
+| Win Rate | 58.7% |
+| P/L | **+74.6u** |
+| ROI | +7.2% |
+| Wagered | 1039.5u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
 | icehockey_nhl | 34 | 18 | +27.2u |
 | baseball_ncaa | 44 | 32 | +26.9u |
+| basketball_nba | 22 | 16 | +15.5u |
 | basketball_ncaab | 16 | 12 | +13.8u |
-| basketball_nba | 21 | 16 | +10.8u |
 | baseball_mlb | 7 | 6 | +3.7u |
 | tennis_atp_miami_open | 1 | 1 | -1.1u |
 | soccer_italy_serie_a | 1 | 1 | -1.8u |
@@ -105,7 +106,7 @@ Found 1 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 81W-56L (59.1%) | +71.8u | 0.8 |
+| AT_CAP | 82W-56L (59.4%) | +76.5u | 0.7 |
 | BELOW_CAP | 43W-32L (57.3%) | -2.0u | 0.1 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -156,14 +157,13 @@ Found 1 shadow-tagged picks.
 ---
 ## Action Items
 
-1. Big red day (-5.8u). Review if any model errors need parameter changes.
-2. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
-3. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
-4. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
-5. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
-6. Factor 'Friday game' has -22.6u P/L over 8 bets. Consider reducing weight.
-7. Concentration risk detected. Review directional exposure limits.
-8. baseball_ncaa UNDERs: 21W-20L (-11.8u). Review totals model for this sport.
+1. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
+2. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
+3. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
+4. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
+5. Factor 'Friday game' has -22.6u P/L over 8 bets. Consider reducing weight.
+6. Concentration risk detected. Review directional exposure limits.
+7. baseball_ncaa UNDERs: 21W-20L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-03 06:49 ET*
+*Generated locally by export_briefing_data.py | 2026-04-03 07:03 ET*

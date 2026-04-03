@@ -1,7 +1,25 @@
 {
-  "generated_at": "2026-04-03 06:49",
+  "generated_at": "2026-04-03 07:03",
   "game_date": "2026-04-02",
   "yesterday": [
+    {
+      "selection": "San Antonio Spurs ML",
+      "sport": "basketball_nba",
+      "market_type": "MONEYLINE",
+      "side_type": "away",
+      "result": "WIN",
+      "pnl_units": 4.73,
+      "clv": -2.3,
+      "edge_pct": 20.0,
+      "odds": 105.0,
+      "units": 4.5,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": 8.18,
+      "closing_line": null,
+      "event_id": "8acdc53c485cd361a907edc8d53091f2",
+      "dt": "2026-04-02"
+    },
     {
       "selection": "Montr\u00e9al Canadiens@New York Rangers UNDER 6.5",
       "sport": "icehockey_nhl",
@@ -211,10 +229,10 @@
   ],
   "season": {
     "result": "LOSS",
-    "W": 124,
+    "W": 125,
     "L": 88,
-    "pnl": 69.9,
-    "wagered": 1035.0
+    "pnl": 74.6,
+    "wagered": 1039.5
   },
   "by_sport": [
     {
@@ -231,9 +249,9 @@
     },
     {
       "sport": "basketball_nba",
-      "W": 21,
+      "W": 22,
       "L": 16,
-      "pnl": 10.8
+      "pnl": 15.5
     },
     {
       "sport": "basketball_ncaab",
@@ -702,13 +720,6 @@
       "pnl": 9.7
     },
     {
-      "day_of_week": "Thursday",
-      "sport": "basketball_nba",
-      "W": 3,
-      "L": 0,
-      "pnl": 11.7
-    },
-    {
       "day_of_week": "Wednesday",
       "sport": "icehockey_nhl",
       "W": 4,
@@ -731,6 +742,13 @@
     },
     {
       "day_of_week": "Thursday",
+      "sport": "basketball_nba",
+      "W": 4,
+      "L": 0,
+      "pnl": 16.4
+    },
+    {
+      "day_of_week": "Thursday",
       "sport": "icehockey_nhl",
       "W": 12,
       "L": 4,
@@ -747,10 +765,10 @@
   "edge_cap": [
     {
       "bucket": "AT_CAP",
-      "W": 81,
+      "W": 82,
       "L": 56,
-      "pnl": 71.8,
-      "avg_clv": 0.8
+      "pnl": 76.5,
+      "avg_clv": 0.7
     },
     {
       "bucket": "BELOW_CAP",
