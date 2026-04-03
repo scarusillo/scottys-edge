@@ -1683,11 +1683,40 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     # Sharp books still need 20%+ which naturally Kelly-sizes to 4-5u.
     MIN_UNITS = 3.0  # v23: Lowered from 5.0 to allow Kelly-scaled soft book picks
     REQUIRED_CONFIDENCE = ('ELITE', 'HIGH')  # v23: Allow HIGH for soft book 15-20% picks
+    MIN_BOOKS = 3  # v23: Minimum books carrying the game. Oklahoma St had only 2 — thin market noise.
+
+    # Cache book counts per event to avoid repeated DB queries
+    _book_count_cache = {}
+
+    def _get_book_count(event_id, market):
+        """Count distinct books carrying this event/market in the odds table."""
+        cache_key = f"{event_id}|{market}"
+        if cache_key in _book_count_cache:
+            return _book_count_cache[cache_key]
+        count = 0
+        if conn:
+            try:
+                row = conn.execute("""
+                    SELECT COUNT(DISTINCT book) FROM odds
+                    WHERE event_id = ? AND market = ?
+                """, (event_id, market)).fetchone()
+                count = row[0] if row else 0
+            except Exception:
+                pass
+        _book_count_cache[cache_key] = count
+        return count
 
     def _passes_filter(p):
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
         book = p.get('book', '')
+
+        # v23: Minimum book count — thin markets produce fake edges
+        odds_market = {'SPREAD': 'spreads', 'TOTAL': 'totals', 'MONEYLINE': 'h2h'}.get(mtype, 'h2h')
+        book_count = _get_book_count(p.get('event_id', ''), odds_market)
+        if book_count < MIN_BOOKS:
+            return False
+
         # v23: Book-tier-aware thresholds
         if book in SOFT_BOOKS:
             min_edge = SOFT_BOOK_MIN_EDGE.get(mtype, 15.0)
