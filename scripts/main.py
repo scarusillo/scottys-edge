@@ -2968,13 +2968,13 @@ def cmd_grade(args):
     except Exception as e:
         print(f"  Briefing data export: {e}")
 
-    # Twitter results thread
-    # Sync DB to OneDrive for cloud agent access
+    # Upload slim DB to GitHub Releases for cloud agents
     try:
-        from sync_db_to_cloud import sync_db
-        sync_db()
+        from upload_db import create_slim_db, upload_to_github
+        create_slim_db()
+        upload_to_github()
     except Exception as e:
-        print(f"  DB sync: {e}")
+        print(f"  DB upload: {e}")
 
     do_twitter = has_flag(args, '--twitter')
     if do_twitter:
