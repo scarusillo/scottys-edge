@@ -1,90 +1,89 @@
 # Scotty's Edge Morning Briefing
-**Date:** Friday, April 03, 2026 | **Generated:** 07:08 AM ET
-**Game Date Graded:** 2026-04-02
+**Date:** Saturday, April 04, 2026 | **Generated:** 06:46 AM ET
+**Game Date Graded:** 2026-04-03
 
 ---
 ## Yesterday's Results
 
-**6W-5L-1P | -1.0u | RED DAY**
+**5W-4L-0P | +1.7u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| San Antonio Spurs ML | basketball_nba | away | +105 | 4.5 | **W** | +4.7 | -2.3% |
-| Montréal Canadiens@New York Rangers UNDER 6.5 | icehockey_nhl | UNDER | -120 | 5.0 | **W** | +4.2 | 2.0% |
-| Oregon Ducks@Michigan Wolverines UNDER 10.5 | baseball_ncaa | UNDER | -130 | 5.0 | **W** | +3.9 | 1.0% |
-| Notre Dame Fighting Irish@NC State Wolfpack O | baseball_ncaa | OVER | -130 | 5.0 | **W** | +3.9 | 1.0% |
-| South Alabama Jaguars@Coastal Carolina Chanti | baseball_ncaa | OVER | -130 | 5.0 | **W** | +3.9 | 0.0% |
-| Calgary Flames@Vegas Golden Knights OVER 5.5 | icehockey_nhl | OVER | -142 | 5.0 | **W** | +3.5 | 1.0% |
-| UAB Blazers@Florida Atlantic Owls OVER 9.0 | baseball_ncaa | OVER | -110 | 5.0 | **P** | +0.0 | -- |
-| Boston Bruins@Florida Panthers OVER 6.0 | icehockey_nhl | OVER | -118 | 5.0 | **L** | -5.0 | 1.5% |
-| Creighton Bluejays@UConn Huskies OVER 9.0 | baseball_ncaa | OVER | -115 | 5.0 | **L** | -5.0 | 0.0% |
-| Louisiana Ragin' Cajuns@James Madison Dukes O | baseball_ncaa | OVER | -115 | 5.0 | **L** | -5.0 | 0.0% |
-| Georgia Tech Yellow Jackets@California Golden | baseball_ncaa | UNDER | -115 | 5.0 | **L** | -5.0 | 1.0% |
-| Stetson Hatters@Jacksonville Dolphins OVER 8. | baseball_ncaa | OVER | +100 | 5.0 | **L** | -5.0 | -- |
+| LSU Tigers@Tennessee Volunteers OVER 10.5 | baseball_ncaa | OVER | +100 | 5.0 | **W** | +5.0 | 0.0% |
+| Virginia Tech Hokies@Miami Hurricanes OVER 11 | baseball_ncaa | OVER | +100 | 5.0 | **W** | +5.0 | 0.0% |
+| Philadelphia Phillies@Colorado Rockies OVER 1 | baseball_mlb | OVER | -112 | 5.0 | **W** | +4.5 | 0.0% |
+| Toronto Raptors@Memphis Grizzlies UNDER 233.5 | basketball_nba | UNDER | -110 | 4.0 | **W** | +3.6 | 0.0% |
+| New Orleans Pelicans@Sacramento Kings UNDER 2 | basketball_nba | UNDER | -110 | 4.0 | **W** | +3.6 | 0.5% |
+| Baltimore Orioles@Pittsburgh Pirates UNDER 8. | baseball_mlb | UNDER | -105 | 5.0 | **L** | -5.0 | 0.0% |
+| Seattle Mariners@Los Angeles Angels OVER 8.0 | baseball_mlb | OVER | -105 | 5.0 | **L** | -5.0 | 0.0% |
+| Atlanta Braves@Arizona Diamondbacks OVER 9.0 | baseball_mlb | OVER | -110 | 5.0 | **L** | -5.0 | 0.0% |
+| UCF Knights@West Virginia Mountaineers OVER 9 | baseball_ncaa | OVER | +100 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
 
-### Boston Bruins@Florida Panthers OVER 6.0
-- **Category:** VARIANCE
-- **Analysis:** Positive CLV (+1.5%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Boston Bruins 1 @ Florida Panthers 2
-- **Model Spread:** +0.6 | Actual Margin: +1
-- **Context:** Away fast-paced (+0.3) | Goalies: Sergei Bobrovsky 3.58 vs Jeremy Swayman 2.71 (+0.3)
-
-### Creighton Bluejays@UConn Huskies OVER 9.0
+### Baltimore Orioles@Pittsburgh Pirates UNDER 8.5
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Midweek game | UConn Huskies allows 6.9 R/midweek | Creighton Bluejays allows 6.1 R/midweek | Pitching edge: Creighton Bluejays (-0.2 pts)
+- **Final Score:** Baltimore Orioles 4 @ Pittsburgh Pirates 5
+- **Model Spread:** -0.5 | Actual Margin: +1
+- **Context:** Weather: light rain, 11mph wind (-1.5) | Friday game | Pittsburgh Pirates SP: Mitch Keller (3.67 ERA) | Baltimore Orioles SP: Kyle Bradish (5.18 ERA) | Pitching: Mitch Keller 3.67 vs Kyle Bradish ?.?? (-0.1) | Park: PNC Park (-0.6) | Bullpen: Pirates 3.79 vs Orioles 4.61 (+0.2)
 
-### Louisiana Ragin' Cajuns@James Madison Dukes OVER 1
+### Seattle Mariners@Los Angeles Angels OVER 8.0
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Midweek game | James Madison Dukes allows 6.6 R/midweek | Louisiana Ragin' Cajuns allows 4.5 R/midweek | Pitching edge: Louisiana Ragin' Cajuns (-0.6 pts)
+- **Final Score:** Seattle Mariners 3 @ Los Angeles Angels 1
+- **Model Spread:** -0.7 | Actual Margin: -2
+- **Context:** Friday game | Los Angeles Angels SP: Reid Detmers (4.54 ERA) | Seattle Mariners SP: Bryan Woo (2.93 ERA) | Pitching: Reid Detmers 4.54 vs Bryan Woo 2.93 (-0.2) | Park: Angel Stadium (+0.5) | Bullpen: Angels 5.15 vs Mariners 3.64 (+0.2)
 
-### Georgia Tech Yellow Jackets@California Golden Bear
-- **Category:** VARIANCE
-- **Analysis:** Positive CLV (+1.0%) -- the line moved our way. Right side, wrong result.
-- **Context:** Home slow-paced (-0.3) | Midweek game | California Golden Bears allows 4.2 R/midweek | Georgia Tech Yellow Jackets allows 3.6 R/midweek | Pitching edge: Georgia Tech Yellow Jackets (-0.2 pts)
+### Atlanta Braves@Arizona Diamondbacks OVER 9.0
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Final Score:** Atlanta Braves 2 @ Arizona Diamondbacks 0
+- **Model Spread:** -0.5 | Actual Margin: -2
+- **Context:** Friday game | Arizona Diamondbacks SP: Eduardo Rodriguez (5.02 ERA) | Atlanta Braves SP: Grant Holmes (3.79 ERA) | Pitching: Eduardo Rodriguez 5.02 vs Grant Holmes 3.79 (+0.3) | Park: Chase Field (+0.9) | Bullpen: Diamondbacks 5.05 vs Braves 3.35 (+0.2)
 
-### Stetson Hatters@Jacksonville Dolphins OVER 8.5
-- **Category:** NO CLV DATA
-- **Analysis:** No closing line available for comparison.
+### UCF Knights@West Virginia Mountaineers OVER 9.0
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Context:** Friday game | West Virginia Mountaineers allows 6.4 R/friday | UCF Knights allows 5.5 R/friday | Pitching edge: UCF Knights (-0.3 pts) | Fri series-opener surcharge (+3%)
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **125W-88L** |
-| Win Rate | 58.7% |
-| P/L | **+74.6u** |
-| ROI | +7.2% |
-| Wagered | 1039.5u |
+| Record | **130W-92L** |
+| Win Rate | 58.6% |
+| P/L | **+76.3u** |
+| ROI | +7.0% |
+| Wagered | 1082.5u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
+| baseball_ncaa | 46 | 33 | +31.9u |
 | icehockey_nhl | 34 | 18 | +27.2u |
-| baseball_ncaa | 44 | 32 | +26.9u |
-| basketball_nba | 22 | 16 | +15.5u |
+| basketball_nba | 24 | 16 | +22.8u |
 | basketball_ncaab | 16 | 12 | +13.8u |
-| baseball_mlb | 7 | 6 | +3.7u |
 | tennis_atp_miami_open | 1 | 1 | -1.1u |
 | soccer_italy_serie_a | 1 | 1 | -1.8u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_germany_bundesliga | 0 | 1 | -5.0u |
+| baseball_mlb | 8 | 9 | -6.9u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
 
 | Factor | Record | P/L |
 |--------|--------|-----|
+| Friday game | 5W-10L | -28.2u |
 | Home fast-paced | 3W-8L | -27.4u |
-| Friday game | 2W-6L | -22.6u |
 | Away bounce-back | 4W-4L | -8.0u |
 | Altitude | 2W-3L | -6.1u |
+| Park: Chase Field | 1W-2L | -5.5u |
 | Home hot streak | 1W-2L | -5.4u |
+| Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
 | Away revenge game | 5W-5L | -4.4u |
 | Elo probability edge | 7W-7L | -3.8u |
 | Home 3-in-5 | 2W-2L | -0.8u |
@@ -96,17 +95,18 @@
 ---
 ## Shadow Pick Report
 
-Found 1 shadow-tagged picks.
+Found 2 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
+| Virginia Tech Hokies@Miami Hurricanes OV | baseball_ncaa | 20.0% | 2026-04-03 |
 
 ---
 ## Edge Cap Analysis
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 82W-56L (59.4%) | +76.5u | 0.7 |
+| AT_CAP | 87W-60L (59.2%) | +78.3u | 0.7 |
 | BELOW_CAP | 43W-32L (57.3%) | -2.0u | 0.1 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -134,12 +134,12 @@ Found 1 shadow-tagged picks.
 
 | Sport | Side | W | L | P/L |
 |-------|------|---|---|-----|
-| baseball_mlb | OVER | 4 | 3 | +2.0u |
-| baseball_mlb | UNDER | 2 | 2 | -1.3u |
-| baseball_ncaa | OVER | 15 | 8 | +21.6u |
+| baseball_mlb | OVER | 5 | 5 | -3.5u |
+| baseball_mlb | UNDER | 2 | 3 | -6.3u |
+| baseball_ncaa | OVER | 17 | 9 | +26.6u |
 | baseball_ncaa | UNDER | 21 | 20 | -11.8u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
-| basketball_nba | UNDER | 1 | 2 | -5.7u |
+| basketball_nba | UNDER | 3 | 2 | +1.6u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
 | icehockey_nhl | OVER | 6 | 2 | +12.2u |
 | icehockey_nhl | UNDER | 9 | 4 | +14.8u |
@@ -151,8 +151,8 @@ Found 1 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS WIN LOSS WIN LOSS WIN WIN LOSS WIN
-- **Current Streak:** 2 LOSS
+- **Last 10:** WIN LOSS WIN WIN WIN LOSS LOSS LOSS WIN LOSS
+- **Current Streak:** 1 WIN
 
 ---
 ## Action Items
@@ -161,9 +161,12 @@ Found 1 shadow-tagged picks.
 2. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
 3. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
 4. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
-5. Factor 'Friday game' has -22.6u P/L over 8 bets. Consider reducing weight.
-6. Concentration risk detected. Review directional exposure limits.
-7. baseball_ncaa UNDERs: 21W-20L (-11.8u). Review totals model for this sport.
+5. Factor 'Friday game' has -28.2u P/L over 15 bets. Consider reducing weight.
+6. Factor 'Park: Chase Field' has -5.5u P/L over 3 bets. Consider reducing weight.
+7. Concentration risk detected. Review directional exposure limits.
+8. baseball_mlb OVERs: 5W-5L (-3.5u). Review totals model for this sport.
+9. baseball_mlb UNDERs: 2W-3L (-6.3u). Review totals model for this sport.
+10. baseball_ncaa UNDERs: 21W-20L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-03 07:08 ET*
+*Generated locally by export_briefing_data.py | 2026-04-04 06:46 ET*
