@@ -747,9 +747,9 @@ def _mlb_park_factor_adjustment(conn, home_team):
 
     Returns (adjustment, context_string) or (0.0, '') if insufficient data.
     """
-    MAX_ADJ = 1.5
+    MAX_ADJ = 1.0  # v23.1: Reduced from 1.5 — Coors was getting +1.5, too aggressive
     MIN_GAMES = 30
-    MARKET_DIVISOR = 2  # Market already partially prices parks
+    MARKET_DIVISOR = 3  # v23.1: Was 2. Chase Field +0.9 was 1W-2L -5.5u trending worse. Market prices parks better than we assumed.
 
     try:
         # Park average for this home team

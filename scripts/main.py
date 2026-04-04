@@ -1728,8 +1728,10 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         if mtype == 'SPREAD' and 'soccer' in sport:
             return False  # Block all soccer spreads — backtest negative
         # Soccer totals: backtest 92W-62L +104u at 59.7% — the real edge
+        # v23.1: Respect book tiers — sharp books (BetMGM etc) still need 20%.
+        # Live soccer is 1W-3L -11.3u; don't let 5% floor bypass sharp-book gate.
         if mtype == 'TOTAL' and 'soccer' in sport:
-            min_edge = SOCCER_TOTAL_MIN_EDGE
+            min_edge = SOCCER_TOTAL_MIN_EDGE if book in SOFT_BOOKS else 20.0
         # v14: Baseball totals — soft books get 15%, sharp books stay at 20%
         if mtype == 'TOTAL' and 'baseball' in sport:
             min_edge = BASEBALL_TOTAL_MIN_EDGE if book in SOFT_BOOKS else 20.0

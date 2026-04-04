@@ -257,6 +257,7 @@ def _render_picks_slide(picks, fonts, section_label, show_units_explain=True):
     for p in picks:
         kl=kelly_label(p['units']); tier_color=TIER_COLORS.get(kl, WHITE_60)
         game_time=_to_eastern(p.get('commence','')); ctx=p.get('context','')
+        if ctx: ctx = ctx.replace('[SHADOW] ', '').replace('?.??', 'N/A')  # v23.1: strip internal tags from public cards
         matchup=f"{p.get('home','')} vs {p.get('away','')} \u2022 {game_time}"
         box_h=pick_h+(22*S if ctx else 0)
         draw.rectangle([(PADDING,y),(CARD_WIDTH-PADDING,y+box_h)], fill=CARD_BG)
@@ -389,6 +390,7 @@ def _render_picks_slide_grouped(items, fonts, section_label, show_units_explain=
         p = item
         kl=kelly_label(p['units']); tier_color=TIER_COLORS.get(kl, WHITE_60)
         game_time=_to_eastern(p.get('commence','')); ctx=p.get('context','')
+        if ctx: ctx = ctx.replace('[SHADOW] ', '').replace('?.??', 'N/A')  # v23.1: strip internal tags from public cards
         matchup=f"{p.get('home','')} vs {p.get('away','')} \u2022 {game_time}"
         box_h=pick_h+(22*S if ctx else 0)
         draw.rectangle([(PADDING,y),(CARD_WIDTH-PADDING,y+box_h)], fill=CARD_BG)
