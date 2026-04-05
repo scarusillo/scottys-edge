@@ -30,7 +30,9 @@ DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.d
 CARDS_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'cards')
 os.makedirs(CARDS_DIR, exist_ok=True)
 
-FFMPEG_PATH = r'C:\Users\carus\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.1-full_build\bin\ffmpeg.exe'
+FFMPEG_PATH = os.environ.get('FFMPEG_PATH', os.path.join(
+    os.path.expanduser('~'), 'AppData', 'Local', 'Microsoft', 'WinGet', 'Packages',
+    'Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe', 'ffmpeg-8.1-full_build', 'bin', 'ffmpeg.exe'))
 
 # ── Design constants ──
 W, H = 1080, 1920            # Output resolution

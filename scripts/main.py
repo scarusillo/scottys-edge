@@ -2331,6 +2331,38 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                 old_units = p['units']
                 p['units'] = max(0.5, round((old_units * 0.75) * 2) / 2)  # 25% reduction, round to 0.5
 
+    # ── v23.2: Same-game prop conflict filter ──
+    # Block props that contradict a game-line total on the same matchup.
+    # e.g., Yelich RBI OVER shouldn't fire alongside Brewers UNDER.
+    if game_final and prop_final:
+        import re as _re
+        # Build set of (event_id, direction) from game totals
+        game_total_directions = {}
+        for gp in game_final:
+            if gp.get('market_type') == 'TOTAL':
+                eid = gp.get('event_id', '')
+                sel = gp.get('selection', '')
+                if 'OVER' in sel:
+                    game_total_directions[eid] = 'OVER'
+                elif 'UNDER' in sel:
+                    game_total_directions[eid] = 'UNDER'
+
+        if game_total_directions:
+            filtered_props = []
+            for pp in prop_final:
+                eid = pp.get('event_id', '')
+                sel = pp.get('selection', '')
+                game_dir = game_total_directions.get(eid)
+                if game_dir:
+                    # OVER props (hits, runs, RBIs, points) contradict game UNDER
+                    # UNDER props contradict game OVER
+                    prop_dir = 'OVER' if 'OVER' in sel else 'UNDER' if 'UNDER' in sel else None
+                    if prop_dir and prop_dir != game_dir:
+                        print(f"    ⚠ Prop conflict blocked: {sel} ({prop_dir}) vs game-line {game_dir}")
+                        continue
+                filtered_props.append(pp)
+            prop_final = filtered_props
+
     # ── Final merge (no cap) ──
     all_picks = game_final + prop_final
 

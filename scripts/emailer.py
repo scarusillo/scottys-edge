@@ -14,7 +14,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 
-GMAIL_ADDRESS = os.environ.get('GMAIL_ADDRESS', 'carusillo.scott@gmail.com')
+GMAIL_ADDRESS = os.environ.get('GMAIL_ADDRESS', '')
 GMAIL_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD', '')
 
 def send_email(subject, body, to_addr=None, attachment_path=None):

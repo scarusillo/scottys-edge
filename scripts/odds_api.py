@@ -209,8 +209,8 @@ def _capture_openers(conn, odds_rows, sport):
                 """, (now.strftime('%Y-%m-%d'), sport, eid, book, market,
                       sel, line, odds, now.isoformat()))
                 inserted += 1
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"  ⚠ Opener insert failed for {eid}: {e}")
     if inserted > 0:
         conn.commit()
         print(f"  📌 {inserted} opening lines captured for {sport}")
@@ -816,8 +816,8 @@ def fetch_props(sport, event_id=None):
                         UPDATE prop_openers SET opening_under_odds=?
                         WHERE event_id=? AND player=? AND market=? AND opening_under_odds IS NULL
                     """, (orow[7], orow[2], orow[3], orow[4]))
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"  ⚠ Prop opener update failed: {e}")
 
         conn.commit()
     
