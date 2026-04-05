@@ -730,13 +730,17 @@ MLB_PARK_NAMES = {
 }
 
 
-def _mlb_park_factor_adjustment(conn, home_team):
+def _mlb_park_factor_adjustment(conn, home_team, away_team=None, side=None):
     """
     Adjust MLB total based on historical park scoring vs league average.
 
     The market already partially prices park effects (everyone knows Coors
     is a hitter's park), so we divide the raw park deviation by 2 to capture
     only the RESIDUAL edge the market may not fully account for.
+
+    v23.2: Park factor decays by 50% for each consecutive day we've already
+    bet the same matchup+direction. Prevents park from being the sole driver
+    on series repeats (e.g., Coors OVER firing 3 days straight).
 
     Formula:
         park_avg = average actual_total for games at this home team's park
@@ -789,9 +793,40 @@ def _mlb_park_factor_adjustment(conn, home_team):
         if adj == 0.0:
             return 0.0, ''
 
+        # v23.2: Decay park factor for consecutive-day same-matchup bets.
+        # If we already bet this matchup's total yesterday, the park factor
+        # was already the driver — decay it so the pick needs pitching/weather
+        # to stand on its own. 50% decay per consecutive day.
+        decay = 1.0
+        if away_team:
+            from datetime import datetime, timedelta
+            try:
+                today = datetime.now().strftime('%Y-%m-%d')
+                lookback = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d')
+                # Count distinct prior days we bet this matchup total (either direction)
+                matchup_pattern = f'%{away_team}%{home_team}%'
+                prior_bets = conn.execute("""
+                    SELECT DISTINCT DATE(created_at) FROM bets
+                    WHERE sport = 'baseball_mlb'
+                      AND market_type = 'TOTAL'
+                      AND selection LIKE ?
+                      AND DATE(created_at) < ? AND DATE(created_at) >= ?
+                      AND (result IS NULL OR result NOT IN ('TAINTED','DUPLICATE'))
+                """, (matchup_pattern, today, lookback)).fetchall()
+                consec_days = len(prior_bets)
+                if consec_days > 0:
+                    decay = 0.5 ** consec_days
+            except Exception:
+                pass
+
+        adj = round(adj * decay, 2)
+        if adj == 0.0:
+            return 0.0, ''
+
         # Build context string with park name
         park_name = MLB_PARK_NAMES.get(home_team, home_team)
-        ctx = f"Park: {park_name} ({adj:+.1f})"
+        decay_note = f' decay={decay:.0%}' if decay < 1.0 else ''
+        ctx = f"Park: {park_name} ({adj:+.1f}{decay_note})"
 
         return adj, ctx
 
@@ -2360,7 +2395,7 @@ def generate_predictions(conn, sport=None, date=None):
                         if sp == 'baseball_mlb':
                             try:
                                 _park_adj, _park_factor_ctx = _mlb_park_factor_adjustment(
-                                    conn, home)
+                                    conn, home, away_team=away)
                                 if _park_adj != 0:
                                     model_total += _park_adj
                             except Exception:

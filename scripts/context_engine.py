@@ -673,12 +673,16 @@ def motivation_adjustment(conn, home, away, sport, commence):
     """
     if not commence:
         return 0.0, {}
-    
+
+    # Tennis has no home/away — skip letdown/bounce-back entirely
+    if 'tennis' in sport:
+        return 0.0, {}
+
     freeze = _get_context_freeze(sport, commence)
-    
+
     adj = 0.0
     reasons = {}
-    
+
     # ── 1. LETDOWN SPOT ──
     h_margin, h_opp, h_tight = _last_game_result(conn, home, sport, commence)
     a_margin, a_opp, a_tight = _last_game_result(conn, away, sport, commence)
