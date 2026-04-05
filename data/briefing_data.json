@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-05 07:33",
+  "generated_at": "2026-04-05 07:45",
   "game_date": "2026-04-04",
   "yesterday": [
     {
@@ -237,50 +237,6 @@
       "dt": "2026-04-04"
     },
     {
-      "selection": "Atl\u00e9tico San Luis@Monterrey OVER 2.5",
-      "sport": "soccer_mexico_ligamx",
-      "market_type": "TOTAL",
-      "side_type": "OVER",
-      "result": "WIN",
-      "pnl_units": 2.29,
-      "clv": 0.0,
-      "edge_pct": 17.3,
-      "odds": -175.0,
-      "units": 4.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": -1.4700000000000002,
-      "closing_line": 2.5,
-      "event_id": "67fe5b9e47355b33d03d2e1e20dc4784",
-      "dt": "2026-04-04"
-    },
-    {
-      "selection": "Toluca@Quer\u00e9taro OVER 2.5",
-      "sport": "soccer_mexico_ligamx",
-      "market_type": "TOTAL",
-      "side_type": "OVER",
-      "result": "LOSS",
-      "pnl_units": -4.0,
-      "clv": -1.0,
-      "edge_pct": 16.2,
-      "odds": -150.0,
-      "units": 4.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": 0.7,
-      "closing_line": 1.5,
-      "event_id": "8ac025e229809311ecf0084a0002acd9",
-      "dt": "2026-04-04",
-      "actual_score": {
-        "home": "Quer\u00e9taro",
-        "away": "Toluca",
-        "home_score": 1,
-        "away_score": 0,
-        "actual_total": 1,
-        "actual_margin": 1
-      }
-    },
-    {
       "selection": "Georgia Bulldogs ML (cross-mkt)",
       "sport": "baseball_ncaa",
       "market_type": "MONEYLINE",
@@ -377,32 +333,6 @@
       }
     },
     {
-      "selection": "Christian Yelich OVER 0.5 RBIS",
-      "sport": "baseball_mlb",
-      "market_type": "PROP",
-      "side_type": "PROP_OVER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": null,
-      "edge_pct": 23.48,
-      "odds": 145.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": null,
-      "event_id": "b3e6bdc5fabee63ec7b5666bb48e3a9a",
-      "dt": "2026-04-04",
-      "actual_score": {
-        "home": "Kansas City Royals",
-        "away": "Milwaukee Brewers",
-        "home_score": 8,
-        "away_score": 2,
-        "actual_total": 10,
-        "actual_margin": 6
-      }
-    },
-    {
       "selection": "Boston College Eagles@North Carolina Tar Heels UNDER 12.0",
       "sport": "baseball_ncaa",
       "market_type": "TOTAL",
@@ -475,17 +405,17 @@
   ],
   "season": {
     "result": "LOSS",
-    "W": 144,
-    "L": 101,
-    "pnl": 94.5,
-    "wagered": 1192.0
+    "W": 143,
+    "L": 99,
+    "pnl": 101.2,
+    "wagered": 1179.0
   },
   "by_sport": [
     {
       "sport": "baseball_mlb",
       "W": 11,
-      "L": 12,
-      "pnl": -8.1
+      "L": 11,
+      "pnl": -3.1
     },
     {
       "sport": "baseball_ncaa",
@@ -522,12 +452,6 @@
       "W": 1,
       "L": 1,
       "pnl": -1.8
-    },
-    {
-      "sport": "soccer_mexico_ligamx",
-      "W": 1,
-      "L": 1,
-      "pnl": -1.7
     },
     {
       "sport": "soccer_usa_mls",
@@ -927,13 +851,6 @@
     },
     {
       "day_of_week": "Saturday",
-      "sport": "soccer_mexico_ligamx",
-      "W": 1,
-      "L": 1,
-      "pnl": -1.7
-    },
-    {
-      "day_of_week": "Saturday",
       "sport": "basketball_ncaab",
       "W": 2,
       "L": 2,
@@ -976,13 +893,6 @@
     },
     {
       "day_of_week": "Saturday",
-      "sport": "baseball_mlb",
-      "W": 4,
-      "L": 3,
-      "pnl": 3.6
-    },
-    {
-      "day_of_week": "Saturday",
       "sport": "basketball_nba",
       "W": 2,
       "L": 1,
@@ -1022,6 +932,13 @@
       "W": 3,
       "L": 1,
       "pnl": 7.7
+    },
+    {
+      "day_of_week": "Saturday",
+      "sport": "baseball_mlb",
+      "W": 4,
+      "L": 2,
+      "pnl": 8.6
     },
     {
       "day_of_week": "Sunday",
@@ -1091,15 +1008,15 @@
     {
       "bucket": "AT_CAP",
       "W": 97,
-      "L": 66,
-      "pnl": 94.8,
+      "L": 65,
+      "pnl": 99.8,
       "avg_clv": 0.3
     },
     {
       "bucket": "BELOW_CAP",
-      "W": 47,
-      "L": 35,
-      "pnl": -0.4,
+      "W": 46,
+      "L": 34,
+      "pnl": 1.4,
       "avg_clv": 0.3
     }
   ],
@@ -1266,13 +1183,6 @@
       "W": 1,
       "L": 0,
       "pnl": 3.2
-    },
-    {
-      "sport": "soccer_mexico_ligamx",
-      "side_type": "OVER",
-      "W": 1,
-      "L": 1,
-      "pnl": -1.7
     },
     {
       "sport": "soccer_usa_mls",
@@ -1562,11 +1472,11 @@
     },
     {
       "book": "Fanatics",
-      "bets": 22,
+      "bets": 21,
       "wins": 16,
-      "losses": 6,
-      "pnl": 30.8,
-      "wagered": 101.0,
+      "losses": 5,
+      "pnl": 35.8,
+      "wagered": 96.0,
       "avg_clv": 2.48
     },
     {
@@ -1598,12 +1508,12 @@
     },
     {
       "book": "BetMGM",
-      "bets": 56,
-      "wins": 31,
-      "losses": 25,
-      "pnl": -4.7,
-      "wagered": 269.5,
-      "avg_clv": 0.08
+      "bets": 54,
+      "wins": 30,
+      "losses": 24,
+      "pnl": -3.0,
+      "wagered": 261.5,
+      "avg_clv": 0.11
     }
   ]
 }

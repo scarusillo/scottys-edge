@@ -1,11 +1,11 @@
 # Scotty's Edge Morning Briefing
-**Date:** Sunday, April 05, 2026 | **Generated:** 07:33 AM ET
+**Date:** Sunday, April 05, 2026 | **Generated:** 07:45 AM ET
 **Game Date Graded:** 2026-04-04
 
 ---
 ## Yesterday's Results
 
-**14W-9L-0P | +18.1u | GREEN DAY**
+**13W-7L-0P | +24.8u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
@@ -22,25 +22,16 @@
 | Colorado Avalanche@Dallas Stars UNDER 6.5 | icehockey_nhl | UNDER | -130 | 5.0 | **W** | +3.9 | 4.0% |
 | UC Santa Barbara Gauchos@Cal Poly Mustangs UN | baseball_ncaa | UNDER | -130 | 5.0 | **W** | +3.9 | 2.0% |
 | Toronto Maple Leafs@Los Angeles Kings OVER 5. | icehockey_nhl | OVER | -135 | 5.0 | **W** | +3.7 | 1.0% |
-| Atlético San Luis@Monterrey OVER 2.5 | soccer_mexico_ligamx | OVER | -175 | 4.0 | **W** | +2.3 | 0.0% |
-| Toluca@Querétaro OVER 2.5 | soccer_mexico_ligamx | OVER | -150 | 4.0 | **L** | -4.0 | -1.0% |
 | Georgia Bulldogs ML (cross-mkt) | baseball_ncaa | DOG | +140 | 4.0 | **L** | -4.0 | -2.3% |
 | Florida Panthers +1.5 | icehockey_nhl | DOG | -130 | 4.5 | **L** | -4.5 | -5.0% |
 | Atlanta Braves@Arizona Diamondbacks OVER 9.5 | baseball_mlb | OVER | -105 | 5.0 | **L** | -5.0 | 0.0% |
 | Washington Wizards@Miami Heat UNDER 248.5 | basketball_nba | UNDER | -108 | 5.0 | **L** | -5.0 | -27.0% |
-| Christian Yelich OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +145 | 5.0 | **L** | -5.0 | -- |
 | Boston College Eagles@North Carolina Tar Heel | baseball_ncaa | UNDER | -125 | 5.0 | **L** | -5.0 | -2.5% |
 | Winnipeg Jets@Columbus Blue Jackets OVER 5.5 | icehockey_nhl | OVER | -130 | 5.0 | **L** | -5.0 | 0.0% |
 | Philadelphia Phillies@Colorado Rockies OVER 1 | baseball_mlb | OVER | -114 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
-
-### Toluca@Querétaro OVER 2.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-1.0%) -- borderline call.
-- **Final Score:** Toluca 0 @ Querétaro 1
-- **Model Spread:** +0.7 | Actual Margin: +1
 
 ### Georgia Bulldogs ML (cross-mkt)
 - **Category:** MARGINAL
@@ -67,11 +58,6 @@
 - **Model Spread:** -17.9 | Actual Margin: +16
 - **Context:** [SHADOW] Home fast-paced (+0.7) | Away fast-paced (+0.4)
 
-### Christian Yelich OVER 0.5 RBIS
-- **Category:** NO CLV DATA
-- **Analysis:** No closing line available for comparison.
-- **Final Score:** Milwaukee Brewers 2 @ Kansas City Royals 8
-
 ### Boston College Eagles@North Carolina Tar Heels UND
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (-2.5%) -- borderline call.
@@ -96,11 +82,11 @@
 
 | Metric | Value |
 |--------|-------|
-| Record | **144W-101L** |
-| Win Rate | 58.8% |
-| P/L | **+94.5u** |
-| ROI | +7.9% |
-| Wagered | 1192.0u |
+| Record | **143W-99L** |
+| Win Rate | 59.1% |
+| P/L | **+101.2u** |
+| ROI | +8.6% |
+| Wagered | 1179.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -111,10 +97,9 @@
 | basketball_nba | 24 | 17 | +17.8u |
 | soccer_germany_bundesliga | 1 | 1 | -0.2u |
 | tennis_atp_miami_open | 1 | 1 | -1.1u |
-| soccer_mexico_ligamx | 1 | 1 | -1.7u |
 | soccer_italy_serie_a | 1 | 1 | -1.8u |
+| baseball_mlb | 11 | 11 | -3.1u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
-| baseball_mlb | 11 | 12 | -8.1u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -152,8 +137,8 @@ Found 5 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 97W-66L (59.5%) | +94.8u | 0.3 |
-| BELOW_CAP | 47W-35L (57.3%) | -0.4u | 0.3 |
+| AT_CAP | 97W-65L (59.9%) | +99.8u | 0.3 |
+| BELOW_CAP | 46W-34L (57.5%) | +1.4u | 0.3 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -193,7 +178,6 @@ Found 5 shadow-tagged picks.
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | OVER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | UNDER | 1 | 0 | +3.2u |
-| soccer_mexico_ligamx | OVER | 1 | 1 | -1.7u |
 | soccer_usa_mls | OVER | 0 | 1 | -4.5u |
 
 ---
@@ -218,4 +202,4 @@ Found 5 shadow-tagged picks.
 11. 2 loss(es) yesterday with CLV < -3% (MODEL ERROR). Review those matchups.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-05 07:33 ET*
+*Generated locally by export_briefing_data.py | 2026-04-05 07:45 ET*
