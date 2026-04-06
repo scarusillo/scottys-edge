@@ -695,6 +695,20 @@ def _mlb_pitcher_era_adjustment(conn, mlb_pitcher_info):
     return total_adj, ctx_str
 
 
+def _log_park_veto(conn, sport, event_id, selection, park_adj, park_ctx):
+    """Log a pick vetoed by park gate to shadow_blocked_picks for tracking."""
+    try:
+        conn.execute("""
+            INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
+                market_type, line, odds, edge_pct, units, reason)
+            VALUES (?, ?, ?, ?, 'TOTAL', NULL, NULL, NULL, NULL, ?)
+        """, (datetime.now().isoformat(), sport, event_id, selection,
+              f"PARK_GATE ({park_ctx})"))
+        conn.commit()
+    except Exception:
+        pass
+
+
 # ═══ MLB PARK FACTOR MAPPING ═══
 MLB_PARK_NAMES = {
     'Arizona Diamondbacks': 'Chase Field',
@@ -751,14 +765,13 @@ def _mlb_park_factor_adjustment(conn, home_team, away_team=None, side=None):
 
     Returns (adjustment, context_string) or (0.0, '') if insufficient data.
     """
-    # v24: Park factor DISABLED. Data: with park 3W-6L -16.1u, without 3W-2L +2.5u.
-    # Market already fully prices park effects (CLV=0 on all 6 losses).
-    # Park adj was double-counting what the line already has.
-    # Return 0 but still log the park info as [SHADOW] for tracking.
+    # v24: Park factor used as GATE only (not edge generator).
+    # Data: park-as-edge was 3W-6L -16.1u (market already prices parks).
+    # Now: park confirms or vetoes picks but never inflates the model total.
+    # Returns the raw adjustment for gate logic, tagged as gate-only.
     MAX_ADJ = 1.0
     MIN_GAMES = 30
     MARKET_DIVISOR = 3
-    SHADOW_PARK = True  # Set to False to re-enable
 
     try:
         # Park average for this home team
@@ -771,7 +784,7 @@ def _mlb_park_factor_adjustment(conn, home_team, away_team=None, side=None):
         """, (home_team,)).fetchone()
 
         if not row or row[0] < MIN_GAMES or row[1] is None:
-            return 0.0, ''
+            return 0.0, '', 0.0
 
         park_games = row[0]
         park_avg = row[1]
@@ -785,7 +798,7 @@ def _mlb_park_factor_adjustment(conn, home_team, away_team=None, side=None):
         """).fetchone()
 
         if not league_row or league_row[0] is None:
-            return 0.0, ''
+            return 0.0, '', 0.0
 
         league_avg = league_row[0]
 
@@ -796,7 +809,7 @@ def _mlb_park_factor_adjustment(conn, home_team, away_team=None, side=None):
         adj = round(adj, 2)
 
         if adj == 0.0:
-            return 0.0, ''
+            return 0.0, '', 0.0
 
         # v23.2: Decay park factor for consecutive-day same-matchup bets.
         # If we already bet this matchup's total yesterday, the park factor
@@ -826,22 +839,21 @@ def _mlb_park_factor_adjustment(conn, home_team, away_team=None, side=None):
 
         adj = round(adj * decay, 2)
         if adj == 0.0:
-            return 0.0, ''
+            return 0.0, '', 0.0
 
         # Build context string with park name
         park_name = MLB_PARK_NAMES.get(home_team, home_team)
         decay_note = f' decay={decay:.0%}' if decay < 1.0 else ''
 
-        if SHADOW_PARK:
-            # v24: Shadow — log what WOULD have been applied, but return 0
-            ctx = f"[SHADOW] Park: {park_name} ({adj:+.1f}{decay_note})"
-            return 0.0, ctx
-
+        # v24: Park is gate-only — never added to model_total.
+        # Return 0 for model adjustment, but include raw adj in context
+        # so the gate logic downstream can use it.
         ctx = f"Park: {park_name} ({adj:+.1f}{decay_note})"
-        return adj, ctx
+        # Return tuple: (0 for model, context string, raw adj for gate)
+        return 0.0, ctx, adj
 
     except Exception:
-        return 0.0, ''
+        return 0.0, '', 0.0
 
 
 def _mlb_bullpen_adjustment(conn, home_team, away_team):
@@ -2397,17 +2409,17 @@ def generate_predictions(conn, sport=None, date=None):
                             except Exception:
                                 pass
 
-                        # ═══ MLB PARK FACTOR ADJUSTMENT ═══
-                        # Adjust total based on historical park scoring vs league average.
-                        # Halved because market already partially prices park effects.
-                        # Stacks with pitcher ERA and weather adjustments.
+                        # ═══ MLB PARK FACTOR — GATE ONLY (v24) ═══
+                        # Park factor no longer adjusts model_total (was double-counting
+                        # what the market already prices: 3W-6L -16.1u with park as edge).
+                        # Now used as a GATE: if park contradicts the pick direction, veto.
+                        # Hitter's park (adj > 0) vetoes UNDERs. Pitcher's park (adj < 0) vetoes OVERs.
                         _park_factor_ctx = ''
+                        _park_gate_adj = 0.0  # Raw park adj for gate logic
                         if sp == 'baseball_mlb':
                             try:
-                                _park_adj, _park_factor_ctx = _mlb_park_factor_adjustment(
+                                _, _park_factor_ctx, _park_gate_adj = _mlb_park_factor_adjustment(
                                     conn, home, away_team=away)
-                                if _park_adj != 0:
-                                    model_total += _park_adj
                             except Exception:
                                 pass
 
@@ -2457,7 +2469,12 @@ def generate_predictions(conn, sport=None, date=None):
 
                         # OVER
                         k = f"{eid}|T|OVER"
-                        if k not in seen and not _mlb_skip_total:
+                        # v24: Park gate — pitcher's park vetoes OVERs
+                        _park_veto_over = (sp == 'baseball_mlb' and _park_gate_adj < -0.3)
+                        if _park_veto_over and _park_factor_ctx:
+                            _log_park_veto(conn, sp, eid, f"{away}@{home} OVER {over_total}",
+                                           _park_gate_adj, _park_factor_ctx)
+                        if k not in seen and not _mlb_skip_total and not _park_veto_over:
                             total_diff = model_total - over_total
                             if total_diff > 0:  # Model says higher scoring
                                 pv = calculate_point_value_totals(model_total, over_total, sp)
@@ -2526,7 +2543,12 @@ def generate_predictions(conn, sport=None, date=None):
                                 pass
                             if under_total > 12.0:
                                 _block_ncaa_under = True
-                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _block_ncaa_under:
+                        # v24: Park gate — hitter's park vetoes UNDERs
+                        _park_veto_under = (sp == 'baseball_mlb' and _park_gate_adj > 0.3)
+                        if _park_veto_under and _park_factor_ctx:
+                            _log_park_veto(conn, sp, eid, f"{away}@{home} UNDER {under_total}",
+                                           _park_gate_adj, _park_factor_ctx)
+                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _block_ncaa_under and not _park_veto_under:
                             k = f"{eid}|T|UNDER"
                             if k not in seen:
                                 total_diff_u = under_total - model_total
