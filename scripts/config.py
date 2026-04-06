@@ -329,7 +329,7 @@ for _tk in TENNIS_SPORTS:
 # PROP SPORTS
 # ═══════════════════════════════════════════════════════════════
 
-PROP_SPORTS = ['basketball_nba', 'icehockey_nhl']
+PROP_SPORTS = ['basketball_nba', 'icehockey_nhl', 'baseball_mlb']
 
 
 # ═══════════════════════════════════════════════════════════════
