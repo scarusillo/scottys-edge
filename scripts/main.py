@@ -2998,7 +2998,15 @@ def cmd_grade(args):
         _bp.run(['git', '-C', _repo, 'add', 'data/briefing_data.json', 'data/morning_briefing.md'], capture_output=True)
         _bp.run(['git', '-C', _repo, 'commit', '-m',
                  f'Update briefing data {datetime.now().strftime("%Y-%m-%d")}'], capture_output=True)
-        _bp.run(['git', '-C', _repo, 'push'], capture_output=True)
+        # v24: Pull --rebase before push to handle concurrent pushes (e.g. pages workflow)
+        # Without this, push silently fails if origin advanced since our last pull
+        _bp.run(['git', '-C', _repo, 'pull', '--rebase'], capture_output=True)
+        _push = _bp.run(['git', '-C', _repo, 'push'], capture_output=True)
+        if _push.returncode != 0:
+            print(f"  ⚠ git push failed: {_push.stderr.decode(errors='replace').strip()}")
+            # Retry once after pull
+            _bp.run(['git', '-C', _repo, 'pull', '--rebase'], capture_output=True)
+            _bp.run(['git', '-C', _repo, 'push'], capture_output=True)
     except Exception as e:
         print(f"  Briefing data export: {e}")
 
