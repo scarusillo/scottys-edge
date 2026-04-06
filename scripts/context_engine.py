@@ -1797,15 +1797,22 @@ def familiarity_adjustment(conn, home, away, sport):
 def _recent_form_adjustment(conn, home, away, sport, commence):
     """
     Detect hot and cold streaks from recent results.
-    
+
     A team winning 4+ of last 5 is 'hot' — momentum matters.
     A team losing 4+ of last 5 is 'cold' — market may not adjust fast enough.
-    
+
     Adjustment: +0.5 to -0.5 per team (capped at ±1.0 combined).
+
+    Tennis excluded — no home/away, individual matchups make
+    streaks less meaningful than team-sport momentum.
     """
+    # Tennis: streaks don't translate the same way as team sports
+    if 'tennis' in sport:
+        return 0.0, {}
+
     adj = 0.0
     reasons = {}
-    
+
     for team, side in [(home, 'home'), (away, 'away')]:
         recent = conn.execute("""
             SELECT home, home_score, away_score
