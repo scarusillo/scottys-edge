@@ -2470,7 +2470,7 @@ def generate_predictions(conn, sport=None, date=None):
                         # OVER
                         k = f"{eid}|T|OVER"
                         # v24: Park gate — pitcher's park vetoes OVERs
-                        _park_veto_over = (sp == 'baseball_mlb' and _park_gate_adj < -0.3)
+                        _park_veto_over = (sp == 'baseball_mlb' and _park_gate_adj < -0.2)
                         if _park_veto_over and _park_factor_ctx:
                             _log_park_veto(conn, sp, eid, f"{away}@{home} OVER {over_total}",
                                            _park_gate_adj, _park_factor_ctx)
@@ -2544,7 +2544,7 @@ def generate_predictions(conn, sport=None, date=None):
                             if under_total > 12.0:
                                 _block_ncaa_under = True
                         # v24: Park gate — hitter's park vetoes UNDERs
-                        _park_veto_under = (sp == 'baseball_mlb' and _park_gate_adj > 0.3)
+                        _park_veto_under = (sp == 'baseball_mlb' and _park_gate_adj > 0.2)
                         if _park_veto_under and _park_factor_ctx:
                             _log_park_veto(conn, sp, eid, f"{away}@{home} UNDER {under_total}",
                                            _park_gate_adj, _park_factor_ctx)
