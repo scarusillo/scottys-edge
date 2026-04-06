@@ -716,25 +716,6 @@ def cmd_run(args):
                     if thread_text:
                         caption_text += "\n\n" + "TWITTER THREADS (copy-paste each tweet separately):\n" + "="*40 + thread_text
 
-                    # v24: Reddit post — standalone for r/sportsbetting + thread comments
-                    _pick_lines = []
-                    for _p in sorted(all_picks, key=lambda x: x.get('units', 0), reverse=True):
-                        if _p.get('units', 0) >= 3.5:
-                            _odds_str = f"({_p['odds']:+.0f})" if _p.get('odds') else ''
-                            _u = _p.get('units', 0)
-                            _tag = ' — MAX PLAY' if _u >= 5.0 else ''
-                            _pick_lines.append(f"**{_p['selection']}** {_odds_str} {_u:.0f}u{_tag}")
-                    if _pick_lines:
-                        _today_str = datetime.now().strftime('%A %m/%d')
-                        _reddit_body = f"Title: {_today_str} Picks — {_sw}W-{_sl}L ({_wr:.0f}%) season, all tracked\n\n"
-                        _reddit_body += "Body:\n\n"
-                        _reddit_body += f"{len(_pick_lines)} plays for {datetime.now().strftime('%A')}. Full transparency — every pick graded, every loss shown.\n\n"
-                        _reddit_body += "\n\n".join(_pick_lines)
-                        _reddit_body += f"\n\nSeason: {_sw}-{_sl} ({_wr:.0f}%) | {_sp:+.0f}u\n\n"
-                        _reddit_body += "All picks tracked at scottys_edge on IG. Discord: discord.gg/JQ6rRfuN\n\n"
-                        _reddit_body += "---\nPost in: r/sportsbetting (standalone), r/sportsbook (daily thread comment)"
-                        caption_text += "\n\n" + "REDDIT POST (r/sportsbetting):\n" + "="*40 + "\n" + _reddit_body
-
                     # v17: Growth playbook — accounts to engage, ready-to-post content
                     _season = conn.execute("""
                         SELECT SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END),
@@ -754,6 +735,25 @@ def cmd_run(args):
                     _bp_sel = _best_pick[0] if _best_pick and isinstance(_best_pick, tuple) else (_best_pick['selection'] if _best_pick else 'Check card')
                     _bp_odds_raw = _best_pick[1] if _best_pick and isinstance(_best_pick, tuple) else (_best_pick.get('odds') if _best_pick else None)
                     _bp_odds = f"({_bp_odds_raw:+.0f})" if _bp_odds_raw else ''
+
+                    # v24: Reddit post — standalone for r/sportsbetting + thread comments
+                    _pick_lines = []
+                    for _p in sorted(all_picks, key=lambda x: x.get('units', 0), reverse=True):
+                        if _p.get('units', 0) >= 3.5:
+                            _odds_str = f"({_p['odds']:+.0f})" if _p.get('odds') else ''
+                            _u = _p.get('units', 0)
+                            _tag = ' — MAX PLAY' if _u >= 5.0 else ''
+                            _pick_lines.append(f"**{_p['selection']}** {_odds_str} {_u:.0f}u{_tag}")
+                    if _pick_lines:
+                        _today_str = datetime.now().strftime('%A %m/%d')
+                        _reddit_body = f"Title: {_today_str} Picks — {_sw}W-{_sl}L ({_wr:.0f}%) season, all tracked\n\n"
+                        _reddit_body += "Body:\n\n"
+                        _reddit_body += f"{len(_pick_lines)} plays for {datetime.now().strftime('%A')}. Full transparency — every pick graded, every loss shown.\n\n"
+                        _reddit_body += "\n\n".join(_pick_lines)
+                        _reddit_body += f"\n\nSeason: {_sw}-{_sl} ({_wr:.0f}%) | {_sp:+.0f}u\n\n"
+                        _reddit_body += "All picks tracked at scottys_edge on IG. Discord: discord.gg/JQ6rRfuN\n\n"
+                        _reddit_body += "---\nPost in: r/sportsbetting (standalone), r/sportsbook (daily thread comment)"
+                        caption_text += "\n\n" + "REDDIT POST (r/sportsbetting):\n" + "="*40 + "\n" + _reddit_body
 
                     growth_section = f"""
 
