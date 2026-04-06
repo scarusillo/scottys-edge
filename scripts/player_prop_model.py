@@ -755,8 +755,86 @@ def generate_prop_projections(conn=None):
         seen.add(dk)
         deduped.append(p)
 
+    # v24: Prop correlation detection — flag players with multiple props showing edge
+    # When 2+ props on the same player all lean over, the market is underrating
+    # that player's full game. The qualifying pick gets a confidence boost.
+    _player_edges = defaultdict(list)  # player → list of (stat, edge, projection, line)
+    for p in deduped:
+        sel = p['selection']
+        parts = sel.split(' OVER ')
+        if len(parts) == 2:
+            player_name = parts[0].strip()
+            stat_label = sel.split()[-1]
+            _player_edges[player_name].append({
+                'stat': stat_label,
+                'edge': p['edge_pct'],
+                'projection': p.get('_signals', {}).get('projection', 0),
+                'line': p.get('line', 0),
+                'selection': sel,
+            })
+
+    # Also check near-miss edges (props that projected over but didn't clear threshold)
+    # These are in the full picks list before dedup filtering
+    _near_miss_edges = defaultdict(list)
+    for p in picks:
+        sel = p['selection']
+        parts = sel.split(' OVER ')
+        if len(parts) == 2:
+            player_name = parts[0].strip()
+            stat_label = sel.split()[-1]
+            edge = p['edge_pct']
+            if edge >= 8.0 and edge < MIN_EDGE_PCT:  # Near-miss: 8-18% edge
+                _near_miss_edges[player_name].append({
+                    'stat': stat_label,
+                    'edge': edge,
+                    'selection': sel,
+                })
+
+    # Tag correlated stacks
+    correlated_players = {}
+    for player, edges in _player_edges.items():
+        # Count qualifying + near-miss props for this player
+        near = _near_miss_edges.get(player, [])
+        total_signals = len(edges) + len(near)
+        if total_signals >= 2:
+            qualifying_stats = [e['stat'] for e in edges]
+            near_stats = [e['stat'] for e in near]
+            correlated_players[player] = {
+                'qualifying': edges,
+                'near_miss': near,
+                'total_signals': total_signals,
+            }
+
+    # Apply correlation boost: add note to qualifying picks
+    for p in deduped:
+        sel = p['selection']
+        parts = sel.split(' OVER ')
+        if len(parts) != 2:
+            continue
+        player_name = parts[0].strip()
+        if player_name in correlated_players:
+            cp = correlated_players[player_name]
+            all_stats = [e['stat'] for e in cp['qualifying']] + [e['stat'] for e in cp['near_miss']]
+            other_stats = [s for s in all_stats if s != sel.split()[-1]]
+            if other_stats:
+                stack_note = f"CORRELATED STACK ({cp['total_signals']} props lean over: {', '.join(set(all_stats))})"
+                p['notes'] = stack_note + ' | ' + p.get('notes', '')
+                p['_correlated'] = True
+                p['_correlated_stats'] = list(set(all_stats))
+
+    if correlated_players:
+        print(f"  Prop correlations: {len(correlated_players)} players with stacked edges")
+        for player, cp in correlated_players.items():
+            q_stats = ', '.join(e['stat'] + f' ({e["edge"]:.0f}%)' for e in cp['qualifying'])
+            n_stats = ', '.join(e['stat'] + f' ({e["edge"]:.0f}%)' for e in cp['near_miss'])
+            print(f"    {player}: qualifying=[{q_stats}] near-miss=[{n_stats}]")
+
     # Cap at MAX_PROP_PICKS (already sorted by edge desc)
-    final = deduped[:MAX_PROP_PICKS]
+    # Prioritize correlated picks — move them to front
+    correlated = [p for p in deduped if p.get('_correlated')]
+    uncorrelated = [p for p in deduped if not p.get('_correlated')]
+    deduped_sorted = correlated + uncorrelated
+    final = deduped_sorted[:MAX_PROP_PICKS]
 
     print(f"  Player Prop Model: {projected_count} players projected, "
           f"{edge_count} edges found, {len(deduped)} qualifying, {len(final)} selected (cap={MAX_PROP_PICKS})")
