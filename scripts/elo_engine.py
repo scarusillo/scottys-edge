@@ -169,12 +169,16 @@ ELO_CONFIG = {
     # Individual players, not teams. Each match has clear W/L (no draws).
     # Higher K-factor than team sports — individual performance is more predictable
     # and each match provides strong signal about relative skill.
+    # v24: spread_per_elo changed from 120 (per SET) to 13 (per GAME).
+    # Market lines are in GAMES (+2.5, +4.5), not sets. Old value was creating
+    # phantom edges by comparing 0.2 sets to 4.5 games. Calibrated from 30
+    # recent ATP matches: avg 13.3 Elo points per game of margin.
     'tennis_atp_hard': {
         'k_factor': 24,           # Individual sport — each match is more informative
         'home_advantage': 0,      # Neutral tournament venues
         'mov_multiplier': True,   # Set margin: 2-0 vs 2-1 (bo3) or 3-0 vs 3-2 (bo5)
         'mov_cap': 3,             # Max 3-set margin in a Grand Slam
-        'spread_per_elo': 120,    # Elo points per 1 set of spread
+        'spread_per_elo': 13,     # v24: Elo points per 1 GAME of spread (was 120 per set)
         'initial_elo': 1500,
         'season_revert': 0.10,    # Minimal — tennis is year-round, skills carry over
         'min_games': 8,           # Need 8+ matches on this surface
@@ -185,7 +189,7 @@ ELO_CONFIG = {
         'home_advantage': 0,
         'mov_multiplier': True,
         'mov_cap': 3,
-        'spread_per_elo': 120,
+        'spread_per_elo': 13,     # v24: per GAME
         'initial_elo': 1500,
         'season_revert': 0.10,
         'min_games': 6,           # Fewer clay events per year
@@ -196,7 +200,7 @@ ELO_CONFIG = {
         'home_advantage': 0,
         'mov_multiplier': True,
         'mov_cap': 3,
-        'spread_per_elo': 120,
+        'spread_per_elo': 13,     # v24: per GAME
         'initial_elo': 1500,
         'season_revert': 0.10,
         'min_games': 4,           # Only ~3 grass events per year
@@ -207,7 +211,7 @@ ELO_CONFIG = {
         'home_advantage': 0,
         'mov_multiplier': True,
         'mov_cap': 2,             # WTA is always best-of-3 (max 2-set margin)
-        'spread_per_elo': 120,
+        'spread_per_elo': 13,     # v24: per GAME
         'initial_elo': 1500,
         'season_revert': 0.10,
         'min_games': 8,
@@ -218,7 +222,7 @@ ELO_CONFIG = {
         'home_advantage': 0,
         'mov_multiplier': True,
         'mov_cap': 2,
-        'spread_per_elo': 120,
+        'spread_per_elo': 13,     # v24: per GAME
         'initial_elo': 1500,
         'season_revert': 0.10,
         'min_games': 6,
@@ -229,7 +233,7 @@ ELO_CONFIG = {
         'home_advantage': 0,
         'mov_multiplier': True,
         'mov_cap': 2,
-        'spread_per_elo': 120,
+        'spread_per_elo': 13,     # v24: per GAME
         'initial_elo': 1500,
         'season_revert': 0.10,
         'min_games': 4,
