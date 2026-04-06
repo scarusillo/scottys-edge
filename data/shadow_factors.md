@@ -62,6 +62,12 @@ WHERE context_factors LIKE '%Home letdown%' AND DATE(created_at) >= '2026-03-18'
 
 **Midweek game** — Almost done contributing: +13.9u first half, +1.2u second half. Not urgent but track.
 
+### v24 — Context Gates (not shadows — these are directional vetoes)
+
+**Fast-paced / Altitude on NBA UNDERs** — GATE added v24 (4/6/2026). Fast-paced or altitude context on NBA UNDER picks vetoes the pick. Data: with pace/alt on unders 1W-4L -15.7u, without 3W-1L +7.8u. Pace/altitude still active on OVERs, spreads, and MLs (confirms direction). Vetoed picks logged to shadow_blocked_picks with PACE_GATE reason.
+
+**MLB Park Factor on contradicting totals** — GATE added v24 (4/6/2026). Hitter's park (adj > +0.2) vetoes UNDERs, pitcher's park (adj < -0.2) vetoes OVERs. Park no longer inflates model_total (was double-counting market — 3W-6L -16.1u). Vetoed picks logged with PARK_GATE reason.
+
 ## How to Query Shadow Performance
 
 Look for `[SHADOW]` in the `context_factors` column of `graded_bets`:

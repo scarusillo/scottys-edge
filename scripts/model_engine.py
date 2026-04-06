@@ -2543,12 +2543,32 @@ def generate_predictions(conn, sport=None, date=None):
                                 pass
                             if under_total > 12.0:
                                 _block_ncaa_under = True
+                        # v24: Pace/altitude gate — fast-paced or altitude vetoes NBA UNDERs
+                        # Data: NBA unders with pace/altitude 1W-4L -15.7u, without 3W-1L +7.8u
+                        _pace_veto_under = False
+                        if sp == 'basketball_nba' and ctx_total and ctx_total.get('summary', ''):
+                            _ctx_summary = ctx_total['summary'].lower()
+                            if 'fast-paced' in _ctx_summary or 'altitude' in _ctx_summary:
+                                _pace_veto_under = True
+                                try:
+                                    conn.execute("""
+                                        INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
+                                            market_type, line, odds, edge_pct, units, reason)
+                                        VALUES (?, ?, ?, ?, 'TOTAL', ?, ?, NULL, NULL, ?)
+                                    """, (datetime.now().isoformat(), sp, eid,
+                                          f"{away}@{home} UNDER {under_total}",
+                                          under_total, under_odds,
+                                          f"PACE_GATE ({ctx_total['summary'][:80]})"))
+                                    conn.commit()
+                                except Exception:
+                                    pass
+
                         # v24: Park gate — hitter's park vetoes UNDERs
                         _park_veto_under = (sp == 'baseball_mlb' and _park_gate_adj > 0.2)
                         if _park_veto_under and _park_factor_ctx:
                             _log_park_veto(conn, sp, eid, f"{away}@{home} UNDER {under_total}",
                                            _park_gate_adj, _park_factor_ctx)
-                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _block_ncaa_under and not _park_veto_under:
+                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under:
                             k = f"{eid}|T|UNDER"
                             if k not in seen:
                                 total_diff_u = under_total - model_total
