@@ -207,6 +207,125 @@ def cmd_snapshot(args):
 
 
 # ═══════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════
+# ARB SCANNER — Cross-book arbitrage detection
+# ═══════════════════════════════════════════════════════════════════
+
+NY_LEGAL_BOOKS_ARB = {'DraftKings', 'FanDuel', 'BetMGM', 'Caesars', 'BetRivers',
+                      'Fanatics', 'ESPN BET', 'PointsBet'}
+
+def _american_to_decimal(odds):
+    if odds > 0: return 1 + odds / 100
+    elif odds < 0: return 1 + 100 / abs(odds)
+    return 1
+
+def _scan_arbs(conn, min_margin=0.0, max_margin=5.0):
+    """Scan today's odds for cross-book arbitrage opportunities.
+    Returns a formatted string for the caption email, or '' if none found.
+    min_margin: minimum arb % to report (0.0 = any arb)
+    max_margin: cap to filter stale lines (>5% is almost always stale)
+    """
+    from collections import defaultdict
+    from datetime import datetime
+
+    today = datetime.now().strftime('%Y-%m-%d')
+    now_utc = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    arbs = []
+
+    for market_type in ['totals', 'spreads', 'h2h']:
+        rows = conn.execute("""
+            SELECT event_id, home, away, sport, selection, book, odds, line, commence_time
+            FROM odds
+            WHERE snapshot_date = ?
+            AND market = ?
+            AND book IN ('DraftKings','FanDuel','BetMGM','Caesars','BetRivers',
+                         'Fanatics','ESPN BET','PointsBet')
+        """, (today, market_type)).fetchall()
+
+        events = defaultdict(lambda: {'side1': [], 'side2': [], 'home': '', 'away': '',
+                                       'sport': '', 'commence': ''})
+
+        for eid, home, away, sport, sel, book, odds, line, commence in rows:
+            if market_type == 'totals':
+                key = (eid, line)
+                events[key]['home'] = home
+                events[key]['away'] = away
+                events[key]['sport'] = sport
+                events[key]['commence'] = commence or ''
+                if 'Over' in sel:
+                    events[key]['side1'].append((book, odds, f'OVER {line}'))
+                elif 'Under' in sel:
+                    events[key]['side2'].append((book, odds, f'UNDER {line}'))
+            elif market_type == 'spreads':
+                key = (eid, line)
+                events[key]['home'] = home
+                events[key]['away'] = away
+                events[key]['sport'] = sport
+                events[key]['commence'] = commence or ''
+                if home and home in sel:
+                    events[key]['side1'].append((book, odds, f'{home} {line:+.1f}'))
+                elif away and away in sel:
+                    events[key]['side2'].append((book, odds, f'{away} {line:+.1f}'))
+            elif market_type == 'h2h':
+                key = eid
+                events[key]['home'] = home
+                events[key]['away'] = away
+                events[key]['sport'] = sport
+                events[key]['commence'] = commence or ''
+                if home and home in sel:
+                    events[key]['side1'].append((book, odds, home))
+                elif away and away in sel:
+                    events[key]['side2'].append((book, odds, away))
+
+        for key, data in events.items():
+            if not data['side1'] or not data['side2']:
+                continue
+
+            # Only look at games that haven't started
+            if data['commence'] and data['commence'] < now_utc:
+                continue
+
+            best1 = max(data['side1'], key=lambda x: x[1])
+            best2 = max(data['side2'], key=lambda x: x[1])
+
+            dec1 = _american_to_decimal(best1[1])
+            dec2 = _american_to_decimal(best2[1])
+            total_implied = 1 / dec1 + 1 / dec2
+            margin = (1 - total_implied) * 100
+
+            if min_margin <= margin <= max_margin:
+                arbs.append({
+                    'game': f"{data['away']}@{data['home']}",
+                    'sport': data['sport'],
+                    'market': market_type,
+                    'side1': f"{best1[2]}: {best1[1]:+.0f} ({best1[0]})",
+                    'side2': f"{best2[2]}: {best2[1]:+.0f} ({best2[0]})",
+                    'margin': margin,
+                    'commence': data['commence'],
+                })
+
+    if not arbs:
+        return ''
+
+    arbs.sort(key=lambda x: -x['margin'])
+
+    lines = [f"\n\nARB OPPORTUNITIES ({len(arbs)} found)\n{'='*40}"]
+    for a in arbs[:10]:  # Top 10
+        sport_short = a['sport'].split('_')[-1] if a['sport'] else '?'
+        lines.append(f"\n  {a['game']} ({sport_short}) — {a['margin']:+.2f}% arb")
+        lines.append(f"    {a['side1']}")
+        lines.append(f"    {a['side2']}")
+
+    if len(arbs) > 10:
+        lines.append(f"\n  ... and {len(arbs) - 10} more")
+
+    lines.append(f"\n  Note: verify lines are still live before placing. Arbs close fast.")
+
+    return '\n'.join(lines)
+
+
+# ═══════════════════════════════════════════════════════════════════
 # RUN — Full picks pipeline (11:00 AM / 5:30 PM EST)
 # ═══════════════════════════════════════════════════════════════════
 
@@ -803,6 +922,14 @@ TONIGHT'S CHECKLIST:
 [ ] After wins hit: post results card + "Called it" story
 """
                     caption_text += growth_section
+
+                    # v24: Arb scanner — find cross-book arbitrage opportunities
+                    try:
+                        arb_section = _scan_arbs(conn)
+                        if arb_section:
+                            caption_text += arb_section
+                    except Exception as _arb_e:
+                        print(f"  Arb scan: {_arb_e}")
 
                     today = datetime.now().strftime('%Y-%m-%d')
                     send_email(f"Social Captions - {run_type} {today}", caption_text)
