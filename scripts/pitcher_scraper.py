@@ -1588,10 +1588,11 @@ def get_nhl_goalie_stats(conn, goalie_name):
         - games: Games played (starts)
     Or None if insufficient data.
 
-    Requires 10+ starts before returning stats (same logic as
-    MLB pitcher 30 IP minimum for reliability).
+    Requires 3+ starts before returning stats. Was 10 but that
+    excluded legitimate backup goalies (Talbot 4, Reimer 8,
+    Korpisalo 7) causing the model to fire blind with ?.?? data.
     """
-    MIN_GAMES = 10
+    MIN_GAMES = 3
 
     try:
         conn.execute("SELECT 1 FROM nhl_goalie_stats LIMIT 1")
@@ -1713,11 +1714,14 @@ def get_nhl_probable_goalies(conn, home, away, game_date=None):
 
     hg, ag = row[0], row[1]
     h_status, a_status = row[2] or '', row[3] or ''
-    both = hg is not None and ag is not None
 
     # Look up season stats for each goalie
     h_stats = get_nhl_goalie_stats(conn, hg) if hg else None
     a_stats = get_nhl_goalie_stats(conn, ag) if ag else None
+
+    # v23.2: both_confirmed requires names AND stats for both goalies.
+    # Without stats the model fires blind on totals (?.?? on cards).
+    both = hg is not None and ag is not None and h_stats is not None and a_stats is not None
 
     parts = []
     if hg:
