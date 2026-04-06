@@ -89,9 +89,9 @@ def create_slim_db():
     size_mb = os.path.getsize(SLIM_PATH) / 1024 / 1024
     print(f"\n  Slim DB: {size_mb:.0f} MB, {total_rows:,} total rows")
 
-    # Compress
-    print("  Compressing...")
-    with open(SLIM_PATH, 'rb') as f_in:
+    # Compress FULL production DB (not slim) so cloud pipeline has all picks for dedup
+    print("  Compressing full DB...")
+    with open(DB_PATH, 'rb') as f_in:
         with gzip.open(GZ_PATH, 'wb', compresslevel=6) as f_out:
             while True:
                 chunk = f_in.read(8 * 1024 * 1024)  # 8MB chunks
