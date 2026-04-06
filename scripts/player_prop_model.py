@@ -829,12 +829,9 @@ def generate_prop_projections(conn=None):
             n_stats = ', '.join(e['stat'] + f' ({e["edge"]:.0f}%)' for e in cp['near_miss'])
             print(f"    {player}: qualifying=[{q_stats}] near-miss=[{n_stats}]")
 
-    # Cap at MAX_PROP_PICKS (already sorted by edge desc)
-    # Prioritize correlated picks — move them to front
-    correlated = [p for p in deduped if p.get('_correlated')]
-    uncorrelated = [p for p in deduped if not p.get('_correlated')]
-    deduped_sorted = correlated + uncorrelated
-    final = deduped_sorted[:MAX_PROP_PICKS]
+    # Cap at MAX_PROP_PICKS (sorted by edge desc — correlation is informational only,
+    # doesn't change pick order or create new edges)
+    final = deduped[:MAX_PROP_PICKS]
 
     print(f"  Player Prop Model: {projected_count} players projected, "
           f"{edge_count} edges found, {len(deduped)} qualifying, {len(final)} selected (cap={MAX_PROP_PICKS})")
