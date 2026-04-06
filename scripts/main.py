@@ -2422,9 +2422,12 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # Filter 2: Block FanDuel recommendations
         if p.get('book', '') in PROP_EXCLUDED_RECS:
             continue
-        # Filter 3: Block medium dog odds (+151 to +250) — looks like value, isn't
+        # Filter 3: Block high odds props — cap at +200
+        # v24: Was +151-250 dead zone (from March 23 consensus engine data).
+        # Most binary 0.5 props (RBI, blocks) are +150-200 naturally.
+        # Old filter killed every prop. Now: allow up to +200, block +201+.
         odds = p.get('odds', -110)
-        if 151 <= odds <= 250:
+        if odds > 200:
             continue
         prop_filtered.append(p)
     
