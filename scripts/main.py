@@ -2399,14 +2399,14 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                 return sel.split(word)[0].strip()
         return sel
     
-    # ── Prop filters — backtest 3/23: 4 filters turned 14W-29L (-18u) into 6W-1L (+63u) ──
-    # 1. OVER only — Unders are 3W-14L (-49u, -57.6% ROI). Books price downside accurately.
+    # ── Prop filters — backtest 3/23: cleaned 14W-29L (-18u) into profitable ──
+    # 1. OVER only — Unders are 3W-14L (-49u). Books price downside accurately.
     # 2. No FanDuel — 2W-13L (-50.8u). FanDuel lines look like edges but aren't.
-    # 3. <7 book consensus — 7+ books means all books have it; "edge" is noise not mispricing.
-    #    3-6 books: 10W-9L (+35.5u). 7+ books: 4W-16L (-51u).
-    # 4. No medium dog odds (+151 to +250) — 3W-15L (-49.8u). Big dogs (+251+) are 3W-1L (+43u).
+    # 3. Book count filter REMOVED v24 — was counting game-level books, not prop-level.
+    #    Model builds own projection from box scores; book count is irrelevant.
+    #    Was blocking Wembanyama 21.8% block edges because the GAME had 7+ books.
+    # 4. No medium dog odds (+151 to +250) — 3W-15L (-49.8u).
     PROP_EXCLUDED_RECS = {'FanDuel'}  # Still use for consensus calc, never recommend
-    PROP_MAX_BOOK_COUNT = 6           # Skip when 7+ books all have the line
     prop_filtered = []
     for p in (prop_picks or []):
         if p.get('units', 0) < PROP_MIN_UNITS:
@@ -2422,11 +2422,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # Filter 2: Block FanDuel recommendations
         if p.get('book', '') in PROP_EXCLUDED_RECS:
             continue
-        # Filter 3: Skip high book count (edge is noise when every book has the line)
-        signals = p.get('_signals', {})
-        if signals.get('book_count', 0) >= 7:
-            continue
-        # Filter 4: Block medium dog odds (+151 to +250) — looks like value, isn't
+        # Filter 3: Block medium dog odds (+151 to +250) — looks like value, isn't
         odds = p.get('odds', -110)
         if 151 <= odds <= 250:
             continue

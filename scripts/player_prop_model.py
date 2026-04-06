@@ -59,12 +59,9 @@ HOME_BOOST = 1.02
 AWAY_PENALTY = 0.98
 
 # Edge thresholds
-# Backtest 3/23: 30% worked on stale lines but overconfidence cap (0.75 prob)
-# limits max live edge to ~22.6%. 30% is mathematically unreachable.
-# Live graded data: 20-30% edge is 6W-3L +15.7u (sweet spot).
-# 15-20% is 3W-2L -0.8u (breakeven). Set to 18% — captures the profitable
-# range while the MAX_PROP_PICKS=5 cap keeps volume manageable.
-MIN_EDGE_PCT = 18.0
+# v24: Unified 20% edge floor. Graded data: 20%+ is 6W-3L +15.7u.
+# 15-20% was 3W-2L -0.8u (breakeven noise). Only MAX PLAYs.
+MIN_EDGE_PCT = 20.0
 MIN_STARS = 2.0
 MAX_PROP_PICKS = 5  # Max props per card (top N by edge)
 MAX_PROP_ODDS = 200  # No props above +200 (no data to support higher)
