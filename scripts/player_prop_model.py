@@ -241,7 +241,157 @@ def get_player_context(conn, team, home, away, sport, commence):
 
 
 # ═══════════════════════════════════════════════════════════════════
-# PROJECTION — Combine baseline × opponent × context
+# MLB MATCHUP — Opposing pitcher (for batters) / lineup (for pitchers)
+# ═══════════════════════════════════════════════════════════════════
+
+# Batter stat types that should be adjusted by opposing pitcher quality
+BATTER_STATS = {'hits', 'hr', 'rbi', 'runs', 'walks', 'batter_k', 'total_bases',
+                'stolen_bases', 'at_bats'}
+# Pitcher stat types that should be adjusted by opposing lineup quality
+PITCHER_STATS = {'pitcher_k', 'pitcher_outs', 'pitcher_ip', 'pitcher_er',
+                 'pitcher_h_allowed', 'pitcher_bb'}
+
+# Which pitcher metric suppresses/boosts which batter stat.
+# Lower ERA/WHIP = harder for batters. Higher K/9 = more Ks for batters.
+_PITCHER_METRIC = {
+    'hits': 'whip',       # WHIP directly measures hits+walks allowed per IP
+    'total_bases': 'era',  # ERA proxies overall damage allowed
+    'hr': 'era',
+    'rbi': 'era',
+    'runs': 'era',
+    'walks': 'whip',
+    'batter_k': 'k9',     # High K/9 pitcher = MORE batter Ks (inverse)
+    'stolen_bases': None,  # Not pitcher-dependent
+    'at_bats': None,
+}
+
+# Lineup quality metric for pitcher props
+_LINEUP_METRIC = {
+    'pitcher_k': 'batter_k',       # Lineup that strikes out a lot = more pitcher Ks
+    'pitcher_outs': None,           # Not lineup-dependent (pitcher's own workload)
+    'pitcher_ip': None,
+    'pitcher_er': 'runs',           # Lineup that scores runs = more earned runs
+    'pitcher_h_allowed': 'hits',    # Lineup that gets hits = more hits allowed
+    'pitcher_bb': 'walks',          # Lineup that draws walks = more walks
+}
+
+# League average benchmarks (updated from current data)
+_LEAGUE_AVG = {'era': 4.14, 'k9': 9.21, 'whip': 1.30}
+
+
+def get_opposing_pitcher_mult(conn, opponent, home, away, stat_type, commence):
+    """
+    For BATTER props: adjust projection based on the opposing starting pitcher.
+    A soft pitcher (high ERA/WHIP) boosts batter projections.
+    An ace (low ERA/WHIP) suppresses them.
+    Returns a multiplier (>1.0 = favorable matchup, <1.0 = tough matchup).
+    """
+    metric = _PITCHER_METRIC.get(stat_type)
+    if not metric:
+        return 1.0, None
+
+    # Find today's probable pitcher for the opponent
+    game_date = commence[:10] if commence else datetime.now().strftime('%Y-%m-%d')
+    # Opponent is pitching — find their starter
+    pitcher_row = conn.execute("""
+        SELECT home_pitcher, away_pitcher,
+               home_pitcher_season_era, away_pitcher_season_era,
+               home_pitcher_season_k9, away_pitcher_season_k9,
+               home_pitcher_season_whip, away_pitcher_season_whip,
+               home, away
+        FROM mlb_probable_pitchers
+        WHERE game_date = ? AND (
+            (home = ? AND away = ?) OR (home = ? AND away = ?)
+        )
+        ORDER BY fetched_at DESC LIMIT 1
+    """, (game_date, home, away, away, home)).fetchone()
+
+    if not pitcher_row:
+        return 1.0, None
+
+    # Determine which pitcher the batter faces (opponent's pitcher)
+    if opponent == pitcher_row[8]:  # opponent is home
+        sp_name = pitcher_row[0]
+        sp_era = pitcher_row[2]
+        sp_k9 = pitcher_row[4]
+        sp_whip = pitcher_row[6]
+    else:  # opponent is away
+        sp_name = pitcher_row[1]
+        sp_era = pitcher_row[3]
+        sp_k9 = pitcher_row[5]
+        sp_whip = pitcher_row[7]
+
+    if not sp_name:
+        return 1.0, None
+
+    # Get the relevant metric
+    if metric == 'era' and sp_era and sp_era > 0:
+        raw_mult = sp_era / _LEAGUE_AVG['era']
+    elif metric == 'whip' and sp_whip and sp_whip > 0:
+        raw_mult = sp_whip / _LEAGUE_AVG['whip']
+    elif metric == 'k9' and sp_k9 and sp_k9 > 0:
+        # For batter K props, high K/9 pitcher = MORE batter Ks
+        raw_mult = sp_k9 / _LEAGUE_AVG['k9']
+    else:
+        return 1.0, None
+
+    # Regress toward 1.0 — don't let a single pitcher stat swing too hard
+    # Cap at ±20% adjustment
+    mult = 1.0 + (raw_mult - 1.0) * 0.6  # 60% weight on the signal
+    mult = max(0.80, min(1.20, mult))
+
+    return round(mult, 3), sp_name
+
+
+def get_opposing_lineup_mult(conn, team, opponent, stat_type, sport):
+    """
+    For PITCHER props: adjust projection based on the opposing lineup quality.
+    A lineup that strikes out a lot = more pitcher Ks.
+    A lineup that gets lots of hits = more hits allowed.
+    Returns a multiplier.
+    """
+    lineup_stat = _LINEUP_METRIC.get(stat_type)
+    if not lineup_stat:
+        return 1.0
+
+    # Get the opposing team's batting average for the relevant stat
+    # compared to league average (same approach as get_opponent_defense)
+    league = conn.execute("""
+        SELECT AVG(stat_value), COUNT(DISTINCT espn_game_id)
+        FROM box_scores WHERE stat_type = ? AND sport = ?
+    """, (lineup_stat, sport)).fetchone()
+
+    if not league or not league[0]:
+        return 1.0
+    league_avg = league[0]
+
+    # Opponent's batting in this stat
+    opp = conn.execute("""
+        SELECT AVG(stat_value), COUNT(DISTINCT espn_game_id)
+        FROM box_scores
+        WHERE stat_type = ? AND sport = ? AND team = ?
+    """, (lineup_stat, sport, opponent)).fetchone()
+
+    if not opp or not opp[0]:
+        return 1.0
+
+    opp_avg = opp[0]
+    opp_games = opp[1] or 0
+    if opp_games < MIN_OPP_GAMES:
+        return 1.0
+
+    raw_mult = opp_avg / league_avg if league_avg > 0 else 1.0
+
+    # Regress toward 1.0 for sample size
+    confidence = min(opp_games, 30) / 30.0
+    mult = 1.0 + (raw_mult - 1.0) * confidence * 0.6  # 60% weight
+    mult = max(0.85, min(1.15, mult))
+
+    return round(mult, 3)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# PROJECTION — Combine baseline × opponent × context × matchup
 # ═══════════════════════════════════════════════════════════════════
 
 def project_player_stat(conn, player, stat_type, sport, team, opponent, home, away, commence):
@@ -259,7 +409,18 @@ def project_player_stat(conn, player, stat_type, sport, team, opponent, home, aw
     ctx = get_player_context(conn, team, home, away, sport, commence)
     ctx_mult = ctx['combined_mult']
 
-    projection = baseline['avg'] * opp_mult * ctx_mult
+    # v24: MLB matchup adjustments
+    matchup_mult = 1.0
+    matchup_detail = None
+    if 'baseball' in sport:
+        if stat_type in BATTER_STATS:
+            matchup_mult, matchup_detail = get_opposing_pitcher_mult(
+                conn, opponent, home, away, stat_type, commence)
+        elif stat_type in PITCHER_STATS:
+            matchup_mult = get_opposing_lineup_mult(
+                conn, team, opponent, stat_type, sport)
+
+    projection = baseline['avg'] * opp_mult * ctx_mult * matchup_mult
     projection = max(0.0, projection)
 
     return {
@@ -269,6 +430,8 @@ def project_player_stat(conn, player, stat_type, sport, team, opponent, home, aw
         'baseline_avg': baseline['avg'],
         'opp_mult': opp_mult,
         'ctx_mult': ctx_mult,
+        'matchup_mult': matchup_mult,
+        'matchup_detail': matchup_detail,
         'factors': ctx.get('factors', {}),
         'values': baseline.get('values', []),
     }
@@ -533,8 +696,15 @@ def generate_prop_projections(conn=None):
             units = kelly_units(edge_pct=edge, odds=odds, fraction=0.25)
             conf = 'ELITE' if stars >= 2.5 else 'HIGH'
 
+            matchup_str = ""
+            if proj.get('matchup_mult', 1.0) != 1.0:
+                sp = proj.get('matchup_detail')
+                matchup_str = f" Matchup={proj['matchup_mult']:.2f}"
+                if sp:
+                    matchup_str += f" (vs {sp})"
             notes = (f"Proj={proj['projection']:.1f} Mkt={line} "
-                     f"OppDef={proj['opp_mult']:.2f} Ctx={proj['ctx_mult']:.2f} "
+                     f"OppDef={proj['opp_mult']:.2f} Ctx={proj['ctx_mult']:.2f}"
+                     f"{matchup_str} "
                      f"Std={proj['std']:.1f} Games={proj['games']} "
                      f"Edge={edge:.1f}% | {home} vs {away}")
 
