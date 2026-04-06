@@ -570,6 +570,41 @@ def grade_bets(conn, days_back=3):
 
         h_score, a_score, home, away, _ = score
 
+        # v24 FIX: Tennis spread/total lines are in GAMES, not sets.
+        # The results table stores set scores (2-0, 2-1) but lines like +4.5
+        # mean games. Use tennis_metadata.set_scores to get actual game counts.
+        grade_h, grade_a = h_score, a_score
+        if sport and 'tennis' in sport and mtype in ('SPREAD', 'TOTAL'):
+            try:
+                # Find the ESPN event_id from results that matched this bet
+                espn_eid = conn.execute("""
+                    SELECT event_id FROM results
+                    WHERE sport=? AND completed=1
+                    AND ((home=? AND away=?) OR (home=? AND away=?))
+                    AND DATE(commence_time) BETWEEN DATE(?) AND DATE(?, '+1 day')
+                    ORDER BY commence_time DESC LIMIT 1
+                """, (sport, home, away, away, home,
+                      created[:10], created[:10])).fetchone()
+                if not espn_eid:
+                    espn_eid = conn.execute("""
+                        SELECT event_id FROM results
+                        WHERE event_id=? AND sport=? AND completed=1 LIMIT 1
+                    """, (eid, sport)).fetchone()
+                if espn_eid:
+                    tm = conn.execute("""
+                        SELECT set_scores FROM tennis_metadata WHERE event_id=?
+                    """, (espn_eid[0],)).fetchone()
+                    if tm and tm[0]:
+                        import json as _json
+                        sets = _json.loads(tm[0])
+                        # set_scores format: [[h_games, a_games], ...] per set
+                        # player1 = home in results table
+                        grade_h = sum(s[0] for s in sets)
+                        grade_a = sum(s[1] for s in sets)
+                        print(f"  ✓ Tennis games score: {home} {grade_h} - {grade_a} {away} (from set_scores)")
+            except Exception as e:
+                print(f"  ⚠ Tennis game-score lookup failed: {e}, using set scores")
+
         # Determine W/L/P
         # v12.1: Props use box score player stats, not team scores
         if mtype == 'PROP':
@@ -583,7 +618,7 @@ def grade_bets(conn, days_back=3):
                 print(f"  ⚠ Prop grading error: {e}")
                 result = 'PENDING'
         else:
-            result = determine_result(sel, mtype, line, h_score, a_score, home, away, sport=sport)
+            result = determine_result(sel, mtype, line, grade_h, grade_a, home, away, sport=sport)
         pnl = calculate_pnl(result, odds, units)
 
         # Compute CLV

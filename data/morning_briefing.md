@@ -1,28 +1,27 @@
 # Scotty's Edge Morning Briefing
-**Date:** Monday, April 06, 2026 | **Generated:** 05:08 AM ET
+**Date:** Monday, April 06, 2026 | **Generated:** 05:51 AM ET
 **Game Date Graded:** 2026-04-05
 
 ---
 ## Yesterday's Results
 
-**7W-7L-0P | -5.5u | RED DAY**
+**5W-8L-0P | -19.9u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Moise Kouame +4.5 | tennis_atp_monte_carlo_masters | DOG | +100 | 5.0 | **W** | +5.0 | 0.0% |
 | Indiana Pacers@Cleveland Cavaliers UNDER 240. | basketball_nba | UNDER | -110 | 5.0 | **W** | +4.5 | -- |
-| Marton Fucsovics +2.5 | tennis_atp_monte_carlo_masters | DOG | -115 | 5.0 | **W** | +4.3 | 0.0% |
 | St Louis Blues +1.5 | icehockey_nhl | DOG | -125 | 5.0 | **W** | +4.0 | 0.0% |
 | Minnesota Wild@Detroit Red Wings OVER 5.5 | icehockey_nhl | OVER | -135 | 5.0 | **W** | +3.7 | 1.0% |
 | Boston Bruins@Philadelphia Flyers UNDER 6.5 | icehockey_nhl | UNDER | -140 | 5.0 | **W** | +3.6 | 1.0% |
 | Gael Monfils +2.5 | tennis_atp_monte_carlo_masters | DOG | -120 | 4.0 | **W** | +3.3 | 0.0% |
 | Memphis Grizzlies@Milwaukee Bucks UNDER 229.0 | basketball_nba | UNDER | -110 | 4.0 | **L** | -4.0 | 0.0% |
+| Moise Kouame +4.5 | tennis_atp_monte_carlo_masters | DOG | +100 | 5.0 | **L** | -5.0 | 0.0% |
+| Marton Fucsovics +2.5 | tennis_atp_monte_carlo_masters | DOG | -115 | 5.0 | **L** | -5.0 | 0.0% |
 | Washington Wizards@Brooklyn Nets UNDER 230.5 | basketball_nba | UNDER | -110 | 5.0 | **L** | -5.0 | 0.0% |
 | Tampa Bay Rays@Minnesota Twins OVER 7.5 | baseball_mlb | OVER | -115 | 5.0 | **L** | -5.0 | -1.0% |
 | Carolina Hurricanes@Ottawa Senators UNDER 6.5 | icehockey_nhl | UNDER | -120 | 5.0 | **L** | -5.0 | -1.0% |
 | Dennis Schroder OVER 3.5 ASSISTS | basketball_nba | PROP_OVER | +127 | 5.0 | **L** | -5.0 | -- |
 | Andy Pages OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +149 | 5.0 | **L** | -5.0 | -- |
-| St Louis Blues@Colorado Avalanche OVER 5.5 | icehockey_nhl | OVER | -- | 5.0 | **L** | -5.0 | 0.5% |
 
 ---
 ## Loss Analysis
@@ -32,6 +31,16 @@
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
 - **Final Score:** Memphis Grizzlies 115 @ Milwaukee Bucks 131
 - **Model Spread:** -8.0 | Actual Margin: +16
+
+### Moise Kouame +4.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Context:** Away letdown spot (+0.2)
+
+### Marton Fucsovics +2.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Context:** Away letdown spot (+0.2)
 
 ### Washington Wizards@Brooklyn Nets UNDER 230.5
 - **Category:** MARGINAL
@@ -64,34 +73,29 @@
 - **Analysis:** No closing line available for comparison.
 - **Final Score:** Los Angeles Dodgers 8 @ Washington Nationals 6
 
-### St Louis Blues@Colorado Avalanche OVER 5.5
-- **Category:** VARIANCE
-- **Analysis:** Positive CLV (+0.5%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** St Louis Blues 3 @ Colorado Avalanche 2
-
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **150W-106L** |
-| Win Rate | 58.6% |
-| P/L | **+95.7u** |
-| ROI | +7.7% |
-| Wagered | 1247.0u |
+| Record | **148W-107L** |
+| Win Rate | 58.0% |
+| P/L | **+81.3u** |
+| ROI | +6.5% |
+| Wagered | 1242.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
 | baseball_ncaa | 52 | 35 | +50.1u |
-| icehockey_nhl | 39 | 22 | +26.5u |
+| icehockey_nhl | 39 | 21 | +31.5u |
 | basketball_ncaab | 17 | 12 | +18.7u |
-| tennis_atp_monte_carlo_masters | 3 | 0 | +12.7u |
 | basketball_nba | 25 | 20 | +8.4u |
 | soccer_germany_bundesliga | 1 | 1 | -0.2u |
 | tennis_atp_miami_open | 1 | 1 | -1.1u |
 | soccer_italy_serie_a | 1 | 1 | -1.8u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
+| tennis_atp_monte_carlo_masters | 1 | 2 | -6.7u |
 | baseball_mlb | 11 | 13 | -13.1u |
 
 ---
@@ -130,8 +134,8 @@ Found 5 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 101W-70L (59.1%) | +93.1u | 0.5 |
-| BELOW_CAP | 49W-36L (57.6%) | +2.6u | 0.3 |
+| AT_CAP | 100W-70L (58.8%) | +88.1u | 0.5 |
+| BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.3 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -165,7 +169,7 @@ Found 5 shadow-tagged picks.
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 5 | -7.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
-| icehockey_nhl | OVER | 8 | 4 | +9.6u |
+| icehockey_nhl | OVER | 8 | 3 | +14.6u |
 | icehockey_nhl | UNDER | 11 | 5 | +17.2u |
 | soccer_germany_bundesliga | OVER | 1 | 0 | +4.8u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
@@ -176,13 +180,13 @@ Found 5 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS WIN LOSS LOSS WIN LOSS LOSS WIN LOSS
-- **Current Streak:** 2 LOSS
+- **Last 10:** LOSS WIN LOSS LOSS WIN LOSS LOSS WIN LOSS WIN
+- **Current Streak:** 1 LOSS
 
 ---
 ## Action Items
 
-1. Big red day (-5.5u). Review if any model errors need parameter changes.
+1. Big red day (-19.9u). Review if any model errors need parameter changes.
 2. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
 3. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
 4. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
@@ -195,4 +199,4 @@ Found 5 shadow-tagged picks.
 11. basketball_nba UNDERs: 4W-5L (-7.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-06 05:08 ET*
+*Generated locally by export_briefing_data.py | 2026-04-06 05:51 ET*

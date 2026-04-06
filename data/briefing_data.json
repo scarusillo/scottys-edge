@@ -1,25 +1,7 @@
 {
-  "generated_at": "2026-04-06 05:08",
+  "generated_at": "2026-04-06 05:51",
   "game_date": "2026-04-05",
   "yesterday": [
-    {
-      "selection": "Moise Kouame +4.5",
-      "sport": "tennis_atp_monte_carlo_masters",
-      "market_type": "SPREAD",
-      "side_type": "DOG",
-      "result": "WIN",
-      "pnl_units": 5.0,
-      "clv": 0.0,
-      "edge_pct": 24.0,
-      "odds": 100.0,
-      "units": 5.0,
-      "context_factors": "Away letdown spot (+0.2)",
-      "context_confirmed": 1,
-      "model_spread": -0.2,
-      "closing_line": 4.5,
-      "event_id": "ecb49493998078d1ac64bed904c9271c",
-      "dt": "2026-04-05"
-    },
     {
       "selection": "Indiana Pacers@Cleveland Cavaliers UNDER 240.5",
       "sport": "basketball_nba",
@@ -36,24 +18,6 @@
       "model_spread": null,
       "closing_line": null,
       "event_id": "tainted_ind_cle_0405",
-      "dt": "2026-04-05"
-    },
-    {
-      "selection": "Marton Fucsovics +2.5",
-      "sport": "tennis_atp_monte_carlo_masters",
-      "market_type": "SPREAD",
-      "side_type": "DOG",
-      "result": "WIN",
-      "pnl_units": 4.35,
-      "clv": 0.0,
-      "edge_pct": 18.75,
-      "odds": -115.0,
-      "units": 5.0,
-      "context_factors": "Away letdown spot (+0.2)",
-      "context_confirmed": 1,
-      "model_spread": -0.16,
-      "closing_line": 2.5,
-      "event_id": "8dfde16c400d2fe27b3dafe3883e514f",
       "dt": "2026-04-05"
     },
     {
@@ -153,6 +117,42 @@
         "actual_total": 246,
         "actual_margin": 16
       }
+    },
+    {
+      "selection": "Moise Kouame +4.5",
+      "sport": "tennis_atp_monte_carlo_masters",
+      "market_type": "SPREAD",
+      "side_type": "DOG",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.0,
+      "edge_pct": 24.0,
+      "odds": 100.0,
+      "units": 5.0,
+      "context_factors": "Away letdown spot (+0.2)",
+      "context_confirmed": 1,
+      "model_spread": -0.2,
+      "closing_line": 4.5,
+      "event_id": "ecb49493998078d1ac64bed904c9271c",
+      "dt": "2026-04-05"
+    },
+    {
+      "selection": "Marton Fucsovics +2.5",
+      "sport": "tennis_atp_monte_carlo_masters",
+      "market_type": "SPREAD",
+      "side_type": "DOG",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.0,
+      "edge_pct": 18.75,
+      "odds": -115.0,
+      "units": 5.0,
+      "context_factors": "Away letdown spot (+0.2)",
+      "context_confirmed": 1,
+      "model_spread": -0.16,
+      "closing_line": 2.5,
+      "event_id": "8dfde16c400d2fe27b3dafe3883e514f",
+      "dt": "2026-04-05"
     },
     {
       "selection": "Washington Wizards@Brooklyn Nets UNDER 230.5",
@@ -283,40 +283,14 @@
         "actual_total": 14,
         "actual_margin": -2
       }
-    },
-    {
-      "selection": "St Louis Blues@Colorado Avalanche OVER 5.5",
-      "sport": "icehockey_nhl",
-      "market_type": "TOTAL",
-      "side_type": "OVER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.5,
-      "edge_pct": 20.0,
-      "odds": 0.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": 6.0,
-      "event_id": "6e1c8f2b345c36cffadaf88c2bb4b58a",
-      "dt": "2026-04-05",
-      "actual_score": {
-        "home": "Colorado Avalanche",
-        "away": "St Louis Blues",
-        "home_score": 2,
-        "away_score": 3,
-        "actual_total": 5,
-        "actual_margin": -1
-      }
     }
   ],
   "season": {
     "result": "LOSS",
-    "W": 150,
-    "L": 106,
-    "pnl": 95.7,
-    "wagered": 1247.0
+    "W": 148,
+    "L": 107,
+    "pnl": 81.3,
+    "wagered": 1242.0
   },
   "by_sport": [
     {
@@ -346,8 +320,8 @@
     {
       "sport": "icehockey_nhl",
       "W": 39,
-      "L": 22,
-      "pnl": 26.5
+      "L": 21,
+      "pnl": 31.5
     },
     {
       "sport": "soccer_germany_bundesliga",
@@ -375,9 +349,9 @@
     },
     {
       "sport": "tennis_atp_monte_carlo_masters",
-      "W": 3,
-      "L": 0,
-      "pnl": 12.7
+      "W": 1,
+      "L": 2,
+      "pnl": -6.7
     }
   ],
   "context_health": [
@@ -524,6 +498,15 @@
       "first_half_pnl": -5.0,
       "second_half_pnl": 8.7,
       "trending": "BETTER"
+    },
+    {
+      "factor": "Away letdown spot",
+      "W": 13,
+      "L": 10,
+      "pnl": 4.1,
+      "first_half_pnl": 20.6,
+      "second_half_pnl": -16.5,
+      "trending": "WORSE"
     },
     {
       "factor": "Fri series-opener surcharge",
@@ -679,15 +662,6 @@
       "trending": "STABLE"
     },
     {
-      "factor": "Away letdown spot",
-      "W": 15,
-      "L": 8,
-      "pnl": 23.4,
-      "first_half_pnl": 20.6,
-      "second_half_pnl": 2.8,
-      "trending": "WORSE"
-    },
-    {
       "factor": "Away fast-paced",
       "W": 12,
       "L": 4,
@@ -755,6 +729,13 @@
       "W": 1,
       "L": 3,
       "pnl": -9.9
+    },
+    {
+      "day_of_week": "Sunday",
+      "sport": "tennis_atp_monte_carlo_masters",
+      "W": 1,
+      "L": 2,
+      "pnl": -6.7
     },
     {
       "day_of_week": "Thursday",
@@ -890,13 +871,6 @@
       "pnl": 9.7
     },
     {
-      "day_of_week": "Sunday",
-      "sport": "tennis_atp_monte_carlo_masters",
-      "W": 3,
-      "L": 0,
-      "pnl": 12.7
-    },
-    {
       "day_of_week": "Wednesday",
       "sport": "icehockey_nhl",
       "W": 4,
@@ -942,16 +916,16 @@
   "edge_cap": [
     {
       "bucket": "AT_CAP",
-      "W": 101,
+      "W": 100,
       "L": 70,
-      "pnl": 93.1,
+      "pnl": 88.1,
       "avg_clv": 0.5
     },
     {
       "bucket": "BELOW_CAP",
-      "W": 49,
-      "L": 36,
-      "pnl": 2.6,
+      "W": 48,
+      "L": 37,
+      "pnl": -6.7,
       "avg_clv": 0.3
     }
   ],
@@ -1081,8 +1055,8 @@
       "sport": "icehockey_nhl",
       "side_type": "OVER",
       "W": 8,
-      "L": 4,
-      "pnl": 9.6
+      "L": 3,
+      "pnl": 14.6
     },
     {
       "sport": "icehockey_nhl",
@@ -1146,7 +1120,6 @@
   ],
   "last_10": [
     "LOSS",
-    "LOSS",
     "WIN",
     "LOSS",
     "LOSS",
@@ -1154,9 +1127,10 @@
     "LOSS",
     "LOSS",
     "WIN",
-    "LOSS"
+    "LOSS",
+    "WIN"
   ],
-  "streak": 2,
+  "streak": 1,
   "streak_type": "LOSS",
   "shadow_blocked_picks": [
     {
@@ -1434,8 +1408,8 @@
     {
       "book": "Caesars",
       "bets": 39,
-      "wins": 21,
-      "losses": 16,
+      "wins": 19,
+      "losses": 18,
       "pnl": 12.9,
       "wagered": 186.5,
       "avg_clv": 1.43
@@ -1466,15 +1440,6 @@
       "pnl": 1.0,
       "wagered": 266.5,
       "avg_clv": 0.11
-    },
-    {
-      "book": "",
-      "bets": 1,
-      "wins": 0,
-      "losses": 1,
-      "pnl": -5.0,
-      "wagered": 5.0,
-      "avg_clv": 0.5
     }
   ]
 }
