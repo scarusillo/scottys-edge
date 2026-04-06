@@ -18,19 +18,6 @@ from datetime import datetime, timedelta
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 
 
-def analyze_totals_history(conn):
-    """Full totals pick history."""
-    totals = conn.execute("""
-        SELECT selection, sport, units, odds, created_at, market_type
-        FROM bets
-        WHERE market_type = 'TOTAL'
-        AND DATE(created_at) >= '2026-03-04'
-        ORDER BY created_at DESC
-    """).fetchall()
-    
-    return totals
-
-
 def analyze_totals_record(conn):
     """Graded totals performance."""
     record = conn.execute("""

@@ -82,13 +82,6 @@ def fetch_injuries(sport):
     return injuries
 
 
-def fetch_weather_baseball():
-    """Check weather for outdoor baseball games today."""
-    # ESPN doesn't have a weather API but we can flag dome vs outdoor
-    # For now, return empty — can integrate weather API later
-    return {}
-
-
 def check_injury_changes(conn, sport):
     """
     Compare current injuries against what was known at opener time.
@@ -203,33 +196,6 @@ def generate_research_brief(sports=None):
     
     conn.close()
     return "\n".join(lines), alerts
-
-
-def save_injuries_snapshot(sport):
-    """Save current injuries to DB for change detection."""
-    conn = sqlite3.connect(DB_PATH)
-    
-    # Ensure table exists
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS injuries (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            sport TEXT, team TEXT, player TEXT, status TEXT,
-            injury TEXT, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
-    
-    injuries = fetch_injuries(sport)
-    now = datetime.now().isoformat()
-    
-    for team, players in injuries.items():
-        for p in players:
-            conn.execute("""
-                INSERT OR REPLACE INTO injuries (sport, team, player, status, injury, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (sport, team, p['player'], p['status'], p.get('injury', ''), now))
-    
-    conn.commit()
-    conn.close()
 
 
 if __name__ == '__main__':

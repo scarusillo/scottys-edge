@@ -91,8 +91,8 @@ def _get_team_id(team_name, sport):
                         _team_id_cache[cache_key] = tid
                         return tid
     except Exception as e:
-        pass
-    
+        print(f"  ⚠ Fetch error looking up team '{team_name}': {e}")
+
     return None
 
 
@@ -112,6 +112,7 @@ def _fetch_team_schedule(team_id, sport, season=None):
         data = json.loads(resp.read().decode())
         return data.get('events', [])
     except Exception as e:
+        print(f"  ⚠ Fetch error for team schedule {team_id}: {e}")
         return []
 
 

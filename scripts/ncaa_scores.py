@@ -59,6 +59,7 @@ def _fetch_ncaa_json(sport, date_str):
         data = json.loads(resp.read().decode())
         return data
     except Exception as e:
+        print(f"  ⚠ NCAA JSON fetch error for {sport} {date_str}: {e}")
         return None
 
 
@@ -79,6 +80,7 @@ def _fetch_ncaa_html(sport, date_str):
         resp = urlopen(req, timeout=15)
         return resp.read().decode()
     except Exception as e:
+        print(f"  ⚠ NCAA HTML fetch error for {sport} {date_str}: {e}")
         return None
 
 
