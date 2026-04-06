@@ -974,11 +974,16 @@ def head_to_head_adjustment(conn, home, away, sport):
     
     if len(h2h) < 2:
         return 0.0, 0.0, {}
-    
+
     spread_adj = 0.0
     total_adj = 0.0
     reasons = {}
-    
+
+    # Tennis margins are in sets (0-3), not points — use lower thresholds
+    is_tennis = 'tennis' in sport
+    margin_threshold = 1.5 if is_tennis else 5.0
+    total_diff_threshold = 1.0 if is_tennis else 5.0
+
     # Compute average margin from home's perspective
     margins = []
     totals = []
@@ -990,16 +995,17 @@ def head_to_head_adjustment(conn, home, away, sport):
             margins.append(m)
         if r[3] is not None:
             totals.append(r[3])
-    
-    # H2H margin: if home consistently dominates this matchup
+
+    # H2H margin: if one side consistently dominates this matchup
     if len(margins) >= 2:
         avg_margin = sum(margins) / len(margins)
-        if abs(avg_margin) >= 5.0:
+        if abs(avg_margin) >= margin_threshold:
             # Strong dominance pattern — adjust spread slightly
-            adj = max(-1.0, min(1.0, avg_margin * 0.1))
+            scale = 0.3 if is_tennis else 0.1  # Tennis sets need bigger multiplier
+            adj = max(-1.0, min(1.0, avg_margin * scale))
             spread_adj = round(adj, 1)
             reasons['h2h_margin'] = spread_adj
-    
+
     # H2H totals: if this matchup consistently goes over or under
     if len(totals) >= 3:
         # Compare H2H average total to league average
@@ -1007,12 +1013,13 @@ def head_to_head_adjustment(conn, home, away, sport):
             SELECT AVG(actual_total) FROM results
             WHERE sport = ? AND completed = 1 AND actual_total IS NOT NULL
         """, (sport,)).fetchone()
-        
+
         if league and league[0]:
             h2h_avg_total = sum(totals) / len(totals)
             diff = h2h_avg_total - league[0]
-            if abs(diff) >= 5.0:  # At least 5 pts different from league avg
-                adj = max(-2.0, min(2.0, diff * 0.2))
+            if abs(diff) >= total_diff_threshold:
+                scale = 0.5 if is_tennis else 0.2  # Tennis sets need bigger multiplier
+                adj = max(-2.0, min(2.0, diff * scale))
                 total_adj = round(adj, 1)
                 direction = 'high-scoring' if adj > 0 else 'low-scoring'
                 reasons['h2h_total'] = total_adj
