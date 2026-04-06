@@ -2169,10 +2169,10 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
         all_factors['altitude'] = alt_info
     
     # 6. Motivation (affects SPREAD)
-    # SHADOW FACTORS: away_bounceback (3W-4L, -11.5u) and away_revenge (5W-5L, -4.4u)
-    # are recorded but zeroed out. Home bounce-back and home revenge still active.
-    # Letdown spots remain fully active.
-    SHADOW_MOTIVATION = {'away_bounceback', 'away_revenge'}
+    # SHADOW FACTORS: zeroed out but still tracked with [SHADOW] prefix.
+    # away_bounceback (3W-4L, -11.5u), away_revenge (5W-5L, -4.4u) — shadowed v21.
+    # away_letdown: 2nd half -16.5u (threshold was -10u) — shadowed v24 (4/6/2026).
+    SHADOW_MOTIVATION = {'away_bounceback', 'away_revenge', 'away_letdown'}
     mot_adj, mot_info = motivation_adjustment(conn, home, away, sport, commence)
     if mot_adj != 0 or mot_info:
         # Compute shadow-adjusted motivation adj (subtract shadow factors)

@@ -13,12 +13,13 @@ zeroed out so they do not influence picks.
 | 3 | Altitude | 2W-3L | -6.1u | Section 5 (altitude_adjustment) — all altitude adjustments |
 | 4 | Home hot streak | 1W-2L | -5.4u | Section 11 (_recent_form_adjustment) — entire form factor is shadow-only |
 | 5 | Away revenge game | 5W-5L | -4.4u | Section 6 (motivation_adjustment) — away_revenge key |
+| 6 | Away letdown spot | 13W-10L | +4.1u (1st half +20.6u, 2nd half -16.5u) | Section 6 (motivation_adjustment) — away_letdown key. Shadowed v24 (4/6/2026). Threshold was -10u 2nd half; hit -16.5u. Clay tennis losses (-10u on 4/5) accelerated collapse. |
 
 ## What Remains Active
 
 - **Home bounce-back** — still applied (separate from away bounce-back)
 - **Home revenge** — still applied (separate from away revenge)
-- **Letdown spots** — still applied (both home and away)
+- **Home letdown spot** — still applied (2nd half -7.8u, threshold -15u, 7.2u cushion)
 - **Home slow-paced** — still applied (only home fast is shadowed)
 - **Away pace (fast or slow)** — still applied
 - **All other context factors** (travel, refs, H2H, familiarity, weather, etc.)
@@ -57,7 +58,7 @@ SELECT result, pnl_units, created_at FROM graded_bets
 WHERE context_factors LIKE '%Home letdown%' AND DATE(created_at) >= '2026-03-18'
 ```
 
-**Away letdown spot** — Similar fade: +16.5u first half, -2.4u second half. Nearly flat. Monitor — if second-half P/L goes below -10u, recommend shadowing.
+**Away letdown spot** — SHADOWED v24 (4/6/2026). 2nd half hit -16.5u, 6.5u past -10u threshold. Two clay tennis losses on 4/5 (-10u) accelerated collapse.
 
 **Midweek game** — Almost done contributing: +13.9u first half, +1.2u second half. Not urgent but track.
 
