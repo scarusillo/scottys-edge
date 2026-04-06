@@ -1,225 +1,81 @@
 {
-  "generated_at": "2026-04-05 07:45",
-  "game_date": "2026-04-04",
+  "generated_at": "2026-04-06 05:08",
+  "game_date": "2026-04-05",
   "yesterday": [
     {
-      "selection": "Michigan Wolverines ML (cross-mkt)",
-      "sport": "baseball_ncaa",
-      "market_type": "MONEYLINE",
+      "selection": "Moise Kouame +4.5",
+      "sport": "tennis_atp_monte_carlo_masters",
+      "market_type": "SPREAD",
       "side_type": "DOG",
       "result": "WIN",
-      "pnl_units": 6.0,
-      "clv": -25.2,
-      "edge_pct": 20.0,
-      "odds": 150.0,
-      "units": 4.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": -2.0,
-      "closing_line": null,
-      "event_id": "bca6453e977120dd432cb29a9263f49d",
-      "dt": "2026-04-04"
-    },
-    {
-      "selection": "Oklahoma Sooners ML",
-      "sport": "basketball_ncaab",
-      "market_type": "MONEYLINE",
-      "side_type": "DOG",
-      "result": "WIN",
-      "pnl_units": 4.95,
-      "clv": 13.9,
-      "edge_pct": 18.37,
-      "odds": 110.0,
-      "units": 4.5,
-      "context_factors": "[SHADOW] Away hot streak (-0.5) | Elo probability edge",
-      "context_confirmed": 1,
-      "model_spread": 0.07,
-      "closing_line": null,
-      "event_id": "0b1d66a8749e69eed9aef423368342da",
-      "dt": "2026-04-04"
-    },
-    {
-      "selection": "St. Louis Cardinals@Detroit Tigers OVER 7.5",
-      "sport": "baseball_mlb",
-      "market_type": "TOTAL",
-      "side_type": "OVER",
-      "result": "WIN",
-      "pnl_units": 4.9,
-      "clv": 10.0,
-      "edge_pct": 20.0,
-      "odds": -102.0,
+      "pnl_units": 5.0,
+      "clv": 0.0,
+      "edge_pct": 24.0,
+      "odds": 100.0,
       "units": 5.0,
-      "context_factors": "Saturday game | Detroit Tigers SP: Jack Flaherty (4.69 ERA) | St. Louis Cardinals SP: Dustin May (6.77 ERA) | Pitching: Jack Flaherty 4.77 vs Dustin May 5.09 (+0.7) | Park: Comerica Park (+0.1) | Bullpen: Tigers 3.68 vs Cardinals 3.87 (-0.0)",
+      "context_factors": "Away letdown spot (+0.2)",
       "context_confirmed": 1,
-      "model_spread": -1.81,
-      "closing_line": 17.5,
-      "event_id": "2f55ab2592008c576ce6bba0557199d8",
-      "dt": "2026-04-04"
+      "model_spread": -0.2,
+      "closing_line": 4.5,
+      "event_id": "ecb49493998078d1ac64bed904c9271c",
+      "dt": "2026-04-05"
     },
     {
-      "selection": "Milwaukee Brewers@Kansas City Royals UNDER 8.5",
-      "sport": "baseball_mlb",
+      "selection": "Indiana Pacers@Cleveland Cavaliers UNDER 240.5",
+      "sport": "basketball_nba",
       "market_type": "TOTAL",
       "side_type": "UNDER",
       "result": "WIN",
-      "pnl_units": 4.9,
-      "clv": 1.0,
-      "edge_pct": 20.0,
-      "odds": -102.0,
-      "units": 5.0,
-      "context_factors": "Weather: broken clouds, 17mph wind (-1.5) | Saturday game | Kansas City Royals SP: Seth Lugo (2.05 ERA) | Milwaukee Brewers SP: Brandon Sproat (5.06 ERA) | Pitching: Seth Lugo 2.56 vs Brandon Sproat ?.?? (-0.5) | Park: Kauffman Stadium (-0.4) | Bullpen: Royals 3.66 vs Brewers 4.09 (+0.0)",
-      "context_confirmed": 1,
-      "model_spread": 0.58,
-      "closing_line": 7.5,
-      "event_id": "fea2e77645688e161aa980c0b830c080",
-      "dt": "2026-04-04"
-    },
-    {
-      "selection": "Bayern Munich@SC Freiburg OVER 3.5",
-      "sport": "soccer_germany_bundesliga",
-      "market_type": "TOTAL",
-      "side_type": "OVER",
-      "result": "WIN",
-      "pnl_units": 4.76,
-      "clv": -1.0,
-      "edge_pct": 20.0,
-      "odds": -105.0,
-      "units": 5.0,
-      "context_factors": "Away fast-paced (+0.3)",
-      "context_confirmed": 1,
-      "model_spread": 1.16,
-      "closing_line": 2.5,
-      "event_id": "c1f65614c6b768a59d14f9cac40bb461",
-      "dt": "2026-04-04"
-    },
-    {
-      "selection": "Virginia Tech Hokies@Miami Hurricanes OVER 12.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "OVER",
-      "result": "WIN",
       "pnl_units": 4.55,
-      "clv": 0.0,
+      "clv": null,
       "edge_pct": 20.0,
       "odds": -110.0,
       "units": 5.0,
-      "context_factors": "Saturday game | Miami Hurricanes allows 4.0 R/saturday | Virginia Tech Hokies allows 9.3 R/saturday | Pitching edge: Miami Hurricanes (+1.0 pts)",
-      "context_confirmed": 1,
-      "model_spread": -2.4200000000000004,
-      "closing_line": 12.5,
-      "event_id": "682191c09df83757919a001c4725f1ab",
-      "dt": "2026-04-04"
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": null,
+      "event_id": "tainted_ind_cle_0405",
+      "dt": "2026-04-05"
     },
     {
-      "selection": "Utah Utes@Kansas Jayhawks OVER 16.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "OVER",
+      "selection": "Marton Fucsovics +2.5",
+      "sport": "tennis_atp_monte_carlo_masters",
+      "market_type": "SPREAD",
+      "side_type": "DOG",
       "result": "WIN",
-      "pnl_units": 4.42,
-      "clv": 3.0,
-      "edge_pct": 20.0,
-      "odds": -113.0,
-      "units": 5.0,
-      "context_factors": "[SHADOW] Home fast-paced (+0.5) | Away fast-paced (+0.8) | Saturday game | Kansas Jayhawks allows 6.2 R/saturday | Utah Utes allows 5.7 R/saturday | Pitching edge: Utah Utes (-0.1 pts)",
-      "context_confirmed": 1,
-      "model_spread": -2.3899999999999997,
-      "closing_line": 19.5,
-      "event_id": "6e3605bc48731092bd10de0cba9ed538",
-      "dt": "2026-04-04"
-    },
-    {
-      "selection": "Ole Miss Rebels@Florida Gators UNDER 10.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "WIN",
-      "pnl_units": 4.27,
+      "pnl_units": 4.35,
       "clv": 0.0,
-      "edge_pct": 20.0,
-      "odds": -117.0,
+      "edge_pct": 18.75,
+      "odds": -115.0,
       "units": 5.0,
-      "context_factors": "Both teams slow-paced (-0.8) | Saturday game | Florida Gators SP: Aidan - P King | Ole Miss Rebels SP: Cade - P Townsend | Florida Gators allows 0.6 R/saturday | Ole Miss Rebels allows 2.5 R/saturday | Pitching edge: Florida Gators (+0.6 pts)",
+      "context_factors": "Away letdown spot (+0.2)",
       "context_confirmed": 1,
-      "model_spread": -2.41,
-      "closing_line": 10.5,
-      "event_id": "d6359b4358baa6aa311ad5f12b9bd077",
-      "dt": "2026-04-04"
-    },
-    {
-      "selection": "Alabama Crimson Tide@Oklahoma Sooners UNDER 12.0",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "WIN",
-      "pnl_units": 4.17,
-      "clv": 0.0,
-      "edge_pct": 20.0,
-      "odds": -120.0,
-      "units": 5.0,
-      "context_factors": "Both teams slow-paced (-0.6) | Saturday game | Oklahoma Sooners allows 2.2 R/saturday | Alabama Crimson Tide allows 4.6 R/saturday | Pitching edge: Oklahoma Sooners (+0.7 pts)",
-      "context_confirmed": 1,
-      "model_spread": 0.29,
-      "closing_line": 12.0,
-      "event_id": "5d35120faf29e19ba89cffa1dffab257",
-      "dt": "2026-04-04"
-    },
-    {
-      "selection": "Baltimore Orioles@Pittsburgh Pirates UNDER 8.5",
-      "sport": "baseball_mlb",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "WIN",
-      "pnl_units": 4.02,
-      "clv": 3.0,
-      "edge_pct": 16.1,
-      "odds": -112.0,
-      "units": 4.5,
-      "context_factors": "Weather: light rain, 10mph wind (-1.5) | Saturday game | Pittsburgh Pirates SP: Carmen Mlodzinski (4.89 ERA) | Baltimore Orioles SP: Shane Baz (5.01 ERA) | Pitching: Carmen Mlodzinski 5.01 vs Shane Baz 4.50 (+0.6) | Park: PNC Park (-0.6) | Bullpen: Pirates 3.72 vs Orioles 4.61 (+0.1)",
-      "context_confirmed": 1,
-      "model_spread": -0.47,
-      "closing_line": 5.5,
-      "event_id": "da18e0cacf2048f6b3e14df98e9a184c",
-      "dt": "2026-04-04"
-    },
-    {
-      "selection": "Colorado Avalanche@Dallas Stars UNDER 6.5",
-      "sport": "icehockey_nhl",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "WIN",
-      "pnl_units": 3.85,
-      "clv": 4.0,
-      "edge_pct": 18.0,
-      "odds": -130.0,
-      "units": 5.0,
-      "context_factors": "Away fast-paced (+0.6) | Division familiarity (-0.3) | Goalies: Jake Oettinger 2.31 vs Mackenzie Blackwood ?.?? (-0.2)",
-      "context_confirmed": 1,
-      "model_spread": 0.1,
+      "model_spread": -0.16,
       "closing_line": 2.5,
-      "event_id": "a383435cbbba66da650781837ddb1720",
-      "dt": "2026-04-04"
+      "event_id": "8dfde16c400d2fe27b3dafe3883e514f",
+      "dt": "2026-04-05"
     },
     {
-      "selection": "UC Santa Barbara Gauchos@Cal Poly Mustangs UNDER 10.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
+      "selection": "St Louis Blues +1.5",
+      "sport": "icehockey_nhl",
+      "market_type": "SPREAD",
+      "side_type": "DOG",
       "result": "WIN",
-      "pnl_units": 3.85,
-      "clv": 2.0,
-      "edge_pct": 20.0,
-      "odds": -130.0,
+      "pnl_units": 4.0,
+      "clv": 0.0,
+      "edge_pct": 20.13,
+      "odds": -125.0,
       "units": 5.0,
-      "context_factors": "Away slow-paced (-0.4) | Saturday game | Cal Poly Mustangs allows 7.3 R/saturday | UC Santa Barbara Gauchos allows 5.0 R/saturday | Pitching edge: UC Santa Barbara Gauchos (-0.7 pts)",
+      "context_factors": "Home letdown spot (-0.2) | GOALIE: Colorado Avalanche G: Mackenzie Blackwood | St Louis Blues G: Jordan Binnington",
       "context_confirmed": 1,
-      "model_spread": 1.48,
-      "closing_line": 8.5,
-      "event_id": "c4a0ee92d05356c036efc5aa5de396fc",
-      "dt": "2026-04-04"
+      "model_spread": -0.21999999999999997,
+      "closing_line": 1.5,
+      "event_id": "6e1c8f2b345c36cffadaf88c2bb4b58a",
+      "dt": "2026-04-05"
     },
     {
-      "selection": "Toronto Maple Leafs@Los Angeles Kings OVER 5.5",
+      "selection": "Minnesota Wild@Detroit Red Wings OVER 5.5",
       "sport": "icehockey_nhl",
       "market_type": "TOTAL",
       "side_type": "OVER",
@@ -229,193 +85,245 @@
       "edge_pct": 20.0,
       "odds": -135.0,
       "units": 5.0,
-      "context_factors": "Goalies: Darcy Kuemper 3.20 vs Joseph Woll 3.38 (recent 4.00) (+0.5)",
+      "context_factors": "Goalies: Cam Talbot ?.?? vs Filip Gustavsson 3.17 (recent 3.50) (+0.2)",
       "context_confirmed": 1,
-      "model_spread": -0.86,
+      "model_spread": 0.12,
       "closing_line": 6.5,
-      "event_id": "7768959b2f03475f8b98c0c2fb98daf2",
-      "dt": "2026-04-04"
+      "event_id": "c36637b0713ec3bed157fe2f29f74598",
+      "dt": "2026-04-05"
     },
     {
-      "selection": "Georgia Bulldogs ML (cross-mkt)",
-      "sport": "baseball_ncaa",
-      "market_type": "MONEYLINE",
+      "selection": "Boston Bruins@Philadelphia Flyers UNDER 6.5",
+      "sport": "icehockey_nhl",
+      "market_type": "TOTAL",
+      "side_type": "UNDER",
+      "result": "WIN",
+      "pnl_units": 3.57,
+      "clv": 1.0,
+      "edge_pct": 16.8,
+      "odds": -140.0,
+      "units": 5.0,
+      "context_factors": "Division familiarity (-0.3) | Goalies: Dan Vladar 2.50 (recent 3.00) vs Joonas Korpisalo ?.?? (-0.1)",
+      "context_confirmed": 1,
+      "model_spread": -0.51,
+      "closing_line": 5.5,
+      "event_id": "4ee0a58e1700d2f73d808677a7499755",
+      "dt": "2026-04-05"
+    },
+    {
+      "selection": "Gael Monfils +2.5",
+      "sport": "tennis_atp_monte_carlo_masters",
+      "market_type": "SPREAD",
       "side_type": "DOG",
-      "result": "LOSS",
-      "pnl_units": -4.0,
-      "clv": -2.3,
-      "edge_pct": 20.0,
-      "odds": 140.0,
+      "result": "WIN",
+      "pnl_units": 3.33,
+      "clv": 0.0,
+      "edge_pct": 15.98,
+      "odds": -120.0,
       "units": 4.0,
       "context_factors": "",
       "context_confirmed": 0,
-      "model_spread": 1.4200000000000002,
-      "closing_line": null,
-      "event_id": "600003d3b0cb33e597c2fb24039ae760",
-      "dt": "2026-04-04"
+      "model_spread": 0.09,
+      "closing_line": 2.5,
+      "event_id": "daa4c74fe0e1ac3847349016eab39ab3",
+      "dt": "2026-04-05"
     },
     {
-      "selection": "Florida Panthers +1.5",
-      "sport": "icehockey_nhl",
-      "market_type": "SPREAD",
-      "side_type": "DOG",
-      "result": "LOSS",
-      "pnl_units": -4.5,
-      "clv": -5.0,
-      "edge_pct": 16.48,
-      "odds": -130.0,
-      "units": 4.5,
-      "context_factors": "GOALIE: Pittsburgh Penguins G: Arturs Silovs | Florida Panthers G: Daniil Tarasov",
-      "context_confirmed": 1,
-      "model_spread": -0.39,
-      "closing_line": 6.5,
-      "event_id": "64e14f827ab380b85a4caa6d0ecf2e01",
-      "dt": "2026-04-04",
-      "actual_score": {
-        "home": "Pittsburgh Penguins",
-        "away": "Florida Panthers",
-        "home_score": 9,
-        "away_score": 4,
-        "actual_total": 13,
-        "actual_margin": 5
-      }
-    },
-    {
-      "selection": "Atlanta Braves@Arizona Diamondbacks OVER 9.5",
-      "sport": "baseball_mlb",
+      "selection": "Memphis Grizzlies@Milwaukee Bucks UNDER 229.0",
+      "sport": "basketball_nba",
       "market_type": "TOTAL",
-      "side_type": "OVER",
+      "side_type": "UNDER",
       "result": "LOSS",
-      "pnl_units": -5.0,
+      "pnl_units": -4.0,
       "clv": 0.0,
       "edge_pct": 20.0,
-      "odds": -105.0,
-      "units": 5.0,
-      "context_factors": "Saturday game | Arizona Diamondbacks SP: Michael Soroka (3.47 ERA) | Atlanta Braves SP: Bryce Elder (4.28 ERA) | Pitching: Michael Soroka 4.34 vs Bryce Elder 5.35 (+0.6) | Park: Chase Field (+0.9) | Bullpen: Diamondbacks 5.03 vs Braves 3.33 (+0.1)",
-      "context_confirmed": 1,
-      "model_spread": 0.050000000000000044,
-      "closing_line": 9.5,
-      "event_id": "312f9e53b1d64ed1a38adc48dd3b1ce7",
-      "dt": "2026-04-04",
+      "odds": -110.0,
+      "units": 4.0,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": -8.04,
+      "closing_line": 229.0,
+      "event_id": "5ce196844b4f956a3c6961eec5bc859b",
+      "dt": "2026-04-05",
       "actual_score": {
-        "home": "Arizona Diamondbacks",
-        "away": "Atlanta Braves",
-        "home_score": 2,
-        "away_score": 1,
-        "actual_total": 3,
-        "actual_margin": 1
+        "home": "Milwaukee Bucks",
+        "away": "Memphis Grizzlies",
+        "home_score": 131,
+        "away_score": 115,
+        "actual_total": 246,
+        "actual_margin": 16
       }
     },
     {
-      "selection": "Washington Wizards@Miami Heat UNDER 248.5",
+      "selection": "Washington Wizards@Brooklyn Nets UNDER 230.5",
       "sport": "basketball_nba",
       "market_type": "TOTAL",
       "side_type": "UNDER",
       "result": "LOSS",
       "pnl_units": -5.0,
-      "clv": -27.0,
-      "edge_pct": 20.0,
-      "odds": -108.0,
-      "units": 5.0,
-      "context_factors": "[SHADOW] Home fast-paced (+0.7) | Away fast-paced (+0.4)",
-      "context_confirmed": 1,
-      "model_spread": -17.93,
-      "closing_line": 275.5,
-      "event_id": "b146607a8fe26fe467294dfdbaa0ff2b",
-      "dt": "2026-04-04",
-      "actual_score": {
-        "home": "Miami Heat",
-        "away": "Washington Wizards",
-        "home_score": 152,
-        "away_score": 136,
-        "actual_total": 288,
-        "actual_margin": 16
-      }
-    },
-    {
-      "selection": "Boston College Eagles@North Carolina Tar Heels UNDER 12.0",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": -2.5,
-      "edge_pct": 20.0,
-      "odds": -125.0,
-      "units": 5.0,
-      "context_factors": "Away slow-paced (-0.3) | Saturday game | North Carolina Tar Heels allows 4.8 R/saturday | Boston College Eagles allows 5.3 R/saturday | Pitching edge: North Carolina Tar Heels (+0.1 pts)",
-      "context_confirmed": 1,
-      "model_spread": -0.54,
-      "closing_line": 14.5,
-      "event_id": "db66de48637fe40b3acce8ccd08b25eb",
-      "dt": "2026-04-04"
-    },
-    {
-      "selection": "Winnipeg Jets@Columbus Blue Jackets OVER 5.5",
-      "sport": "icehockey_nhl",
-      "market_type": "TOTAL",
-      "side_type": "OVER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
       "clv": 0.0,
-      "edge_pct": 19.3,
-      "odds": -130.0,
+      "edge_pct": 20.0,
+      "odds": -110.0,
       "units": 5.0,
-      "context_factors": "Refs push over (Ref: Frederick L'Ecuyer (+0.1, 18g), Chris Schlenker (+0.7, 20g)) | Goalies: Jet Greaves 2.59 (recent 3.00) vs Connor Hellebuyck 3.05 (+0.0)",
+      "context_factors": "Both teams fast-paced (+0.2)",
       "context_confirmed": 1,
-      "model_spread": -0.37,
-      "closing_line": 5.5,
-      "event_id": "dd1a78e5e92c976caf37a08360a2aafc",
-      "dt": "2026-04-04",
+      "model_spread": -6.69,
+      "closing_line": 230.5,
+      "event_id": "c1b3d187f022b0870bfa7128e1d02ae5",
+      "dt": "2026-04-05",
       "actual_score": {
-        "home": "Columbus Blue Jackets",
-        "away": "Winnipeg Jets",
-        "home_score": 1,
-        "away_score": 2,
-        "actual_total": 3,
-        "actual_margin": -1
+        "home": "Brooklyn Nets",
+        "away": "Washington Wizards",
+        "home_score": 121,
+        "away_score": 115,
+        "actual_total": 236,
+        "actual_margin": 6
       }
     },
     {
-      "selection": "Philadelphia Phillies@Colorado Rockies OVER 10.0",
+      "selection": "Tampa Bay Rays@Minnesota Twins OVER 7.5",
       "sport": "baseball_mlb",
       "market_type": "TOTAL",
       "side_type": "OVER",
       "result": "LOSS",
       "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 20.0,
-      "odds": -114.0,
+      "clv": -1.0,
+      "edge_pct": 19.9,
+      "odds": -115.0,
       "units": 5.0,
-      "context_factors": "Saturday game | Colorado Rockies SP: Brennan Bernardino (3.89 ERA) | Philadelphia Phillies SP: Jesus Luzardo (5.28 ERA) | Pitching: Brennan Bernardino 3.89 vs Jesus Luzardo 4.35 (+0.1) | Park: Coors Field (+1.0) | Bullpen: Rockies 5.27 vs Phillies 4.44 (+0.4)",
+      "context_factors": "Weather: 10mph wind (-0.5) | Sunday game | Minnesota Twins SP: Simeon Woods Richardson (4.36 ERA) | Tampa Bay Rays SP: Nick Martinez (3.84 ERA) | Pitching: Simeon Woods Richardson 4.55 vs Nick Martinez 4.05 (+0.2) | Park: Target Field (+0.2) | Bullpen: Twins 4.42 vs Rays 3.64 (+0.1)",
       "context_confirmed": 1,
-      "model_spread": 0.3,
-      "closing_line": 10.0,
-      "event_id": "2c78d22f888a922842d18ab0938e9db4",
-      "dt": "2026-04-04",
+      "model_spread": -0.64,
+      "closing_line": 6.5,
+      "event_id": "e7c8fd226080f70fcf82e59c4705ede9",
+      "dt": "2026-04-05",
       "actual_score": {
-        "home": "Colorado Rockies",
-        "away": "Philadelphia Phillies",
+        "home": "Minnesota Twins",
+        "away": "Tampa Bay Rays",
         "home_score": 1,
-        "away_score": 2,
-        "actual_total": 3,
+        "away_score": 4,
+        "actual_total": 5,
+        "actual_margin": -3
+      }
+    },
+    {
+      "selection": "Carolina Hurricanes@Ottawa Senators UNDER 6.5",
+      "sport": "icehockey_nhl",
+      "market_type": "TOTAL",
+      "side_type": "UNDER",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": -1.0,
+      "edge_pct": 18.2,
+      "odds": -120.0,
+      "units": 5.0,
+      "context_factors": "Division familiarity (-0.3) | Goalies: James Reimer ?.?? vs Frederik Andersen 2.80 (recent 2.00) (-0.1)",
+      "context_confirmed": 1,
+      "model_spread": 0.41,
+      "closing_line": 7.5,
+      "event_id": "5525381fbde73b776cadf83541822b62",
+      "dt": "2026-04-05",
+      "actual_score": {
+        "home": "Ottawa Senators",
+        "away": "Carolina Hurricanes",
+        "home_score": 6,
+        "away_score": 3,
+        "actual_total": 9,
+        "actual_margin": 3
+      }
+    },
+    {
+      "selection": "Dennis Schroder OVER 3.5 ASSISTS",
+      "sport": "basketball_nba",
+      "market_type": "PROP",
+      "side_type": "PROP_OVER",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": null,
+      "edge_pct": 25.0,
+      "odds": 127.0,
+      "units": 5.0,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": null,
+      "event_id": "4f3d29a0317850ac56b0c6db31223705",
+      "dt": "2026-04-05",
+      "actual_score": {
+        "home": "Cleveland Cavaliers",
+        "away": "Indiana Pacers",
+        "home_score": 117,
+        "away_score": 108,
+        "actual_total": 225,
+        "actual_margin": 9
+      }
+    },
+    {
+      "selection": "Andy Pages OVER 0.5 RBIS",
+      "sport": "baseball_mlb",
+      "market_type": "PROP",
+      "side_type": "PROP_OVER",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": null,
+      "edge_pct": 25.0,
+      "odds": 149.0,
+      "units": 5.0,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": null,
+      "event_id": "11db8321335040098def7d046fc1e7fd",
+      "dt": "2026-04-05",
+      "actual_score": {
+        "home": "Washington Nationals",
+        "away": "Los Angeles Dodgers",
+        "home_score": 6,
+        "away_score": 8,
+        "actual_total": 14,
+        "actual_margin": -2
+      }
+    },
+    {
+      "selection": "St Louis Blues@Colorado Avalanche OVER 5.5",
+      "sport": "icehockey_nhl",
+      "market_type": "TOTAL",
+      "side_type": "OVER",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.5,
+      "edge_pct": 20.0,
+      "odds": 0.0,
+      "units": 5.0,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": 6.0,
+      "event_id": "6e1c8f2b345c36cffadaf88c2bb4b58a",
+      "dt": "2026-04-05",
+      "actual_score": {
+        "home": "Colorado Avalanche",
+        "away": "St Louis Blues",
+        "home_score": 2,
+        "away_score": 3,
+        "actual_total": 5,
         "actual_margin": -1
       }
     }
   ],
   "season": {
     "result": "LOSS",
-    "W": 143,
-    "L": 99,
-    "pnl": 101.2,
-    "wagered": 1179.0
+    "W": 150,
+    "L": 106,
+    "pnl": 95.7,
+    "wagered": 1247.0
   },
   "by_sport": [
     {
       "sport": "baseball_mlb",
       "W": 11,
-      "L": 11,
-      "pnl": -3.1
+      "L": 13,
+      "pnl": -13.1
     },
     {
       "sport": "baseball_ncaa",
@@ -425,9 +333,9 @@
     },
     {
       "sport": "basketball_nba",
-      "W": 24,
-      "L": 17,
-      "pnl": 17.8
+      "W": 25,
+      "L": 20,
+      "pnl": 8.4
     },
     {
       "sport": "basketball_ncaab",
@@ -437,9 +345,9 @@
     },
     {
       "sport": "icehockey_nhl",
-      "W": 36,
-      "L": 20,
-      "pnl": 25.2
+      "W": 39,
+      "L": 22,
+      "pnl": 26.5
     },
     {
       "sport": "soccer_germany_bundesliga",
@@ -464,6 +372,12 @@
       "W": 1,
       "L": 1,
       "pnl": -1.1
+    },
+    {
+      "sport": "tennis_atp_monte_carlo_masters",
+      "W": 3,
+      "L": 0,
+      "pnl": 12.7
     }
   ],
   "context_health": [
@@ -621,15 +535,6 @@
       "trending": "WORSE"
     },
     {
-      "factor": "Home letdown spot",
-      "W": 12,
-      "L": 7,
-      "pnl": 6.6,
-      "first_half_pnl": 15.7,
-      "second_half_pnl": -9.1,
-      "trending": "WORSE"
-    },
-    {
       "factor": "Pitching edge: North Carolina Tar Heels",
       "W": 3,
       "L": 1,
@@ -654,6 +559,15 @@
       "pnl": 8.8,
       "first_half_pnl": 9.3,
       "second_half_pnl": -0.6,
+      "trending": "WORSE"
+    },
+    {
+      "factor": "Home letdown spot",
+      "W": 13,
+      "L": 7,
+      "pnl": 10.6,
+      "first_half_pnl": 18.3,
+      "second_half_pnl": -7.8,
       "trending": "WORSE"
     },
     {
@@ -702,6 +616,24 @@
       "trending": "BETTER"
     },
     {
+      "factor": "Sunday game",
+      "W": 12,
+      "L": 8,
+      "pnl": 12.2,
+      "first_half_pnl": 15.3,
+      "second_half_pnl": -3.0,
+      "trending": "WORSE"
+    },
+    {
+      "factor": "Both teams fast-paced",
+      "W": 7,
+      "L": 3,
+      "pnl": 12.5,
+      "first_half_pnl": 10.6,
+      "second_half_pnl": 1.9,
+      "trending": "WORSE"
+    },
+    {
       "factor": "Strong home team",
       "W": 3,
       "L": 0,
@@ -709,15 +641,6 @@
       "first_half_pnl": 4.3,
       "second_half_pnl": 9.3,
       "trending": "BETTER"
-    },
-    {
-      "factor": "Away letdown spot",
-      "W": 13,
-      "L": 8,
-      "pnl": 14.1,
-      "first_half_pnl": 16.5,
-      "second_half_pnl": -2.4,
-      "trending": "WORSE"
     },
     {
       "factor": "Pitching edge: Miami Hurricanes",
@@ -738,21 +661,12 @@
       "trending": "WORSE"
     },
     {
-      "factor": "Sunday game",
-      "W": 12,
-      "L": 7,
-      "pnl": 17.2,
-      "first_half_pnl": 10.9,
-      "second_half_pnl": 6.4,
-      "trending": "WORSE"
-    },
-    {
-      "factor": "Both teams fast-paced",
-      "W": 7,
-      "L": 2,
-      "pnl": 17.5,
-      "first_half_pnl": 6.9,
-      "second_half_pnl": 10.6,
+      "factor": "Division familiarity",
+      "W": 9,
+      "L": 3,
+      "pnl": 19.0,
+      "first_half_pnl": 5.3,
+      "second_half_pnl": 13.7,
       "trending": "BETTER"
     },
     {
@@ -765,13 +679,13 @@
       "trending": "STABLE"
     },
     {
-      "factor": "Division familiarity",
-      "W": 8,
-      "L": 2,
-      "pnl": 20.4,
-      "first_half_pnl": 1.8,
-      "second_half_pnl": 18.6,
-      "trending": "BETTER"
+      "factor": "Away letdown spot",
+      "W": 15,
+      "L": 8,
+      "pnl": 23.4,
+      "first_half_pnl": 20.6,
+      "second_half_pnl": 2.8,
+      "trending": "WORSE"
     },
     {
       "factor": "Away fast-paced",
@@ -813,6 +727,13 @@
       "W": 1,
       "L": 4,
       "pnl": -14.3
+    },
+    {
+      "day_of_week": "Sunday",
+      "sport": "basketball_nba",
+      "W": 0,
+      "L": 3,
+      "pnl": -14.0
     },
     {
       "day_of_week": "Friday",
@@ -864,6 +785,13 @@
       "pnl": -1.2
     },
     {
+      "day_of_week": "",
+      "sport": "basketball_nba",
+      "W": 1,
+      "L": 1,
+      "pnl": -0.5
+    },
+    {
       "day_of_week": "Saturday",
       "sport": "soccer_germany_bundesliga",
       "W": 1,
@@ -906,6 +834,13 @@
       "pnl": 4.1
     },
     {
+      "day_of_week": "Sunday",
+      "sport": "baseball_mlb",
+      "W": 3,
+      "L": 2,
+      "pnl": 4.7
+    },
+    {
       "day_of_week": "Thursday",
       "sport": "basketball_ncaab",
       "W": 2,
@@ -941,13 +876,6 @@
       "pnl": 8.6
     },
     {
-      "day_of_week": "Sunday",
-      "sport": "icehockey_nhl",
-      "W": 6,
-      "L": 2,
-      "pnl": 9.0
-    },
-    {
       "day_of_week": null,
       "sport": "baseball_ncaa",
       "W": 2,
@@ -960,6 +888,13 @@
       "W": 10,
       "L": 7,
       "pnl": 9.7
+    },
+    {
+      "day_of_week": "Sunday",
+      "sport": "tennis_atp_monte_carlo_masters",
+      "W": 3,
+      "L": 0,
+      "pnl": 12.7
     },
     {
       "day_of_week": "Wednesday",
@@ -977,10 +912,10 @@
     },
     {
       "day_of_week": "Sunday",
-      "sport": "baseball_mlb",
-      "W": 3,
-      "L": 0,
-      "pnl": 14.7
+      "sport": "icehockey_nhl",
+      "W": 9,
+      "L": 3,
+      "pnl": 15.3
     },
     {
       "day_of_week": "Thursday",
@@ -1007,16 +942,16 @@
   "edge_cap": [
     {
       "bucket": "AT_CAP",
-      "W": 97,
-      "L": 65,
-      "pnl": 99.8,
-      "avg_clv": 0.3
+      "W": 101,
+      "L": 70,
+      "pnl": 93.1,
+      "avg_clv": 0.5
     },
     {
       "bucket": "BELOW_CAP",
-      "W": 46,
-      "L": 34,
-      "pnl": 1.4,
+      "W": 49,
+      "L": 36,
+      "pnl": 2.6,
       "avg_clv": 0.3
     }
   ],
@@ -1097,8 +1032,8 @@
       "sport": "baseball_mlb",
       "side_type": "OVER",
       "W": 6,
-      "L": 7,
-      "pnl": -8.6
+      "L": 8,
+      "pnl": -13.6
     },
     {
       "sport": "baseball_mlb",
@@ -1131,9 +1066,9 @@
     {
       "sport": "basketball_nba",
       "side_type": "UNDER",
-      "W": 3,
-      "L": 3,
-      "pnl": -3.4
+      "W": 4,
+      "L": 5,
+      "pnl": -7.8
     },
     {
       "sport": "basketball_ncaab",
@@ -1145,16 +1080,16 @@
     {
       "sport": "icehockey_nhl",
       "side_type": "OVER",
-      "W": 7,
-      "L": 3,
-      "pnl": 10.9
+      "W": 8,
+      "L": 4,
+      "pnl": 9.6
     },
     {
       "sport": "icehockey_nhl",
       "side_type": "UNDER",
-      "W": 10,
-      "L": 4,
-      "pnl": 18.6
+      "W": 11,
+      "L": 5,
+      "pnl": 17.2
     },
     {
       "sport": "soccer_germany_bundesliga",
@@ -1202,23 +1137,40 @@
       "selection": "Stetson Hatters@Jacksonville Dolphins OVER 8.5",
       "sport": "baseball_ncaa",
       "dt": "2026-04-02"
+    },
+    {
+      "selection": "Baltimore Orioles@Pittsburgh Pirates UNDER 8.5",
+      "sport": "baseball_mlb",
+      "dt": "2026-04-05"
     }
   ],
   "last_10": [
+    "LOSS",
+    "LOSS",
     "WIN",
+    "LOSS",
     "LOSS",
     "WIN",
     "LOSS",
     "LOSS",
-    "WIN",
-    "WIN",
-    "WIN",
     "WIN",
     "LOSS"
   ],
-  "streak": 1,
-  "streak_type": "WIN",
+  "streak": 2,
+  "streak_type": "LOSS",
   "shadow_blocked_picks": [
+    {
+      "created_at": "2026-04-05T08:15:58.873186",
+      "sport": "baseball_mlb",
+      "event_id": "2b9ccede64dae0b4bcf9d3be43f46109",
+      "selection": "Baltimore Orioles@Pittsburgh Pirates UNDER 8.5",
+      "market_type": "TOTAL",
+      "line": 8.5,
+      "odds": -110.0,
+      "edge_pct": 16.1,
+      "units": 4.0,
+      "reason": "SHARP_CAP"
+    },
     {
       "created_at": "2026-04-04T18:21:45.814860",
       "sport": "baseball_ncaa",
@@ -1463,39 +1415,39 @@
   "book_performance": [
     {
       "book": "FanDuel",
-      "bets": 64,
-      "wins": 39,
-      "losses": 23,
-      "pnl": 47.7,
-      "wagered": 309.5,
+      "bets": 66,
+      "wins": 40,
+      "losses": 24,
+      "pnl": 47.2,
+      "wagered": 319.5,
       "avg_clv": 0.57
     },
     {
       "book": "Fanatics",
-      "bets": 21,
-      "wins": 16,
-      "losses": 5,
-      "pnl": 35.8,
-      "wagered": 96.0,
-      "avg_clv": 2.48
+      "bets": 24,
+      "wins": 17,
+      "losses": 7,
+      "pnl": 30.4,
+      "wagered": 110.0,
+      "avg_clv": 2.17
     },
     {
       "book": "Caesars",
-      "bets": 34,
-      "wins": 18,
-      "losses": 14,
-      "pnl": 10.3,
-      "wagered": 162.5,
-      "avg_clv": 1.63
+      "bets": 39,
+      "wins": 21,
+      "losses": 16,
+      "pnl": 12.9,
+      "wagered": 186.5,
+      "avg_clv": 1.43
     },
     {
       "book": "DraftKings",
-      "bets": 62,
-      "wins": 33,
-      "losses": 28,
-      "pnl": 8.5,
-      "wagered": 302.5,
-      "avg_clv": -1.38
+      "bets": 64,
+      "wins": 34,
+      "losses": 29,
+      "pnl": 7.2,
+      "wagered": 312.5,
+      "avg_clv": -1.34
     },
     {
       "book": "BetRivers",
@@ -1508,12 +1460,21 @@
     },
     {
       "book": "BetMGM",
-      "bets": 54,
-      "wins": 30,
+      "bets": 55,
+      "wins": 31,
       "losses": 24,
-      "pnl": -3.0,
-      "wagered": 261.5,
+      "pnl": 1.0,
+      "wagered": 266.5,
       "avg_clv": 0.11
+    },
+    {
+      "book": "",
+      "bets": 1,
+      "wins": 0,
+      "losses": 1,
+      "pnl": -5.0,
+      "wagered": 5.0,
+      "avg_clv": 0.5
     }
   ]
 }

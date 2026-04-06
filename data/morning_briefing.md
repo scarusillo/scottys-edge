@@ -1,105 +1,98 @@
 # Scotty's Edge Morning Briefing
-**Date:** Sunday, April 05, 2026 | **Generated:** 07:45 AM ET
-**Game Date Graded:** 2026-04-04
+**Date:** Monday, April 06, 2026 | **Generated:** 05:08 AM ET
+**Game Date Graded:** 2026-04-05
 
 ---
 ## Yesterday's Results
 
-**13W-7L-0P | +24.8u | GREEN DAY**
+**7W-7L-0P | -5.5u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Michigan Wolverines ML (cross-mkt) | baseball_ncaa | DOG | +150 | 4.0 | **W** | +6.0 | -25.2% |
-| Oklahoma Sooners ML | basketball_ncaab | DOG | +110 | 4.5 | **W** | +5.0 | 13.9% |
-| St. Louis Cardinals@Detroit Tigers OVER 7.5 | baseball_mlb | OVER | -102 | 5.0 | **W** | +4.9 | 10.0% |
-| Milwaukee Brewers@Kansas City Royals UNDER 8. | baseball_mlb | UNDER | -102 | 5.0 | **W** | +4.9 | 1.0% |
-| Bayern Munich@SC Freiburg OVER 3.5 | soccer_germany_bundesliga | OVER | -105 | 5.0 | **W** | +4.8 | -1.0% |
-| Virginia Tech Hokies@Miami Hurricanes OVER 12 | baseball_ncaa | OVER | -110 | 5.0 | **W** | +4.5 | 0.0% |
-| Utah Utes@Kansas Jayhawks OVER 16.5 | baseball_ncaa | OVER | -113 | 5.0 | **W** | +4.4 | 3.0% |
-| Ole Miss Rebels@Florida Gators UNDER 10.5 | baseball_ncaa | UNDER | -117 | 5.0 | **W** | +4.3 | 0.0% |
-| Alabama Crimson Tide@Oklahoma Sooners UNDER 1 | baseball_ncaa | UNDER | -120 | 5.0 | **W** | +4.2 | 0.0% |
-| Baltimore Orioles@Pittsburgh Pirates UNDER 8. | baseball_mlb | UNDER | -112 | 4.5 | **W** | +4.0 | 3.0% |
-| Colorado Avalanche@Dallas Stars UNDER 6.5 | icehockey_nhl | UNDER | -130 | 5.0 | **W** | +3.9 | 4.0% |
-| UC Santa Barbara Gauchos@Cal Poly Mustangs UN | baseball_ncaa | UNDER | -130 | 5.0 | **W** | +3.9 | 2.0% |
-| Toronto Maple Leafs@Los Angeles Kings OVER 5. | icehockey_nhl | OVER | -135 | 5.0 | **W** | +3.7 | 1.0% |
-| Georgia Bulldogs ML (cross-mkt) | baseball_ncaa | DOG | +140 | 4.0 | **L** | -4.0 | -2.3% |
-| Florida Panthers +1.5 | icehockey_nhl | DOG | -130 | 4.5 | **L** | -4.5 | -5.0% |
-| Atlanta Braves@Arizona Diamondbacks OVER 9.5 | baseball_mlb | OVER | -105 | 5.0 | **L** | -5.0 | 0.0% |
-| Washington Wizards@Miami Heat UNDER 248.5 | basketball_nba | UNDER | -108 | 5.0 | **L** | -5.0 | -27.0% |
-| Boston College Eagles@North Carolina Tar Heel | baseball_ncaa | UNDER | -125 | 5.0 | **L** | -5.0 | -2.5% |
-| Winnipeg Jets@Columbus Blue Jackets OVER 5.5 | icehockey_nhl | OVER | -130 | 5.0 | **L** | -5.0 | 0.0% |
-| Philadelphia Phillies@Colorado Rockies OVER 1 | baseball_mlb | OVER | -114 | 5.0 | **L** | -5.0 | 0.0% |
+| Moise Kouame +4.5 | tennis_atp_monte_carlo_masters | DOG | +100 | 5.0 | **W** | +5.0 | 0.0% |
+| Indiana Pacers@Cleveland Cavaliers UNDER 240. | basketball_nba | UNDER | -110 | 5.0 | **W** | +4.5 | -- |
+| Marton Fucsovics +2.5 | tennis_atp_monte_carlo_masters | DOG | -115 | 5.0 | **W** | +4.3 | 0.0% |
+| St Louis Blues +1.5 | icehockey_nhl | DOG | -125 | 5.0 | **W** | +4.0 | 0.0% |
+| Minnesota Wild@Detroit Red Wings OVER 5.5 | icehockey_nhl | OVER | -135 | 5.0 | **W** | +3.7 | 1.0% |
+| Boston Bruins@Philadelphia Flyers UNDER 6.5 | icehockey_nhl | UNDER | -140 | 5.0 | **W** | +3.6 | 1.0% |
+| Gael Monfils +2.5 | tennis_atp_monte_carlo_masters | DOG | -120 | 4.0 | **W** | +3.3 | 0.0% |
+| Memphis Grizzlies@Milwaukee Bucks UNDER 229.0 | basketball_nba | UNDER | -110 | 4.0 | **L** | -4.0 | 0.0% |
+| Washington Wizards@Brooklyn Nets UNDER 230.5 | basketball_nba | UNDER | -110 | 5.0 | **L** | -5.0 | 0.0% |
+| Tampa Bay Rays@Minnesota Twins OVER 7.5 | baseball_mlb | OVER | -115 | 5.0 | **L** | -5.0 | -1.0% |
+| Carolina Hurricanes@Ottawa Senators UNDER 6.5 | icehockey_nhl | UNDER | -120 | 5.0 | **L** | -5.0 | -1.0% |
+| Dennis Schroder OVER 3.5 ASSISTS | basketball_nba | PROP_OVER | +127 | 5.0 | **L** | -5.0 | -- |
+| Andy Pages OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +149 | 5.0 | **L** | -5.0 | -- |
+| St Louis Blues@Colorado Avalanche OVER 5.5 | icehockey_nhl | OVER | -- | 5.0 | **L** | -5.0 | 0.5% |
 
 ---
 ## Loss Analysis
 
-### Georgia Bulldogs ML (cross-mkt)
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-2.3%) -- borderline call.
-
-### Florida Panthers +1.5
-- **Category:** MODEL ERROR
-- **Analysis:** Negative CLV (-5.0%) -- line moved against us. Model may have been wrong.
-- **Final Score:** Florida Panthers 4 @ Pittsburgh Penguins 9
-- **Model Spread:** -0.4 | Actual Margin: +5
-- **Context:** GOALIE: Pittsburgh Penguins G: Arturs Silovs | Florida Panthers G: Daniil Tarasov
-
-### Atlanta Braves@Arizona Diamondbacks OVER 9.5
+### Memphis Grizzlies@Milwaukee Bucks UNDER 229.0
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Atlanta Braves 1 @ Arizona Diamondbacks 2
-- **Model Spread:** +0.1 | Actual Margin: +1
-- **Context:** Saturday game | Arizona Diamondbacks SP: Michael Soroka (3.47 ERA) | Atlanta Braves SP: Bryce Elder (4.28 ERA) | Pitching: Michael Soroka 4.34 vs Bryce Elder 5.35 (+0.6) | Park: Chase Field (+0.9) | Bullpen: Diamondbacks 5.03 vs Braves 3.33 (+0.1)
+- **Final Score:** Memphis Grizzlies 115 @ Milwaukee Bucks 131
+- **Model Spread:** -8.0 | Actual Margin: +16
 
-### Washington Wizards@Miami Heat UNDER 248.5
-- **Category:** MODEL ERROR
-- **Analysis:** Negative CLV (-27.0%) -- line moved against us. Model may have been wrong.
-- **Final Score:** Washington Wizards 136 @ Miami Heat 152
-- **Model Spread:** -17.9 | Actual Margin: +16
-- **Context:** [SHADOW] Home fast-paced (+0.7) | Away fast-paced (+0.4)
-
-### Boston College Eagles@North Carolina Tar Heels UND
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-2.5%) -- borderline call.
-- **Context:** Away slow-paced (-0.3) | Saturday game | North Carolina Tar Heels allows 4.8 R/saturday | Boston College Eagles allows 5.3 R/saturday | Pitching edge: North Carolina Tar Heels (+0.1 pts)
-
-### Winnipeg Jets@Columbus Blue Jackets OVER 5.5
+### Washington Wizards@Brooklyn Nets UNDER 230.5
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Winnipeg Jets 2 @ Columbus Blue Jackets 1
-- **Model Spread:** -0.4 | Actual Margin: -1
-- **Context:** Refs push over (Ref: Frederick L'Ecuyer (+0.1, 18g), Chris Schlenker (+0.7, 20g)) | Goalies: Jet Greaves 2.59 (recent 3.00) vs Connor Hellebuyck 3.05 (+0.0)
+- **Final Score:** Washington Wizards 115 @ Brooklyn Nets 121
+- **Model Spread:** -6.7 | Actual Margin: +6
+- **Context:** Both teams fast-paced (+0.2)
 
-### Philadelphia Phillies@Colorado Rockies OVER 10.0
+### Tampa Bay Rays@Minnesota Twins OVER 7.5
 - **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Philadelphia Phillies 2 @ Colorado Rockies 1
-- **Model Spread:** +0.3 | Actual Margin: -1
-- **Context:** Saturday game | Colorado Rockies SP: Brennan Bernardino (3.89 ERA) | Philadelphia Phillies SP: Jesus Luzardo (5.28 ERA) | Pitching: Brennan Bernardino 3.89 vs Jesus Luzardo 4.35 (+0.1) | Park: Coors Field (+1.0) | Bullpen: Rockies 5.27 vs Phillies 4.44 (+0.4)
+- **Analysis:** Small CLV (-1.0%) -- borderline call.
+- **Final Score:** Tampa Bay Rays 4 @ Minnesota Twins 1
+- **Model Spread:** -0.6 | Actual Margin: -3
+- **Context:** Weather: 10mph wind (-0.5) | Sunday game | Minnesota Twins SP: Simeon Woods Richardson (4.36 ERA) | Tampa Bay Rays SP: Nick Martinez (3.84 ERA) | Pitching: Simeon Woods Richardson 4.55 vs Nick Martinez 4.05 (+0.2) | Park: Target Field (+0.2) | Bullpen: Twins 4.42 vs Rays 3.64 (+0.1)
+
+### Carolina Hurricanes@Ottawa Senators UNDER 6.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (-1.0%) -- borderline call.
+- **Final Score:** Carolina Hurricanes 3 @ Ottawa Senators 6
+- **Model Spread:** +0.4 | Actual Margin: +3
+- **Context:** Division familiarity (-0.3) | Goalies: James Reimer ?.?? vs Frederik Andersen 2.80 (recent 2.00) (-0.1)
+
+### Dennis Schroder OVER 3.5 ASSISTS
+- **Category:** NO CLV DATA
+- **Analysis:** No closing line available for comparison.
+- **Final Score:** Indiana Pacers 108 @ Cleveland Cavaliers 117
+
+### Andy Pages OVER 0.5 RBIS
+- **Category:** NO CLV DATA
+- **Analysis:** No closing line available for comparison.
+- **Final Score:** Los Angeles Dodgers 8 @ Washington Nationals 6
+
+### St Louis Blues@Colorado Avalanche OVER 5.5
+- **Category:** VARIANCE
+- **Analysis:** Positive CLV (+0.5%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** St Louis Blues 3 @ Colorado Avalanche 2
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **143W-99L** |
-| Win Rate | 59.1% |
-| P/L | **+101.2u** |
-| ROI | +8.6% |
-| Wagered | 1179.0u |
+| Record | **150W-106L** |
+| Win Rate | 58.6% |
+| P/L | **+95.7u** |
+| ROI | +7.7% |
+| Wagered | 1247.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
 | baseball_ncaa | 52 | 35 | +50.1u |
-| icehockey_nhl | 36 | 20 | +25.2u |
+| icehockey_nhl | 39 | 22 | +26.5u |
 | basketball_ncaab | 17 | 12 | +18.7u |
-| basketball_nba | 24 | 17 | +17.8u |
+| tennis_atp_monte_carlo_masters | 3 | 0 | +12.7u |
+| basketball_nba | 25 | 20 | +8.4u |
 | soccer_germany_bundesliga | 1 | 1 | -0.2u |
 | tennis_atp_miami_open | 1 | 1 | -1.1u |
 | soccer_italy_serie_a | 1 | 1 | -1.8u |
-| baseball_mlb | 11 | 11 | -3.1u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
+| baseball_mlb | 11 | 13 | -13.1u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -137,8 +130,8 @@ Found 5 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 97W-65L (59.9%) | +99.8u | 0.3 |
-| BELOW_CAP | 46W-34L (57.5%) | +1.4u | 0.3 |
+| AT_CAP | 101W-70L (59.1%) | +93.1u | 0.5 |
+| BELOW_CAP | 49W-36L (57.6%) | +2.6u | 0.3 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -165,15 +158,15 @@ Found 5 shadow-tagged picks.
 
 | Sport | Side | W | L | P/L |
 |-------|------|---|---|-----|
-| baseball_mlb | OVER | 6 | 7 | -8.6u |
+| baseball_mlb | OVER | 6 | 8 | -13.6u |
 | baseball_mlb | UNDER | 4 | 3 | +2.6u |
 | baseball_ncaa | OVER | 19 | 9 | +35.5u |
 | baseball_ncaa | UNDER | 24 | 21 | -4.6u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
-| basketball_nba | UNDER | 3 | 3 | -3.4u |
+| basketball_nba | UNDER | 4 | 5 | -7.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
-| icehockey_nhl | OVER | 7 | 3 | +10.9u |
-| icehockey_nhl | UNDER | 10 | 4 | +18.6u |
+| icehockey_nhl | OVER | 8 | 4 | +9.6u |
+| icehockey_nhl | UNDER | 11 | 5 | +17.2u |
 | soccer_germany_bundesliga | OVER | 1 | 0 | +4.8u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | OVER | 0 | 1 | -5.0u |
@@ -183,23 +176,23 @@ Found 5 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** WIN LOSS WIN LOSS LOSS WIN WIN WIN WIN LOSS
-- **Current Streak:** 1 WIN
+- **Last 10:** LOSS LOSS WIN LOSS LOSS WIN LOSS LOSS WIN LOSS
+- **Current Streak:** 2 LOSS
 
 ---
 ## Action Items
 
-1. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
-2. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
-3. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
-4. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
-5. Factor 'Friday game' has -28.2u P/L over 15 bets. Consider reducing weight.
-6. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-7. Concentration risk detected. Review directional exposure limits.
-8. baseball_mlb OVERs: 6W-7L (-8.6u). Review totals model for this sport.
-9. baseball_ncaa UNDERs: 24W-21L (-4.6u). Review totals model for this sport.
-10. basketball_nba UNDERs: 3W-3L (-3.4u). Review totals model for this sport.
-11. 2 loss(es) yesterday with CLV < -3% (MODEL ERROR). Review those matchups.
+1. Big red day (-5.5u). Review if any model errors need parameter changes.
+2. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
+3. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
+4. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
+5. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
+6. Factor 'Friday game' has -28.2u P/L over 15 bets. Consider reducing weight.
+7. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
+8. Concentration risk detected. Review directional exposure limits.
+9. baseball_mlb OVERs: 6W-8L (-13.6u). Review totals model for this sport.
+10. baseball_ncaa UNDERs: 24W-21L (-4.6u). Review totals model for this sport.
+11. basketball_nba UNDERs: 4W-5L (-7.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-05 07:45 ET*
+*Generated locally by export_briefing_data.py | 2026-04-06 05:08 ET*
