@@ -62,6 +62,14 @@ WHERE context_factors LIKE '%Home letdown%' AND DATE(created_at) >= '2026-03-18'
 
 **Midweek game** — Almost done contributing: +13.9u first half, +1.2u second half. Not urgent but track.
 
+### Day-of-Week Monitoring (added v24, 4/6/2026)
+
+These combos were losing pre-v24 but are mostly fixed by 20% floor + gates. Monitor for recurrence:
+
+- **NHL Saturday** — Was 7W-9L -18.4u. After v24: 4W-2L +4.1u (7 losses were below-cap/away letdown). If it dips negative again post-v24, investigate.
+- **NBA Wednesday** — Was 1W-4L -14.3u. After v24: 1W-1L +0.2u. Small sample, keep watching.
+- **NBA Sunday** — Was 0W-3L -14.0u. After v24: 0W-2L -9.0u. Still negative but tiny sample (2 picks). Track.
+
 ### v24 — Context Gates (not shadows — these are directional vetoes)
 
 **Fast-paced / Altitude on NBA UNDERs** — GATE added v24 (4/6/2026). Fast-paced or altitude context on NBA UNDER picks vetoes the pick. Data: with pace/alt on unders 1W-4L -15.7u, without 3W-1L +7.8u. Pace/altitude still active on OVERs, spreads, and MLs (confirms direction). Vetoed picks logged to shadow_blocked_picks with PACE_GATE reason.
