@@ -1,0 +1,75 @@
+name: Scotty's Edge Pipeline
+
+on:
+  schedule:
+    # Hourly 6am-8pm ET (10:00-00:00 UTC) — 15 runs/day
+    - cron: '0 10-23 * * *'  # Every hour 10:00-23:00 UTC
+    - cron: '0 0 * * *'      # Midnight UTC = 8pm ET
+  workflow_dispatch:  # Manual trigger
+
+env:
+  PYTHONIOENCODING: utf-8
+  ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+  GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+  GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+  OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+
+permissions:
+  contents: write
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install Pillow numpy
+
+      - name: Download production DB
+        run: |
+          gh release download db-latest -p "betting_model.db.gz" -D data/ || {
+            echo "No DB found in releases — cannot run pipeline without data"
+            exit 1
+          }
+          gunzip -f data/betting_model.db.gz
+          echo "DB downloaded: $(du -h data/betting_model.db | cut -f1)"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set timezone
+        run: echo "TZ=America/New_York" >> $GITHUB_ENV
+
+      - name: Run pipeline
+        working-directory: scripts
+        run: |
+          python main.py run --email 2>&1 | tee ../data/pipeline_cloud.log
+          echo "Pipeline completed"
+
+      - name: Upload updated DB
+        working-directory: scripts
+        run: |
+          python upload_db.py 2>&1 || echo "DB upload failed (non-fatal)"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit pick logs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/picks_log.jsonl data/morning_briefing.md data/pipeline.log 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No new data to commit"
+          else
+            git commit -m "Cloud pipeline run $(date -u +%Y-%m-%dT%H:%M)"
+            git push
+          fi
