@@ -63,7 +63,7 @@ AWAY_PENALTY = 0.98
 # 15-20% was 3W-2L -0.8u (breakeven noise). Only MAX PLAYs.
 MIN_EDGE_PCT = 20.0
 MIN_STARS = 2.0
-MAX_PROP_PICKS = 5  # Max props per card (top N by edge)
+MAX_PROP_PICKS = 3  # v24: Reduced from 5 — props are a selective add-on, not the main card
 MAX_PROP_ODDS = 200  # No props above +200 (no data to support higher)
 MAX_PROP_EDGE = 25.0  # Cap edge like game lines — extreme edges are overestimates
 
