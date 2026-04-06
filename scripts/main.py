@@ -2449,18 +2449,36 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         seen_props.add(dedup_key)
         prop_deduped.append(p)
     
-    # GUARDRAIL: Per-game prop cap (max 3 props per game)
-    # Prevents correlated blowups from one weird game
-    MAX_PROPS_PER_GAME = 3
-    game_prop_counts = {}
-    prop_game_capped = []
+    # GUARDRAIL: Per-team prop cap (max 1 prop per team)
+    # v24: Changed from per-game to per-team. Two Pirates RBI overs = same
+    # lineup risk (if Pirates get shut out, both lose). But a Pirates batter
+    # + Padres pitcher K on the same game is fine — independent outcomes.
+    MAX_PROPS_PER_TEAM = 1
+    team_prop_counts = {}  # key: team name → count
+    prop_team_capped = []
     for p in prop_deduped:
-        eid = p['event_id']
-        if game_prop_counts.get(eid, 0) >= MAX_PROPS_PER_GAME:
-            _shadow_blocked.append((p, 'PROP_GAME_CAP'))
-            continue
-        game_prop_counts[eid] = game_prop_counts.get(eid, 0) + 1
-        prop_game_capped.append(p)
+        sel = p.get('selection', '')
+        # Get player's team from the pick data
+        player_team = None
+        if p.get('home') and p.get('away'):
+            # Determine which team the player is on from box_scores
+            player_name = sel.split(' OVER ')[0].strip() if ' OVER ' in sel else sel
+            if conn:
+                _t = conn.execute("""
+                    SELECT team FROM box_scores WHERE player = ?
+                    AND sport = ? ORDER BY game_date DESC LIMIT 1
+                """, (player_name, p.get('sport', ''))).fetchone()
+                if _t:
+                    player_team = _t[0]
+
+        if player_team:
+            if team_prop_counts.get(player_team, 0) >= MAX_PROPS_PER_TEAM:
+                _shadow_blocked.append((p, 'PROP_TEAM_CAP'))
+                continue
+            team_prop_counts[player_team] = team_prop_counts.get(player_team, 0) + 1
+
+        prop_team_capped.append(p)
+    prop_game_capped = prop_team_capped
     
     # GUARDRAIL: Per-stat-type cap per game (max 2 per stat type per game)
     # Allows one from each team but prevents 4 three-point unders from same game.
