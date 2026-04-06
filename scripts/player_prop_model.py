@@ -826,12 +826,22 @@ def generate_prop_projections(conn=None):
             n_stats = ', '.join(e['stat'] + f' ({e["edge"]:.0f}%)' for e in cp['near_miss'])
             print(f"    {player}: qualifying=[{q_stats}] near-miss=[{n_stats}]")
 
-    # Cap at MAX_PROP_PICKS (sorted by edge desc — correlation is informational only,
-    # doesn't change pick order or create new edges)
-    final = deduped[:MAX_PROP_PICKS]
+    # v24: Diversity cap — max 2 picks per stat type to force variety.
+    # Without this, 19 RBI props at 25% fill all 5 slots and block
+    # Sale Ks (24.4%), Wembanyama blocks (21.8%), Embiid threes (21.7%).
+    MAX_PER_STAT = 2
+    stat_counts = defaultdict(int)
+    diverse_picks = []
+    for p in deduped:
+        stat = p['selection'].split()[-1]
+        if stat_counts[stat] < MAX_PER_STAT:
+            diverse_picks.append(p)
+            stat_counts[stat] += 1
+
+    final = diverse_picks[:MAX_PROP_PICKS]
 
     print(f"  Player Prop Model: {projected_count} players projected, "
-          f"{edge_count} edges found, {len(deduped)} qualifying, {len(final)} selected (cap={MAX_PROP_PICKS})")
+          f"{edge_count} edges found, {len(deduped)} qualifying, {len(final)} selected (cap={MAX_PROP_PICKS}, max {MAX_PER_STAT}/stat)")
 
     if close:
         conn.close()
