@@ -49,13 +49,40 @@ jobs:
       - name: Set timezone
         run: echo "TZ=America/New_York" >> $GITHUB_ENV
 
+      - name: Check if local PC ran recently
+        id: check_local
+        run: |
+          # If the DB release was updated within the last 90 minutes,
+          # the local PC is running — skip to avoid double API calls
+          RELEASE_DATE=$(gh release view db-latest --json publishedAt -q '.publishedAt' 2>/dev/null || echo "")
+          if [ -n "$RELEASE_DATE" ]; then
+            RELEASE_EPOCH=$(date -d "$RELEASE_DATE" +%s 2>/dev/null || echo 0)
+            NOW_EPOCH=$(date +%s)
+            AGE_MINS=$(( (NOW_EPOCH - RELEASE_EPOCH) / 60 ))
+            echo "DB release age: ${AGE_MINS} minutes"
+            if [ "$AGE_MINS" -lt 90 ]; then
+              echo "Local PC ran recently (${AGE_MINS}m ago) — skipping to save API calls"
+              echo "skip=true" >> $GITHUB_OUTPUT
+            else
+              echo "No recent local run (${AGE_MINS}m ago) — proceeding"
+              echo "skip=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "No release found — proceeding"
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run pipeline
+        if: steps.check_local.outputs.skip != 'true'
         working-directory: scripts
         run: |
           python main.py run --email 2>&1 | tee ../data/pipeline_cloud.log
           echo "Pipeline completed"
 
       - name: Upload updated DB
+        if: steps.check_local.outputs.skip != 'true'
         working-directory: scripts
         run: |
           python upload_db.py 2>&1 || echo "DB upload failed (non-fatal)"
@@ -63,6 +90,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit pick logs
+        if: steps.check_local.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
