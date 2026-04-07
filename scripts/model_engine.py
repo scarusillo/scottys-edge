@@ -2862,6 +2862,7 @@ def save_picks_to_db(conn, picks):
     saved = 0
     dupes = 0
     skipped_no_eid = 0
+    saved_picks = []  # Track which picks actually made it to the DB
     for p in picks:
         # Reject picks without event_id — these can't be graded or tracked
         if not p.get('event_id'):
@@ -2936,11 +2937,13 @@ def save_picks_to_db(conn, picks):
               side_type, spread_bucket, edge_bucket, timing, context_factors,
               context_confirmed, context_adj, market_tier, model_spread, day_of_week))
         saved += 1
+        saved_picks.append(p)
     conn.commit()
     if dupes:
         print(f"  💾 Saved {saved} picks ({dupes} duplicates skipped)")
     else:
         print(f"  💾 Saved {saved} picks")
+    return saved_picks
 
 
 def _ensure_bet_columns(conn):

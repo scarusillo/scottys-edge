@@ -757,7 +757,9 @@ def cmd_run(args):
         except Exception as e:
             print(f"  Concentration check: {e}")
 
-        save_picks_to_db(conn, all_picks)
+        saved_picks = save_picks_to_db(conn, all_picks)
+        if saved_picks is not None:
+            all_picks = saved_picks  # Only use picks that actually saved to DB
     print_picks(all_picks)
     _log.info(f"Step 6: Predictions complete | {len(all_picks)} picks")
 
