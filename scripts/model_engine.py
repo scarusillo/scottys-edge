@@ -2465,14 +2465,19 @@ def generate_predictions(conn, sport=None, date=None):
                         # Reduce Kelly fraction for MEDIUM confidence totals
                         totals_kelly_frac = 0.125 if total_conf == 'HIGH' else 0.0625
 
-                        # Skip if model has no total projection (0 or None = no data)
-                        if not model_total or model_total <= 0:
+                        # Skip MLB totals if model has no total projection (0 or None = no data)
+                        # NCAA baseball doesn't generate model_total — it uses market line + adjustments
+                        if sp == 'baseball_mlb' and (not model_total or model_total <= 0):
                             continue
 
-                        # Baseball: skip totals with near-zero model divergence (< 0.5 runs)
-                        # v24: Extended to NCAA baseball — low conviction picks were 13-13, -11.3u
-                        # With >= 0.5 conviction: 30-18, +37.3u (+11.3u improvement)
-                        _mlb_skip_total = (sp in ('baseball_mlb', 'baseball_ncaa') and abs(model_total - over_total) < 0.5)
+                        # Baseball: skip totals with near-zero model conviction
+                        # MLB uses model_total vs line; NCAA uses model_spread (no model_total)
+                        if sp == 'baseball_mlb':
+                            _mlb_skip_total = abs(model_total - over_total) < 0.5
+                        elif sp == 'baseball_ncaa':
+                            _mlb_skip_total = abs(ms) < 0.5  # ms = model_spread, proxy for conviction
+                        else:
+                            _mlb_skip_total = False
 
                         # OVER
                         k = f"{eid}|T|OVER"
