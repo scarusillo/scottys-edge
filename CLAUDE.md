@@ -9,10 +9,9 @@ cd /c/Users/carus/OneDrive/Desktop/scottys_edge/betting_model && git pull && cat
 Then check for agent reports (committed to the repo by cloud agents):
 ```bash
 cat data/agent_morning_briefing.md 2>/dev/null | head -80
-cat data/agent_code_audit.md 2>/dev/null | head -40
-cat data/agent_line_movement.md 2>/dev/null | head -60
+cat data/agent_pre_run.md 2>/dev/null | head -60
 ```
-Summarize any action items from the briefing AND the agent reports before the user asks. The 3 cloud agents commit reports daily: Morning Briefing (5:30am), Code Auditor (6:00am), Line Movement Scout (4:00pm). Reports land via `git pull`.
+Summarize any action items from the briefing AND the agent reports before the user asks. The 2 cloud agents run together each morning: Morning Briefing (5:15am) and Pre-Run Validator (5:20am). Reports land via `git pull`.
 
 ## Quick Reference
 
