@@ -1887,7 +1887,10 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             return False
 
         # v24: Unified 20% edge floor for all books
-        if book in SOFT_BOOKS:
+        # BetMGM: 22% floor — 16-22% bucket was 10W-14L -27.5u, 22%+ is 11W-8L +11.7u
+        if book == 'BetMGM':
+            min_edge = 22.0
+        elif book in SOFT_BOOKS:
             min_edge = SOFT_BOOK_MIN_EDGE.get(mtype, 20.0)
         else:
             min_edge = SHARP_BOOK_MIN_EDGE.get(mtype, 20.0)
