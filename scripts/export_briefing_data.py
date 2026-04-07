@@ -20,14 +20,15 @@ def export_data():
     conn.row_factory = sqlite3.Row
     now = datetime.now()
 
-    # Yesterday's graded bets
+    # Yesterday's graded bets — key off graded_at (when results came in),
+    # not created_at (when bet was placed), so we always get the latest batch
     yesterday = conn.execute("""
         SELECT selection, sport, market_type, side_type, result, pnl_units,
                clv, edge_pct, odds, units, context_factors, context_confirmed,
                model_spread, closing_line, event_id, DATE(created_at) as dt
         FROM graded_bets
-        WHERE DATE(created_at) = (
-            SELECT MAX(DATE(created_at)) FROM graded_bets
+        WHERE DATE(graded_at) = (
+            SELECT MAX(DATE(graded_at)) FROM graded_bets
             WHERE result IN ('WIN','LOSS','PUSH') AND units >= 3.5
         )
         AND result IN ('WIN','LOSS','PUSH')
@@ -277,14 +278,14 @@ def generate_local_briefing(conn=None):
     def add(text=''):
         lines.append(text)
 
-    # ── Yesterday's bets ──
+    # ── Yesterday's bets — key off graded_at to always get latest batch ──
     yesterday = conn.execute("""
         SELECT selection, sport, market_type, side_type, result, pnl_units,
                clv, edge_pct, odds, units, context_factors, context_confirmed,
                model_spread, closing_line, event_id, DATE(created_at) as dt
         FROM graded_bets
-        WHERE DATE(created_at) = (
-            SELECT MAX(DATE(created_at)) FROM graded_bets
+        WHERE DATE(graded_at) = (
+            SELECT MAX(DATE(graded_at)) FROM graded_bets
             WHERE result IN ('WIN','LOSS','PUSH') AND units >= 3.5
         )
         AND result IN ('WIN','LOSS','PUSH')

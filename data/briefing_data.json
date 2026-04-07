@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-07 05:00",
+  "generated_at": "2026-04-07 05:44",
   "game_date": "2026-04-06",
   "yesterday": [
     {
@@ -115,73 +115,21 @@
         "actual_total": 16,
         "actual_margin": -12
       }
-    },
-    {
-      "selection": "Zaccharie Risacher OVER 2.5 REBOUNDS",
-      "sport": "basketball_nba",
-      "market_type": "PROP",
-      "side_type": "PROP_OVER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": null,
-      "edge_pct": 25.0,
-      "odds": 136.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": null,
-      "event_id": "dce0f3f389617fa7daa990c209ee8acc",
-      "dt": "2026-04-06",
-      "actual_score": {
-        "home": "Atlanta Hawks",
-        "away": "New York Knicks",
-        "home_score": 105,
-        "away_score": 108,
-        "actual_total": 213,
-        "actual_margin": -3
-      }
-    },
-    {
-      "selection": "Munetaka Murakami OVER 0.5 RBIS",
-      "sport": "baseball_mlb",
-      "market_type": "PROP",
-      "side_type": "PROP_OVER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": null,
-      "edge_pct": 25.0,
-      "odds": 176.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": null,
-      "event_id": "7b162981e371aa40406814eda380bb75",
-      "dt": "2026-04-06",
-      "actual_score": {
-        "home": "Chicago White Sox",
-        "away": "Baltimore Orioles",
-        "home_score": 1,
-        "away_score": 2,
-        "actual_total": 3,
-        "actual_margin": -1
-      }
     }
   ],
   "season": {
     "result": "LOSS",
     "W": 148,
-    "L": 114,
-    "pnl": 48.3,
-    "wagered": 1275.0
+    "L": 112,
+    "pnl": 58.3,
+    "wagered": 1265.0
   },
   "by_sport": [
     {
       "sport": "baseball_mlb",
       "W": 11,
-      "L": 16,
-      "pnl": -28.1
+      "L": 15,
+      "pnl": -23.1
     },
     {
       "sport": "baseball_ncaa",
@@ -192,8 +140,8 @@
     {
       "sport": "basketball_nba",
       "W": 25,
-      "L": 22,
-      "pnl": -0.6
+      "L": 21,
+      "pnl": 4.4
     },
     {
       "sport": "basketball_ncaab",
@@ -575,18 +523,18 @@
   ],
   "day_of_week": [
     {
-      "day_of_week": "Monday",
-      "sport": "baseball_mlb",
-      "W": 1,
-      "L": 6,
-      "pnl": -24.9
-    },
-    {
       "day_of_week": "Friday",
       "sport": "baseball_ncaa",
       "W": 6,
       "L": 10,
       "pnl": -24.2
+    },
+    {
+      "day_of_week": "Monday",
+      "sport": "baseball_mlb",
+      "W": 1,
+      "L": 5,
+      "pnl": -19.9
     },
     {
       "day_of_week": "Saturday",
@@ -673,13 +621,6 @@
       "pnl": -0.2
     },
     {
-      "day_of_week": "Monday",
-      "sport": "basketball_nba",
-      "W": 10,
-      "L": 9,
-      "pnl": 0.7
-    },
-    {
       "day_of_week": "Friday",
       "sport": "basketball_ncaab",
       "W": 4,
@@ -734,6 +675,13 @@
       "W": 4,
       "L": 2,
       "pnl": 5.2
+    },
+    {
+      "day_of_week": "Monday",
+      "sport": "basketball_nba",
+      "W": 10,
+      "L": 8,
+      "pnl": 5.7
     },
     {
       "day_of_week": "Sunday",
@@ -810,8 +758,8 @@
     {
       "bucket": "AT_CAP",
       "W": 100,
-      "L": 77,
-      "pnl": 55.1,
+      "L": 75,
+      "pnl": 65.1,
       "avg_clv": 0.6
     },
     {
@@ -1028,12 +976,12 @@
     "LOSS",
     "LOSS",
     "LOSS",
-    "LOSS",
-    "LOSS",
     "WIN",
-    "LOSS"
+    "LOSS",
+    "LOSS",
+    "WIN"
   ],
-  "streak": 8,
+  "streak": 6,
   "streak_type": "LOSS",
   "shadow_blocked_picks": [
     {
@@ -2276,11 +2224,11 @@
     },
     {
       "book": "DraftKings",
-      "bets": 67,
+      "bets": 65,
       "wins": 34,
-      "losses": 32,
-      "pnl": -7.8,
-      "wagered": 327.5,
+      "losses": 30,
+      "pnl": 2.2,
+      "wagered": 317.5,
       "avg_clv": -1.34
     },
     {

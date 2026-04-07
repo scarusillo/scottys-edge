@@ -551,7 +551,7 @@ def generate_prop_projections(conn=None):
         close = True
 
     now_utc = datetime.now(timezone.utc)
-    window_start = (now_utc - timedelta(hours=1)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    window_start = now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     # Get today's prop lines
     rows = conn.execute("""
@@ -581,6 +581,14 @@ def generate_prop_projections(conn=None):
     game_info = {}
 
     for sport, eid, commence, home, away, book, market, selection, line, odds in rows:
+        # Skip started games
+        try:
+            gt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
+            if gt < now_utc - timedelta(minutes=5):
+                continue
+        except Exception:
+            pass
+
         # Parse player name and side from selection
         player = None
         side = None

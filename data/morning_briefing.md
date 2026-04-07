@@ -1,11 +1,11 @@
 # Scotty's Edge Morning Briefing
-**Date:** Tuesday, April 07, 2026 | **Generated:** 05:00 AM ET
+**Date:** Tuesday, April 07, 2026 | **Generated:** 05:27 AM ET
 **Game Date Graded:** 2026-04-06
 
 ---
 ## Yesterday's Results
 
-**0W-7L-0P | -33.0u | RED DAY**
+**0W-5L-0P | -23.0u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
@@ -14,8 +14,6 @@
 | Oneil Cruz OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +148 | 5.0 | **L** | -5.0 | -- |
 | Clemson Tigers@Santa Clara Broncos OVER 11.5 | baseball_ncaa | OVER | -125 | 5.0 | **L** | -5.0 | 2.0% |
 | Kazuma Okamoto OVER 1.5 STRIKEOUTS | baseball_mlb | PROP_OVER | +195 | 5.0 | **L** | -5.0 | -- |
-| Zaccharie Risacher OVER 2.5 REBOUNDS | basketball_nba | PROP_OVER | +136 | 5.0 | **L** | -5.0 | -- |
-| Munetaka Murakami OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +176 | 5.0 | **L** | -5.0 | -- |
 
 ---
 ## Loss Analysis
@@ -45,26 +43,16 @@
 - **Analysis:** No closing line available for comparison.
 - **Final Score:** Los Angeles Dodgers 14 @ Toronto Blue Jays 2
 
-### Zaccharie Risacher OVER 2.5 REBOUNDS
-- **Category:** NO CLV DATA
-- **Analysis:** No closing line available for comparison.
-- **Final Score:** New York Knicks 108 @ Atlanta Hawks 105
-
-### Munetaka Murakami OVER 0.5 RBIS
-- **Category:** NO CLV DATA
-- **Analysis:** No closing line available for comparison.
-- **Final Score:** Baltimore Orioles 2 @ Chicago White Sox 1
-
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **148W-114L** |
-| Win Rate | 56.5% |
-| P/L | **+48.3u** |
-| ROI | +3.8% |
-| Wagered | 1275.0u |
+| Record | **148W-112L** |
+| Win Rate | 56.9% |
+| P/L | **+58.3u** |
+| ROI | +4.6% |
+| Wagered | 1265.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -72,13 +60,13 @@
 | baseball_ncaa | 52 | 36 | +45.1u |
 | icehockey_nhl | 39 | 21 | +31.5u |
 | basketball_ncaab | 17 | 12 | +18.7u |
+| basketball_nba | 25 | 21 | +4.4u |
 | soccer_germany_bundesliga | 1 | 1 | -0.2u |
-| basketball_nba | 25 | 22 | -0.6u |
 | tennis_atp_miami_open | 1 | 1 | -1.1u |
 | soccer_italy_serie_a | 1 | 1 | -1.8u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | tennis_atp_monte_carlo_masters | 1 | 3 | -10.7u |
-| baseball_mlb | 11 | 16 | -28.1u |
+| baseball_mlb | 11 | 15 | -23.1u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -119,7 +107,7 @@ Found 6 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 100W-77L (56.5%) | +55.1u | 0.6 |
+| AT_CAP | 100W-75L (57.1%) | +65.1u | 0.6 |
 | BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.3 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -165,14 +153,14 @@ Found 6 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS LOSS LOSS LOSS LOSS LOSS LOSS WIN LOSS
-- **Current Streak:** 8 LOSS
+- **Last 10:** LOSS LOSS LOSS LOSS LOSS LOSS WIN LOSS LOSS WIN
+- **Current Streak:** 6 LOSS
 
 ---
 ## Action Items
 
-1. Big red day (-33.0u). Review if any model errors need parameter changes.
-2. 8-bet losing streak. Stay disciplined -- check if edges are still valid.
+1. Big red day (-23.0u). Review if any model errors need parameter changes.
+2. 6-bet losing streak. Stay disciplined -- check if edges are still valid.
 3. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
 4. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
 5. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
@@ -186,4 +174,4 @@ Found 6 shadow-tagged picks.
 13. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-07 05:00 ET*
+*Generated locally by export_briefing_data.py | 2026-04-07 05:27 ET*
