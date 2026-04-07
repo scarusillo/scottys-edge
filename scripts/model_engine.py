@@ -2465,8 +2465,10 @@ def generate_predictions(conn, sport=None, date=None):
                         # Reduce Kelly fraction for MEDIUM confidence totals
                         totals_kelly_frac = 0.125 if total_conf == 'HIGH' else 0.0625
 
-                        # MLB: skip totals with near-zero model divergence (< 0.5 runs)
-                        _mlb_skip_total = (sp == 'baseball_mlb' and abs(model_total - over_total) < 0.5)
+                        # Baseball: skip totals with near-zero model divergence (< 0.5 runs)
+                        # v24: Extended to NCAA baseball — low conviction picks were 13-13, -11.3u
+                        # With >= 0.5 conviction: 30-18, +37.3u (+11.3u improvement)
+                        _mlb_skip_total = (sp in ('baseball_mlb', 'baseball_ncaa') and abs(model_total - over_total) < 0.5)
 
                         # OVER
                         k = f"{eid}|T|OVER"
