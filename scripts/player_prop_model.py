@@ -321,14 +321,48 @@ def get_opposing_pitcher_mult(conn, opponent, home, away, stat_type, commence):
     if not sp_name:
         return 1.0, None
 
-    # Get the relevant metric
-    if metric == 'era' and sp_era and sp_era > 0:
-        raw_mult = sp_era / _LEAGUE_AVG['era']
+    # ═══ RECENCY BLEND: use last 3 starts to capture current form ═══
+    # Season ERA can mask a pitcher who's hot right now (e.g., 1.38 recent vs 4.0 season)
+    # Blend: 50% recent form + 50% season, if recent data available
+    recent_era = None
+    recent_k9 = None
+    try:
+        recent_starts = conn.execute("""
+            SELECT innings_pitched, earned_runs, strikeouts
+            FROM pitcher_stats
+            WHERE pitcher_name LIKE ? AND is_starter = 1
+            AND innings_pitched >= 3.0
+            ORDER BY game_date DESC LIMIT 3
+        """, (f"%{sp_name}%",)).fetchall()
+        if len(recent_starts) >= 2:
+            total_ip = sum(r[0] for r in recent_starts)
+            total_er = sum(r[1] for r in recent_starts)
+            total_k = sum(r[2] for r in recent_starts)
+            if total_ip > 0:
+                recent_era = (total_er / total_ip) * 9.0
+                recent_k9 = (total_k / total_ip) * 9.0
+    except Exception:
+        pass
+
+    # Get the relevant metric — blend season + recent
+    if metric == 'era':
+        if recent_era is not None and sp_era and sp_era > 0:
+            blended_era = recent_era * 0.5 + sp_era * 0.5
+            raw_mult = blended_era / _LEAGUE_AVG['era']
+        elif sp_era and sp_era > 0:
+            raw_mult = sp_era / _LEAGUE_AVG['era']
+        else:
+            return 1.0, None
     elif metric == 'whip' and sp_whip and sp_whip > 0:
         raw_mult = sp_whip / _LEAGUE_AVG['whip']
-    elif metric == 'k9' and sp_k9 and sp_k9 > 0:
-        # For batter K props, high K/9 pitcher = MORE batter Ks
-        raw_mult = sp_k9 / _LEAGUE_AVG['k9']
+    elif metric == 'k9':
+        if recent_k9 is not None and sp_k9 and sp_k9 > 0:
+            blended_k9 = recent_k9 * 0.5 + sp_k9 * 0.5
+            raw_mult = blended_k9 / _LEAGUE_AVG['k9']
+        elif sp_k9 and sp_k9 > 0:
+            raw_mult = sp_k9 / _LEAGUE_AVG['k9']
+        else:
+            return 1.0, None
     else:
         return 1.0, None
 
