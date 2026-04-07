@@ -1905,13 +1905,14 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # v23.1: Respect book tiers — sharp books (BetMGM etc) still need 20%.
         # Live soccer is 1W-3L -11.3u; don't let 5% floor bypass sharp-book gate.
         if mtype == 'TOTAL' and 'soccer' in sport:
-            min_edge = SOCCER_TOTAL_MIN_EDGE if book in SOFT_BOOKS else 20.0
+            min_edge = max(min_edge, SOCCER_TOTAL_MIN_EDGE if book in SOFT_BOOKS else 20.0)
         # v24: Baseball totals unified at 20% for all books
+        # But respect BetMGM's higher floor (22%)
         if mtype == 'TOTAL' and 'baseball' in sport:
-            min_edge = BASEBALL_TOTAL_MIN_EDGE
+            min_edge = max(min_edge, BASEBALL_TOTAL_MIN_EDGE)
         # Walters ML: Elo-backed moneyline picks — unified at 20%
         if mtype == 'MONEYLINE' and 'Elo' in str(p.get('context', '')):
-            min_edge = 20.0
+            min_edge = max(min_edge, 20.0)
         
         # Early bets by sport (post-rebuild):
         #   Baseball EARLY: 18W-7L +41.6u — lines settle early, no surcharge needed
