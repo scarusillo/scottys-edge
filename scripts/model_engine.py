@@ -2400,6 +2400,7 @@ def generate_predictions(conn, sport=None, date=None):
                         # Elite pitchers suppress scoring; bad pitchers inflate it.
                         # Uses box_scores season ERA (preferred) or ESPN ERA (fallback).
                         _pitcher_era_ctx = ''
+                        _era_adj = 0.0
                         if sp == 'baseball_mlb' and _mlb_pitcher_info:
                             try:
                                 _era_adj, _pitcher_era_ctx = _mlb_pitcher_era_adjustment(
@@ -2474,7 +2475,12 @@ def generate_predictions(conn, sport=None, date=None):
                         if _park_veto_over and _park_factor_ctx:
                             _log_park_veto(conn, sp, eid, f"{away}@{home} OVER {over_total}",
                                            _park_gate_adj, _park_factor_ctx)
-                        if k not in seen and not _mlb_skip_total and not _park_veto_over:
+                        # v24: Pitching gate — elite pitching matchup vetoes OVERs
+                        # When combined pitcher ERA adj is -0.5+ (strong suppression),
+                        # the pitching context contradicts the OVER direction
+                        _pitching_veto_over = (sp in ('baseball_mlb', 'baseball_ncaa')
+                                               and _era_adj <= -0.5)
+                        if k not in seen and not _mlb_skip_total and not _park_veto_over and not _pitching_veto_over:
                             total_diff = model_total - over_total
                             if total_diff > 0:  # Model says higher scoring
                                 pv = calculate_point_value_totals(model_total, over_total, sp)
