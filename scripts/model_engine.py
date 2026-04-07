@@ -173,7 +173,7 @@ try:
         'hard': {'logistic_scale': 2.5, 'spread_std': 5.0, 'home_court': 0.0,
                  'max_spread_divergence': 4.0, 'ml_scale': 2.5},
         'clay': {'logistic_scale': 2.5, 'spread_std': 5.5, 'home_court': 0.0,
-                 'max_spread_divergence': 4.5, 'ml_scale': 2.5},
+                 'max_spread_divergence': 2.5, 'ml_scale': 2.5},  # v24: tightened from 4.5
         'grass': {'logistic_scale': 2.5, 'spread_std': 4.5, 'home_court': 0.0,
                   'max_spread_divergence': 3.5, 'ml_scale': 2.5},
     }

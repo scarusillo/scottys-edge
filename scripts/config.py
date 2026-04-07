@@ -205,9 +205,15 @@ PLAY_THRESHOLDS = {
     'soccer_mexico_ligamx': 8.0,
     'baseball_mlb': 12.0,       # v17: Sharp market, higher bar than college (8.0)
 }
-# Tennis: 15% threshold — model is new, only fire on strongest edges
+# Tennis: surface-aware thresholds
+# Clay tournaments are sharper than model expected (1W-3L, -14.7u on clay)
+# Hard court stays at 15%; clay raised to 20%
+TENNIS_CLAY_TOURNAMENTS = {k for k, v in TENNIS_SURFACES.items() if v == 'clay'}
 for _tk in TENNIS_SPORTS:
-    PLAY_THRESHOLDS[_tk] = 15.0
+    if _tk in TENNIS_CLAY_TOURNAMENTS:
+        PLAY_THRESHOLDS[_tk] = 20.0
+    else:
+        PLAY_THRESHOLDS[_tk] = 15.0
 
 # Tennis ML cap: no picks beyond ±200 (no big favorites or long-shot dogs)
 # +200 dog = 33% implied, -200 fav = 67% implied. Keeps us in competitive matches.
@@ -309,7 +315,7 @@ _TENNIS_CONFIG_HARD = {
 }
 _TENNIS_CONFIG_CLAY = {
     'logistic_scale': 2.5, 'spread_std': 5.5, 'home_court': 0.0,  # Clay: more upsets, wider std
-    'max_spread_divergence': 4.5, 'ml_scale': 2.5,
+    'max_spread_divergence': 2.5, 'ml_scale': 2.5,  # v24: Was 4.5 — model spread near 0 was generating phantom edges at +3.5/+4.5 lines
 }
 _TENNIS_CONFIG_GRASS = {
     'logistic_scale': 2.5, 'spread_std': 4.5, 'home_court': 0.0,  # Grass: serve-dominant, tighter
