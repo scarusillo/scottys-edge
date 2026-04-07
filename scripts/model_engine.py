@@ -2574,7 +2574,12 @@ def generate_predictions(conn, sport=None, date=None):
                         if _park_veto_under and _park_factor_ctx:
                             _log_park_veto(conn, sp, eid, f"{away}@{home} UNDER {under_total}",
                                            _park_gate_adj, _park_factor_ctx)
-                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under:
+                        # v24: Pitching gate — bad pitching matchup vetoes UNDERs
+                        # When combined ERA adj is +0.5+ (both starters above avg),
+                        # pitching context says "expect more runs" = contradicts UNDER
+                        _pitching_veto_under = (sp in ('baseball_mlb', 'baseball_ncaa')
+                                                and _era_adj >= 0.5)
+                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under and not _pitching_veto_under:
                             k = f"{eid}|T|UNDER"
                             if k not in seen:
                                 total_diff_u = under_total - model_total
