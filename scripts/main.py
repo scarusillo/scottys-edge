@@ -3219,6 +3219,28 @@ def cmd_grade(args):
     except Exception as e:
         print(f"  Briefing data export: {e}")
 
+    # ═══ DATA RETENTION — prune old odds/props snapshots ═══
+    # Keep 7 days of snapshots. Old data is backed up in GitHub releases.
+    # Without pruning, odds grows ~7.5K rows/run × 15 runs/day = 112K/day.
+    # After 30 days that's 3.4M rows, slowing every query.
+    try:
+        _prune_conn = sqlite3.connect(db)
+        _cutoff = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+        _odds_before = _prune_conn.execute('SELECT COUNT(*) FROM odds').fetchone()[0]
+        _prune_conn.execute('DELETE FROM odds WHERE snapshot_date < ?', (_cutoff,))
+        _props_before = _prune_conn.execute('SELECT COUNT(*) FROM props').fetchone()[0]
+        _prune_conn.execute("DELETE FROM props WHERE commence_time < datetime('now', '-7 days')")
+        _prune_conn.commit()
+        _odds_after = _prune_conn.execute('SELECT COUNT(*) FROM odds').fetchone()[0]
+        _props_after = _prune_conn.execute('SELECT COUNT(*) FROM props').fetchone()[0]
+        _prune_conn.close()
+        _odds_pruned = _odds_before - _odds_after
+        _props_pruned = _props_before - _props_after
+        if _odds_pruned > 0 or _props_pruned > 0:
+            print(f"  🗑️ Retention: pruned {_odds_pruned:,} odds + {_props_pruned:,} props (>7 days old)")
+    except Exception as e:
+        print(f"  Retention pruning: {e}")
+
     # Upload slim DB to GitHub Releases for cloud agents
     try:
         from upload_db import create_slim_db, upload_to_github
