@@ -743,6 +743,12 @@ def generate_prop_projections(conn=None):
             continue
         projected_count += 1
 
+        # ═══ HIT RATE CHECK: actual hit rate must beat implied breakeven ═══
+        # The model projects averages, but binary props (0.5 lines) need hit RATE.
+        # A player averaging 0.6 RBI might only clear 0.5 in 33% of games if
+        # the distribution is lumpy (many 0s, few big games).
+        _hit_rate_data = proj.get('values', [])
+
         # Find best OVER line across legal books
         # Use median line as the market consensus
         legal_entries = [e for e in book_entries if e['book'] not in EXCLUDED_BOOKS]
@@ -761,6 +767,14 @@ def generate_prop_projections(conn=None):
             # Skip high-odds props — no data to support +200 and beyond
             if odds > MAX_PROP_ODDS:
                 continue
+
+            # Hit rate gate: check actual clearing rate vs implied breakeven
+            if _hit_rate_data and len(_hit_rate_data) >= 10:
+                _hits = sum(1 for v in _hit_rate_data if v > line)
+                _hit_rate = _hits / len(_hit_rate_data)
+                _implied_break = american_to_implied(odds) or 0.5
+                if _hit_rate < _implied_break:
+                    continue  # Actual hit rate below breakeven — no real edge
 
             edge, capped_prob = calculate_prop_edge(
                 proj['projection'], proj['std'], line, odds,
