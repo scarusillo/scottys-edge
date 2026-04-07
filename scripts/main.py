@@ -2439,6 +2439,9 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             continue
         market_key = _get_prop_market_key(p)
         min_edge = PROP_MIN_EDGE_THREES if market_key in LOW_LINE_MARKETS else PROP_MIN_EDGE
+        # BetMGM 22% floor applies to props too
+        if p.get('book', '') == 'BetMGM':
+            min_edge = max(min_edge, 22.0)
         if p.get('edge_pct', 0) < min_edge:
             continue
         # Filter 1: OVER only — block all UNDER props
