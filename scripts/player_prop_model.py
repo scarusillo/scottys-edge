@@ -658,6 +658,50 @@ def generate_prop_projections(conn=None):
         except Exception:
             pass
 
+        # ═══ BLOWOUT GATE: Block counting-stat props when player's team is big underdog ═══
+        # In blowouts, counting stats collapse: no RBI in shutouts, early hooks kill K's
+        BLOWOUT_GATED_STATS = {'rbi', 'runs', 'hits', 'total_bases', 'hr',
+                               'pitcher_k', 'pitcher_outs', 'pitcher_h_allowed'}
+        BLOWOUT_ML_THRESHOLD = 160  # +160 underdog or worse
+        if sport == 'baseball_mlb' and stat_type in BLOWOUT_GATED_STATS:
+            try:
+                # Use CURRENT ML (latest pre-game line), fall back to OPENER
+                _ml_row = conn.execute("""
+                    SELECT best_home_ml, best_away_ml, model_spread, home
+                    FROM market_consensus
+                    WHERE event_id = ?
+                    AND tag IN ('CURRENT', 'OPENER')
+                    ORDER BY CASE tag WHEN 'CURRENT' THEN 1 ELSE 2 END
+                    LIMIT 1
+                """, (eid,)).fetchone()
+                if _ml_row:
+                    _h_ml, _a_ml, _ms, _mc_home = _ml_row
+                    # Sanity check: skip absurd live lines (>+1000) and use OPENER
+                    if _h_ml is not None and abs(_h_ml) > 1000:
+                        _ml_row = conn.execute("""
+                            SELECT best_home_ml, best_away_ml, model_spread, home
+                            FROM market_consensus
+                            WHERE event_id = ? AND tag = 'OPENER'
+                            LIMIT 1
+                        """, (eid,)).fetchone()
+                        if _ml_row:
+                            _h_ml, _a_ml, _ms, _mc_home = _ml_row
+                    # Get the moneyline for the player's team
+                    if player_team == _mc_home:
+                        team_ml = _h_ml
+                    else:
+                        team_ml = _a_ml
+                    # Block if team is +160 underdog or worse (big dog)
+                    if team_ml is not None and team_ml >= BLOWOUT_ML_THRESHOLD:
+                        continue
+                    # Fallback: model_spread (negative = home favored)
+                    if team_ml is None and _ms is not None:
+                        team_spread = _ms if player_team == _mc_home else -_ms
+                        if team_spread > 1.5:  # team projected to lose by 1.5+
+                            continue
+            except Exception:
+                pass
+
         # Project this player's stat
         proj = project_player_stat(conn, player, stat_type, sport,
                                    player_team, opponent, home, away, commence)
