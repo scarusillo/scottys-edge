@@ -35,7 +35,7 @@ from props_engine import (
 # CONFIGURATION
 # ═══════════════════════════════════════════════════════════════════
 
-MIN_PLAYER_GAMES = 5
+MIN_PLAYER_GAMES = 15  # v24: Was 5 — too low, firing on early-season noise (Murakami 10 games)
 MIN_OPP_GAMES = 10
 DECAY_RATE = 0.92  # 0.92^10 = 0.43 → game 10 ago has 43% weight
 
