@@ -568,16 +568,7 @@ def _get_sport_tags(picks):
         elif 'soccer' in sp: sports.add('soccer')
         elif 'tennis' in sp: sports.add('tennis')
 
-    # Accounts to tag by sport — mix of media, books, and betting community
-    sport_accounts = {
-        'nba': ['@nba', '@sportscenter', '@bleacherreport', '@espn'],
-        'ncaab': ['@marchmadness', '@sportscenter', '@espn', '@bleacherreport'],
-        'nhl': ['@nhl', '@sportscenter', '@espn'],
-        'baseball': ['@mlb', '@espn', '@sportscenter'],
-        'soccer': ['@espnfc', '@foxsoccer', '@espn'],
-        'tennis': ['@atptour', '@wta', '@espn'],
-    }
-
+    # NO @mentions — triggers Instagram bot detection. Hashtags only.
     sport_hashtags = {
         'nba': ['#NBAPicks', '#NBABetting', '#NBA'],
         'ncaab': ['#CBBPicks', '#MarchMadness', '#CollegeBasketball'],
@@ -587,28 +578,16 @@ def _get_sport_tags(picks):
         'tennis': ['#TennisPicks', '#TennisBetting', '#ATP'],
     }
 
-    tags = set()
     hashtags = set()
     for s in sports:
-        tags.update(sport_accounts.get(s, []))
         hashtags.update(sport_hashtags.get(s, []))
 
-    # Always include betting community accounts + general tags
-    community_tags = ['@actionnetworkhq', '@underdogfantasy', '@prizepicks',
-                      '@betmgm', '@draftkings', '@fanduel']
     community_hashtags = ['#SportsBetting', '#FreePicks', '#BettingPicks',
                           '#GamblingTwitter', '#BettingCommunity', '#ScottysEdge',
                           '#SportsAnalytics', '#BettingModel', '#DataDriven']
-
-    # Rotate community tags — use 3-4 per post to avoid spam
-    from datetime import datetime
-    day_idx = datetime.now().timetuple().tm_yday
-    selected_community = [community_tags[i % len(community_tags)] for i in range(day_idx, day_idx + 3)]
-
-    all_tags = list(tags)[:4] + selected_community  # Max ~7 account tags
     all_hashtags = list(hashtags) + community_hashtags
 
-    return all_tags, all_hashtags
+    return [], all_hashtags  # No @mentions — only hashtags
 
 
 def post_picks_to_instagram(card_paths, picks):
@@ -657,15 +636,12 @@ def post_results_to_instagram(card_paths, report_text=None):
     caption += "\u26a0\ufe0f Not gambling advice \u2022 21+ \u2022 1-800-GAMBLER\n\n"
     caption += "\U0001f4f1 @scottys_edge | \U0001f4ac discord.gg/JQ6rRfuN\n\n"
 
-    # Add tags for results posts
-    results_tags = ['@sportscenter', '@espn', '@bleacherreport',
-                    '@actionnetworkhq', '@betmgm', '@draftkings']
+    # Hashtags only — NO @mentions (triggers bot detection)
     results_hashtags = ['#SportsBetting', '#BettingResults', '#FreePicks',
                         '#BettingCommunity', '#ScottysEdge', '#SportsAnalytics',
                         '#BettingModel', '#DataDriven', '#Transparency',
                         '#SportsBettingPicks', '#BettingRecord']
 
-    caption += " ".join(results_tags) + "\n\n"
     caption += " ".join(results_hashtags)
 
     return post_to_instagram(card_paths, caption, also_story=False)  # Feed only — stories are for picks
