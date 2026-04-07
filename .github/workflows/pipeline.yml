@@ -1,11 +1,13 @@
 name: Scotty's Edge Pipeline
 
 on:
-  schedule:
-    # Hourly 6am-8pm ET (10:00-00:00 UTC) — 15 runs/day
-    - cron: '0 10-23 * * *'  # Every hour 10:00-23:00 UTC
-    - cron: '0 0 * * *'      # Midnight UTC = 8pm ET
-  workflow_dispatch:  # Manual trigger
+  # Schedule DISABLED — local PC handles all hourly runs via Windows Task Scheduler.
+  # Was causing double API calls, double emails, double IG posts.
+  # Re-enable if PC will be off for extended period.
+  # schedule:
+  #   - cron: '0 10-23 * * *'  # Every hour 10:00-23:00 UTC
+  #   - cron: '0 0 * * *'      # Midnight UTC = 8pm ET
+  workflow_dispatch:  # Manual trigger still available
 
 env:
   PYTHONIOENCODING: utf-8
