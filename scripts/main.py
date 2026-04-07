@@ -1937,6 +1937,26 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             if _fri_tag not in _existing_ctx:
                 p['context'] = f"{_existing_ctx} | {_fri_tag}" if _existing_ctx else _fri_tag
 
+        # v24: MLB midweek shadow block — 3W-5L -12.3u on midweek MLB
+        # Block and log to shadow_blocked_picks for agent tracking
+        if sport == 'baseball_mlb':
+            _ctx_str = str(p.get('context', '') or '')
+            if 'Midweek game' in _ctx_str:
+                try:
+                    if conn:
+                        conn.execute("""
+                            INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
+                                market_type, line, odds, edge_pct, units, reason)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (datetime.now().isoformat(), sport, p.get('event_id', ''),
+                              p.get('selection', ''), mtype, p.get('line'),
+                              p.get('odds'), p.get('edge_pct'), p.get('units'),
+                              'MLB_MIDWEEK_GATE (3W-5L -12.3u)'))
+                        conn.commit()
+                except Exception:
+                    pass
+                return False
+
         _min_u = MIN_UNITS
         if not (p.get('units', 0) >= _min_u and p.get('edge_pct', 0) >= min_edge):
             return False
