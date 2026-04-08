@@ -780,6 +780,13 @@ def generate_prop_projections(conn=None):
             if odds > MAX_PROP_ODDS:
                 continue
 
+            # v25: Cross-book +200 hard cap — applies to ALL books, not just soft.
+            # If ANY book carrying this prop has odds >+200, the market is saying
+            # <33% probability. Even if our book is at +199, the prop is a longshot.
+            _all_book_entries = [e for e in legal_entries if e['line'] == line]
+            if any(e['odds'] > 200 for e in _all_book_entries):
+                continue  # Market consensus: longshot prop
+
             # Hit rate gate: check actual clearing rate vs implied breakeven
             if _hit_rate_data and len(_hit_rate_data) >= 10:
                 _hits = sum(1 for v in _hit_rate_data if v > line)
