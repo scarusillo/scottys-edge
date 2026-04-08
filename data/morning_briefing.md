@@ -1,44 +1,52 @@
 # Scotty's Edge Morning Briefing
-**Date:** Wednesday, April 08, 2026 | **Generated:** 05:14 AM ET
+**Date:** Wednesday, April 08, 2026 | **Generated:** 07:17 PM ET
 **Game Date Graded:** 2026-04-07
 
 ---
 ## Yesterday's Results
 
-**4W-2L-0P | +12.9u | GREEN DAY**
+**4W-3L-0P | +7.9u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Drake Baldwin OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +174 | 5.0 | **W** | +8.7 | -- |
-| Christian Walker OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +122 | 5.0 | **W** | +6.1 | -- |
+| Drake Baldwin OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +174 | 5.0 | **W** | +8.7 | 0.8% |
+| Christian Walker OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +122 | 5.0 | **W** | +6.1 | 3.7% |
 | Calgary Flames@Dallas Stars OVER 5.5 | icehockey_nhl | OVER | -118 | 5.0 | **W** | +4.2 | 0.0% |
 | Colorado Avalanche@St Louis Blues UNDER 6.5 | icehockey_nhl | UNDER | -128 | 5.0 | **W** | +3.9 | 0.0% |
-| Alec Burleson OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +185 | 5.0 | **L** | -5.0 | -- |
-| CJ Abrams OVER 0.5 RUNS | baseball_mlb | PROP_OVER | +165 | 5.0 | **L** | -5.0 | -- |
+| Alec Burleson OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +185 | 5.0 | **L** | -5.0 | -10.7% |
+| CJ Abrams OVER 0.5 RUNS | baseball_mlb | PROP_OVER | +165 | 5.0 | **L** | -5.0 | -2.0% |
+| Atlético Madrid@Barcelona OVER 3.5 | soccer_uefa_champs_league | OVER | -118 | 5.0 | **L** | -5.0 | -1.0% |
 
 ---
 ## Loss Analysis
 
 ### Alec Burleson OVER 0.5 RBIS
-- **Category:** NO CLV DATA
-- **Analysis:** No closing line available for comparison.
+- **Category:** MODEL ERROR
+- **Analysis:** Negative CLV (-10.7%) -- line moved against us. Model may have been wrong.
 - **Final Score:** St. Louis Cardinals 7 @ Washington Nationals 6
 
 ### CJ Abrams OVER 0.5 RUNS
-- **Category:** NO CLV DATA
-- **Analysis:** No closing line available for comparison.
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (-2.0%) -- borderline call.
 - **Final Score:** St. Louis Cardinals 7 @ Washington Nationals 6
+
+### Atlético Madrid@Barcelona OVER 3.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (-1.0%) -- borderline call.
+- **Final Score:** Atlético Madrid 2 @ Barcelona 0
+- **Model Spread:** -0.9 | Actual Margin: -2
+- **Context:** [SHADOW] Home fast-paced (+0.4) | Away fast-paced (+0.5)
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **152W-114L** |
-| Win Rate | 57.1% |
-| P/L | **+71.3u** |
-| ROI | +5.5% |
-| Wagered | 1295.0u |
+| Record | **152W-115L** |
+| Win Rate | 56.9% |
+| P/L | **+66.3u** |
+| ROI | +5.1% |
+| Wagered | 1300.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -51,6 +59,7 @@
 | tennis_atp_miami_open | 1 | 1 | -1.1u |
 | soccer_italy_serie_a | 1 | 1 | -1.8u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
+| soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | tennis_atp_monte_carlo_masters | 1 | 3 | -10.7u |
 | baseball_mlb | 13 | 17 | -18.3u |
 
@@ -78,7 +87,7 @@
 ---
 ## Shadow Pick Report
 
-Found 6 shadow-tagged picks.
+Found 8 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -87,14 +96,16 @@ Found 6 shadow-tagged picks.
 | Utah Utes@Kansas Jayhawks OVER 16.5 | baseball_ncaa | 20.0% | 2026-04-04 |
 | Oklahoma Sooners ML | basketball_ncaab | 18.37% | 2026-04-04 |
 | St. Louis Cardinals@Washington Nationals | baseball_mlb | 16.2% | 2026-04-06 |
+| Washington Capitals@Toronto Maple Leafs  | icehockey_nhl | 20.0% | 2026-04-08 |
+| Atlético Madrid@Barcelona OVER 3.5 | soccer_uefa_champs_league | 20.0% | 2026-04-08 |
 
 ---
 ## Edge Cap Analysis
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 104W-77L (57.5%) | +78.0u | 0.5 |
-| BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.3 |
+| AT_CAP | 104W-78L (57.1%) | +73.0u | 0.3 |
+| BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.5 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -134,13 +145,14 @@ Found 6 shadow-tagged picks.
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | OVER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | UNDER | 1 | 0 | +3.2u |
+| soccer_uefa_champs_league | OVER | 0 | 1 | -5.0u |
 | soccer_usa_mls | OVER | 0 | 1 | -4.5u |
 
 ---
 ## Current Streak
 
-- **Last 10:** WIN WIN WIN LOSS LOSS WIN LOSS LOSS LOSS LOSS
-- **Current Streak:** 3 WIN
+- **Last 10:** LOSS WIN WIN WIN LOSS LOSS WIN LOSS LOSS LOSS
+- **Current Streak:** 1 LOSS
 
 ---
 ## Action Items
@@ -156,6 +168,7 @@ Found 6 shadow-tagged picks.
 9. baseball_mlb OVERs: 6W-8L (-13.6u). Review totals model for this sport.
 10. baseball_ncaa UNDERs: 24W-21L (-4.6u). Review totals model for this sport.
 11. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+12. 1 loss(es) yesterday with CLV < -3% (MODEL ERROR). Review those matchups.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-08 05:14 ET*
+*Generated locally by export_briefing_data.py | 2026-04-08 19:17 ET*
