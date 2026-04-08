@@ -65,7 +65,7 @@ AWAY_PENALTY = 0.98
 MIN_EDGE_PCT = 20.0
 MIN_STARS = 2.0
 MAX_PROP_PICKS = 3  # v24: Reduced from 5 — props are a selective add-on, not the main card
-MAX_PROP_ODDS = 200  # No props above +200 (no data to support higher)
+MAX_PROP_ODDS = 150  # v25: Lowered from +200. Above +150 is 1W-3L -6.3u. Below is 12W-10L +5.7u.
 MAX_PROP_EDGE = 25.0  # Cap edge like game lines — extreme edges are overestimates
 
 
