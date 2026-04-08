@@ -802,20 +802,24 @@ def cmd_run(args):
         try:
             _today_str = datetime.now().strftime('%Y-%m-%d')
 
-            # Check 1: Same player lost on this exact prop recently
+            # Check 1: Same player lost on ANY prop recently (not just exact selection)
+            # Catches: Abrams lost on RUNS yesterday, now firing on RBIS today
             for p in all_picks:
                 if p.get('market_type') == 'PROP':
+                    import re as _re
+                    _pm = _re.match(r'^(.+?)\s+(OVER|UNDER)\s+', p.get('selection', ''))
+                    _player_name = _pm.group(1) if _pm else p.get('selection', '')
                     _recent_loss = conn.execute("""
                         SELECT selection, pnl_units, clv, DATE(created_at) as dt
                         FROM graded_bets
-                        WHERE selection = ? AND result = 'LOSS'
+                        WHERE selection LIKE ? AND result = 'LOSS'
                         AND DATE(created_at) >= DATE('now', '-7 days')
-                        LIMIT 1
-                    """, (p.get('selection', ''),)).fetchone()
+                        ORDER BY created_at DESC LIMIT 1
+                    """, (f"{_player_name}%",)).fetchone()
                     if _recent_loss:
                         _clv_info = f", CLV:{_recent_loss[2]:+.1f}%" if _recent_loss[2] is not None else ""
                         _warnings.append(
-                            f"REPEAT LOSS: {p['selection'][:40]} — lost {_recent_loss[1]:+.1f}u on {_recent_loss[3]}{_clv_info}")
+                            f"REPEAT LOSS: {p['selection'][:40]} — {_player_name} lost {_recent_loss[1]:+.1f}u on {_recent_loss[3]} ({_recent_loss[0][:30]}){_clv_info}")
 
             # Check 2: Single game with 3+ picks (concentration)
             _game_picks = {}

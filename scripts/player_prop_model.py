@@ -1047,15 +1047,46 @@ def generate_prop_projections(conn=None):
     # Without this, 19 RBI props at 25% fill all 5 slots and block
     # Sale Ks (24.4%), Wembanyama blocks (21.8%), Embiid threes (21.7%).
     MAX_PER_STAT = 2
+    # v25: Daily caps — check what we've already bet today across all runs.
+    # Without this, each hourly run adds 3 more props and RBIs pile up.
+    DAILY_MAX_PROPS = 4
+    DAILY_MAX_PER_STAT = 2
+    _today_props = {}
+    _today_total = 0
+    try:
+        _today_str = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+        _existing = conn.execute("""
+            SELECT selection FROM bets
+            WHERE market_type = 'PROP' AND DATE(created_at) = ? AND result IS NULL
+        """, (_today_str,)).fetchall()
+        _today_total = len(_existing)
+        for _ep in _existing:
+            _estat = _ep[0].split()[-1]  # last word = stat type (RBIS, THREES, etc.)
+            _today_props[_estat] = _today_props.get(_estat, 0) + 1
+    except Exception:
+        pass
+
+    _daily_remaining = max(0, DAILY_MAX_PROPS - _today_total)
+    if _daily_remaining == 0:
+        print(f"  Player Prop Model: daily cap reached ({_today_total} props already today)")
+        if close:
+            conn.close()
+        return []
+
     stat_counts = defaultdict(int)
     diverse_picks = []
     for p in deduped:
         stat = p['selection'].split()[-1]
-        if stat_counts[stat] < MAX_PER_STAT:
-            diverse_picks.append(p)
-            stat_counts[stat] += 1
+        # Check per-run cap
+        if stat_counts[stat] >= MAX_PER_STAT:
+            continue
+        # Check daily per-stat cap
+        if _today_props.get(stat, 0) + stat_counts[stat] >= DAILY_MAX_PER_STAT:
+            continue
+        diverse_picks.append(p)
+        stat_counts[stat] += 1
 
-    final = diverse_picks[:MAX_PROP_PICKS]
+    final = diverse_picks[:min(MAX_PROP_PICKS, _daily_remaining)]
 
     print(f"  Player Prop Model: {projected_count} players projected, "
           f"{edge_count} edges found, {len(deduped)} qualifying, {len(final)} selected (cap={MAX_PROP_PICKS}, max {MAX_PER_STAT}/stat)")
