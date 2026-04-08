@@ -114,6 +114,24 @@ def ensure_table(conn):
         CREATE INDEX IF NOT EXISTS idx_bs_game
         ON box_scores(espn_game_id, sport)
     """)
+    # batting_order table: stores bat_order (1-9) per player per game
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS batting_order (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            game_date TEXT NOT NULL,
+            sport TEXT NOT NULL,
+            espn_game_id TEXT NOT NULL,
+            team TEXT NOT NULL,
+            player TEXT NOT NULL,
+            bat_order INTEGER NOT NULL,
+            is_starter INTEGER NOT NULL DEFAULT 1,
+            UNIQUE(espn_game_id, player)
+        )
+    """)
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_bo_player
+        ON batting_order(player, sport, game_date)
+    """)
     conn.commit()
 
 
@@ -310,8 +328,10 @@ def _parse_hockey_box(data, sport, espn_id, game_date):
 
 
 def _parse_baseball_box(data, sport, espn_id, game_date):
-    """Parse MLB box score into player stat rows (batting + pitching)."""
+    """Parse MLB box score into player stat rows (batting + pitching).
+    Also extracts batting order (batOrder 1-9) for each batter."""
     rows = []
+    bat_order_rows = []  # (game_date, sport, espn_id, team, player, bat_order, is_starter)
     boxscore = data.get('boxscore', {})
     players_sections = boxscore.get('players', [])
 
@@ -337,6 +357,16 @@ def _parse_baseball_box(data, sport, espn_id, game_date):
                     continue
 
                 now = datetime.now().isoformat()
+
+                # Capture batting order for batters
+                if group_type == 'batting':
+                    bat_order = athlete_data.get('batOrder')
+                    is_starter = 1 if athlete_data.get('starter', False) else 0
+                    if bat_order and isinstance(bat_order, int) and 1 <= bat_order <= 9:
+                        bat_order_rows.append((
+                            game_date, sport, espn_id, team_name,
+                            player_name, bat_order, is_starter
+                        ))
 
                 for espn_col, our_stat in stat_mapping.items():
                     if espn_col not in idx_map:
@@ -379,7 +409,7 @@ def _parse_baseball_box(data, sport, espn_id, game_date):
                 # For now, store H and HR; the prop model uses these directly
                 # Total bases would need the full hit breakdown which ESPN doesn't give cleanly
 
-    return rows
+    return rows, bat_order_rows
 
 
 def fetch_box_scores(conn, sport, game_date):
@@ -414,12 +444,13 @@ def fetch_box_scores(conn, sport, game_date):
 
         # Parse based on sport
         date_str = game_date.strftime('%Y-%m-%d')
+        bat_order_rows = []
         if 'basketball' in sport:
             rows = _parse_basketball_box(data, sport, espn_id, date_str)
         elif 'hockey' in sport:
             rows = _parse_hockey_box(data, sport, espn_id, date_str)
         elif 'baseball' in sport:
-            rows = _parse_baseball_box(data, sport, espn_id, date_str)
+            rows, bat_order_rows = _parse_baseball_box(data, sport, espn_id, date_str)
         else:
             continue
 
@@ -435,6 +466,19 @@ def fetch_box_scores(conn, sport, game_date):
                     pass
             conn.commit()
             total_rows += len(rows)
+
+        # Store batting order data (MLB only)
+        if bat_order_rows:
+            for bo_row in bat_order_rows:
+                try:
+                    conn.execute("""
+                        INSERT OR IGNORE INTO batting_order
+                        (game_date, sport, espn_game_id, team, player, bat_order, is_starter)
+                        VALUES (?,?,?,?,?,?,?)
+                    """, bo_row)
+                except Exception:
+                    pass
+            conn.commit()
 
         # Rate limit — be nice to ESPN
         time.sleep(0.5)
@@ -572,6 +616,135 @@ def lookup_player_stat(conn, player_name, stat_type, game_date, sport=None):
 # ═══════════════════════════════════════════════════════════════════
 
 # Map prop selection labels back to box score stat types
+# ═══════════════════════════════════════════════════════════════════
+# BATTING ORDER LOOKUP — For prop model positional adjustments
+# ═══════════════════════════════════════════════════════════════════
+
+def _fetch_live_batting_order(player, sport, home, away, commence):
+    """
+    Fetch today's confirmed batting order from ESPN's pre-game summary.
+    ESPN populates batOrder (1-9) once lineups are confirmed (~2-3h pre-game).
+    Returns bat_order (int 1-9) or None if not found.
+    """
+    if 'baseball' not in sport:
+        return None
+
+    try:
+        # Get today's scoreboard to find the ESPN game ID
+        game_date_str = commence[:10].replace('-', '') if commence else datetime.now().strftime('%Y%m%d')
+        sb_url = ESPN_SCOREBOARD['baseball_mlb'].format(game_date_str)
+        sb_data = _fetch_json(sb_url)
+        if not sb_data:
+            return None
+
+        # Find the matching event
+        espn_id = None
+        for event in sb_data.get('events', []):
+            competitors = event.get('competitions', [{}])[0].get('competitors', [])
+            teams = []
+            for c in competitors:
+                teams.append(c.get('team', {}).get('displayName', ''))
+            # Match by team names (home/away)
+            if any(home.lower() in t.lower() or t.lower() in home.lower() for t in teams) and \
+               any(away.lower() in t.lower() or t.lower() in away.lower() for t in teams):
+                espn_id = event.get('id')
+                break
+
+        if not espn_id:
+            return None
+
+        # Fetch the summary for this game
+        summary_url = ESPN_SUMMARY['baseball_mlb'].format(espn_id)
+        data = _fetch_json(summary_url)
+        if not data:
+            return None
+
+        # Look for the player in batting data
+        norm_player = _normalize_player_name(player)
+        boxscore = data.get('boxscore', {})
+        for section in boxscore.get('players', []):
+            for stat_group in section.get('statistics', []):
+                if stat_group.get('type') != 'batting':
+                    continue
+                for ath in stat_group.get('athletes', []):
+                    ath_name = ath.get('athlete', {}).get('displayName', '')
+                    if _normalize_player_name(ath_name) == norm_player or \
+                       ath_name.lower() == player.lower():
+                        bat_order = ath.get('batOrder')
+                        is_starter = ath.get('starter', False)
+                        if bat_order and is_starter and 1 <= bat_order <= 9:
+                            return bat_order
+    except Exception:
+        pass
+    return None
+
+
+def get_player_batting_order(conn, player, sport, home=None, away=None, commence=None):
+    """
+    Get a player's batting order position (1-9).
+
+    Strategy:
+      1. Try live ESPN lineup if home/away/commence provided (pre-game confirmed)
+      2. Fall back to most common position over last 10 games from batting_order table
+      3. Return None if no data (caller treats as no adjustment)
+
+    Args:
+        conn: DB connection
+        player: Player name (e.g., "Oneil Cruz")
+        sport: Sport key (e.g., "baseball_mlb")
+        home/away/commence: Game context for live lineup lookup
+
+    Returns: int (1-9) or None
+    """
+    ensure_table(conn)
+
+    # Strategy 1: Live ESPN lookup for today's confirmed lineup
+    if home and away and commence:
+        live_pos = _fetch_live_batting_order(player, sport, home, away, commence)
+        if live_pos:
+            return live_pos
+
+    # Strategy 2: Historical mode (most common position over last 10 games)
+    rows = conn.execute("""
+        SELECT bat_order FROM batting_order
+        WHERE player = ? AND sport = ? AND is_starter = 1
+        ORDER BY game_date DESC
+        LIMIT 10
+    """, (player, sport)).fetchall()
+
+    if not rows:
+        # Fuzzy match by last name
+        parts = player.strip().split()
+        if len(parts) >= 2:
+            last_name = parts[-1]
+            rows = conn.execute("""
+                SELECT bat_order FROM batting_order
+                WHERE player LIKE ? AND sport = ? AND is_starter = 1
+                ORDER BY game_date DESC
+                LIMIT 10
+            """, (f'%{last_name}%', sport)).fetchall()
+            # Filter to avoid false matches — require first initial match
+            if rows and len(parts) >= 1:
+                first_init = parts[0][0].lower()
+                filtered = conn.execute("""
+                    SELECT bat_order FROM batting_order
+                    WHERE player LIKE ? AND player LIKE ? AND sport = ? AND is_starter = 1
+                    ORDER BY game_date DESC
+                    LIMIT 10
+                """, (f'{first_init.upper()}%', f'%{last_name}%', sport)).fetchall()
+                if filtered:
+                    rows = filtered
+
+    if not rows:
+        return None
+
+    # Return the mode (most common position)
+    positions = [r[0] for r in rows]
+    from collections import Counter
+    most_common = Counter(positions).most_common(1)
+    return most_common[0][0] if most_common else None
+
+
 PROP_TO_STAT = {
     'POINTS': 'pts', 'PTS': 'pts',
     'REBOUNDS': 'reb', 'REB': 'reb',

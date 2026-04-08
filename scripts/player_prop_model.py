@@ -30,6 +30,7 @@ from props_engine import (
     american_to_implied, STAT_TYPE_MAP, PROP_LABEL,
     EXCLUDED_BOOKS, NY_LEGAL_BOOKS,
 )
+from box_scores import get_player_batting_order
 
 # ═══════════════════════════════════════════════════════════════════
 # CONFIGURATION
@@ -66,6 +67,38 @@ MIN_STARS = 2.0
 MAX_PROP_PICKS = 3  # v24: Reduced from 5 — props are a selective add-on, not the main card
 MAX_PROP_ODDS = 200  # No props above +200 (no data to support higher)
 MAX_PROP_EDGE = 25.0  # Cap edge like game lines — extreme edges are overestimates
+
+
+# ═══════════════════════════════════════════════════════════════════
+# BATTING ORDER POSITIONAL ADJUSTMENT (MLB only)
+# ═══════════════════════════════════════════════════════════════════
+# P(>=1 stat) by batting order position (empirical from 30 games, 60 team-games).
+# A leadoff hitter has 23% RBI rate vs 46% for the 3-spot — the model must
+# account for this or it will fire identical projections for mismatched slots.
+
+BATTING_ORDER_RATES = {
+    'rbi':  {1: 0.23, 2: 0.40, 3: 0.46, 4: 0.36, 5: 0.42, 6: 0.31, 7: 0.39, 8: 0.38, 9: 0.34},
+    'runs': {1: 0.46, 2: 0.43, 3: 0.40, 4: 0.35, 5: 0.39, 6: 0.33, 7: 0.34, 8: 0.36, 9: 0.32},
+    'hits': {1: 0.60, 2: 0.61, 3: 0.64, 4: 0.59, 5: 0.61, 6: 0.55, 7: 0.56, 8: 0.46, 9: 0.60},
+}
+BATTING_ORDER_AVG = {
+    'rbi':  0.37,   # avg P(>=1 RBI) across all 9 positions
+    'runs': 0.38,
+    'hits': 0.58,
+}
+
+# Pre-computed multipliers: position_rate / league_avg_rate
+# e.g., leadoff RBI = 0.23 / 0.37 = 0.622 (38% penalty)
+# e.g., 3-hole RBI  = 0.46 / 0.37 = 1.243 (24% boost)
+BATTING_ORDER_MULTIPLIERS = {}
+for _stat, _rates in BATTING_ORDER_RATES.items():
+    _avg = BATTING_ORDER_AVG[_stat]
+    BATTING_ORDER_MULTIPLIERS[_stat] = {
+        pos: round(rate / _avg, 3) for pos, rate in _rates.items()
+    }
+
+# Stat types that receive batting order adjustment (batter counting stats only)
+BAT_ORDER_ELIGIBLE_STATS = {'rbi', 'runs', 'hits'}
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -451,7 +484,16 @@ def project_player_stat(conn, player, stat_type, sport, team, opponent, home, aw
             matchup_mult = get_opposing_lineup_mult(
                 conn, team, opponent, stat_type, sport)
 
-    projection = baseline['avg'] * opp_mult * ctx_mult * matchup_mult
+    # v25: Batting order positional adjustment (MLB batters only)
+    bat_order_mult = 1.0
+    bat_order_pos = None
+    if 'baseball' in sport and stat_type in BAT_ORDER_ELIGIBLE_STATS:
+        bat_pos = get_player_batting_order(conn, player, sport, home, away, commence)
+        if bat_pos and stat_type in BATTING_ORDER_MULTIPLIERS:
+            bat_order_mult = BATTING_ORDER_MULTIPLIERS[stat_type].get(bat_pos, 1.0)
+            bat_order_pos = bat_pos
+
+    projection = baseline['avg'] * opp_mult * ctx_mult * matchup_mult * bat_order_mult
     projection = max(0.0, projection)
 
     return {
@@ -463,6 +505,8 @@ def project_player_stat(conn, player, stat_type, sport, team, opponent, home, aw
         'ctx_mult': ctx_mult,
         'matchup_mult': matchup_mult,
         'matchup_detail': matchup_detail,
+        'bat_order_mult': bat_order_mult,
+        'bat_order_pos': bat_order_pos,
         'factors': ctx.get('factors', {}),
         'values': baseline.get('values', []),
     }
@@ -846,9 +890,12 @@ def generate_prop_projections(conn=None):
                 matchup_str = f" Matchup={proj['matchup_mult']:.2f}"
                 if sp:
                     matchup_str += f" (vs {sp})"
+            batorder_str = ""
+            if proj.get('bat_order_pos'):
+                batorder_str = f" BatOrder=#{proj['bat_order_pos']}({proj['bat_order_mult']:.2f}x)"
             notes = (f"Proj={proj['projection']:.1f} Mkt={line} "
                      f"OppDef={proj['opp_mult']:.2f} Ctx={proj['ctx_mult']:.2f}"
-                     f"{matchup_str} "
+                     f"{matchup_str}{batorder_str} "
                      f"Std={proj['std']:.1f} Games={proj['games']} "
                      f"Edge={edge:.1f}% | {home} vs {away}")
 
