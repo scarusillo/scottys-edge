@@ -799,7 +799,9 @@ def generate_prop_projections(conn=None):
             # v25: Cross-book validation for soft books (Fanatics, Caesars, FanDuel).
             # Soft books offer inflated prop odds (e.g., Fanatics cashback). If the
             # sharpest book on the same prop implies no edge, the "edge" is fake.
-            # Check: does at least one sharp book also show edge on this prop?
+            # Two checks:
+            #   1. Sharp book must show >=20% edge on the same prop
+            #   2. No book can have odds >+200 (hard cap — means market thinks <33% prob)
             SOFT_PROP_BOOKS = {'Fanatics', 'Caesars', 'FanDuel'}
             SHARP_PROP_BOOKS = {'DraftKings', 'BetMGM', 'BetRivers'}
             if book in SOFT_PROP_BOOKS:
@@ -807,16 +809,20 @@ def generate_prop_projections(conn=None):
                                  if e['book'] in SHARP_PROP_BOOKS
                                  and e['line'] == line]
                 if _sharp_entries:
-                    # Get the best sharp book odds for this prop
+                    # Hard cap: if ANY sharp book has odds >+200, kill the pick
+                    _any_over_200 = any(e['odds'] > 200 for e in _sharp_entries)
+                    if _any_over_200:
+                        continue  # Sharp book at +200+ = market says <33% prob
+
+                    # Soft check: sharp book must confirm >=20% edge
                     _sharp_best = max(e['odds'] for e in _sharp_entries)
                     _sharp_edge, _ = calculate_prop_edge(
                         proj['projection'], proj['std'], line, _sharp_best,
                         season_values=proj.get('values'),
                     )
                     _sharp_edge = min(_sharp_edge, MAX_PROP_EDGE)
-                    # If the sharp book shows <10% edge, the soft book edge is inflated
-                    if _sharp_edge < 10.0:
-                        continue  # Soft book edge not confirmed by sharp market
+                    if _sharp_edge < 20.0:
+                        continue  # Sharp book doesn't confirm edge
 
             stars = get_star_rating(edge)
             if stars < MIN_STARS:
