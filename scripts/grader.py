@@ -83,17 +83,91 @@ def ensure_tables(conn):
 # CLV COMPUTATION
 # ═══════════════════════════════════════════════════════════════════
 
+def _get_prop_closing_line(conn, event_id, market, selection, bet_book=None):
+    """
+    v25: Get closing line for props from prop_snapshots table.
+
+    The odds table only stores game lines (spreads/totals/h2h).
+    Prop odds live in prop_snapshots with schema:
+      (event_id, book, market, player, side, line, odds, captured_at)
+
+    Selection format: "Player Name OVER/UNDER 0.5 STAT"
+    """
+    import re as _re
+
+    # Parse player name and side from selection
+    m = _re.match(r'^(.+?)\s+(OVER|UNDER)\s+[\d.]+\s+', selection, _re.IGNORECASE)
+    if not m:
+        return None, None, None, None
+
+    player_name = m.group(1).strip()
+    side = m.group(2).capitalize()  # 'Over' or 'Under'
+
+    # Extract the bet line from selection
+    line_m = _re.search(r'(OVER|UNDER)\s+([\d.]+)', selection, _re.IGNORECASE)
+    if not line_m:
+        return None, None, None, None
+    bet_line = float(line_m.group(2))
+
+    # Priority 1: Same book, same player, same market, same line, latest snapshot
+    if bet_book:
+        row = conn.execute("""
+            SELECT line, odds, captured_at, book FROM prop_snapshots
+            WHERE event_id=? AND market=? AND player=? AND side=? AND line=? AND book=?
+            ORDER BY captured_at DESC LIMIT 1
+        """, (event_id, market, player_name, side, bet_line, bet_book)).fetchone()
+        if row:
+            return row[0], row[1], row[2], row[3]
+
+    # Priority 2: Consensus across all books — latest snapshot per book
+    rows = conn.execute("""
+        SELECT ps.line, ps.odds, ps.book, ps.captured_at
+        FROM prop_snapshots ps
+        INNER JOIN (
+            SELECT book, MAX(captured_at) as max_cap
+            FROM prop_snapshots
+            WHERE event_id=? AND market=? AND player=? AND side=? AND line=?
+            GROUP BY book
+        ) latest ON ps.book = latest.book AND ps.captured_at = latest.max_cap
+        WHERE ps.event_id=? AND ps.market=? AND ps.player=? AND ps.side=? AND ps.line=?
+    """, (event_id, market, player_name, side, bet_line,
+          event_id, market, player_name, side, bet_line)).fetchall()
+
+    if not rows:
+        return None, None, None, None
+
+    # Median of implied probabilities across books (same as h2h logic)
+    def _impl(o):
+        o = float(o)
+        if o > 0: return 100.0 / (o + 100.0)
+        elif o < 0: return abs(o) / (abs(o) + 100.0)
+        return 0.5
+
+    odds_rows = [(r[1], r) for r in rows if r[1] is not None]
+    if odds_rows:
+        sorted_rows = sorted(
+            [(_impl(o), o, r) for o, r in odds_rows],
+            key=lambda x: x[0]
+        )
+        mid = len(sorted_rows) // 2
+        _, median_odds, median_row = sorted_rows[mid]
+        return median_row[0], median_odds, median_row[3], f"consensus({len(odds_rows)})"
+
+    row = rows[0]
+    return row[0], row[1], row[3], row[2]
+
+
 def get_closing_line(conn, event_id, market, selection, bet_book=None):
     """
     Get the closing line for a bet.
-    
+
     v12 FIX: Prioritizes SAME BOOK comparison. Cross-book CLV is unreliable
     because different books have different lines (especially ML and totals).
-    
+
     Priority:
       1. Same book's last snapshot (apples-to-apples)
       2. Consensus median across all books (if same book unavailable)
-    
+
     Returns: (line, odds, snapshot_time, book) or (None, None, None, None)
     """
     import re as _re
@@ -141,8 +215,10 @@ def get_closing_line(conn, event_id, market, selection, bet_book=None):
     """, (event_id, market, odds_selection, event_id, market, odds_selection)).fetchall()
     
     if not rows:
-        return None, None, None, None
-    
+        # v25: Check prop_snapshots table for prop markets
+        # Props are stored separately from game odds — 5M+ rows of closing data
+        return _get_prop_closing_line(conn, event_id, market, selection, bet_book)
+
     # For spreads/totals: median of lines across books
     if market in ('spreads', 'totals'):
         valid_lines = sorted([r[0] for r in rows if r[0] is not None])
