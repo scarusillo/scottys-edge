@@ -555,12 +555,15 @@ def _binary_over_prob(projection, line):
 def calculate_prop_edge(projection, std, market_line, odds, season_values=None):
     """
     Calculate edge for an OVER bet.
-    Uses Poisson model for binary 0.5 lines (blocks, steals, etc.)
-    and normal CDF for continuous lines (points, rebounds, assists).
 
-    Applies overconfidence cap: when model_prob > 0.70, blend with market
-    implied prob to prevent claiming huge edges on volatile props.
-    Hard cap at 0.75 unless season hit rate over the line is >= 65%.
+    v25 FIX: For 0.5 binary lines (RBI, runs, hits, etc.), use the ACTUAL
+    hit rate from box scores instead of Poisson-from-average. The Poisson
+    model systematically overestimates probability for lumpy stats:
+      - Cruz: avg 0.85 RBI/G → Poisson says 57%, actual hit rate 35%
+      - 23% of all MLB players showed "20% edge" under Poisson — not real
+    The actual hit rate is the ground truth for binary outcomes.
+
+    For continuous lines (1.5+), uses normal CDF as before.
     """
     diff = projection - market_line
     if diff <= 0:
@@ -569,9 +572,20 @@ def calculate_prop_edge(projection, std, market_line, odds, season_values=None):
     if std <= 0:
         return 0.0, 0.0
 
-    # Binary lines: use Poisson instead of normal CDF
+    # Compute actual hit rate from box scores when available
+    season_hit_rate = None
+    if season_values and len(season_values) >= 5:
+        hits = sum(1 for v in season_values if v > market_line)
+        season_hit_rate = hits / len(season_values)
+
+    # Binary 0.5 lines: use actual hit rate (not Poisson)
     if market_line == 0.5:
-        raw_prob = _binary_over_prob(projection, market_line)
+        if season_hit_rate is not None and len(season_values) >= 10:
+            # Use actual hit rate directly — this IS the probability
+            raw_prob = season_hit_rate
+        else:
+            # Fallback to Poisson only when insufficient data
+            raw_prob = _binary_over_prob(projection, market_line)
     else:
         z = diff / std
         raw_prob = _ncdf(z)
@@ -579,13 +593,6 @@ def calculate_prop_edge(projection, std, market_line, odds, season_values=None):
     implied = american_to_implied(odds)
     if not implied or implied <= 0:
         return 0.0, 0.0
-
-    # --- Overconfidence cap ---
-    # Compute season hit rate over the line if box score values provided
-    season_hit_rate = None
-    if season_values and len(season_values) >= 5:
-        hits = sum(1 for v in season_values if v > market_line)
-        season_hit_rate = hits / len(season_values)
 
     prob = raw_prob
 
