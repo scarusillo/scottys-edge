@@ -1146,12 +1146,11 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
     # MLB midweek (Mon/Wed): 1W-4L -16.4u on totals. Dampen to avoid these.
     # MLB weekend: 3W-0L +13.0u — no adjustment needed.
     if sport == 'baseball_mlb':
-        MLB_DOW_TOTAL_ADJ = {
-            'monday': -0.5,    # 1W-2L -6.4u — suppress
-            'wednesday': -0.5, # 0W-2L -10.0u — suppress
-        }
-        dow_name = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'][dow]
-        dow_adj = MLB_DOW_TOTAL_ADJ.get(dow_name, 0.0)
+        # v25: Removed MLB midweek suppression (-0.5 on Mon/Wed).
+        # The adjustment was causing blanket blocking of all midweek totals
+        # including picks with real edge from power ratings/pitching.
+        # Midweek gate in main.py also removed — let edge threshold decide.
+        dow_adj = 0.0
     else:
         DOW_TOTAL_ADJ = {
             'friday': -0.3,    # Aces → lower scoring (reduced from -0.5; market already prices this)
