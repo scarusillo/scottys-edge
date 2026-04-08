@@ -2031,11 +2031,11 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             p['units'] = min(p.get('units', 5.0), 4.5)
         
         # ── NHL puck line juice cap ──
-        # Data: NHL +1.5 at -175 to -275 is 6W-3L +0.1u — breakeven due to vig.
-        # At -200+ you need 67% just to break even. Block the heaviest juice only.
-        # -175 to -199 is 3W-0L +8.2u (profitable). -200+ is 3W-3L -8.1u (not).
-        if mtype == 'SPREAD' and 'hockey' in sport and odds <= -200:
-            return False  # Too much juice on puck line — -200+ is breakeven at best
+        # v25: Tightened from -200 to -130. Full data: -130 and below is
+        # 15W-11L -11.3u (58% win rate but avg odds -178 needs 64% to profit).
+        # -115 to -129 is 5W-1L +15.5u. The juice eats all edge on heavy lines.
+        if mtype == 'SPREAD' and 'hockey' in sport and odds <= -130:
+            return False  # Puck line juice too heavy — need -129 or better
 
         # ── NHL spread dog Elo floor ──
         # v21: Raised from 1450 — Calgary (1460) lost by 7 on +2.5. Bottom ~5 teams blocked.
