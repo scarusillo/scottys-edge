@@ -1170,7 +1170,9 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
         result['confidence'] = 'LOW'
 
     # Build summary
-    parts = [f"{day_type.title()} game"]
+    # v25: Midweek tagged as [SHADOW] for tracking — adjustment is 0.0 (no effect)
+    _day_label = f"[SHADOW] {day_type.title()} game" if sport == 'baseball_mlb' and day_type == 'midweek' else f"{day_type.title()} game"
+    parts = [_day_label]
     if result['home_starter']:
         era_str = f" ({result['home_starter_era']:.2f} ERA)" if result['home_starter_era'] else ""
         parts.append(f"{home} SP: {result['home_starter']}{era_str}")
