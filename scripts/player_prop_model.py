@@ -578,14 +578,22 @@ def calculate_prop_edge(projection, std, market_line, odds, season_values=None):
         hits = sum(1 for v in season_values if v > market_line)
         season_hit_rate = hits / len(season_values)
 
-    # Binary 0.5 lines: use actual hit rate (not Poisson)
-    if market_line == 0.5:
-        if season_hit_rate is not None and len(season_values) >= 10:
-            # Use actual hit rate directly — this IS the probability
+    # v25: Use actual hit rate for ALL lines when sufficient data available.
+    # Normal CDF overestimates by 3-5% across NBA points, rebounds, assists.
+    # Actual hit rate is ground truth — use it for 0.5 AND higher lines.
+    # Blend: 70% actual hit rate + 30% CDF model (anchors to data while
+    # still using the projection for directional signal).
+    if season_hit_rate is not None and len(season_values) >= 10:
+        if market_line == 0.5:
+            # Binary: actual hit rate IS the probability (no blending needed)
             raw_prob = season_hit_rate
         else:
-            # Fallback to Poisson only when insufficient data
-            raw_prob = _binary_over_prob(projection, market_line)
+            # Higher lines: blend actual rate with CDF to balance data + model
+            z = diff / std
+            cdf_prob = _ncdf(z)
+            raw_prob = 0.70 * season_hit_rate + 0.30 * cdf_prob
+    elif market_line == 0.5:
+        raw_prob = _binary_over_prob(projection, market_line)
     else:
         z = diff / std
         raw_prob = _ncdf(z)
