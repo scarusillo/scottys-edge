@@ -1847,10 +1847,9 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     # Only allow the profitable sweet spot.
     MLS_SPREAD_MIN_EDGE = 10.0
     MLS_SPREAD_MAX_EDGE = 15.0
-    # Soccer totals: backtest 9W-2L +10.6u at 5%+ edge (82% hit rate).
-    # Bundesliga 63.8% overs, UCL 72.8%. Model correctly identifies
-    # over/under tendencies from team attack/defense rates.
-    SOCCER_TOTAL_MIN_EDGE = 5.0
+    # v25: Soccer totals aligned to 20% like all other markets.
+    # Old 5% floor let through 16-19% edge picks that went 1W-2L.
+    SOCCER_TOTAL_MIN_EDGE = 20.0
     # v24: All books at 20%+ which Kelly-sizes to 4-5u naturally.
     MIN_UNITS = 3.0  # Keep 3.0u floor for Kelly-scaled picks
     REQUIRED_CONFIDENCE = ('ELITE', 'HIGH')  # ELITE + HIGH only
