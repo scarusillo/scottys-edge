@@ -796,6 +796,28 @@ def generate_prop_projections(conn=None):
             if edge < MIN_EDGE_PCT:
                 continue
 
+            # v25: Cross-book validation for soft books (Fanatics, Caesars, FanDuel).
+            # Soft books offer inflated prop odds (e.g., Fanatics cashback). If the
+            # sharpest book on the same prop implies no edge, the "edge" is fake.
+            # Check: does at least one sharp book also show edge on this prop?
+            SOFT_PROP_BOOKS = {'Fanatics', 'Caesars', 'FanDuel'}
+            SHARP_PROP_BOOKS = {'DraftKings', 'BetMGM', 'BetRivers'}
+            if book in SOFT_PROP_BOOKS:
+                _sharp_entries = [e for e in legal_entries
+                                 if e['book'] in SHARP_PROP_BOOKS
+                                 and e['line'] == line]
+                if _sharp_entries:
+                    # Get the best sharp book odds for this prop
+                    _sharp_best = max(e['odds'] for e in _sharp_entries)
+                    _sharp_edge, _ = calculate_prop_edge(
+                        proj['projection'], proj['std'], line, _sharp_best,
+                        season_values=proj.get('values'),
+                    )
+                    _sharp_edge = min(_sharp_edge, MAX_PROP_EDGE)
+                    # If the sharp book shows <10% edge, the soft book edge is inflated
+                    if _sharp_edge < 10.0:
+                        continue  # Soft book edge not confirmed by sharp market
+
             stars = get_star_rating(edge)
             if stars < MIN_STARS:
                 continue
