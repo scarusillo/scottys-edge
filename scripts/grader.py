@@ -89,7 +89,10 @@ def _get_prop_closing_line(conn, event_id, market, selection, bet_book=None):
 
     The odds table only stores game lines (spreads/totals/h2h).
     Prop odds live in prop_snapshots with schema:
-      (event_id, book, market, player, side, line, odds, captured_at)
+      (event_id, book, market, player, side, line, odds, captured_at, commence_time)
+
+    Only uses PRE-GAME snapshots (captured_at < commence_time) to avoid
+    in-game live odds contaminating CLV calculations.
 
     Selection format: "Player Name OVER/UNDER 0.5 STAT"
     """
@@ -109,29 +112,43 @@ def _get_prop_closing_line(conn, event_id, market, selection, bet_book=None):
         return None, None, None, None
     bet_line = float(line_m.group(2))
 
-    # Priority 1: Same book, same player, same market, same line, latest snapshot
+    # Get the game start time to filter out in-game snapshots
+    ct_row = conn.execute("""
+        SELECT commence_time FROM prop_snapshots
+        WHERE event_id=? AND commence_time IS NOT NULL LIMIT 1
+    """, (event_id,)).fetchone()
+    commence_filter = ""
+    params_extra = ()
+    if ct_row and ct_row[0]:
+        commence_filter = " AND captured_at < ?"
+        params_extra = (ct_row[0],)
+
+    # Priority 1: Same book, same player, same market, same line, latest PRE-GAME snapshot
     if bet_book:
-        row = conn.execute("""
+        row = conn.execute(f"""
             SELECT line, odds, captured_at, book FROM prop_snapshots
             WHERE event_id=? AND market=? AND player=? AND side=? AND line=? AND book=?
+            {commence_filter}
             ORDER BY captured_at DESC LIMIT 1
-        """, (event_id, market, player_name, side, bet_line, bet_book)).fetchone()
+        """, (event_id, market, player_name, side, bet_line, bet_book) + params_extra).fetchone()
         if row:
             return row[0], row[1], row[2], row[3]
 
-    # Priority 2: Consensus across all books — latest snapshot per book
-    rows = conn.execute("""
+    # Priority 2: Consensus across all books — latest PRE-GAME snapshot per book
+    rows = conn.execute(f"""
         SELECT ps.line, ps.odds, ps.book, ps.captured_at
         FROM prop_snapshots ps
         INNER JOIN (
             SELECT book, MAX(captured_at) as max_cap
             FROM prop_snapshots
             WHERE event_id=? AND market=? AND player=? AND side=? AND line=?
+            {commence_filter}
             GROUP BY book
         ) latest ON ps.book = latest.book AND ps.captured_at = latest.max_cap
         WHERE ps.event_id=? AND ps.market=? AND ps.player=? AND ps.side=? AND ps.line=?
-    """, (event_id, market, player_name, side, bet_line,
-          event_id, market, player_name, side, bet_line)).fetchall()
+        {commence_filter}
+    """, (event_id, market, player_name, side, bet_line) + params_extra +
+         (event_id, market, player_name, side, bet_line) + params_extra).fetchall()
 
     if not rows:
         return None, None, None, None
