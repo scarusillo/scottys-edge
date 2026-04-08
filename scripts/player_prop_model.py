@@ -485,13 +485,36 @@ def project_player_stat(conn, player, stat_type, sport, team, opponent, home, aw
                 conn, team, opponent, stat_type, sport)
 
     # v25: Batting order positional adjustment (MLB batters only)
+    # Only apply when today's position DIFFERS from the player's historical norm.
+    # The baseline already reflects their usual batting spot (last 20 games).
+    # A power hitter like Cruz who always bats leadoff already has a low RBI
+    # baseline — applying the leadoff penalty again would double-penalize.
+    # The multiplier catches lineup CHANGES: moved up = boost, moved down = penalty.
     bat_order_mult = 1.0
     bat_order_pos = None
     if 'baseball' in sport and stat_type in BAT_ORDER_ELIGIBLE_STATS:
         bat_pos = get_player_batting_order(conn, player, sport, home, away, commence)
         if bat_pos and stat_type in BATTING_ORDER_MULTIPLIERS:
-            bat_order_mult = BATTING_ORDER_MULTIPLIERS[stat_type].get(bat_pos, 1.0)
             bat_order_pos = bat_pos
+            # Get historical norm — most common position over last 10 games
+            _hist_pos = None
+            try:
+                _hist_row = conn.execute("""
+                    SELECT bat_order, COUNT(*) as cnt FROM batting_order
+                    WHERE player = ? AND is_starter = 1
+                    GROUP BY bat_order ORDER BY cnt DESC LIMIT 1
+                """, (player,)).fetchone()
+                if _hist_row:
+                    _hist_pos = _hist_row[0]
+            except Exception:
+                pass
+
+            if _hist_pos and _hist_pos != bat_pos:
+                # Player moved — apply relative adjustment (today vs historical)
+                _today_rate = BATTING_ORDER_MULTIPLIERS[stat_type].get(bat_pos, 1.0)
+                _hist_rate = BATTING_ORDER_MULTIPLIERS[stat_type].get(_hist_pos, 1.0)
+                bat_order_mult = _today_rate / _hist_rate if _hist_rate != 0 else 1.0
+            # If same position or no history, mult stays 1.0 (baseline already reflects it)
 
     projection = baseline['avg'] * opp_mult * ctx_mult * matchup_mult * bat_order_mult
     projection = max(0.0, projection)
