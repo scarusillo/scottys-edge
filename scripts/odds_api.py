@@ -687,7 +687,39 @@ def fetch_props(sport, event_id=None):
         print(f"  {sport}: no upcoming events for props")
         conn.close()
         return
-    
+
+    # v25: MLB prop timing gate — only fetch props for games within 3 hours.
+    # MLB batter prop lines move -5 to -7% from morning to close; fetching
+    # early wastes API calls on stale lines we won't bet on anyway.
+    # Pitcher props are stable but bundled in the same API call.
+    if 'baseball' in sport:
+        MLB_PROP_WINDOW_HOURS = 3
+        _filtered = []
+        _skipped = 0
+        for eid_row in event_ids:
+            ct_row = conn.execute(
+                "SELECT commence_time FROM market_consensus WHERE event_id=? LIMIT 1",
+                (eid_row[0],)).fetchone()
+            if ct_row and ct_row[0]:
+                try:
+                    from datetime import timezone
+                    gt = datetime.fromisoformat(ct_row[0].replace('Z', '+00:00'))
+                    now_tz = datetime.now(timezone.utc)
+                    hours_until = (gt - now_tz).total_seconds() / 3600
+                    if hours_until > MLB_PROP_WINDOW_HOURS:
+                        _skipped += 1
+                        continue
+                except Exception:
+                    pass
+            _filtered.append(eid_row)
+        if _skipped:
+            print(f"  {sport}: skipped {_skipped} events >3hrs out (prop timing gate)")
+        event_ids = _filtered
+        if not event_ids:
+            print(f"  {sport}: no events within prop window")
+            conn.close()
+            return
+
     # v12 FIX: Cap at 15 events per sport to control API budget.
     # NCAAB can have 25+ games on a Saturday — each one costs ~5 usage.
     MAX_PROP_EVENTS = 15
