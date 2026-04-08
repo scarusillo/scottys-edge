@@ -2472,12 +2472,19 @@ def generate_predictions(conn, sport=None, date=None):
 
                         # Baseball: skip totals with near-zero model conviction
                         # MLB uses model_total vs line; NCAA uses model_spread (no model_total)
+                        # v25: NCAA BB unders raised to 1.0 conviction floor.
+                        # Data: |spread| < 1.0 unders are 9W-17L -47.8u;
+                        #        |spread| >= 1.0 unders are 15W-4L +43.2u.
+                        # Overs stay at 0.5 (19W-10L +30.6u across all conviction).
                         if sp == 'baseball_mlb':
                             _mlb_skip_total = abs(model_total - over_total) < 0.5
                         elif sp == 'baseball_ncaa':
-                            _mlb_skip_total = abs(ms) < 0.5  # ms = model_spread, proxy for conviction
+                            _mlb_skip_total = abs(ms) < 0.5  # Overs: 0.5 floor
+                            _ncaa_skip_under = abs(ms) < 1.0  # Unders: 1.0 floor
                         else:
                             _mlb_skip_total = False
+                        if sp != 'baseball_ncaa':
+                            _ncaa_skip_under = False
 
                         # OVER
                         k = f"{eid}|T|OVER"
@@ -2590,7 +2597,7 @@ def generate_predictions(conn, sport=None, date=None):
                         # pitching context says "expect more runs" = contradicts UNDER
                         _pitching_veto_under = (sp in ('baseball_mlb', 'baseball_ncaa')
                                                 and _era_adj >= 0.5)
-                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under and not _pitching_veto_under:
+                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _ncaa_skip_under and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under and not _pitching_veto_under:
                             k = f"{eid}|T|UNDER"
                             if k not in seen:
                                 total_diff_u = under_total - model_total
