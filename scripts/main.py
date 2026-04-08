@@ -796,11 +796,65 @@ def cmd_run(args):
         except Exception as e:
             print(f"  PNG card: {e}")
 
+    # v25: Pipeline sanity check — flag risky picks before emailing
+    _warnings = []
+    if all_picks:
+        try:
+            _today_str = datetime.now().strftime('%Y-%m-%d')
+
+            # Check 1: Same player lost on this exact prop recently
+            for p in all_picks:
+                if p.get('market_type') == 'PROP':
+                    _recent_loss = conn.execute("""
+                        SELECT selection, pnl_units, clv, DATE(created_at) as dt
+                        FROM graded_bets
+                        WHERE selection = ? AND result = 'LOSS'
+                        AND DATE(created_at) >= DATE('now', '-7 days')
+                        LIMIT 1
+                    """, (p.get('selection', ''),)).fetchone()
+                    if _recent_loss:
+                        _clv_info = f", CLV:{_recent_loss[2]:+.1f}%" if _recent_loss[2] is not None else ""
+                        _warnings.append(
+                            f"REPEAT LOSS: {p['selection'][:40]} — lost {_recent_loss[1]:+.1f}u on {_recent_loss[3]}{_clv_info}")
+
+            # Check 2: Single game with 3+ picks (concentration)
+            _game_picks = {}
+            for p in all_picks:
+                eid = p.get('event_id', '')
+                if eid:
+                    _game_picks[eid] = _game_picks.get(eid, 0) + 1
+            for eid, cnt in _game_picks.items():
+                if cnt >= 3:
+                    _warnings.append(f"CONCENTRATION: {cnt} picks on same game (event {eid[:12]}...)")
+
+            # Check 3: Total exposure today >30u
+            _today_units = conn.execute("""
+                SELECT COALESCE(SUM(units), 0) FROM bets
+                WHERE DATE(created_at) = ? AND result IS NULL
+            """, (_today_str,)).fetchone()[0]
+            _new_units = sum(p.get('units', 0) for p in all_picks)
+            if _today_units + _new_units > 30:
+                _warnings.append(f"EXPOSURE: {_today_units + _new_units:.0f}u total today (existing {_today_units:.0f}u + new {_new_units:.0f}u)")
+
+            if _warnings:
+                print(f"\n  ⚠️ SANITY CHECK WARNINGS:")
+                for _w in _warnings:
+                    print(f"    {_w}")
+        except Exception as e:
+            print(f"  Sanity check: {e}")
+
     if do_email:
         print("\n📧 Step 9: Sending email...")
         if all_picks:
             from emailer import send_picks_email, send_email
             text = picks_to_text(all_picks, f"{run_type} Picks")
+            # Append sanity check warnings to email
+            if _warnings:
+                text += "\n\n" + "⚠️ " * 10 + "\n"
+                text += "  SANITY CHECK WARNINGS\n"
+                text += "⚠️ " * 10 + "\n\n"
+                for _w in _warnings:
+                    text += f"  {_w}\n"
             # Append research intel to picks email
             if research_brief:
                 text += "\n\n" + "═" * 50 + "\n"
@@ -2830,6 +2884,60 @@ def cmd_grade(args):
         print(f"  ESPN thin-team backfill: {e}")
 
     report = daily_grade_and_report(conn)
+
+    # v25: Post-grade quick analysis — auto-generates a 5-line summary
+    # with CLV flags, same-game correlation, and model error detection
+    try:
+        _grade_bets = conn.execute("""
+            SELECT selection, sport, result, pnl_units, clv, market_type, event_id, odds
+            FROM graded_bets
+            WHERE DATE(graded_at) = (SELECT MAX(DATE(graded_at)) FROM graded_bets
+                WHERE result IN ('WIN','LOSS','PUSH') AND units >= 3.5)
+            AND result IN ('WIN','LOSS','PUSH')
+            ORDER BY pnl_units DESC
+        """).fetchall()
+        if _grade_bets:
+            _gw = sum(1 for b in _grade_bets if b[2] == 'WIN')
+            _gl = sum(1 for b in _grade_bets if b[2] == 'LOSS')
+            _gpnl = sum(b[3] for b in _grade_bets)
+            _day_label = 'GREEN DAY' if _gpnl > 0 else 'RED DAY'
+
+            _clv_vals = [b[4] for b in _grade_bets if b[4] is not None]
+            _avg_clv = sum(_clv_vals) / len(_clv_vals) if _clv_vals else 0
+            _neg_clv = [b for b in _grade_bets if b[4] is not None and b[4] < -3.0]
+            _pos_clv = [b for b in _grade_bets if b[4] is not None and b[4] > 3.0]
+
+            # Detect same-game correlation (multiple picks on same event)
+            _event_counts = {}
+            for b in _grade_bets:
+                if b[6]:
+                    _event_counts[b[6]] = _event_counts.get(b[6], 0) + 1
+            _correlated = {k: v for k, v in _event_counts.items() if v >= 2}
+
+            _qa_lines = []
+            _qa_lines.append(f"{_gw}W-{_gl}L {_gpnl:+.1f}u — {_day_label}")
+
+            if _neg_clv:
+                _qa_lines.append(f"CLV flags: {len(_neg_clv)} pick(s) with CLV < -3% (model error)")
+                for b in _neg_clv:
+                    _qa_lines.append(f"  {b[0][:40]} CLV:{b[4]:+.1f}%")
+            if _pos_clv:
+                _qa_lines.append(f"Sharp reads: {len(_pos_clv)} pick(s) with CLV > +3% (market confirmed)")
+            if _correlated:
+                _qa_lines.append(f"Same-game correlation: {len(_correlated)} event(s) with 2+ picks")
+            _qa_lines.append(f"Avg CLV: {_avg_clv:+.1f}%")
+
+            _qa_text = '\n'.join(_qa_lines)
+            print(f"\n  POST-GRADE ANALYSIS:\n  {'=' * 40}")
+            for _ql in _qa_lines:
+                print(f"  {_ql}")
+
+            # Write to file for email inclusion
+            _qa_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'quick_grade_analysis.txt')
+            with open(_qa_path, 'w', encoding='utf-8') as _qf:
+                _qf.write(_qa_text)
+    except Exception as e:
+        print(f"  Post-grade analysis: {e}")
 
     # Auto Elo rebuild
     print("  Rebuilding Elo ratings...")
