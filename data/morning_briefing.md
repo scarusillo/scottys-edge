@@ -1,11 +1,11 @@
 # Scotty's Edge Morning Briefing
-**Date:** Wednesday, April 08, 2026 | **Generated:** 05:09 AM ET
+**Date:** Wednesday, April 08, 2026 | **Generated:** 05:14 AM ET
 **Game Date Graded:** 2026-04-07
 
 ---
 ## Yesterday's Results
 
-**4W-3L-0P | +7.9u | GREEN DAY**
+**4W-2L-0P | +12.9u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
@@ -15,7 +15,6 @@
 | Colorado Avalanche@St Louis Blues UNDER 6.5 | icehockey_nhl | UNDER | -128 | 5.0 | **W** | +3.9 | 0.0% |
 | Alec Burleson OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +185 | 5.0 | **L** | -5.0 | -- |
 | CJ Abrams OVER 0.5 RUNS | baseball_mlb | PROP_OVER | +165 | 5.0 | **L** | -5.0 | -- |
-| New Mexico Lobos +3.5 | baseball_ncaa | DOG | -118 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
@@ -30,26 +29,21 @@
 - **Analysis:** No closing line available for comparison.
 - **Final Score:** St. Louis Cardinals 7 @ Washington Nationals 6
 
-### New Mexico Lobos +3.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Home bounce-back (+1.5)
-
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **152W-115L** |
-| Win Rate | 56.9% |
-| P/L | **+66.3u** |
-| ROI | +5.1% |
-| Wagered | 1300.0u |
+| Record | **152W-114L** |
+| Win Rate | 57.1% |
+| P/L | **+71.3u** |
+| ROI | +5.5% |
+| Wagered | 1295.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| baseball_ncaa | 52 | 37 | +40.1u |
+| baseball_ncaa | 52 | 36 | +45.1u |
 | icehockey_nhl | 41 | 21 | +39.6u |
 | basketball_ncaab | 17 | 12 | +18.7u |
 | basketball_nba | 25 | 21 | +4.4u |
@@ -72,12 +66,12 @@
 | Pitching edge: Clemson Tigers | 1W-2L | -7.2u |
 | Altitude | 2W-3L | -6.1u |
 | Home hot streak | 1W-2L | -5.4u |
-| Home bounce-back | 5W-5L | -5.4u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
 | Away revenge game | 5W-5L | -4.4u |
 | Midweek game | 15W-13L | -3.8u |
 | Away slow-paced | 13W-11L | -1.2u |
 | Home 3-in-5 | 2W-2L | -0.8u |
+| Home bounce-back | 5W-4L | -0.4u |
 
 > Factors with consistent negative P/L may need weight adjustments or removal.
 
@@ -99,7 +93,7 @@ Found 6 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 104W-78L (57.1%) | +73.0u | 0.5 |
+| AT_CAP | 104W-77L (57.5%) | +78.0u | 0.5 |
 | BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.3 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -145,7 +139,7 @@ Found 6 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** WIN WIN WIN LOSS LOSS LOSS WIN LOSS LOSS LOSS
+- **Last 10:** WIN WIN WIN LOSS LOSS WIN LOSS LOSS LOSS LOSS
 - **Current Streak:** 3 WIN
 
 ---
@@ -153,16 +147,15 @@ Found 6 shadow-tagged picks.
 
 1. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
 2. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
-3. Factor 'Home bounce-back' has -5.4u P/L over 10 bets. Consider reducing weight.
-4. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
-5. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
-6. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
-7. Factor 'Friday game' has -28.2u P/L over 15 bets. Consider reducing weight.
-8. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-9. Concentration risk detected. Review directional exposure limits.
-10. baseball_mlb OVERs: 6W-8L (-13.6u). Review totals model for this sport.
-11. baseball_ncaa UNDERs: 24W-21L (-4.6u). Review totals model for this sport.
-12. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+3. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
+4. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
+5. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
+6. Factor 'Friday game' has -28.2u P/L over 15 bets. Consider reducing weight.
+7. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
+8. Concentration risk detected. Review directional exposure limits.
+9. baseball_mlb OVERs: 6W-8L (-13.6u). Review totals model for this sport.
+10. baseball_ncaa UNDERs: 24W-21L (-4.6u). Review totals model for this sport.
+11. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-08 05:09 ET*
+*Generated locally by export_briefing_data.py | 2026-04-08 05:14 ET*

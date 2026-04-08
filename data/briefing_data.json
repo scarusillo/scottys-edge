@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-08 05:09",
+  "generated_at": "2026-04-08 05:14",
   "game_date": "2026-04-07",
   "yesterday": [
     {
@@ -125,32 +125,14 @@
         "actual_total": 13,
         "actual_margin": -1
       }
-    },
-    {
-      "selection": "New Mexico Lobos +3.5",
-      "sport": "baseball_ncaa",
-      "market_type": "SPREAD",
-      "side_type": "DOG",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 20.54,
-      "odds": -118.0,
-      "units": 5.0,
-      "context_factors": "Home bounce-back (+1.5)",
-      "context_confirmed": 1,
-      "model_spread": -2.02,
-      "closing_line": 3.5,
-      "event_id": "bcb1411a0da51cc83a219e1b08509a0e",
-      "dt": "2026-04-07"
     }
   ],
   "season": {
     "result": "LOSS",
     "W": 152,
-    "L": 115,
-    "pnl": 66.3,
-    "wagered": 1300.0
+    "L": 114,
+    "pnl": 71.3,
+    "wagered": 1295.0
   },
   "by_sport": [
     {
@@ -162,8 +144,8 @@
     {
       "sport": "baseball_ncaa",
       "W": 52,
-      "L": 37,
-      "pnl": 40.1
+      "L": 36,
+      "pnl": 45.1
     },
     {
       "sport": "basketball_nba",
@@ -270,15 +252,6 @@
       "trending": "WORSE"
     },
     {
-      "factor": "Home bounce-back",
-      "W": 5,
-      "L": 5,
-      "pnl": -5.4,
-      "first_half_pnl": 10.1,
-      "second_half_pnl": -15.4,
-      "trending": "WORSE"
-    },
-    {
       "factor": "Home hot streak",
       "W": 1,
       "L": 2,
@@ -331,6 +304,15 @@
       "first_half_pnl": -1.1,
       "second_half_pnl": 0.3,
       "trending": "STABLE"
+    },
+    {
+      "factor": "Home bounce-back",
+      "W": 5,
+      "L": 4,
+      "pnl": -0.4,
+      "first_half_pnl": 5.5,
+      "second_half_pnl": -5.9,
+      "trending": "WORSE"
     },
     {
       "factor": "Elo probability edge",
@@ -712,13 +694,6 @@
       "pnl": 7.7
     },
     {
-      "day_of_week": "Tuesday",
-      "sport": "baseball_ncaa",
-      "W": 9,
-      "L": 6,
-      "pnl": 8.5
-    },
-    {
       "day_of_week": "Saturday",
       "sport": "baseball_mlb",
       "W": 4,
@@ -754,6 +729,13 @@
       "pnl": 13.3
     },
     {
+      "day_of_week": "Tuesday",
+      "sport": "baseball_ncaa",
+      "W": 9,
+      "L": 5,
+      "pnl": 13.5
+    },
+    {
       "day_of_week": "Sunday",
       "sport": "icehockey_nhl",
       "W": 9,
@@ -786,8 +768,8 @@
     {
       "bucket": "AT_CAP",
       "W": 104,
-      "L": 78,
-      "pnl": 73.0,
+      "L": 77,
+      "pnl": 78.0,
       "avg_clv": 0.5
     },
     {
@@ -993,8 +975,8 @@
     "WIN",
     "LOSS",
     "LOSS",
-    "LOSS",
     "WIN",
+    "LOSS",
     "LOSS",
     "LOSS",
     "LOSS"
@@ -2206,12 +2188,12 @@
   "book_performance": [
     {
       "book": "FanDuel",
-      "bets": 69,
+      "bets": 68,
       "wins": 42,
-      "losses": 25,
-      "pnl": 50.4,
-      "wagered": 334.5,
-      "avg_clv": 0.54
+      "losses": 24,
+      "pnl": 55.4,
+      "wagered": 329.5,
+      "avg_clv": 0.55
     },
     {
       "book": "Fanatics",
