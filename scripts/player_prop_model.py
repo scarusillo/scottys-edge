@@ -863,11 +863,12 @@ def generate_prop_projections(conn=None):
                 continue
 
             # v25: Cross-book +200 hard cap — applies to ALL books, not just soft.
-            # If ANY book carrying this prop has odds >+200, the market is saying
-            # <33% probability. Even if our book is at +199, the prop is a longshot.
+            # v25: If ANY book carrying this prop has odds >+150, kill the pick.
+            # Our cap is +150 — if another book prices it higher, the market
+            # thinks it's less likely than our book suggests.
             _all_book_entries = [e for e in legal_entries if e['line'] == line]
-            if any(e['odds'] > 200 for e in _all_book_entries):
-                continue  # Market consensus: longshot prop
+            if any(e['odds'] > MAX_PROP_ODDS for e in _all_book_entries):
+                continue  # Another book has it above our cap — not a real edge
 
             # Hit rate gate: check actual clearing rate vs implied breakeven
             if _hit_rate_data and len(_hit_rate_data) >= 10:
@@ -898,10 +899,9 @@ def generate_prop_projections(conn=None):
                                  if e['book'] in SHARP_PROP_BOOKS
                                  and e['line'] == line]
                 if _sharp_entries:
-                    # Hard cap: if ANY sharp book has odds >+200, kill the pick
-                    _any_over_200 = any(e['odds'] > 200 for e in _sharp_entries)
-                    if _any_over_200:
-                        continue  # Sharp book at +200+ = market says <33% prob
+                    # Hard cap: if ANY sharp book has odds above our cap, kill it
+                    if any(e['odds'] > MAX_PROP_ODDS for e in _sharp_entries):
+                        continue  # Sharp book above cap = soft book edge is fake
 
                     # Soft check: sharp book must confirm >=20% edge
                     _sharp_best = max(e['odds'] for e in _sharp_entries)
