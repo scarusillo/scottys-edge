@@ -689,9 +689,9 @@ def fetch_props(sport, event_id=None):
         return
 
     # v25: MLB prop timing gate — only fetch props for games within 3 hours.
-    # MLB batter prop lines move -5 to -7% from morning to close; fetching
-    # early wastes API calls on stale lines we won't bet on anyway.
-    # Pitcher props are stable but bundled in the same API call.
+    # ALL MLB prop lines (batter + pitcher) reprice as lineups lock in.
+    # Batter props move -5 to -7%; pitcher props (hits_allowed etc.) also
+    # move as opposing lineups are confirmed. Saves ~10-12 API calls/morning.
     if 'baseball' in sport:
         MLB_PROP_WINDOW_HOURS = 3
         _filtered = []

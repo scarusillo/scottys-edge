@@ -614,14 +614,10 @@ def generate_prop_projections(conn=None):
     grouped = defaultdict(list)  # key: (eid, player, market) → list of {book, line, odds}
     game_info = {}
 
-    # v25: MLB batter props (RBI, runs, hits, etc.) have stale morning lines
-    # that move -5 to -7% against the over by game time. Lines stabilize
-    # ~2-3 hours before first pitch. Only evaluate MLB batter props within
-    # this window so edges are calculated against real closing lines.
-    MLB_BATTER_MARKETS = {
-        'batter_rbis', 'batter_runs_scored', 'batter_hits',
-        'batter_total_bases', 'batter_home_runs', 'batter_stolen_bases', 'batter_walks',
-    }
+    # v25: ALL MLB props have stale morning lines that reprice as lineups lock.
+    # Batter props move -5 to -7%; pitcher props (hits_allowed, earned_runs)
+    # also move as opposing lineups are confirmed. Lines stabilize ~2-3 hours
+    # before first pitch. Only evaluate MLB props within this window.
     MLB_PROP_WINDOW_HOURS = 3
 
     for sport, eid, commence, home, away, book, market, selection, line, odds in rows:
@@ -633,8 +629,8 @@ def generate_prop_projections(conn=None):
         except Exception:
             gt = None
 
-        # v25: MLB batter prop timing gate — only fire within 3 hours of game time
-        if gt and 'baseball' in (sport or '') and market in MLB_BATTER_MARKETS:
+        # v25: MLB prop timing gate — only fire within 3 hours of game time
+        if gt and 'baseball' in (sport or ''):
             hours_until = (gt - now_utc).total_seconds() / 3600
             if hours_until > MLB_PROP_WINDOW_HOURS:
                 continue
