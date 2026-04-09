@@ -1,67 +1,64 @@
 # Scotty's Edge Morning Briefing
-**Date:** Wednesday, April 08, 2026 | **Generated:** 07:17 PM ET
-**Game Date Graded:** 2026-04-07
+**Date:** Thursday, April 09, 2026 | **Generated:** 05:14 AM ET
+**Game Date Graded:** 2026-04-08
 
 ---
 ## Yesterday's Results
 
-**4W-3L-0P | +7.9u | GREEN DAY**
+**1W-3L-0P | -9.0u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Drake Baldwin OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +174 | 5.0 | **W** | +8.7 | 0.8% |
-| Christian Walker OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +122 | 5.0 | **W** | +6.1 | 3.7% |
-| Calgary Flames@Dallas Stars OVER 5.5 | icehockey_nhl | OVER | -118 | 5.0 | **W** | +4.2 | 0.0% |
-| Colorado Avalanche@St Louis Blues UNDER 6.5 | icehockey_nhl | UNDER | -128 | 5.0 | **W** | +3.9 | 0.0% |
-| Alec Burleson OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +185 | 5.0 | **L** | -5.0 | -10.7% |
-| CJ Abrams OVER 0.5 RUNS | baseball_mlb | PROP_OVER | +165 | 5.0 | **L** | -5.0 | -2.0% |
-| Atlético Madrid@Barcelona OVER 3.5 | soccer_uefa_champs_league | OVER | -118 | 5.0 | **L** | -5.0 | -1.0% |
+| Nickeil Alexander-Walker OVER 3.5 THREES | basketball_nba | PROP_OVER | +120 | 5.0 | **W** | +6.0 | 2.2% |
+| Washington Capitals@Toronto Maple Leafs OVER  | icehockey_nhl | OVER | -105 | 5.0 | **L** | -5.0 | -1.0% |
+| Nolan Gorman OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +159 | 5.0 | **L** | -5.0 | -12.3% |
+| CJ Abrams OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +191 | 5.0 | **L** | -5.0 | -8.0% |
 
 ---
 ## Loss Analysis
 
-### Alec Burleson OVER 0.5 RBIS
-- **Category:** MODEL ERROR
-- **Analysis:** Negative CLV (-10.7%) -- line moved against us. Model may have been wrong.
-- **Final Score:** St. Louis Cardinals 7 @ Washington Nationals 6
-
-### CJ Abrams OVER 0.5 RUNS
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-2.0%) -- borderline call.
-- **Final Score:** St. Louis Cardinals 7 @ Washington Nationals 6
-
-### Atlético Madrid@Barcelona OVER 3.5
+### Washington Capitals@Toronto Maple Leafs OVER 6.5
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (-1.0%) -- borderline call.
-- **Final Score:** Atlético Madrid 2 @ Barcelona 0
-- **Model Spread:** -0.9 | Actual Margin: -2
-- **Context:** [SHADOW] Home fast-paced (+0.4) | Away fast-paced (+0.5)
+- **Final Score:** Washington Capitals 4 @ Toronto Maple Leafs 0
+- **Model Spread:** +0.5 | Actual Margin: -4
+- **Context:** [SHADOW] Home fast-paced (+0.4) | Away fast-paced (+0.6) | Goalies: Joseph Woll 3.64 vs Logan Thompson 2.78 (recent 4.00) (+0.5)
+
+### Nolan Gorman OVER 0.5 RBIS
+- **Category:** MODEL ERROR
+- **Analysis:** Negative CLV (-12.3%) -- line moved against us. Model may have been wrong.
+- **Final Score:** St. Louis Cardinals 6 @ Washington Nationals 1
+
+### CJ Abrams OVER 0.5 RBIS
+- **Category:** MODEL ERROR
+- **Analysis:** Negative CLV (-8.0%) -- line moved against us. Model may have been wrong.
+- **Final Score:** St. Louis Cardinals 6 @ Washington Nationals 1
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **152W-115L** |
-| Win Rate | 56.9% |
-| P/L | **+66.3u** |
-| ROI | +5.1% |
-| Wagered | 1300.0u |
+| Record | **153W-118L** |
+| Win Rate | 56.5% |
+| P/L | **+57.3u** |
+| ROI | +4.3% |
+| Wagered | 1320.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
 | baseball_ncaa | 52 | 36 | +45.1u |
-| icehockey_nhl | 41 | 21 | +39.6u |
+| icehockey_nhl | 41 | 22 | +34.6u |
 | basketball_ncaab | 17 | 12 | +18.7u |
-| basketball_nba | 25 | 21 | +4.4u |
+| basketball_nba | 26 | 21 | +10.4u |
 | soccer_germany_bundesliga | 1 | 1 | -0.2u |
 | tennis_atp_miami_open | 1 | 1 | -1.1u |
 | soccer_italy_serie_a | 1 | 1 | -1.8u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | tennis_atp_monte_carlo_masters | 1 | 3 | -10.7u |
-| baseball_mlb | 13 | 17 | -18.3u |
+| baseball_mlb | 13 | 19 | -28.3u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -78,6 +75,7 @@
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
 | Away revenge game | 5W-5L | -4.4u |
 | Midweek game | 15W-13L | -3.8u |
+| [SHADOW] Home fast-paced | 3W-3L | -1.2u |
 | Away slow-paced | 13W-11L | -1.2u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
@@ -104,7 +102,7 @@ Found 8 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 104W-78L (57.1%) | +73.0u | 0.3 |
+| AT_CAP | 105W-81L (56.5%) | +64.0u | 0.2 |
 | BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.5 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -139,7 +137,7 @@ Found 8 shadow-tagged picks.
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
-| icehockey_nhl | OVER | 9 | 3 | +18.9u |
+| icehockey_nhl | OVER | 9 | 4 | +13.9u |
 | icehockey_nhl | UNDER | 12 | 5 | +21.1u |
 | soccer_germany_bundesliga | OVER | 1 | 0 | +4.8u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
@@ -151,24 +149,26 @@ Found 8 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS WIN WIN WIN LOSS LOSS WIN LOSS LOSS LOSS
-- **Current Streak:** 1 LOSS
+- **Last 10:** LOSS LOSS LOSS WIN LOSS WIN WIN WIN LOSS LOSS
+- **Current Streak:** 3 LOSS
 
 ---
 ## Action Items
 
-1. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
-2. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
-3. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
-4. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
-5. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
-6. Factor 'Friday game' has -28.2u P/L over 15 bets. Consider reducing weight.
-7. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-8. Concentration risk detected. Review directional exposure limits.
-9. baseball_mlb OVERs: 6W-8L (-13.6u). Review totals model for this sport.
-10. baseball_ncaa UNDERs: 24W-21L (-4.6u). Review totals model for this sport.
-11. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
-12. 1 loss(es) yesterday with CLV < -3% (MODEL ERROR). Review those matchups.
+1. Big red day (-9.0u). Review if any model errors need parameter changes.
+2. 3-bet losing streak. Stay disciplined -- check if edges are still valid.
+3. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
+4. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
+5. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
+6. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
+7. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
+8. Factor 'Friday game' has -28.2u P/L over 15 bets. Consider reducing weight.
+9. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
+10. Concentration risk detected. Review directional exposure limits.
+11. baseball_mlb OVERs: 6W-8L (-13.6u). Review totals model for this sport.
+12. baseball_ncaa UNDERs: 24W-21L (-4.6u). Review totals model for this sport.
+13. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+14. 2 loss(es) yesterday with CLV < -3% (MODEL ERROR). Review those matchups.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-08 19:17 ET*
+*Generated locally by export_briefing_data.py | 2026-04-09 05:14 ET*
