@@ -207,161 +207,7 @@ def post_results_to_discord(report_text):
 
 
 # ═══════════════════════════════════════════════════════════════════
-# TWITTER/X
-# ═══════════════════════════════════════════════════════════════════
-
-TWITTER_API_KEY = os.environ.get('TWITTER_API_KEY', '')
-TWITTER_API_SECRET = os.environ.get('TWITTER_API_SECRET', '')
-TWITTER_ACCESS_TOKEN = os.environ.get('TWITTER_ACCESS_TOKEN', '')
-TWITTER_ACCESS_SECRET = os.environ.get('TWITTER_ACCESS_SECRET', '')
-
-
-def _twitter_auth_header(method, url, params=None):
-    """Generate OAuth 1.0a header for Twitter API."""
-    import hashlib
-    import hmac
-    import time
-    import urllib.parse
-    
-    if not all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET]):
-        return None
-    
-    oauth_params = {
-        'oauth_consumer_key': TWITTER_API_KEY,
-        'oauth_nonce': hashlib.md5(str(time.time()).encode()).hexdigest(),
-        'oauth_signature_method': 'HMAC-SHA1',
-        'oauth_timestamp': str(int(time.time())),
-        'oauth_token': TWITTER_ACCESS_TOKEN,
-        'oauth_version': '1.0',
-    }
-    
-    all_params = {**oauth_params}
-    if params:
-        all_params.update(params)
-    
-    # Create signature base string
-    param_str = '&'.join(f"{urllib.parse.quote(k, safe='')}={urllib.parse.quote(str(v), safe='')}" 
-                         for k, v in sorted(all_params.items()))
-    base_str = f"{method}&{urllib.parse.quote(url, safe='')}&{urllib.parse.quote(param_str, safe='')}"
-    
-    # Sign
-    signing_key = f"{urllib.parse.quote(TWITTER_API_SECRET, safe='')}&{urllib.parse.quote(TWITTER_ACCESS_SECRET, safe='')}"
-    import base64
-    signature = base64.b64encode(
-        hmac.new(signing_key.encode(), base_str.encode(), hashlib.sha1).digest()
-    ).decode()
-    
-    oauth_params['oauth_signature'] = signature
-    
-    auth_header = 'OAuth ' + ', '.join(
-        f'{urllib.parse.quote(k, safe="")}="{urllib.parse.quote(v, safe="")}"'
-        for k, v in sorted(oauth_params.items())
-    )
-    
-    return auth_header
-
-
-def _format_twitter_thread(picks):
-    """
-    Format picks into tweets respecting 280 character limit.
-    Returns list of tweet strings.
-    """
-    from model_engine import kelly_label
-    
-    tz = 'EDT' if 3 <= datetime.now().month <= 10 else 'EST'
-    now = datetime.now()
-    date_str = now.strftime('%B %d')
-    day_str = now.strftime('%A')
-    
-    sport_icons = {
-        'basketball_nba': '🏀', 'basketball_ncaab': '🏀',
-        'icehockey_nhl': '🏒', 'baseball_ncaa': '⚾', 'baseball_mlb': '⚾',
-        'soccer_epl': '⚽', 'soccer_germany_bundesliga': '⚽',
-        'soccer_france_ligue_one': '⚽', 'soccer_italy_serie_a': '⚽',
-        'soccer_spain_la_liga': '⚽', 'soccer_usa_mls': '⚽',
-    }
-    
-    tu = sum(p['units'] for p in picks)
-    tweets = []
-    
-    # Tweet 1: Header + first picks (fit as many as possible)
-    header = f"🎯 Scotty's Edge — {day_str} {date_str}\n\n"
-    current_tweet = header
-    
-    for i, p in enumerate(picks):
-        kl = kelly_label(p['units'])
-        icon = sport_icons.get(p.get('sport', ''), '🏟️')
-        tier = '🔥' if kl == 'MAX PLAY' else '⭐' if kl == 'STRONG' else '✅'
-        odds_str = f"{p['odds']:+.0f}" if p['odds'] else ''
-        
-        pick_line = f"{tier} {icon} {p['selection']} ({odds_str}) {p['units']:.0f}u\n"
-        
-        # Check if adding this line exceeds 280 chars (leave room for footer)
-        if i == len(picks) - 1:
-            # Last pick — add footer
-            footer = f"\n{len(picks)} plays • {tu:.0f}u\n⚠️ Not gambling advice • 21+"
-            if len(current_tweet + pick_line + footer) <= 280:
-                current_tweet += pick_line + footer
-            else:
-                # Need to split
-                tweets.append(current_tweet.strip())
-                current_tweet = pick_line + footer
-        elif len(current_tweet + pick_line) > 260:
-            # Getting close to limit, start new tweet
-            tweets.append(current_tweet.strip())
-            current_tweet = pick_line
-        else:
-            current_tweet += pick_line
-    
-    tweets.append(current_tweet.strip())
-    
-    return tweets
-
-
-def post_to_twitter(picks):
-    """Post picks to Twitter/X as a thread."""
-    if not all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET]):
-        print("  Twitter: No API keys set (set TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET)")
-        return False
-    
-    tweets = _format_twitter_thread(picks)
-    
-    url = 'https://api.twitter.com/2/tweets'
-    reply_to = None
-    
-    for i, tweet_text in enumerate(tweets):
-        payload = {"text": tweet_text}
-        if reply_to:
-            payload["reply"] = {"in_reply_to_tweet_id": reply_to}
-        
-        data = json.dumps(payload).encode('utf-8')
-        auth = _twitter_auth_header('POST', url)
-        
-        if not auth:
-            print("  Twitter: ❌ Auth failed")
-            return False
-        
-        req = urllib.request.Request(
-            url,
-            data=data,
-            headers={
-                'Content-Type': 'application/json',
-                'Authorization': auth,
-            },
-            method='POST'
-        )
-        
-        try:
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                result = json.loads(resp.read().decode())
-                tweet_id = result.get('data', {}).get('id')
-                reply_to = tweet_id
-                print(f"  Twitter: ✅ Tweet {i+1}/{len(tweets)} posted")
-        except Exception as e:
-            print(f"  Twitter: ❌ Tweet {i+1} failed: {e}")
-            return False
-    
-    return True
+# TWITTER/X — removed (account permanently suspended April 2026)
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -372,14 +218,9 @@ def post_picks_social(picks):
     """Post picks to all configured social platforms."""
     if not picks:
         return
-    
+
     print("\n📱 Posting to social media...")
     post_to_discord(picks)
-    
-    if all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET]):
-        post_to_twitter(picks)
-    else:
-        print("  Twitter: Skipped (no API keys)")
 
 
 def post_results_social(report_text):
