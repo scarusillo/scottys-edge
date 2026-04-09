@@ -71,9 +71,9 @@ def _get_team_id(team_name, sport):
     url = f"https://site.api.espn.com/apis/site/v2/sports/{espn_sport}/teams?limit=500"
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     try:
-        resp = urlopen(req, timeout=20)
-        data = json.loads(resp.read().decode())
-        
+        with urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode())
+
         for sport_data in data.get('sports', []):
             for league in sport_data.get('leagues', []):
                 for team in league.get('teams', []):
@@ -108,8 +108,8 @@ def _fetch_team_schedule(team_id, sport, season=None):
     
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     try:
-        resp = urlopen(req, timeout=20)
-        data = json.loads(resp.read().decode())
+        with urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode())
         return data.get('events', [])
     except Exception as e:
         print(f"  ⚠ Fetch error for team schedule {team_id}: {e}")

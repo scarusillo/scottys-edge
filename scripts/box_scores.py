@@ -767,8 +767,8 @@ PROP_TO_STAT = {
     # MLB pitching
     'PITCHER_STRIKEOUTS': 'pitcher_k', 'PITCHER_KS': 'pitcher_k',
     'PITCHER_OUTS': 'pitcher_outs', 'OUTS': 'pitcher_outs',
-    'EARNED_RUNS': 'pitcher_er',
-    'HITS_ALLOWED': 'pitcher_h_allowed',
+    'EARNED_RUNS': 'pitcher_er', 'EARNED RUNS': 'pitcher_er',
+    'HITS_ALLOWED': 'pitcher_h_allowed', 'HITS ALLOWED': 'pitcher_h_allowed',
     'PITCHER_WALKS': 'pitcher_bb',
 }
 

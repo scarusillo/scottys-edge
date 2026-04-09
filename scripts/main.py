@@ -981,6 +981,22 @@ TONIGHT'S CHECKLIST:
 [ ] Comment on 2 big account posts (within 30 min)
 [ ] After wins hit: post results card + "Called it" story
 """
+                    # v25: Reddit engagement comments (for team subs + betting subs)
+                    from card_image import generate_engagement_comments
+                    _eng_comments = generate_engagement_comments(all_picks)
+                    if _eng_comments:
+                        _reddit_comments = [c for c in _eng_comments if c['platform'] == 'reddit']
+                        if _reddit_comments:
+                            caption_text += "\n\n" + "REDDIT COMMENTS (team subs + betting subs):\n" + "=" * 40
+                            _seen_targets = set()
+                            for _rc in _reddit_comments:
+                                _key = (_rc['target'], _rc['pick'])
+                                if _key in _seen_targets:
+                                    continue
+                                _seen_targets.add(_key)
+                                caption_text += f"\n\n{_rc['target']} — {_rc['game']} ({_rc['sport']}):\n"
+                                caption_text += f"{_rc['comment']}"
+
                     caption_text += growth_section
 
                     # v24: Timing confidence tags — early picks historically capture better CLV
@@ -1018,6 +1034,16 @@ TONIGHT'S CHECKLIST:
                     today = datetime.now().strftime('%Y-%m-%d')
                     send_email(f"Social Captions - {run_type} {today}", caption_text)
                     print("  Captions + pick write-ups email sent")
+
+                    # Save engagement comments JSON for Cowork automation
+                    try:
+                        from card_image import save_engagement_comments
+                        _cw_path = save_engagement_comments(all_picks)
+                        if _cw_path:
+                            _cw_count = len(generate_engagement_comments(all_picks))
+                            print(f"  Cowork comments saved: {_cw_path} ({_cw_count} comments)")
+                    except Exception as _cw_e:
+                        print(f"  Cowork comments: {_cw_e}")
             except Exception as e:
                 print(f"  Captions: {e}")
         else:
@@ -2549,8 +2575,32 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             team_prop_counts[player_team] = team_prop_counts.get(player_team, 0) + 1
 
         prop_team_capped.append(p)
-    prop_game_capped = prop_team_capped
-    
+
+    # v25.1: Same-event prop cap — max 1 prop per event_id across all teams.
+    # Gorman (Cardinals) + Abrams (Nationals) = same game, different teams,
+    # but both lost = -10u correlated swing. Per-team cap missed this.
+    MAX_PROPS_PER_EVENT = 1
+    event_prop_counts = {}
+    # Count existing same-event props from earlier runs today
+    if conn:
+        try:
+            for _ee in conn.execute("""
+                SELECT event_id FROM bets
+                WHERE market_type = 'PROP' AND DATE(created_at) = DATE('now') AND units >= 3.5
+            """).fetchall():
+                event_prop_counts[_ee[0]] = event_prop_counts.get(_ee[0], 0) + 1
+        except Exception:
+            pass
+    prop_event_capped = []
+    for p in prop_team_capped:
+        eid = p['event_id']
+        if event_prop_counts.get(eid, 0) >= MAX_PROPS_PER_EVENT:
+            _shadow_blocked.append((p, 'PROP_EVENT_CAP'))
+            continue
+        event_prop_counts[eid] = event_prop_counts.get(eid, 0) + 1
+        prop_event_capped.append(p)
+    prop_game_capped = prop_event_capped
+
     # GUARDRAIL: Per-stat-type cap per game (max 2 per stat type per game)
     # Allows one from each team but prevents 4 three-point unders from same game.
     # User requested: different teams in same game are OK.

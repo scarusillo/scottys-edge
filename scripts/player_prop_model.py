@@ -1088,18 +1088,40 @@ def generate_prop_projections(conn=None):
             conn.close()
         return []
 
+    # v25.1: Same-event prop cap — max 1 prop per event_id.
+    # Two 5u props from the same game is 10u of correlated exposure.
+    # Gorman + Abrams (same Cardinals@Nationals game) both lost = -10u swing.
+    MAX_PROPS_PER_EVENT = 1
+    # Also check existing bets for same-event props already placed today
+    _today_event_props = defaultdict(int)
+    try:
+        _existing_events = conn.execute("""
+            SELECT event_id FROM bets
+            WHERE market_type = 'PROP' AND DATE(created_at) = ? AND result IS NULL
+        """, (_today_str,)).fetchall()
+        for _ee in _existing_events:
+            _today_event_props[_ee[0]] += 1
+    except Exception:
+        pass
+
     stat_counts = defaultdict(int)
+    event_counts = defaultdict(int)
     diverse_picks = []
     for p in deduped:
         stat = p['selection'].split()[-1]
-        # Check per-run cap
+        eid = p['event_id']
+        # Check per-run stat cap
         if stat_counts[stat] >= MAX_PER_STAT:
             continue
         # Check daily per-stat cap
         if _today_props.get(stat, 0) + stat_counts[stat] >= DAILY_MAX_PER_STAT:
             continue
+        # Check same-event cap (per-run + already placed today)
+        if _today_event_props.get(eid, 0) + event_counts[eid] >= MAX_PROPS_PER_EVENT:
+            continue
         diverse_picks.append(p)
         stat_counts[stat] += 1
+        event_counts[eid] += 1
 
     final = diverse_picks[:min(MAX_PROP_PICKS, _daily_remaining)]
 

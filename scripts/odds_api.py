@@ -80,11 +80,11 @@ def _api_get(endpoint, params=None):
     max_retries = 3
     for attempt in range(1, max_retries + 1):
         try:
-            resp = urlopen(req, timeout=30)
-            remaining = resp.headers.get('x-requests-remaining', '?')
-            used = resp.headers.get('x-requests-used', '?')
-            print(f"  API: {endpoint} — Requests used: {used}, remaining: {remaining}")
-            return json.loads(resp.read().decode())
+            with urlopen(req, timeout=30) as resp:
+                remaining = resp.headers.get('x-requests-remaining', '?')
+                used = resp.headers.get('x-requests-used', '?')
+                print(f"  API: {endpoint} — Requests used: {used}, remaining: {remaining}")
+                return json.loads(resp.read().decode())
         except (URLError, HTTPError, TimeoutError, OSError) as e:
             backoff = 2 ** attempt  # 2s, 4s, 8s
             if attempt < max_retries:
@@ -688,23 +688,39 @@ def fetch_props(sport, event_id=None):
         conn.close()
         return
 
-    # v25: MLB prop timing gate — only fetch props for games within 3 hours.
-    # ALL MLB prop lines (batter + pitcher) reprice as lineups lock in.
-    # Batter props move -5 to -7%; pitcher props (hits_allowed etc.) also
-    # move as opposing lineups are confirmed. Saves ~10-12 API calls/morning.
+    # v25.1: MLB prop timing gate — 3hr window for new pick evaluation,
+    # but always fetch for events with existing PENDING prop bets (for CLV).
+    # Without closing-line snapshots, prop CLV is skewed (e.g., Gorman RBI
+    # showed -12.3% because last snapshot was 3hrs pre-game).
     if 'baseball' in sport:
         MLB_PROP_WINDOW_HOURS = 3
+        from datetime import timezone as _tz
+        now_tz = datetime.now(_tz.utc)
+
+        # Events with pending prop bets today — always fetch these for CLV
+        pending_eids = set(r[0] for r in conn.execute("""
+            SELECT DISTINCT event_id FROM bets
+            WHERE market_type = 'PROP' AND result = 'PENDING'
+            AND sport LIKE ? AND DATE(created_at) >= DATE('now', '-1 day')
+        """, (f'%{sport.split("_")[-1]}%',)).fetchall())
+
         _filtered = []
         _skipped = 0
+        _clv_only = 0
         for eid_row in event_ids:
+            eid = eid_row[0]
+            # Always fetch events with pending bets (for closing line CLV)
+            if eid in pending_eids:
+                _clv_only += 1
+                _filtered.append(eid_row)
+                continue
+            # Gate new events to 3hr window
             ct_row = conn.execute(
                 "SELECT commence_time FROM market_consensus WHERE event_id=? LIMIT 1",
-                (eid_row[0],)).fetchone()
+                (eid,)).fetchone()
             if ct_row and ct_row[0]:
                 try:
-                    from datetime import timezone
                     gt = datetime.fromisoformat(ct_row[0].replace('Z', '+00:00'))
-                    now_tz = datetime.now(timezone.utc)
                     hours_until = (gt - now_tz).total_seconds() / 3600
                     if hours_until > MLB_PROP_WINDOW_HOURS:
                         _skipped += 1
@@ -712,8 +728,8 @@ def fetch_props(sport, event_id=None):
                 except Exception:
                     pass
             _filtered.append(eid_row)
-        if _skipped:
-            print(f"  {sport}: skipped {_skipped} events >3hrs out (prop timing gate)")
+        if _skipped or _clv_only:
+            print(f"  {sport}: skipped {_skipped} events >3hrs out, fetching {_clv_only} for CLV tracking")
         event_ids = _filtered
         if not event_ids:
             print(f"  {sport}: no events within prop window")

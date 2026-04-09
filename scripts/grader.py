@@ -795,9 +795,9 @@ def _market_key(market_type, selection=''):
             'SHOTS': 'player_shots', 'SOT': 'player_shots_on_target',
             'HITS': 'batter_hits', 'TOTAL_BASES': 'batter_total_bases',
             'HOME_RUNS': 'batter_home_runs', 'RBIS': 'batter_rbis',
-            'RUNS': 'batter_runs_scored', 'STRIKEOUTS': 'pitcher_strikeouts',
-            'OUTS': 'pitcher_outs', 'HITS ALLOWED': 'pitcher_hits_allowed',
-            'EARNED RUNS': 'pitcher_earned_runs', 'WALKS': 'pitcher_walks',
+            'RUNS': 'batter_runs_scored', 'STRIKEOUTS': 'pitcher_k',
+            'OUTS': 'pitcher_outs', 'HITS ALLOWED': 'pitcher_h_allowed',
+            'EARNED RUNS': 'pitcher_er', 'WALKS': 'pitcher_bb',
             'STOLEN_BASES': 'batter_stolen_bases',
         }
         for label, market in PROP_MARKET_MAP.items():

@@ -481,8 +481,8 @@ def _fetch_espn_scoreboard(url, date_str, sport=None):
             full_url += "&groups=50&limit=900"
     req = Request(full_url, headers={'User-Agent': 'Mozilla/5.0'})
     try:
-        resp = urlopen(req, timeout=15)
-        return json.loads(resp.read().decode())
+        with urlopen(req, timeout=15) as resp:
+            return json.loads(resp.read().decode())
     except (URLError, HTTPError, json.JSONDecodeError) as e:
         return None
 
