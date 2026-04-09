@@ -2501,14 +2501,14 @@ def generate_predictions(conn, sport=None, date=None):
                         # the pitching context contradicts the OVER direction
                         _pitching_veto_over = (sp in ('baseball_mlb', 'baseball_ncaa')
                                                and _era_adj <= -0.5)
-                        # v25.1: Soccer direction gate — raw model must agree with bet direction.
-                        # Context factors (pace, H2H) can inflate model_total past the line
-                        # even when the raw model disagrees. Two losses came from the model
-                        # projecting 1.3 and 2.5 goals but betting OVER 2.5 and 3.5 after
-                        # pace context inflated the total. Context should confirm, not override.
-                        _soccer_veto_over = ('soccer' in sp
-                                             and _raw_model_total < over_total)
-                        if k not in seen and not _mlb_skip_total and not _park_veto_over and not _pitching_veto_over and not _soccer_veto_over:
+                        # v25.1: Direction gate — raw model must agree with bet direction.
+                        # Context factors (pace, pitching, H2H) can inflate model_total past
+                        # the line even when the raw model disagrees. 9 of 14 MLB overs and
+                        # 2 of 4 soccer overs fired with model_spread <= 0. Those went 3W-5L
+                        # (MLB) and 0W-2L (soccer). Context should confirm, not override.
+                        _direction_veto_over = (('soccer' in sp or sp == 'baseball_mlb')
+                                                and _raw_model_total < over_total)
+                        if k not in seen and not _mlb_skip_total and not _park_veto_over and not _pitching_veto_over and not _direction_veto_over:
                             total_diff = model_total - over_total
                             if total_diff > 0:  # Model says higher scoring
                                 pv = calculate_point_value_totals(model_total, over_total, sp)
@@ -2607,10 +2607,10 @@ def generate_predictions(conn, sport=None, date=None):
                         # pitching context says "expect more runs" = contradicts UNDER
                         _pitching_veto_under = (sp in ('baseball_mlb', 'baseball_ncaa')
                                                 and _era_adj >= 0.5)
-                        # v25.1: Soccer direction gate — raw model must agree with UNDER direction
-                        _soccer_veto_under = ('soccer' in sp
-                                              and _raw_model_total > (under_total or 0))
-                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _ncaa_skip_under and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under and not _pitching_veto_under and not _soccer_veto_under:
+                        # v25.1: Direction gate — raw model must agree with UNDER direction
+                        _direction_veto_under = (('soccer' in sp or sp == 'baseball_mlb')
+                                                 and _raw_model_total > (under_total or 0))
+                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _ncaa_skip_under and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under and not _pitching_veto_under and not _direction_veto_under:
                             k = f"{eid}|T|UNDER"
                             if k not in seen:
                                 total_diff_u = under_total - model_total
