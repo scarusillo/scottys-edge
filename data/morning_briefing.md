@@ -1,14 +1,15 @@
 # Scotty's Edge Morning Briefing
-**Date:** Thursday, April 09, 2026 | **Generated:** 05:14 AM ET
+**Date:** Thursday, April 09, 2026 | **Generated:** 05:20 AM ET
 **Game Date Graded:** 2026-04-08
 
 ---
 ## Yesterday's Results
 
-**1W-3L-0P | -9.0u | RED DAY**
+**2W-3L-0P | -2.9u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
+| Michael Lorenzen OVER 6.5 HITS ALLOWED | baseball_mlb | PROP_OVER | +122 | 5.0 | **W** | +6.1 | -- |
 | Nickeil Alexander-Walker OVER 3.5 THREES | basketball_nba | PROP_OVER | +120 | 5.0 | **W** | +6.0 | 2.2% |
 | Washington Capitals@Toronto Maple Leafs OVER  | icehockey_nhl | OVER | -105 | 5.0 | **L** | -5.0 | -1.0% |
 | Nolan Gorman OVER 0.5 RBIS | baseball_mlb | PROP_OVER | +159 | 5.0 | **L** | -5.0 | -12.3% |
@@ -39,11 +40,11 @@
 
 | Metric | Value |
 |--------|-------|
-| Record | **153W-118L** |
-| Win Rate | 56.5% |
-| P/L | **+57.3u** |
-| ROI | +4.3% |
-| Wagered | 1320.0u |
+| Record | **154W-118L** |
+| Win Rate | 56.6% |
+| P/L | **+63.4u** |
+| ROI | +4.8% |
+| Wagered | 1325.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -58,7 +59,7 @@
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | tennis_atp_monte_carlo_masters | 1 | 3 | -10.7u |
-| baseball_mlb | 13 | 19 | -28.3u |
+| baseball_mlb | 14 | 19 | -22.2u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -102,7 +103,7 @@ Found 8 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 105W-81L (56.5%) | +64.0u | 0.2 |
+| AT_CAP | 106W-81L (56.7%) | +70.1u | 0.2 |
 | BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.5 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -149,26 +150,24 @@ Found 8 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS LOSS WIN LOSS WIN WIN WIN LOSS LOSS
-- **Current Streak:** 3 LOSS
+- **Last 10:** LOSS LOSS WIN LOSS WIN LOSS WIN WIN WIN LOSS
+- **Current Streak:** 2 LOSS
 
 ---
 ## Action Items
 
-1. Big red day (-9.0u). Review if any model errors need parameter changes.
-2. 3-bet losing streak. Stay disciplined -- check if edges are still valid.
-3. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
-4. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
-5. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
-6. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
-7. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
-8. Factor 'Friday game' has -28.2u P/L over 15 bets. Consider reducing weight.
-9. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-10. Concentration risk detected. Review directional exposure limits.
-11. baseball_mlb OVERs: 6W-8L (-13.6u). Review totals model for this sport.
-12. baseball_ncaa UNDERs: 24W-21L (-4.6u). Review totals model for this sport.
-13. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
-14. 2 loss(es) yesterday with CLV < -3% (MODEL ERROR). Review those matchups.
+1. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
+2. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
+3. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
+4. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
+5. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
+6. Factor 'Friday game' has -28.2u P/L over 15 bets. Consider reducing weight.
+7. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
+8. Concentration risk detected. Review directional exposure limits.
+9. baseball_mlb OVERs: 6W-8L (-13.6u). Review totals model for this sport.
+10. baseball_ncaa UNDERs: 24W-21L (-4.6u). Review totals model for this sport.
+11. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+12. 2 loss(es) yesterday with CLV < -3% (MODEL ERROR). Review those matchups.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-09 05:14 ET*
+*Generated locally by export_briefing_data.py | 2026-04-09 05:20 ET*
