@@ -77,9 +77,11 @@ Each comment entry tells you:
 5. Post the comment on that post
 6. **Only today's picks matter.** If the `generated_at` date is from a previous day, ignore
 
-### The File Only Contains New Picks
+### The File Contains ALL of Today's Picks
 
-Each model run overwrites the file with ONLY the newest picks. If the timestamp changed, everything in it is new. If the timestamp is the same, skip.
+The file accumulates picks throughout the day. Each model run appends new picks to the existing file (deduped — no duplicates). When the timestamp changes, new picks were added. To find which comments are new, compare the `total_comments` count to what you last saw — the new ones are at the end of the list.
+
+Yesterday's comments are automatically cleared when the first run of a new day writes to the file.
 
 ---
 

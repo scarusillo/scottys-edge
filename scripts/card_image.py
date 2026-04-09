@@ -1824,22 +1824,48 @@ def generate_engagement_comments(picks: list) -> list:
                     'sport': sport_label
                 })
 
-    # Write to JSON
+    # Write to JSON — append to today's existing comments (don't overwrite)
     output_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'cowork_comments.json')
+
+    # Load existing comments from today (if any)
+    existing_comments = []
+    try:
+        if os.path.exists(output_path):
+            with open(output_path, 'r') as f:
+                existing = json.load(f)
+            # Only keep if from today (discard yesterday's leftovers)
+            existing_date = existing.get('generated_at', '')[:10]
+            today_date = datetime.now().strftime('%Y-%m-%d')
+            if existing_date == today_date:
+                existing_comments = existing.get('comments', [])
+    except Exception:
+        existing_comments = []
+
+    # Dedup: don't add comments for picks we already have
+    existing_picks = {c.get('pick', '') + '|' + c.get('platform', '') + '|' + c.get('target', '')
+                      for c in existing_comments}
+    new_comments = [c for c in comments
+                    if c.get('pick', '') + '|' + c.get('platform', '') + '|' + c.get('target', '')
+                    not in existing_picks]
+
+    all_comments = existing_comments + new_comments
+
     output_data = {
         'generated_at': datetime.now().isoformat(),
-        'total_comments': len(comments),
+        'total_comments': len(all_comments),
         'by_platform': {
-            'ig': len([c for c in comments if c['platform'] == 'ig']),
-            'reddit': len([c for c in comments if c['platform'] == 'reddit'])
+            'ig': len([c for c in all_comments if c['platform'] == 'ig']),
+            'reddit': len([c for c in all_comments if c['platform'] == 'reddit'])
         },
-        'comments': comments
+        'comments': all_comments
     }
 
     try:
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, 'w') as f:
             json.dump(output_data, f, indent=2)
+        if new_comments:
+            print(f"  Engagement: {len(new_comments)} new comments added ({len(all_comments)} total today)")
     except Exception as e:
         print(f"Error writing comments to {output_path}: {e}")
 
