@@ -1295,17 +1295,552 @@ Every pick tracked & graded \U0001f4ca
 {hashtags}"""
 
 
-if __name__ == '__main__':
-    if '--stats' in sys.argv:
-        generate_stats_card(start_date='2026-03-04')
-    elif '--results' in sys.argv:
-        generate_results_card(start_date='2026-03-04')
+# ═══════════════════════════════════════════════════════════════
+# ENGAGEMENT COMMENTS — per-platform comments for Cowork to post
+# on team pages and betting pages associated with each game
+# ═══════════════════════════════════════════════════════════════
+
+import json
+
+# Team → social accounts mapping
+TEAM_SOCIALS = {
+    # NBA
+    'Lakers': {'twitter': ['@Lakers'], 'ig': ['lakers'], 'reddit': ['r/lakers']},
+    'Celtics': {'twitter': ['@celtics'], 'ig': ['celtics'], 'reddit': ['r/bostonceltics']},
+    'Warriors': {'twitter': ['@warriors'], 'ig': ['warriors'], 'reddit': ['r/warriors']},
+    'Nuggets': {'twitter': ['@nuggets'], 'ig': ['nuggets'], 'reddit': ['r/denvernuggets']},
+    'Bucks': {'twitter': ['@Bucks'], 'ig': ['bucks'], 'reddit': ['r/MkeBucks']},
+    'Knicks': {'twitter': ['@nyknicks'], 'ig': ['nyknicks'], 'reddit': ['r/NYKnicks']},
+    'Sixers': {'twitter': ['@sixers'], 'ig': ['sixers'], 'reddit': ['r/sixers']},
+    'Heat': {'twitter': ['@MiamiHEAT'], 'ig': ['miamiheat'], 'reddit': ['r/heat']},
+    'Cavaliers': {'twitter': ['@cavs'], 'ig': ['cavs'], 'reddit': ['r/clevelandcavs']},
+    'Mavericks': {'twitter': ['@dallasmavs'], 'ig': ['dallasmavs'], 'reddit': ['r/Mavericks']},
+    'Suns': {'twitter': ['@Suns'], 'ig': ['suns'], 'reddit': ['r/suns']},
+    'Timberwolves': {'twitter': ['@Timberwolves'], 'ig': ['timberwolves'], 'reddit': ['r/timberwolves']},
+    'Grizzlies': {'twitter': ['@memgrizz'], 'ig': ['grizzlies'], 'reddit': ['r/memphisgrizzlies']},
+    'Kings': {'twitter': ['@SacramentoKings'], 'ig': ['kings'], 'reddit': ['r/kings']},
+    'Spurs': {'twitter': ['@spurs'], 'ig': ['spurs'], 'reddit': ['r/NBASpurs']},
+    'Trail Blazers': {'twitter': ['@trailblazers'], 'ig': ['trailblazers'], 'reddit': ['r/ripcity']},
+    'Rockets': {'twitter': ['@HoustonRockets'], 'ig': ['houstonrockets'], 'reddit': ['r/rockets']},
+    'Clippers': {'twitter': ['@LAClippers'], 'ig': ['laclippers'], 'reddit': ['r/LAClippers']},
+    'Pacers': {'twitter': ['@Pacers'], 'ig': ['pacers'], 'reddit': ['r/Pacers']},
+    'Pistons': {'twitter': ['@DetroitPistons'], 'ig': ['pistons'], 'reddit': ['r/DetroitPistons']},
+    'Nets': {'twitter': ['@BrooklynNets'], 'ig': ['brooklynnets'], 'reddit': ['r/GoNets']},
+    'Raptors': {'twitter': ['@Raptors'], 'ig': ['raptors'], 'reddit': ['r/torontoraptors']},
+    'Bulls': {'twitter': ['@chicagobulls'], 'ig': ['chicagobulls'], 'reddit': ['r/chicagobulls']},
+    'Hawks': {'twitter': ['@ATLHawks'], 'ig': ['atlhawks'], 'reddit': ['r/AtlantaHawks']},
+    'Magic': {'twitter': ['@OrlandoMagic'], 'ig': ['orlandobullets'], 'reddit': ['r/OrlandoMagic']},
+    'Hornets': {'twitter': ['@hornets'], 'ig': ['hornets'], 'reddit': ['r/CharlotteHornets']},
+    'Wizards': {'twitter': ['@WashWizards'], 'ig': ['washwizards'], 'reddit': ['r/washingtonwizards']},
+    '76ers': {'twitter': ['@sixers'], 'ig': ['sixers'], 'reddit': ['r/sixers']},
+
+    # NHL
+    'Maple Leafs': {'twitter': ['@MapleLeafs'], 'ig': ['mapleleafs'], 'reddit': ['r/leafs']},
+    'Avalanche': {'twitter': ['@Avalanche'], 'ig': ['coloradoavalanche'], 'reddit': ['r/ColoradoAvalanche']},
+    'Rangers': {'twitter': ['@NYRangers'], 'ig': ['nyrangers'], 'reddit': ['r/rangers']},
+    'Hurricanes': {'twitter': ['@NHLcanes'], 'ig': ['nhlcanes'], 'reddit': ['r/canes']},
+    'Stars': {'twitter': ['@DallasStars'], 'ig': ['dallasstars'], 'reddit': ['r/dallasstars']},
+    'Capitals': {'twitter': ['@Capitals'], 'ig': ['capitals'], 'reddit': ['r/caps']},
+    'Bruins': {'twitter': ['@NHLBruins'], 'ig': ['nhlbruins'], 'reddit': ['r/BostonBruins']},
+    'Panthers': {'twitter': ['@FlaPanthers'], 'ig': ['flapanthers'], 'reddit': ['r/FloridaPanthers']},
+    'Leafs': {'twitter': ['@MapleLeafs'], 'ig': ['mapleleafs'], 'reddit': ['r/leafs']},
+    'Oilers': {'twitter': ['@EdmontonOilers'], 'ig': ['edmontonoilers'], 'reddit': ['r/EdmontonOilers']},
+    'Kings': {'twitter': ['@LAKings'], 'ig': ['lakings'], 'reddit': ['r/losangeleskings']},
+    'Ducks': {'twitter': ['@AnaheimDucks'], 'ig': ['anaheimducks'], 'reddit': ['r/AnaheimDucks']},
+    'Blues': {'twitter': ['@StLouisBlues'], 'ig': ['stlouisblues'], 'reddit': ['r/StLouisBlues']},
+    'Predators': {'twitter': ['@PredsNHL'], 'ig': ['nashvillepredators'], 'reddit': ['r/Predators']},
+    'Golden Knights': {'twitter': ['@GoldenKnights'], 'ig': ['goldenknights'], 'reddit': ['r/goldenknights']},
+    'Flames': {'twitter': ['@NHLFlames'], 'ig': ['nhlflames'], 'reddit': ['r/CalgaryFlames']},
+    'Canucks': {'twitter': ['@Canucks'], 'ig': ['canucks'], 'reddit': ['r/canucks']},
+    'Penguins': {'twitter': ['@penguins'], 'ig': ['pittsburghpenguins'], 'reddit': ['r/penguins']},
+    'Jets': {'twitter': ['@NHLJets'], 'ig': ['NHLJets'], 'reddit': ['r/winnipegjets']},
+    'Red Wings': {'twitter': ['@DetroitRedWings'], 'ig': ['detroitredwings'], 'reddit': ['r/DetroitRedWings']},
+    'Islanders': {'twitter': ['@NYIslanders'], 'ig': ['nyislanders'], 'reddit': ['r/NewYorkIslanders']},
+    'Sabres': {'twitter': ['@BuffaloSabres'], 'ig': ['buffalosabres'], 'reddit': ['r/sabres']},
+    'Senators': {'twitter': ['@Senators'], 'ig': ['ottawasenators'], 'reddit': ['r/ottawaSenators']},
+    'Devils': {'twitter': ['@NJDevils'], 'ig': ['njdevils'], 'reddit': ['r/devils']},
+    'Flyers': {'twitter': ['@NHLFlyers'], 'ig': ['nhlflyers'], 'reddit': ['r/Flyers']},
+    'Lightning': {'twitter': ['@TBLightning'], 'ig': ['tblightning'], 'reddit': ['r/TampaBayLightning']},
+    'Maple Leafs': {'twitter': ['@MapleLeafs'], 'ig': ['mapleleafs'], 'reddit': ['r/leafs']},
+    'Wild': {'twitter': ['@mnwild'], 'ig': ['mnwild'], 'reddit': ['r/wildhockey']},
+    'Sharks': {'twitter': ['@SanJoseSharks'], 'ig': ['sjsharks'], 'reddit': ['r/SanJoseSharks']},
+    'Blackhawks': {'twitter': ['@NHLBlackhawks'], 'ig': ['nhlblackhawks'], 'reddit': ['r/hawks']},
+
+    # MLB
+    'Yankees': {'twitter': ['@Yankees'], 'ig': ['yankees'], 'reddit': ['r/NYYankees']},
+    'Red Sox': {'twitter': ['@RedSox'], 'ig': ['redsox'], 'reddit': ['r/redsox']},
+    'Dodgers': {'twitter': ['@Dodgers'], 'ig': ['dodgers'], 'reddit': ['r/Dodgers']},
+    'Giants': {'twitter': ['@SFGiants'], 'ig': ['sfgiants'], 'reddit': ['r/SFGiants']},
+    'Astros': {'twitter': ['@astros'], 'ig': ['astros'], 'reddit': ['r/Astros']},
+    'Nationals': {'twitter': ['@Nationals'], 'ig': ['nationals'], 'reddit': ['r/Nationals']},
+    'Mets': {'twitter': ['@Mets'], 'ig': ['mets'], 'reddit': ['r/NewYorkMets']},
+    'Phillies': {'twitter': ['@Phillies'], 'ig': ['phillies'], 'reddit': ['r/phillies']},
+    'Orioles': {'twitter': ['@Orioles'], 'ig': ['orioles'], 'reddit': ['r/orioles']},
+    'Blue Jays': {'twitter': ['@BlueJays'], 'ig': ['bluejays'], 'reddit': ['r/Torontobluejays']},
+    'Rays': {'twitter': ['@RaysBaseball'], 'ig': ['raysbaseball'], 'reddit': ['r/TampaBayRays']},
+    'Tigers': {'twitter': ['@tigers'], 'ig': ['tigers'], 'reddit': ['r/motorcitykitties']},
+    'White Sox': {'twitter': ['@whitesox'], 'ig': ['whitesox'], 'reddit': ['r/whitesox']},
+    'Indians': {'twitter': ['@CleGuardians'], 'ig': ['clevelandindians'], 'reddit': ['r/ClevelandGuardians']},
+    'Guardians': {'twitter': ['@CleGuardians'], 'ig': ['clevelandguardians'], 'reddit': ['r/ClevelandGuardians']},
+    'Twins': {'twitter': ['@Twins'], 'ig': ['twins'], 'reddit': ['r/minnesotatwins']},
+    'Royals': {'twitter': ['@Royals'], 'ig': ['royals'], 'reddit': ['r/KCRoyals']},
+    'Athletics': {'twitter': ['@Athletics'], 'ig': ['athletics'], 'reddit': ['r/OaklandAthletics']},
+    'Mariners': {'twitter': ['@Mariners'], 'ig': ['mariners'], 'reddit': ['r/Mariners']},
+    'Rangers': {'twitter': ['@Rangers'], 'ig': ['texasrangers'], 'reddit': ['r/TexasRangers']},
+    'Angels': {'twitter': ['@Angels'], 'ig': ['angels'], 'reddit': ['r/angelsbaseball']},
+    'Padres': {'twitter': ['@Padres'], 'ig': ['padres'], 'reddit': ['r/Padres']},
+    'Rockies': {'twitter': ['@Rockies'], 'ig': ['rockies'], 'reddit': ['r/ColoradoRockies']},
+    'Brewers': {'twitter': ['@Brewers'], 'ig': ['brewers'], 'reddit': ['r/Brewers']},
+    'Cardinals': {'twitter': ['@Cardinals'], 'ig': ['stlouiscardinals'], 'reddit': ['r/cardinals']},
+    'Pirates': {'twitter': ['@Pirates'], 'ig': ['pirates'], 'reddit': ['r/Buccos']},
+    'Reds': {'twitter': ['@Reds'], 'ig': ['reds'], 'reddit': ['r/Reds']},
+    'Cubs': {'twitter': ['@Cubs'], 'ig': ['cubs'], 'reddit': ['r/CHCubs']},
+    'Braves': {'twitter': ['@Braves'], 'ig': ['braves'], 'reddit': ['r/Braves']},
+    'Marlins': {'twitter': ['@Marlins'], 'ig': ['marlins'], 'reddit': ['r/letsgofish']},
+
+    # EPL
+    'Liverpool': {'twitter': ['@LFC'], 'ig': ['liverpoolfc'], 'reddit': ['r/LiverpoolFC']},
+    'Manchester City': {'twitter': ['@ManCity'], 'ig': ['mancity'], 'reddit': ['r/MCFC']},
+    'Manchester United': {'twitter': ['@ManUtd'], 'ig': ['manchesterunited'], 'reddit': ['r/reddevils']},
+    'Chelsea': {'twitter': ['@ChelseaFC'], 'ig': ['chelseafc'], 'reddit': ['r/chelseafc']},
+    'Arsenal': {'twitter': ['@Arsenal'], 'ig': ['arsenal'], 'reddit': ['r/Gunners']},
+    'Tottenham': {'twitter': ['@SpursOfficial'], 'ig': ['tottenhamhotspur'], 'reddit': ['r/coys']},
+    'Brighton': {'twitter': ['@OfficialBHAFC'], 'ig': ['brightonandhovealbion'], 'reddit': ['r/BrightonHoveAlbion']},
+    'Aston Villa': {'twitter': ['@AVFCOfficial'], 'ig': ['astonvilla'], 'reddit': ['r/avfc']},
+    'Fulham': {'twitter': ['@FulhamFC'], 'ig': ['fulhamfc'], 'reddit': ['r/Fulham']},
+    'West Ham': {'twitter': ['@WestHamUtd'], 'ig': ['westhamunited'], 'reddit': ['r/Hammers']},
+    'Everton': {'twitter': ['@Everton'], 'ig': ['everton'], 'reddit': ['r/Everton']},
+    'Leicester': {'twitter': ['@LCFC'], 'ig': ['leicestercityofficial'], 'reddit': ['r/lcfc']},
+    'Leeds': {'twitter': ['@LUFC'], 'ig': ['leedsunited'], 'reddit': ['r/LeedsUnited']},
+    'Southampton': {'twitter': ['@SouthamptonFC'], 'ig': ['southamptonfc'], 'reddit': ['r/SaintsFC']},
+    'Wolves': {'twitter': ['@Wolves'], 'ig': ['officiallwfc'], 'reddit': ['r/Wolves']},
+    'Newcastle': {'twitter': ['@NUFC'], 'ig': ['newcastleunited'], 'reddit': ['r/NUFC']},
+    'Crystal Palace': {'twitter': ['@CPFC'], 'ig': ['crystalpalaceofficial'], 'reddit': ['r/crystalpalace']},
+    'Nottingham Forest': {'twitter': ['@NFFC'], 'ig': ['nottinghamforest'], 'reddit': ['r/nffc']},
+    'Luton': {'twitter': ['@LutonTown'], 'ig': ['lutontown'], 'reddit': ['r/Lutontown']},
+    'Brentford': {'twitter': ['@BrentfordFC'], 'ig': ['brentfordfc'], 'reddit': ['r/Brentford']},
+    'Ipswich': {'twitter': ['@IpswichTown'], 'ig': ['ipswichtownfc'], 'reddit': ['r/IpswichTown']},
+
+    # La Liga
+    'Real Madrid': {'twitter': ['@realmadrid'], 'ig': ['realmadrid'], 'reddit': ['r/realmadrid']},
+    'Barcelona': {'twitter': ['@FCBarcelona'], 'ig': ['fcbarcelona'], 'reddit': ['r/Barca']},
+    'Atletico Madrid': {'twitter': ['@Atleti'], 'ig': ['atleticomadrid'], 'reddit': ['r/atletico']},
+    'Atlético Madrid': {'twitter': ['@Atleti'], 'ig': ['atleticomadrid'], 'reddit': ['r/atletico']},
+    'Valencia': {'twitter': ['@VCF'], 'ig': ['valenciacf'], 'reddit': ['r/Valencia']},
+    'Sevilla': {'twitter': ['@SevillaFC'], 'ig': ['sevillafc'], 'reddit': ['r/SevillaFC']},
+    'Villarreal': {'twitter': ['@VillarrealCF'], 'ig': ['villarrealcf'], 'reddit': ['r/Villarreal']},
+    'Betis': {'twitter': ['@RealBetis'], 'ig': ['realbetis'], 'reddit': ['r/Betis']},
+    'Sociedad': {'twitter': ['@RealSociedad'], 'ig': ['realsociedad'], 'reddit': ['r/realsociedad']},
+    'Athletic Bilbao': {'twitter': ['@AthleticClub'], 'ig': ['athleticclub'], 'reddit': ['r/AthleticClub']},
+    'Girona': {'twitter': ['@GironaFC'], 'ig': ['gironacf'], 'reddit': ['r/GironaFC']},
+
+    # Serie A
+    'Juventus': {'twitter': ['@juventusfc'], 'ig': ['juventus'], 'reddit': ['r/Juve']},
+    'Inter': {'twitter': ['@Inter'], 'ig': ['inter'], 'reddit': ['r/InterMilan']},
+    'AC Milan': {'twitter': ['@acmilan'], 'ig': ['acmilan'], 'reddit': ['r/ACMilan']},
+    'AS Roma': {'twitter': ['@ASRomaEN'], 'ig': ['asromaofficial'], 'reddit': ['r/ASRoma']},
+    'Napoli': {'twitter': ['@sscnapoli'], 'ig': ['sscnapoli'], 'reddit': ['r/SSCNapoli']},
+    'Lazio': {'twitter': ['@OfficialSSLazio'], 'ig': ['officialsslazio'], 'reddit': ['r/Lazio']},
+    'Atalanta': {'twitter': ['@Atalanta_BC'], 'ig': ['atalantabcofficial'], 'reddit': ['r/Atalanta_BC']},
+    'Fiorentina': {'twitter': ['@acffiorentina'], 'ig': ['acffiorentina'], 'reddit': ['r/Fiorentina']},
+    'Torino': {'twitter': ['@TorinoFC_1906'], 'ig': ['torinofc_1906'], 'reddit': ['r/Torino']},
+    'Bologna': {'twitter': ['@BolognaFC1909'], 'ig': ['bolognafc1909'], 'reddit': ['r/BolognaFC']},
+
+    # Bundesliga
+    'Bayern Munich': {'twitter': ['@FCBayern'], 'ig': ['fcbayern'], 'reddit': ['r/fcbayern']},
+    'Borussia Dortmund': {'twitter': ['@BlackYellow'], 'ig': ['bvb'], 'reddit': ['r/borussiadortmund']},
+    'RB Leipzig': {'twitter': ['@RBLeipzig'], 'ig': ['rbleipzig'], 'reddit': ['r/RBLeipzig']},
+    'Bayer Leverkusen': {'twitter': ['@bayer04'], 'ig': ['bayer04leverkusen'], 'reddit': ['r/Bayer04']},
+    'Schalke 04': {'twitter': ['@S04'], 'ig': ['schalke04'], 'reddit': ['r/schalke04']},
+    'Hoffenheim': {'twitter': ['@TSGHoffenheim'], 'ig': ['tsghoffenheim'], 'reddit': ['r/hoffenheim']},
+
+    # Ligue 1
+    'Paris Saint-Germain': {'twitter': ['@PSG_English'], 'ig': ['psg'], 'reddit': ['r/psg']},
+    'Marseille': {'twitter': ['@OM_Officiel'], 'ig': ['olympiquemarseille'], 'reddit': ['r/olympiquemarseille']},
+    'Monaco': {'twitter': ['@AS_Monaco'], 'ig': ['asmmonaco'], 'reddit': ['r/Monaco']},
+    'Lyonnais': {'twitter': ['@OL'], 'ig': ['ol'], 'reddit': ['r/Lyonnais']},
+
+    # MLS
+    'LA Galaxy': {'twitter': ['@LAGalaxy'], 'ig': ['lagalaxy'], 'reddit': ['r/LAGalaxy']},
+    'New York Red Bulls': {'twitter': ['@NewYorkRedBulls'], 'ig': ['newyorkredbulls'], 'reddit': ['r/NYRB']},
+    'Seattle Sounders': {'twitter': ['@SoundersFC'], 'ig': ['soundersfc'], 'reddit': ['r/SoundersFC']},
+    'LAFC': {'twitter': ['@LAFC'], 'ig': ['lafc'], 'reddit': ['r/LAFC']},
+    'Portland Timbers': {'twitter': ['@TimbersFC'], 'ig': ['portlandtimbers'], 'reddit': ['r/timbers']},
+    'San Jose Earthquakes': {'twitter': ['@SJEarthquakes'], 'ig': ['sjquakes'], 'reddit': ['r/SJEarthquakes']},
+    'Vancouver Whitecaps': {'twitter': ['@WhitecapsFC'], 'ig': ['vancouverwhitecapsfc'], 'reddit': ['r/whitecapsfc']},
+    'Toronto FC': {'twitter': ['@TorontoFC'], 'ig': ['torontofc'], 'reddit': ['r/TFC']},
+    'NYCFC': {'twitter': ['@NYCFC'], 'ig': ['nycfc'], 'reddit': ['r/NYCFC']},
+    'Inter Miami': {'twitter': ['@InterMiamiCF'], 'ig': ['intermiamiofficial'], 'reddit': ['r/InterMiami']},
+    'Columbus Crew': {'twitter': ['@ColumbusCrewSC'], 'ig': ['columbuscrewsc'], 'reddit': ['r/CrewSC']},
+    'Houston Dynamo': {'twitter': ['@HoustonDynamo'], 'ig': ['houstondynamo'], 'reddit': ['r/dynamo']},
+    'FC Dallas': {'twitter': ['@FCDallas'], 'ig': ['fcdallas'], 'reddit': ['r/fcdallas']},
+    'Minnesota United': {'twitter': ['@MNUFC'], 'ig': ['minnesotaunited'], 'reddit': ['r/Minnesota_United']},
+    'Sporting KC': {'twitter': ['@SportingKC'], 'ig': ['sportingkc'], 'reddit': ['r/SportingKC']},
+    'Real Salt Lake': {'twitter': ['@RealSaltLake'], 'ig': ['realsaltlake'], 'reddit': ['r/RealsaltLake']},
+    'Colorado Rapids': {'twitter': ['@ColoradoRapids'], 'ig': ['coloradorapids'], 'reddit': ['r/Rapids']},
+    'Chicago Fire': {'twitter': ['@ChicagoFire'], 'ig': ['chicagofire'], 'reddit': ['r/chicagofire']},
+
+    # Champions League
+    'Liverpool': {'twitter': ['@LFC'], 'ig': ['liverpoolfc'], 'reddit': ['r/LiverpoolFC']},
+    'Real Madrid': {'twitter': ['@realmadrid'], 'ig': ['realmadrid'], 'reddit': ['r/realmadrid']},
+    'Bayern Munich': {'twitter': ['@FCBayern'], 'ig': ['fcbayern'], 'reddit': ['r/fcbayern']},
+    'Barcelona': {'twitter': ['@FCBarcelona'], 'ig': ['fcbarcelona'], 'reddit': ['r/Barca']},
+    'Manchester United': {'twitter': ['@ManUtd'], 'ig': ['manchesterunited'], 'reddit': ['r/reddevils']},
+    'Manchester City': {'twitter': ['@ManCity'], 'ig': ['mancity'], 'reddit': ['r/MCFC']},
+    'Paris Saint-Germain': {'twitter': ['@PSG_English'], 'ig': ['psg'], 'reddit': ['r/psg']},
+    'Chelsea': {'twitter': ['@ChelseaFC'], 'ig': ['chelseafc'], 'reddit': ['r/chelseafc']},
+    'Ajax': {'twitter': ['@AFCAjax'], 'ig': ['afcajax'], 'reddit': ['r/Ajax']},
+    'Juventus': {'twitter': ['@juventusfc'], 'ig': ['juventus'], 'reddit': ['r/Juve']},
+
+    # NCAA Basketball
+    'Duke': {'twitter': ['@DukeBlueDevils'], 'ig': ['dukebluedevils'], 'reddit': ['r/Duke']},
+    'North Carolina': {'twitter': ['@UNC_Basketball'], 'ig': ['uncbasketball'], 'reddit': ['r/UNC']},
+    'Kentucky': {'twitter': ['@KentuckyMBB'], 'ig': ['officialkentuckymbb'], 'reddit': ['r/BBN']},
+    'Kansas': {'twitter': ['@KUHoops'], 'ig': ['kuhoops'], 'reddit': ['r/jayhawks']},
+    'Indiana': {'twitter': ['@iuhoops'], 'ig': ['iuhoops'], 'reddit': ['r/IndianaBBall']},
+    'Ohio State': {'twitter': ['@OhioStateHoops'], 'ig': ['ohiostatebuckeyes'], 'reddit': ['r/OSUBuckeyes']},
+    'Michigan': {'twitter': ['@umichhoops'], 'ig': ['umichhoops'], 'reddit': ['r/Wolverines']},
+}
+
+def get_kelly_label(units: float) -> str:
+    """Convert units to Kelly tier label."""
+    if units >= 4.5:
+        return 'MAX PLAY'
+    elif units >= 3.5:
+        return 'STRONG'
+    elif units >= 2.5:
+        return 'SOLID'
+    elif units >= 1.5:
+        return 'LEAN'
     else:
-        test_picks = [
-            {'selection':'Philadelphia Flyers +1.5','sport':'icehockey_nhl','odds':-130,'units':5.0,'book':'Caesars','home':'Minnesota Wild','away':'Philadelphia Flyers','commence':'2026-03-14T00:00:00Z','context':'Away on B2B (+1.0)','timing':'LATE'},
-            {'selection':'Chicago Blackhawks +1.5','sport':'icehockey_nhl','odds':-125,'units':5.0,'book':'BetMGM','home':'Utah Mammoth','away':'Chicago Blackhawks','commence':'2026-03-14T01:00:00Z','context':'Home bounce-back (+1.5)','timing':'LATE'},
-            {'selection':'Rutgers +11.0','sport':'basketball_ncaab','odds':-110,'units':5.0,'book':'Fanatics','home':'UCLA','away':'Rutgers','commence':'2026-03-14T01:00:00Z','context':'Away on B2B (+1.0)','timing':'LATE'},
-            {'selection':'St Louis Blues +1.5','sport':'icehockey_nhl','odds':-106,'units':4.0,'book':'BetRivers','home':'Carolina Hurricanes','away':'St Louis Blues','commence':'2026-03-13T23:00:00Z','context':'','timing':'EARLY'},
-            {'selection':'Utah Utes ML','sport':'basketball_ncaab','odds':114,'units':4.0,'book':'FanDuel','home':'Arizona Wildcats','away':'Utah Utes','commence':'2026-03-14T00:00:00Z','context':'','timing':'LATE'},
+        return 'SPRINKLE'
+
+def get_season_stats() -> dict:
+    """Query season record from graded_bets table."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        c = conn.cursor()
+        c.execute('''SELECT
+                        SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END) as wins,
+                        SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END) as losses,
+                        SUM(CASE WHEN result IN ('WIN','LOSS') THEN pnl_units ELSE 0 END) as total_profit
+                     FROM graded_bets''')
+        row = c.fetchone()
+        conn.close()
+
+        wins = row[0] or 0
+        losses = row[1] or 0
+        profit = row[2] or 0
+        total = wins + losses
+
+        win_rate = (wins / total * 100) if total > 0 else 0
+
+        return {
+            'wins': wins,
+            'losses': losses,
+            'win_rate': round(win_rate, 1),
+            'profit': round(profit, 1)
+        }
+    except Exception as e:
+        print(f"Error querying season stats: {e}")
+        return {'wins': 0, 'losses': 0, 'win_rate': 0, 'profit': 0}
+
+def _parse_teams_from_selection(selection: str) -> tuple:
+    """Parse away/home teams and pick detail from selection string.
+
+    Formats:
+      'Washington Capitals@Toronto Maple Leafs OVER 6.5' -> ('Washington Capitals', 'Toronto Maple Leafs', 'OVER 6.5')
+      'Toronto Maple Leafs -1.5' -> ('', 'Toronto Maple Leafs', '-1.5')
+      'Atlético Madrid@Barcelona OVER 3.5' -> ('Atlético Madrid', 'Barcelona', 'OVER 3.5')
+    """
+    if not selection:
+        return ('', '', '')
+
+    # Check for OVER/UNDER totals
+    for marker in [' OVER ', ' UNDER ']:
+        if marker in selection:
+            teams_part = selection[:selection.index(marker)]
+            detail = selection[selection.index(marker)+1:]
+            if '@' in teams_part:
+                away, home = teams_part.split('@', 1)
+                return (away.strip(), home.strip(), detail.strip())
+            return ('', teams_part.strip(), detail.strip())
+
+    # Check for spread (e.g., "Team -1.5" or "Team +3.0")
+    import re
+    spread_match = re.search(r'\s([+-]\d+\.?\d*)$', selection)
+    if spread_match:
+        teams_part = selection[:spread_match.start()]
+        detail = spread_match.group(1)
+        if '@' in teams_part:
+            away, home = teams_part.split('@', 1)
+            return (away.strip(), home.strip(), detail.strip())
+        return ('', teams_part.strip(), detail.strip())
+
+    # ML or unknown — just look for @
+    if '@' in selection:
+        away, home = selection.split('@', 1)
+        return (away.strip(), home.strip(), 'ML')
+
+    return ('', selection.strip(), 'ML')
+
+
+def extract_game_name(pick: dict) -> str:
+    """Extract game name from pick data."""
+    if 'game' in pick:
+        return pick['game']
+    home = pick.get('home_team', '')
+    away = pick.get('away_team', '')
+    if home and away:
+        return f"{away} vs {home}"
+    # Parse from selection
+    away_parsed, home_parsed, _ = _parse_teams_from_selection(pick.get('selection', ''))
+    if away_parsed and home_parsed:
+        return f"{away_parsed} vs {home_parsed}"
+    return pick.get('selection', 'Game')
+
+def extract_sport_label(sport: str) -> str:
+    """Map sport code to label."""
+    labels = {
+        'basketball_nba': 'NBA', 'basketball_ncaab': 'NCAAB', 'icehockey_nhl': 'NHL',
+        'baseball_mlb': 'MLB', 'baseball_ncaa': 'Baseball', 'soccer_epl': 'EPL',
+        'soccer_germany_bundesliga': 'Bundesliga', 'soccer_france_ligue_one': 'Ligue 1',
+        'soccer_italy_serie_a': 'Serie A', 'soccer_spain_la_liga': 'La Liga',
+        'soccer_usa_mls': 'MLS', 'soccer_mexico_ligamx': 'Liga MX', 'soccer_uefa_champs_league': 'UCL'
+    }
+    return labels.get(sport, sport)
+
+def get_team_accounts(team_name: str, platform: str) -> list:
+    """Get social accounts for a team on a given platform."""
+    if team_name in TEAM_SOCIALS:
+        return TEAM_SOCIALS[team_name].get(platform, [])
+    return []
+
+def generate_engagement_comments(picks: list) -> list:
+    """
+    Generate platform-specific engagement comments for each pick.
+
+    Args:
+        picks: List of pick dicts with keys: selection, sport, market_type, odds, units,
+               edge_pct, context_factors, home_team, away_team
+
+    Returns:
+        List of comment dicts with platform, target, target_type, comment, game, pick, sport
+    """
+    stats = get_season_stats()
+    W = stats['wins']
+    L = stats['losses']
+    WR = stats['win_rate']
+    profit = stats['profit']
+
+    comments = []
+
+    # Betting media targets (Twitter removed — account suspended April 2026)
+    betting_targets = {
+        'ig': [
+            {'handle': 'actionnetworkhq', 'name': 'Action Network'},
+            {'handle': 'barstoolsports', 'name': 'Barstool Sports'}
+        ],
+        'reddit': [
+            {'subreddit': 'r/sportsbetting', 'name': 'r/sportsbetting'},
+            {'subreddit': 'r/sportsbook', 'name': 'r/sportsbook'}
         ]
-        generate_card_image(test_picks)
+    }
+
+    # Player → team mapping for prop bets
+    # Maps player last names to their team's key in TEAM_SOCIALS
+    PLAYER_TEAMS = {
+        # NBA
+        'Alexander-Walker': 'Hawks', 'Edwards': 'Timberwolves', 'Gobert': 'Timberwolves',
+        'Jokic': 'Nuggets', 'Murray': 'Nuggets', 'Tatum': 'Celtics', 'Brown': 'Celtics',
+        'Curry': 'Warriors', 'Doncic': 'Mavericks', 'Irving': 'Mavericks',
+        'LeBron': 'Lakers', 'James': 'Lakers', 'Davis': 'Lakers',
+        'Antetokounmpo': 'Bucks', 'Embiid': '76ers', 'Maxey': '76ers',
+        'Brunson': 'Knicks', 'Hart': 'Knicks', 'Towns': 'Knicks',
+        'Butler': 'Heat', 'Morant': 'Grizzlies', 'Mitchell': 'Cavaliers',
+        'Booker': 'Suns', 'Durant': 'Suns', 'Fox': 'Kings',
+        'Haliburton': 'Pacers', 'Wembanyama': 'Spurs', 'SGA': 'Thunder',
+        'Gilgeous-Alexander': 'Thunder', 'LaVine': 'Bulls', 'DeRozan': 'Kings',
+        'Young': 'Hawks', 'Lillard': 'Bucks', 'George': '76ers',
+        # MLB — pitchers and hitters
+        'Lorenzen': 'Rockies', 'Gorman': 'Cardinals', 'Abrams': 'Nationals',
+        'Ohtani': 'Dodgers', 'Judge': 'Yankees', 'Soto': 'Mets',
+        'Acuna': 'Braves', 'Tatis': 'Padres', 'Betts': 'Dodgers',
+        'Freeman': 'Dodgers', 'Trout': 'Angels', 'Harper': 'Phillies',
+        'Lindor': 'Mets', 'Turner': 'Mariners', 'Machado': 'Padres',
+        'Alvarez': 'Astros', 'Tucker': 'Astros', 'Arenado': 'Cardinals',
+        'Goldschmidt': 'Cardinals', 'Devers': 'Red Sox', 'Ramirez': 'Guardians',
+        'Stanton': 'Yankees', 'Cole': 'Yankees', 'deGrom': 'Rangers',
+        'Verlander': 'Mets', 'Scherzer': 'Rangers', 'Wheeler': 'Phillies',
+        'Bieber': 'Guardians', 'Alcantara': 'Marlins', 'Musgrove': 'Padres',
+        # NHL
+        'McDavid': 'Oilers', 'Draisaitl': 'Oilers', 'MacKinnon': 'Avalanche',
+        'Matthews': 'Maple Leafs', 'Marner': 'Maple Leafs', 'Ovechkin': 'Capitals',
+        'Kucherov': 'Lightning', 'Pastrnak': 'Bruins', 'Bedard': 'Blackhawks',
+    }
+
+    def _find_player_team(selection: str) -> str:
+        """Find team for a prop bet player from selection string like 'Nickeil Alexander-Walker OVER 3.5 THREES'."""
+        # Try matching player last name against PLAYER_TEAMS
+        parts = selection.split()
+        for i in range(len(parts)):
+            if parts[i].upper() in ('OVER', 'UNDER'):
+                # Everything before OVER/UNDER is the player name
+                player_parts = parts[:i]
+                # Try last name, then hyphenated name, then full multi-word
+                for j in range(len(player_parts)):
+                    candidate = ' '.join(player_parts[j:])
+                    if candidate in PLAYER_TEAMS:
+                        return PLAYER_TEAMS[candidate]
+                # Try just the last word
+                if player_parts and player_parts[-1] in PLAYER_TEAMS:
+                    return PLAYER_TEAMS[player_parts[-1]]
+                break
+        return ''
+
+    for pick in picks:
+        market_type = pick.get('market_type', 'ML')
+        selection = pick.get('selection', '')
+        sport = pick.get('sport', '')
+        odds = pick.get('odds', 0)
+        units = pick.get('units', 0)
+        edge = pick.get('edge_pct', 0)
+        raw_context = pick.get('context_factors', '') or ''
+        # Clean up context — strip [SHADOW] prefix and pick the first factor
+        context = raw_context.replace('[SHADOW] ', '').split('|')[0].strip() if raw_context else 'Strong model edge'
+        if not context:
+            context = 'Strong model edge'
+
+        is_prop = (market_type == 'PROP')
+        sport_label = extract_sport_label(sport)
+        kelly_tier = get_kelly_label(units)
+
+        if is_prop:
+            # Props: selection = "Player Name OVER X.X STAT"
+            pick_str = selection  # Full selection is the pick string
+            player_team = _find_player_team(selection)
+            game_name = selection  # Use full selection as game context
+
+            # Odds formatting
+            odds_str = f"{odds:+.0f}" if odds else "EV"
+
+            # Target the player's team accounts only (+ betting media)
+            teams_to_target = []
+            if player_team:
+                if player_team in TEAM_SOCIALS:
+                    teams_to_target.append(player_team)
+                else:
+                    for key in TEAM_SOCIALS:
+                        if key.endswith(player_team) or player_team.endswith(key.split()[-1]):
+                            teams_to_target.append(key)
+                            break
+        else:
+            # Game picks: parse teams from selection
+            away_team, home_team, pick_detail = _parse_teams_from_selection(selection)
+            game_name = extract_game_name(pick)
+
+            # Format pick string
+            if market_type == 'TOTAL' and pick_detail:
+                pick_str = pick_detail
+            elif market_type == 'SPREAD' and pick_detail:
+                team_short = home_team.split()[-1] if home_team else selection.split()[0]
+                pick_str = f"{team_short} {pick_detail}"
+            else:
+                team_short = home_team.split()[-1] if home_team else (selection.split()[0] if selection else 'ML')
+                pick_str = f"{team_short} ML"
+
+            # Odds formatting
+            odds_str = f"{odds:+.0f}" if odds else "EV"
+
+            # Team accounts to target
+            teams_to_target = []
+            for team_name in [home_team, away_team]:
+                if not team_name:
+                    continue
+                if team_name in TEAM_SOCIALS:
+                    teams_to_target.append(team_name)
+                    continue
+                for key in TEAM_SOCIALS:
+                    if team_name.endswith(key) or key.endswith(team_name.split()[-1]):
+                        teams_to_target.append(key)
+                        break
+
+        # Generate comments for each platform (Twitter removed — account suspended)
+        for platform in ['ig', 'reddit']:
+            # ─────────────────────────────────────────────────────────────
+            # TEAM ACCOUNTS
+            # ─────────────────────────────────────────────────────────────
+            for team in teams_to_target:
+                accounts = get_team_accounts(team, platform)
+                for account in accounts:
+                    target = account
+                    if is_prop:
+                        if platform == 'ig':
+                            comment = f"Model has {pick_str} ({odds_str}) as a strong edge tonight. {edge:.0f}% over the market. {W}W-{L}L ({WR}%) this season, all graded"
+                        else:  # reddit
+                            comment = f"I run a data model that tracks edges across the market. {pick_str} ({odds_str}) is flagging — {edge:.0f}% edge over the market line.\n\nSeason record: {W}W-{L}L ({WR}%) | {profit}u. Every pick is tracked and graded publicly."
+                    else:
+                        if platform == 'ig':
+                            comment = f"Big spot tonight. Our model has {pick_str} ({odds_str}) as one of the best edges on the board. {context}. {W}W-{L}L ({WR}%) this season, all tracked and graded"
+                        else:  # reddit
+                            comment = f"I run a data model that tracks edges across the market. For tonight's game, {pick_str} ({odds_str}) is flagging as one of the stronger plays — {edge:.0f}% edge over the market line.\n\nKey factor: {context}\n\nSeason record: {W}W-{L}L ({WR}%) | {profit}u. Every pick is tracked and graded publicly. Not trying to sell anything — just sharing the model's output."
+
+                    comments.append({
+                        'platform': platform,
+                        'target': target,
+                        'target_type': 'team',
+                        'comment': comment,
+                        'game': game_name,
+                        'pick': pick_str,
+                        'sport': sport_label
+                    })
+
+            # ─────────────────────────────────────────────────────────────
+            # BETTING MEDIA ACCOUNTS
+            # ─────────────────────────────────────────────────────────────
+            for media in betting_targets[platform]:
+                if is_prop:
+                    if platform == 'ig':
+                        target = media['handle']
+                        comment = f"Model flags {pick_str} ({odds_str}) — {edge:.0f}% edge. Running {W}W-{L}L ({WR}%) this season with everything tracked"
+                    else:  # reddit
+                        target = media['subreddit']
+                        comment = f"**{pick_str}** ({odds_str}) — {units}u ({kelly_tier})\n\nModel sees {edge:.0f}% edge here.\n\nSeason: {W}W-{L}L ({WR}%) | {profit}u, all picks tracked and graded. Full card on the IG (@scottys_edge) or Discord (discord.gg/JQ6rRfuN)."
+                else:
+                    if platform == 'ig':
+                        target = media['handle']
+                        comment = f"Model flags {pick_str} ({odds_str}) — {edge:.0f}% edge. {context}. Running {W}W-{L}L ({WR}%) this season with everything tracked"
+                    else:  # reddit
+                        target = media['subreddit']
+                        comment = f"**{pick_str}** ({odds_str}) — {units}u ({kelly_tier})\n\nModel sees {edge:.0f}% edge here. {context}.\n\nSeason: {W}W-{L}L ({WR}%) | {profit}u, all picks tracked and graded. Full card on the IG (@scottys_edge) or Discord (discord.gg/JQ6rRfuN)."
+
+                comments.append({
+                    'platform': platform,
+                    'target': target,
+                    'target_type': 'betting',
+                    'comment': comment,
+                    'game': game_name,
+                    'pick': pick_str,
+                    'sport': sport_label
+                })
+
+    # Write to JSON
+    output_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'cowork_comments.json')
+    output_data = {
+        'generated_at': datetime.now().isoformat(),
+        'total_comments': len(comments),
+        'by_platform': {
+            'ig': len([c for c in comments if c['platform'] == 'ig']),
+            'reddit': len([c for c in comments if c['platform'] == 'reddit'])
+        },
+        'comments': comments
+    }
+
+    try:
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, 'w') as f:
+            json.dump(output_data, f, indent=2)
+    except Exception as e:
+        print(f"Error writing comments to {output_path}: {e}")
+
+    return comments
