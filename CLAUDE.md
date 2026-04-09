@@ -52,7 +52,7 @@ betting_model/
     elo_engine.py                   # Elo ratings from game results
     odds_api.py                     # The Odds API interface
     emailer.py                      # Gmail SMTP (picks, grades, captions, alerts)
-    social_media.py                 # Discord webhook + Twitter/X
+    social_media.py                 # Discord webhook + Instagram
     card_image.py                   # Instagram PNG cards (2160x2700, @2x retina)
     player_prop_model.py            # Own-projection prop engine (box score based)
     props_engine.py                 # Cross-book prop disagreement engine
@@ -62,7 +62,8 @@ betting_model/
     ncaa_scores.py                  # NCAA.com scraper (backup for college scores)
     weather_engine.py               # OpenWeatherMap for outdoor totals
     referee_engine.py               # Official tendency tracking
-    line_tracker.py                 # Intraday line movement snapshots
+    # line_tracker.py              # Archived — replaced by hourly pipeline
+    # agent_odds_monitor.py        # Archived — replaced by hourly pipeline
     agent_verify.py                 # Grade integrity verification (6 checks)
     agent_analyst.py                # Post-grade morning briefing
     agent_sport_review.py           # Per-sport health cards
@@ -139,6 +140,11 @@ SQLite at `data/betting_model.db`. Key tables:
 8. **Always backtest parameter changes** against all historical picks before recommending.
 9. **Separate pre/post-rebuild results** when analyzing performance. Pre-rebuild losses are NOT the current model.
 10. **NY legal books only** for recommendations: DraftKings, FanDuel, BetMGM, Caesars, BetRivers, ESPN BET, PointsBet, Fanatics.
+11. **Same-event prop cap:** Max 1 prop per event_id. Enforced in both player_prop_model.py and main.py (PROP_EVENT_CAP).
+12. **Soccer direction gate:** Raw model total must agree with bet direction before context can push it over the line. Prevents pace context from overriding the model.
+13. **Prop CLV:** Fetch window stays at 3hrs for new picks, but always fetches for events with pending prop bets (for closing line data). Without this, prop CLV is stale.
+14. **Twitter/X removed:** Account permanently suspended April 2026. All posting code removed from social_media.py. Discord + Instagram only.
+15. **No auto-post to IG from pipeline** unless it's the standard run flow. User can ask Claude to post Reels manually.
 
 ## Daily Schedule (Windows Task Scheduler)
 
