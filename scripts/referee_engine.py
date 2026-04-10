@@ -80,8 +80,8 @@ def _fetch_json(url):
     req = Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     for attempt in range(3):
         try:
-            resp = urlopen(req, timeout=15)
-            return json.loads(resp.read().decode())
+            with urlopen(req, timeout=15) as resp:
+                return json.loads(resp.read().decode())
         except (URLError, HTTPError, Exception) as e:
             if attempt < 2:
                 time.sleep(1)

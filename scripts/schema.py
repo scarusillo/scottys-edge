@@ -346,7 +346,7 @@ def create_db():
         ('MIN_EDGE_SPREAD', '3.0'),         # Minimum edge % to flag a bet
         ('MIN_EDGE_ML', '5.0'),
         ('MIN_EDGE_PROP', '4.0'),
-        ('KELLY_FRACTION', '0.25'),
+        ('KELLY_FRACTION', '0.125'),
         ('MAX_UNITS', '3.0'),
     ]
     c.executemany("INSERT OR IGNORE INTO settings VALUES (?,?)", default_settings)

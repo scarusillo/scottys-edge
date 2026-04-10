@@ -91,8 +91,8 @@ def _fetch_espn_standings(slug, verbose=True):
         'Accept': 'application/json',
     })
     try:
-        resp = urlopen(req, timeout=20)
-        data = json.loads(resp.read().decode())
+        with urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode())
         return data
     except (URLError, HTTPError) as e:
         if verbose:

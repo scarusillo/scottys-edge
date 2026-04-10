@@ -17,7 +17,6 @@ Usage:
 import sqlite3, json, re, sys, os, time
 from datetime import datetime, timedelta
 from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 
@@ -55,8 +54,8 @@ def _fetch_ncaa_json(sport, date_str):
         'Accept': 'application/json',
     })
     try:
-        resp = urlopen(req, timeout=15)
-        data = json.loads(resp.read().decode())
+        with urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode())
         return data
     except Exception as e:
         print(f"  ⚠ NCAA JSON fetch error for {sport} {date_str}: {e}")
@@ -77,8 +76,8 @@ def _fetch_ncaa_html(sport, date_str):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     })
     try:
-        resp = urlopen(req, timeout=15)
-        return resp.read().decode()
+        with urlopen(req, timeout=15) as resp:
+            return resp.read().decode()
     except Exception as e:
         print(f"  ⚠ NCAA HTML fetch error for {sport} {date_str}: {e}")
         return None

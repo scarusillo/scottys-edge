@@ -642,8 +642,8 @@ def blended_spread(home, away, elo_ratings, market_ratings, sport, conn, neutral
     This is the KEY function — it creates a spread prediction that's
     partly independent of the market, which is where edges come from.
     """
-    from model_engine import compute_model_spread, SPORT_CONFIG
-    
+    from model_engine import compute_model_spread
+
     elo_spread = elo_predicted_spread(home, away, elo_ratings, sport, neutral_site=neutral_site)
     market_spread = compute_model_spread(home, away, market_ratings, sport)
     

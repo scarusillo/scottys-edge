@@ -1808,7 +1808,7 @@ def daily_grade_and_report(conn=None):
     # leaving power ratings stale since bootstrap (Feb 27). Now we process
     # all completed games from the last 3 days to keep ratings current.
     try:
-        from model_engine import update_ratings_post_game, SPORT_CONFIG
+        from model_engine import update_ratings_post_game
         rated_sports = ['basketball_nba', 'basketball_ncaab', 'icehockey_nhl',
                         'baseball_ncaa', 'soccer_epl', 'soccer_italy_serie_a',
                         'soccer_spain_la_liga', 'soccer_germany_bundesliga',
