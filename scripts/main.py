@@ -1915,19 +1915,20 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             if 'baseball' not in sport and 'hockey' not in sport and 'tennis' not in sport:
                 min_edge += 5.0
 
-        # ── Friday surcharge: college baseball ──
-        # Data: Friday college baseball is 3W-7L, -24u. First game of weekend
-        # series — pitching rotations and lineups are least predictable.
-        # Aces pitch Fridays but markets already price that; the real issue is
-        # lineup uncertainty and early-season roster flux.
-        # +3% edge requirement filters marginal Friday plays.
-        if sport == 'baseball_ncaa' and datetime.now().strftime('%A') == 'Friday':
-            min_edge += 3.0
-            # Tag context so it's traceable in graded_bets
-            _existing_ctx = p.get('context', '')
-            _fri_tag = 'Fri series-opener surcharge (+3%)'
-            if _fri_tag not in _existing_ctx:
-                p['context'] = f"{_existing_ctx} | {_fri_tag}" if _existing_ctx else _fri_tag
+        # v25.6 (4/10/2026): Friday surcharge REMOVED.
+        # The v21 surcharge added +3% to min_edge on Fridays based on a
+        # 3W-7L early sample (-24u). But the model edge cap is 20%, so
+        # min_edge=23% is mathematically IMPOSSIBLE to satisfy. The
+        # surcharge silently killed 100% of NCAA baseball Friday picks.
+        # 14-day backtest of 257 NCAA games (v25.4) showed Friday UNDERs
+        # at 38-20 (66% win rate, +51.9u) — Friday is actually the BEST
+        # UNDER day, not the worst. The original 3W-7L data was a small
+        # sample mirage.
+        # Verified 4/10 Friday: 7 OVERs + 4 UNDERs all at edge=17-20%,
+        # all blocked by required=23%. Removing the surcharge unblocks
+        # them. The v25.4 removal of the v22 outright Friday block was
+        # incomplete because this surcharge was a SECOND Friday filter
+        # I didn't know about.
 
         # v25: MLB midweek gate REMOVED. The -0.5 DOW adjustment in pitcher_scraper
         # was inflating edges on midweek games, then the gate blocked them all.
