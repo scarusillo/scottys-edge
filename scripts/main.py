@@ -11,17 +11,12 @@ COMMANDS:
   python main.py run                    Full pipeline (all sports)
   python main.py run --sport nba        Single sport
   python main.py run --email            Run + email results
-  python main.py run --twitter          Run + generate Twitter thread + visual card
-  python main.py run --email --twitter  Run + email + Twitter (full pipeline)
   python main.py opener                 Capture opening lines (for CLV)
   python main.py opener --email         Opener + email confirmation
   python main.py predict                Model only (FREE, no odds fetch)
   python main.py props                  Fetch + evaluate player props
   python main.py grade                  Grade yesterday's bets + CLV
   python main.py grade --email          Grade + email report
-  python main.py grade --twitter        Grade + generate results thread
-  python main.py twitter                Generate Twitter thread from today's picks
-  python main.py twitter --results      Generate results thread from graded bets
   python main.py report                 7-day performance
   python main.py report --days 30       30-day performance
   python main.py injuries               Scrape ESPN injuries (FREE)
@@ -874,26 +869,17 @@ def cmd_run(args):
                 print("  ❌ EMAIL FAILED — picks were saved but not delivered. Check GMAIL_APP_PASSWORD env var.")
 
             # Separate caption email (plain text, copyable from phone)
+            # v25.3: Twitter caption + threads removed — account suspended April 2026.
             try:
-                from card_image import generate_caption, generate_pick_writeups, generate_thread
+                from card_image import generate_caption, generate_pick_writeups
                 ig_caption = generate_caption(all_picks)
                 if ig_caption:
-                    tw_caption = ig_caption.split("\n")[0]
-                    tw_caption += f"\n\n{len([p for p in all_picks if p.get('units',0)>=4.5])} plays locked in. Every pick tracked."
-                    tw_caption += "\n\n#ScottysEdge #SportsBetting"
-
                     # Per-pick write-ups for engagement posts
                     writeups = generate_pick_writeups(all_picks)
 
                     caption_text = "INSTAGRAM CAPTION:\n" + "="*40 + "\n" + ig_caption
-                    caption_text += "\n\n" + "TWITTER CAPTION:\n" + "="*40 + "\n" + tw_caption
                     if writeups:
                         caption_text += "\n\n" + "INDIVIDUAL PICK POSTS (copy-paste for engagement):\n" + "="*40 + writeups
-
-                    # Twitter threads — multi-tweet deep analysis per pick
-                    thread_text = generate_thread(all_picks)
-                    if thread_text:
-                        caption_text += "\n\n" + "TWITTER THREADS (copy-paste each tweet separately):\n" + "="*40 + thread_text
 
                     # v17: Growth playbook — accounts to engage, ready-to-post content
                     _season = conn.execute("""
@@ -934,6 +920,8 @@ def cmd_run(args):
                         _reddit_body += "---\nPost in: r/sportsbetting (standalone), r/sportsbook (daily thread comment)"
                         caption_text += "\n\n" + "REDDIT POST (r/sportsbetting):\n" + "="*40 + "\n" + _reddit_body
 
+                    # v25.3: Twitter sections removed from growth playbook —
+                    # @Scottys_Edge suspended April 2026. IG + Discord + Reddit only.
                     growth_section = f"""
 
 GROWTH PLAYBOOK
@@ -941,43 +929,13 @@ GROWTH PLAYBOOK
 
 ACCOUNTS TO TAG (on your image, not caption):
   IG: @actionnetworkhq @baborofficial @bettingcappers @vegasinsider
-  Twitter: @ActionNetworkHQ @BettingPros @covers @PrizePicks @br_betting
 
 ACCOUNTS TO COMMENT ON (within 30 min of their posts):
   @ActionNetworkHQ @ESPNBet @BleacherReport — reply with your model's take
 
-READY-TO-TWEET (copy-paste):
-{'='*40}
-
-Tweet 1 (Free pick — post BEFORE games start):
-Today's free MAX PLAY: {_bp_sel} {_bp_odds}
-
-{_sw}W-{_sl}L ({_wr:.0f}%) | {_sp:+.0f}u on the season. Every pick tracked.
-
-Full card in bio.
-
-#SportsBetting #FreePicks #BettingTwitter
-
-Tweet 2 (Quote-tweet a big account's game preview):
-Our model has {_bp_sel} as the biggest edge on the board tonight.
-
-{_sw}W-{_sl}L this season. Data-driven, no gut picks.
-
-Tweet 3 (Engagement — reply to injury/line news):
-This is exactly why we have {_bp_sel} today. The model saw this edge before the line moved.
-
-{_sw}W-{_sl}L season. Link in bio.
-
-COMMENT TEMPLATE (for big account posts):
-{'='*40}
-"Our model agrees — [their pick] is the play. {_sw}W-{_sl}L on the season, all tracked."
-"Model disagrees here — we have {_bp_sel} as the value side. {_wr:.0f}% win rate this season."
-
 TONIGHT'S CHECKLIST:
 {'='*40}
 [ ] Post picks card to IG feed + story (tag 4 accounts ON image)
-[ ] Tweet free MAX PLAY (Tweet 1 above)
-[ ] Quote-tweet 1 big account with your take (Tweet 2)
 [ ] Comment on 2 big account posts (within 30 min)
 [ ] After wins hit: post results card + "Called it" story
 """
@@ -1076,7 +1034,7 @@ TONIGHT'S CHECKLIST:
 
     _log.info(f"Step 9: Email {'sent' if do_email else 'skipped'}")
 
-    # Step 9c: Auto-post to Discord + Twitter + Instagram
+    # Step 9c: Auto-post to Discord + Instagram (Twitter removed v25.3)
     if all_picks:
         try:
             from social_media import post_picks_social
@@ -1093,17 +1051,8 @@ TONIGHT'S CHECKLIST:
         except Exception as e:
             print(f"  Instagram: {e}")
 
-    # Step 10: Twitter/X content
-    do_twitter = has_flag(args, '--twitter')
-    if do_twitter:
-        print("\n🐦 Step 10: Generating Twitter content...")
-        if all_picks:
-            from tweet_formatter import generate_tweet_thread, copy_thread_to_clipboard, save_card
-            tweets = generate_tweet_thread(all_picks)
-            copy_thread_to_clipboard(tweets)
-            save_card(all_picks)
-        else:
-            print("  No picks to format.")
+    # v25.3: Step 10 (Twitter/X content) removed — @Scottys_Edge account
+    # permanently suspended April 2026. Discord + Instagram only.
 
     conn.close()
     _log.info(f"=== {run_type} Run END | {len(all_picks)} picks ===")
@@ -1656,8 +1605,8 @@ def _generate_results_html(report_text):
 
 def _social_media_card(picks):
     """
-    Generate copy-paste ready social media content.
-    Twitter tweets are individually labeled and guaranteed under 280 chars.
+    Generate copy-paste ready social media content for Instagram + Discord.
+    v25.3: Twitter format removed — @Scottys_Edge suspended April 2026.
     """
     from datetime import datetime, timedelta
     from model_engine import _to_eastern, _eastern_tz_label, kelly_label
@@ -1674,52 +1623,9 @@ def _social_media_card(picks):
     lines.append("=" * 50)
     lines.append("📱 SOCIAL MEDIA — COPY & PASTE BELOW")
     lines.append("=" * 50)
-    
-    # ── TWITTER FORMAT — split into 280-char tweets ──
-    lines.append("")
-    lines.append("── TWITTER/X (copy each tweet separately) ──")
-    
-    tu = sum(p['units'] for p in picks)
-    footer = f"\n{len(picks)} plays • {tu:.0f}u\n⚠️ Not gambling advice • 21+\n#ScottysEdge"
-    
-    header = f"🎯 Scotty's Edge — {day_str} {date_str}\n\n"
-    
-    # Build pick lines
-    pick_lines = []
-    for p in picks:
-        kl = kelly_label(p['units'])
-        odds_str = f"{p['odds']:+.0f}" if p['odds'] else ''
-        tier = '🔥' if kl == 'MAX PLAY' else '⭐'
-        pick_lines.append(f"{tier} {p['selection']} ({odds_str}) {p['units']:.0f}u")
-    
-    # Greedily fit picks into tweets under 280 chars
-    tweets = []
-    current = header
-    for i, pl in enumerate(pick_lines):
-        test = current + pl + "\n"
-        # Check if this is the last pick — need room for footer
-        remaining = pick_lines[i+1:] if i+1 < len(pick_lines) else []
-        if not remaining:
-            # Last pick — add footer
-            if len(test + footer) <= 280:
-                current = test + footer
-            else:
-                tweets.append(current.strip())
-                current = pl + "\n" + footer
-        elif len(test) > 250:
-            # Getting close to limit, start new tweet
-            tweets.append(current.strip())
-            current = pl + "\n"
-        else:
-            current = test
-    tweets.append(current.strip())
-    
-    for i, tweet in enumerate(tweets):
-        lines.append("")
-        label = "TWEET 1 (main)" if i == 0 else f"REPLY {i+1}"
-        lines.append(f"── {label} ({len(tweet)}/280 chars) ──")
-        lines.append(tweet)
-    
+
+    # v25.3: Twitter/X format removed — @Scottys_Edge suspended April 2026.
+
     # ── INSTAGRAM / DISCORD FORMAT (visual) ──
     lines.append("")
     lines.append("── INSTAGRAM / DISCORD ──")
@@ -2236,6 +2142,21 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                 if _pitch_conflicts: _conflict_type.append('pitching')
                 if _pace_unsupported and not _pitch_conflicts: _conflict_type.append('no pitching support')
                 print(f"    ⚠ BLOCKED: {sel[:50]} — signal conflict ({', '.join(_conflict_type)} vs bet side)")
+                # v25.3: log to shadow_blocked_picks for observability
+                try:
+                    _gate_name = 'PITCHING_GATE' if _strong_pitch else 'PACE_GATE'
+                    conn.execute("""INSERT INTO shadow_blocked_picks
+                        (created_at, sport, event_id, selection, market_type, book,
+                         line, odds, edge_pct, units, reason)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (datetime.now().isoformat(), p.get('sport',''), p.get('event_id',''),
+                         p.get('selection',''), p.get('market_type',''), p.get('book',''),
+                         p.get('line'), p.get('odds'), p.get('edge_pct', 0),
+                         p.get('units', 0),
+                         f"{_gate_name} (signal conflict: {', '.join(_conflict_type)})"))
+                    conn.commit()
+                except Exception:
+                    pass
                 return False
 
         # ── CLV-aware filter ──
@@ -3071,7 +2992,7 @@ def cmd_grade(args):
             elif 'hockey' in sp: _sport_counts['nhl'] = _sport_counts.get('nhl', 0) + 1
             elif 'baseball' in sp: _sport_counts['baseball'] = _sport_counts.get('baseball', 0) + 1
             elif 'soccer' in sp: _sport_counts['soccer'] = _sport_counts.get('soccer', 0) + 1
-        # Build sport-aware hashtags
+        # Build sport-aware hashtags (IG only — Twitter removed v25.3)
         _sport_ig = {
             'nba': ['#NBA', '#NBABets', '#NBAPicksToday'],
             'ncaab': ['#CBB', '#CollegeBasketball', '#MarchMadness'],
@@ -3079,36 +3000,22 @@ def cmd_grade(args):
             'baseball': ['#CollegeBaseball', '#NCAACWS', '#BaseballBets'],
             'soccer': ['#Soccer', '#SoccerBets', '#FootballBets'],
         }
-        _sport_tw = {
-            'nba': ['#NBA', '#NBABets'],
-            'ncaab': ['#CBB', '#MarchMadness'],
-            'nhl': ['#NHL', '#NHLBets'],
-            'baseball': ['#CollegeBaseball', '#BaseballBets'],
-            'soccer': ['#Soccer', '#SoccerBets'],
-        }
         # March Madness override for NCAAB in March/early April
         _now_m = datetime.now().month
         _now_d = datetime.now().day
         _is_march_madness = 'ncaab' in _sport_counts and (_now_m == 3 or (_now_m == 4 and _now_d <= 7))
         if _is_march_madness:
             _sport_ig['ncaab'] = ['#MarchMadness', '#CollegeBasketball', '#CBBPicks']
-            _sport_tw['ncaab'] = ['#MarchMadness', '#CBB']
         # Sort sports by frequency, pick top 2
         _top_sports = sorted(_sport_counts, key=_sport_counts.get, reverse=True)[:2]
         _ig_sport_tags = []
-        _tw_sport_tags = []
         for s in _top_sports:
             _ig_sport_tags.extend(_sport_ig.get(s, []))
-            _tw_sport_tags.extend(_sport_tw.get(s, []))
         # Dedupe while preserving order
         _ig_sport_tags = list(dict.fromkeys(_ig_sport_tags))
-        _tw_sport_tags = list(dict.fromkeys(_tw_sport_tags))
         # IG: core discoverable tags + up to 4 sport tags + community (max ~10)
         _ig_hashtags = ['#SportsBetting', '#BettingPicks', '#FreePicks', '#GamblingTwitter'] + _ig_sport_tags[:4] + ['#BettingCommunity', '#PicksOfTheDay']
         _ig_hashtags = list(dict.fromkeys(_ig_hashtags))
-        # Twitter: keep it tight — 3-4 discoverable tags + sport tags (max ~5)
-        _tw_hashtags = ['#SportsBetting', '#FreePicks'] + _tw_sport_tags[:3] + ['#GamblingX']
-        _tw_hashtags = list(dict.fromkeys(_tw_hashtags))
         # Build sport emojis
         _emoji_map = {'nba': '\U0001f3c0', 'ncaab': '\U0001f3c0', 'nhl': '\U0001f3d2', 'baseball': '\u26be', 'soccer': '\u26bd'}
         _sport_emojis = ''.join(dict.fromkeys(_emoji_map.get(s, '') for s in _top_sports))
@@ -3123,16 +3030,12 @@ def cmd_grade(args):
         ig += "\n".join(_lines)
         ig += f"\n\nSeason: {_tw}W-{_tl}L | {_tp:+.1f}u | {_twp:.1f}%"
         ig += "\nEvery pick tracked & graded \U0001f4ca"
+        if _yp < 0:
+            ig += "\n\nIt's all part of the game."
         ig += "\n\n\u26a0\ufe0f Not gambling advice \u2022 21+ \u2022 1-800-GAMBLER"
-        ig += f"\n\nFollow for daily picks:\n\U0001f4f1 IG: @scottys_edge\n\U0001f426 X: @Scottys_edge\n\U0001f4ac Discord: discord.gg/JQ6rRfuN\n\n{' '.join(_ig_hashtags)}"
-        tw = f"{_sport_emojis} Scotty's Edge \u2014 {_date_str}\n\n"
-        tw += f"{_yw}W-{_yl}L | {_yp:+.1f}u"
-        if _yp >= 10: tw += " \U0001f525"
-        tw += f"\n\n{verdict}"
-        tw += f"\n\nSeason: {_tw}W-{_tl}L | {_tp:+.1f}u | {_twp:.1f}%"
-        tw += "\nEvery pick tracked. Every loss shown. \U0001f4ca"
-        tw += f"\n\n\U0001f4f1 @scottys_edge | \U0001f426 @Scottys_edge\n\n{' '.join(_tw_hashtags)}"
-        results_caption = "INSTAGRAM CAPTION:\n" + "="*40 + "\n" + ig + "\n\n" + "TWITTER CAPTION:\n" + "="*40 + "\n" + tw
+        ig += f"\n\nFollow for daily picks:\n\U0001f4f1 IG: @scottys_edge\n\U0001f4ac Discord: discord.gg/JQ6rRfuN\n\n{' '.join(_ig_hashtags)}"
+        # v25.3: Twitter caption block removed — @Scottys_Edge suspended April 2026.
+        results_caption = "INSTAGRAM CAPTION:\n" + "="*40 + "\n" + ig
         print("  Captions generated")
     except Exception as e:
         print(f"  Captions: {e}")
@@ -3399,14 +3302,7 @@ def cmd_grade(args):
     except Exception as e:
         print(f"  DB upload: {e}")
 
-    do_twitter = has_flag(args, '--twitter')
-    if do_twitter:
-        print("\n🐦 Generating results thread...")
-        try:
-            from tweet_formatter import results_from_db
-            results_from_db(days_back=2)
-        except Exception as e:
-            print(f"  Twitter results: {e}")
+    # v25.3: Twitter results thread removed — account suspended April 2026.
 
 
 def cmd_run_soccer(args):
@@ -3636,13 +3532,8 @@ def cmd_backtest(args):
     run_all_backtests(sports=sports, min_edge=min_edge)
 
 
-def cmd_twitter(args):
-    """Generate Twitter content from today's picks or results."""
-    from tweet_formatter import twitter_from_db, results_from_db
-    if '--results' in args:
-        results_from_db()
-    else:
-        twitter_from_db()
+# v25.3: cmd_twitter() removed — @Scottys_Edge account suspended April 2026.
+# tweet_formatter.py archived to scripts/archive/.
 
 
 COMMANDS = {
@@ -3653,7 +3544,7 @@ COMMANDS = {
     'run-soccer': cmd_run_soccer,
     'budget': cmd_budget, 'log': cmd_log, 'setup-scheduler': cmd_setup_scheduler,
     'historical': cmd_historical, 'elo': cmd_elo, 'fix-names': cmd_fix_names,
-    'backtest': cmd_backtest, 'twitter': cmd_twitter,
+    'backtest': cmd_backtest,
 }
 
 def main():

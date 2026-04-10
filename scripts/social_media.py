@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
 """
-SOCIAL MEDIA AUTOMATION — Discord + Twitter/X
+SOCIAL MEDIA AUTOMATION — Discord + Instagram
 
-Auto-posts picks to Discord via webhook and Twitter via API.
+Auto-posts picks to Discord via webhook and Instagram via instagrapi.
 Integrated into main.py run pipeline.
 
 Discord: Free, uses webhooks (no approval needed)
-Twitter: Requires developer API keys (free tier = 1,500 tweets/month)
 Instagram: Auto-post via instagrapi (set IG_USERNAME + IG_PASSWORD)
 
+v25.3 (April 2026): Twitter/X removed — @Scottys_Edge account
+permanently suspended. All Twitter posting code deleted.
+
 Setup:
-  Discord: Set DISCORD_WEBHOOK_URL environment variable
-  Twitter: Set TWITTER_API_KEY, TWITTER_API_SECRET, 
-           TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET
+  Discord:   Set DISCORD_WEBHOOK_URL environment variable
+  Instagram: Set IG_USERNAME + IG_PASSWORD (or use ig_session.json)
 """
 import os
 import json
@@ -507,9 +508,5 @@ if __name__ == '__main__':
     
     print("Testing Discord webhook...")
     post_to_discord(test_picks)
-    
-    print("\nTesting Twitter formatting (no post):")
-    tweets = _format_twitter_thread(test_picks)
-    for i, t in enumerate(tweets):
-        print(f"  Tweet {i+1} ({len(t)} chars):")
-        print(f"  {t}")
+    # v25.3: removed _format_twitter_thread test — Twitter account suspended
+    # April 2026, function no longer exists. Was a NameError on direct invocation.

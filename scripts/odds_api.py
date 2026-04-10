@@ -20,7 +20,7 @@ import json
 import os
 import sqlite3
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 from urllib.error import URLError, HTTPError
@@ -143,14 +143,32 @@ def fetch_odds(sport, markets='h2h,spreads,totals', tag='CURRENT'):
         return data
 
     conn = sqlite3.connect(DB_PATH)
-    now = datetime.now()
+    # v25.3: real UTC, not local-ET-pretending-to-be-UTC. Same fix as fetch_props.
+    # snapshot_date and snapshot_time are now real UTC so the grader's CLV
+    # closing-line filter (latest snapshot before commence_time) actually works.
+    # Previously: NCAAB ML CLVs like Saint Mary's -37% were measurement artifacts
+    # from in-game snapshots being treated as pre-game.
+    now = datetime.now(timezone.utc)
     rows = []
+    _in_progress_skipped = 0
 
     for event in data:
         event_id = event['id']
         home = event['home_team']
         away = event['away_team']
         commence = event['commence_time']
+
+        # v25.3: Skip in-progress games — never capture in-game game-line prices.
+        # Same defense-in-depth pattern as fetch_props. Some bookmakers leave
+        # markets open during games with live odds; we never want those in our
+        # closing-line snapshots.
+        try:
+            gt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
+            if gt <= now:
+                _in_progress_skipped += 1
+                continue
+        except Exception:
+            pass
 
         for book in event.get('bookmakers', []):
             book_name = book['title']
@@ -185,13 +203,17 @@ def fetch_odds(sport, markets='h2h,spreads,totals', tag='CURRENT'):
     # Also update market_consensus
     _update_consensus(conn, data, sport, tag)
     conn.close()
-    print(f"  Stored {len(rows)} odds rows for {sport}")
+    msg = f"  Stored {len(rows)} odds rows for {sport}"
+    if _in_progress_skipped:
+        msg += f" (skipped {_in_progress_skipped} in-progress events)"
+    print(msg)
     return data
 
 
 def _capture_openers(conn, odds_rows, sport):
     """Store first-seen lines as openers. Only inserts if event not yet seen."""
-    now = datetime.now()
+    # v25.3: real UTC, same fix as fetch_odds. Openers feed CLV calculations.
+    now = datetime.now(timezone.utc)
     inserted = 0
     for r in odds_rows:
         # r = (date, time, tag, sport, event_id, commence, home, away, book, market, selection, line, odds)
@@ -659,9 +681,15 @@ def fetch_props(sport, event_id=None):
     prop_markets = PROP_MARKETS_BY_SPORT.get(sport, 'player_points,player_assists')
     
     conn = sqlite3.connect(DB_PATH)
-    now = datetime.now()
+    # v25.2: real UTC, not local-ET-pretending-to-be-UTC. Every downstream use of `now`
+    # (commence_time filter, props.snapshot_date/time, prop_snapshots.captured_at) needs
+    # to be real UTC so it can be compared to commence_time from the API (also real UTC).
+    # Previously: bet at 11:00 ET wrote captured_at='11:00:00Z', grader compared against
+    # commence_time='15:00:00Z' (real UTC = 11:00 ET) and string-sorted them as if both
+    # were UTC, picking in-game snapshots as the "closing line". Cruz CLV -25.5% bug.
+    now = datetime.now(timezone.utc)
     rows = []
-    
+
     if event_id:
         event_ids = [(event_id,)]
     else:
@@ -707,29 +735,45 @@ def fetch_props(sport, event_id=None):
         _filtered = []
         _skipped = 0
         _clv_only = 0
+        _in_progress = 0
         for eid_row in event_ids:
             eid = eid_row[0]
-            # Always fetch events with pending bets (for closing line CLV)
-            if eid in pending_eids:
-                _clv_only += 1
-                _filtered.append(eid_row)
-                continue
-            # Gate new events to 3hr window
+
+            # Get commence time once — shared by in-progress check + 3hr window
+            gt = None
             ct_row = conn.execute(
                 "SELECT commence_time FROM market_consensus WHERE event_id=? LIMIT 1",
                 (eid,)).fetchone()
             if ct_row and ct_row[0]:
                 try:
                     gt = datetime.fromisoformat(ct_row[0].replace('Z', '+00:00'))
-                    hours_until = (gt - now_tz).total_seconds() / 3600
-                    if hours_until > MLB_PROP_WINDOW_HOURS:
-                        _skipped += 1
-                        continue
                 except Exception:
                     pass
+
+            # v25.2: HARD SKIP in-progress games (defense in depth). The upstream
+            # SQL filter at the top of fetch_props already excludes these via
+            # `commence_time >= now_utc`, but this explicit check prevents
+            # regressions if that filter is ever modified. Applies to BOTH new
+            # events AND pending-bet events (no in-game prop captures, ever).
+            if gt is not None and gt <= now_tz:
+                _in_progress += 1
+                continue
+
+            # Always fetch events with pending bets (for closing line CLV)
+            if eid in pending_eids:
+                _clv_only += 1
+                _filtered.append(eid_row)
+                continue
+
+            # Gate new events to 3hr window
+            if gt is not None:
+                hours_until = (gt - now_tz).total_seconds() / 3600
+                if hours_until > MLB_PROP_WINDOW_HOURS:
+                    _skipped += 1
+                    continue
             _filtered.append(eid_row)
-        if _skipped or _clv_only:
-            print(f"  {sport}: skipped {_skipped} events >3hrs out, fetching {_clv_only} for CLV tracking")
+        if _skipped or _clv_only or _in_progress:
+            print(f"  {sport}: skipped {_skipped} events >3hrs out, {_in_progress} in-progress, fetching {_clv_only} for CLV tracking")
         event_ids = _filtered
         if not event_ids:
             print(f"  {sport}: no events within prop window")

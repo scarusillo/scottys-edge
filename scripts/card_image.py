@@ -1362,7 +1362,7 @@ TEAM_SOCIALS = {
     'Flyers': {'twitter': ['@NHLFlyers'], 'ig': ['nhlflyers'], 'reddit': ['r/Flyers']},
     'Lightning': {'twitter': ['@TBLightning'], 'ig': ['tblightning'], 'reddit': ['r/TampaBayLightning']},
     'Maple Leafs': {'twitter': ['@MapleLeafs'], 'ig': ['mapleleafs'], 'reddit': ['r/leafs']},
-    'Wild': {'twitter': ['@mnwild'], 'ig': ['mnwild'], 'reddit': ['r/wildhockey']},
+    'Wild': {'twitter': ['@mnwild'], 'ig': ['minnesotawild'], 'reddit': ['r/wildhockey']},
     'Sharks': {'twitter': ['@SanJoseSharks'], 'ig': ['sjsharks'], 'reddit': ['r/SanJoseSharks']},
     'Blackhawks': {'twitter': ['@NHLBlackhawks'], 'ig': ['nhlblackhawks'], 'reddit': ['r/hawks']},
 
@@ -1383,7 +1383,7 @@ TEAM_SOCIALS = {
     'Indians': {'twitter': ['@CleGuardians'], 'ig': ['clevelandindians'], 'reddit': ['r/ClevelandGuardians']},
     'Guardians': {'twitter': ['@CleGuardians'], 'ig': ['clevelandguardians'], 'reddit': ['r/ClevelandGuardians']},
     'Twins': {'twitter': ['@Twins'], 'ig': ['twins'], 'reddit': ['r/minnesotatwins']},
-    'Royals': {'twitter': ['@Royals'], 'ig': ['royals'], 'reddit': ['r/KCRoyals']},
+    'Royals': {'twitter': ['@Royals'], 'ig': ['kcroyals'], 'reddit': ['r/KCRoyals']},
     'Athletics': {'twitter': ['@Athletics'], 'ig': ['athletics'], 'reddit': ['r/OaklandAthletics']},
     'Mariners': {'twitter': ['@Mariners'], 'ig': ['mariners'], 'reddit': ['r/Mariners']},
     'Rangers': {'twitter': ['@Rangers'], 'ig': ['texasrangers'], 'reddit': ['r/TexasRangers']},
@@ -1516,15 +1516,42 @@ def get_kelly_label(units: float) -> str:
         return 'SPRINKLE'
 
 def get_season_stats() -> dict:
-    """Query season record from graded_bets table."""
+    """Query season record from graded_bets table.
+
+    NOTE: The graded_bets table contains duplicate/phantom entries that inflate
+    the record (DB shows ~160W-123L). Until the DB is cleaned, we use a
+    deduplicated query that groups by event_id + market_type to avoid counting
+    the same bet twice. If that still drifts, fall back to the manual override.
+    """
+    # Manual override — set to None to use DB query instead.
+    # Update these values after each day's grading if the DB dedup query drifts.
+    MANUAL_RECORD = None  # e.g. {'wins': 154, 'losses': 118, 'profit': 66.2}
+
+    if MANUAL_RECORD:
+        W = MANUAL_RECORD['wins']
+        L = MANUAL_RECORD['losses']
+        total = W + L
+        return {
+            'wins': W,
+            'losses': L,
+            'win_rate': round((W / total * 100) if total > 0 else 0, 1),
+            'profit': round(MANUAL_RECORD['profit'], 1)
+        }
+
     try:
         conn = sqlite3.connect(DB_PATH)
         c = conn.cursor()
+        # Deduplicated query: one row per unique event + market combination
         c.execute('''SELECT
                         SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END) as wins,
                         SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END) as losses,
-                        SUM(CASE WHEN result IN ('WIN','LOSS') THEN pnl_units ELSE 0 END) as total_profit
-                     FROM graded_bets''')
+                        SUM(pnl_units) as total_profit
+                     FROM (
+                         SELECT result, pnl_units
+                         FROM graded_bets
+                         WHERE result IN ('WIN','LOSS')
+                         GROUP BY event_id, market_type
+                     )''')
         row = c.fetchone()
         conn.close()
 
@@ -1673,6 +1700,7 @@ def generate_engagement_comments(picks: list) -> list:
         'Stanton': 'Yankees', 'Cole': 'Yankees', 'deGrom': 'Rangers',
         'Verlander': 'Mets', 'Scherzer': 'Rangers', 'Wheeler': 'Phillies',
         'Bieber': 'Guardians', 'Alcantara': 'Marlins', 'Musgrove': 'Padres',
+        'De La Cruz': 'Reds',
         # NHL
         'McDavid': 'Oilers', 'Draisaitl': 'Oilers', 'MacKinnon': 'Avalanche',
         'Matthews': 'Maple Leafs', 'Marner': 'Maple Leafs', 'Ovechkin': 'Capitals',
@@ -1746,8 +1774,13 @@ def generate_engagement_comments(picks: list) -> list:
                 team_short = home_team.split()[-1] if home_team else selection.split()[0]
                 pick_str = f"{team_short} {pick_detail}"
             else:
-                team_short = home_team.split()[-1] if home_team else (selection.split()[0] if selection else 'ML')
-                pick_str = f"{team_short} ML"
+                team_short = home_team.split()[-1] if home_team else (selection.split()[0] if selection else '')
+                if team_short and team_short.upper() != 'ML':
+                    pick_str = f"{team_short} ML"
+                else:
+                    # Avoid "ML ML" — use away team or just "ML"
+                    team_short = away_team.split()[-1] if away_team else ''
+                    pick_str = f"{team_short} ML" if team_short else "ML"
 
             # Odds formatting
             odds_str = f"{odds:+.0f}" if odds else "EV"
@@ -1760,10 +1793,26 @@ def generate_engagement_comments(picks: list) -> list:
                 if team_name in TEAM_SOCIALS:
                     teams_to_target.append(team_name)
                     continue
+                # Try suffix match: "Chicago White Sox" → "White Sox"
+                # Use last N words to avoid "Sox" matching both Red Sox and White Sox
+                matched = False
                 for key in TEAM_SOCIALS:
-                    if team_name.endswith(key) or key.endswith(team_name.split()[-1]):
+                    if team_name.endswith(key):
                         teams_to_target.append(key)
+                        matched = True
                         break
+                if not matched:
+                    # Fallback: match last 2 words, then last 1 word
+                    team_words = team_name.split()
+                    for n_words in [2, 1]:
+                        if len(team_words) >= n_words:
+                            suffix = ' '.join(team_words[-n_words:])
+                            if suffix in TEAM_SOCIALS:
+                                teams_to_target.append(suffix)
+                                matched = True
+                                break
+                        if matched:
+                            break
 
         # Generate comments for each platform (Twitter removed — account suspended)
         for platform in ['ig', 'reddit']:

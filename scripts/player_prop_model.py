@@ -821,11 +821,33 @@ def generate_prop_projections(conn=None):
                         team_ml = _a_ml
                     # Block if team is +160 underdog or worse (big dog)
                     if team_ml is not None and team_ml >= BLOWOUT_ML_THRESHOLD:
+                        try:
+                            conn.execute("""INSERT INTO shadow_blocked_picks
+                                (created_at, sport, event_id, selection, market_type,
+                                 line, odds, edge_pct, units, reason)
+                                VALUES (?, ?, ?, ?, 'PROP', NULL, NULL, NULL, NULL, ?)""",
+                                (datetime.now(timezone.utc).isoformat(), sport, eid,
+                                 f"{player} {stat_type}",
+                                 f"BLOWOUT_GATE (team_ml={int(team_ml):+}, threshold={BLOWOUT_ML_THRESHOLD})"))
+                            conn.commit()
+                        except Exception:
+                            pass
                         continue
                     # Fallback: model_spread (negative = home favored)
                     if team_ml is None and _ms is not None:
                         team_spread = _ms if player_team == _mc_home else -_ms
                         if team_spread > 1.5:  # team projected to lose by 1.5+
+                            try:
+                                conn.execute("""INSERT INTO shadow_blocked_picks
+                                    (created_at, sport, event_id, selection, market_type,
+                                     line, odds, edge_pct, units, reason)
+                                    VALUES (?, ?, ?, ?, 'PROP', NULL, NULL, NULL, NULL, ?)""",
+                                    (datetime.now(timezone.utc).isoformat(), sport, eid,
+                                     f"{player} {stat_type}",
+                                     f"BLOWOUT_GATE (team_spread={team_spread:+.1f}, no ML)"))
+                                conn.commit()
+                            except Exception:
+                                pass
                             continue
             except Exception:
                 pass

@@ -615,14 +615,21 @@ def _mlb_pitcher_era_adjustment(conn, mlb_pitcher_info):
 
     Total adj = home_pitcher_adj + away_pitcher_adj, capped at +/-2.0 runs.
 
-    Returns (adjustment, context_string) or (0.0, '') if no data.
+    v25.3: ALSO returns best_era and worst_era so the pitching gate can
+    catch ASYMMETRIC matchups (one elite + one bad pitcher) where the
+    sum cancels to ~0 but the elite pitcher should still hard-veto OVERs.
+    Brewers/Nats 4/10: Patrick 3.27 vs Irvin 5.00 → sum +0.1 → no veto under
+    old logic. New logic: best_era=3.27 → veto over.
+
+    Returns (adjustment, context_string, best_era, worst_era) tuple.
+    best_era/worst_era are None if no data.
     """
     LEAGUE_AVG_ERA = 4.00
     SCALE_FACTOR = 1.5  # Each 1.0 ERA above avg -> ~0.375 more runs allowed
     MAX_ADJ = 2.0
 
     if not mlb_pitcher_info:
-        return 0.0, ''
+        return 0.0, '', None, None
 
     home_pitcher = mlb_pitcher_info.get('home_pitcher')
     away_pitcher = mlb_pitcher_info.get('away_pitcher')
@@ -692,7 +699,12 @@ def _mlb_pitcher_era_adjustment(conn, mlb_pitcher_info):
     else:
         ctx_str = ''
 
-    return total_adj, ctx_str
+    # v25.3: best_era / worst_era for asymmetric pitching gate
+    eras = [e for e in (home_era, away_era) if e is not None]
+    best_era = min(eras) if eras else None
+    worst_era = max(eras) if eras else None
+
+    return total_adj, ctx_str, best_era, worst_era
 
 
 def _log_park_veto(conn, sport, event_id, selection, park_adj, park_ctx):
@@ -704,6 +716,29 @@ def _log_park_veto(conn, sport, event_id, selection, park_adj, park_ctx):
             VALUES (?, ?, ?, ?, 'TOTAL', NULL, NULL, NULL, NULL, ?)
         """, (datetime.now().isoformat(), sport, event_id, selection,
               f"PARK_GATE ({park_ctx})"))
+        conn.commit()
+    except Exception:
+        pass
+
+
+def _log_divergence_block(conn, sport, event_id, home, away, model_spread, market_spread, reason_detail):
+    """Log a pick blocked by max_spread_divergence to shadow_blocked_picks.
+
+    Divergence blocks fire BEFORE we know which bet type would have been generated,
+    so 'selection' just records the matchup. The reason_detail explains which of
+    the 3 div paths fired (insufficient_elo / post_elo_rescue / ml_only_implied).
+    """
+    try:
+        div = abs(model_spread - market_spread) if (model_spread is not None and market_spread is not None) else None
+        div_str = f"{div:.1f}" if div is not None else "?"
+        ms_str = f"{model_spread:+.1f}" if model_spread is not None else "?"
+        msp_str = f"{market_spread:+.1f}" if market_spread is not None else "?"
+        conn.execute("""
+            INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
+                market_type, line, odds, edge_pct, units, reason)
+            VALUES (?, ?, ?, ?, 'SPREAD', NULL, NULL, NULL, NULL, ?)
+        """, (datetime.now().isoformat(), sport, event_id, f"{home} vs {away}",
+              f"DIVERGENCE_GATE ({reason_detail}, div={div_str}, ms={ms_str}, mkt_sp={msp_str})"))
         conn.commit()
     except Exception:
         pass
@@ -1070,35 +1105,39 @@ def estimate_model_total(home, away, ratings, sport, conn):
 
         league_atk = league_avg / 2  # Average goals per team per game
 
-        # Home team scoring and conceding rates
-        # Use LIKE matching to handle ESPN vs Odds API name variants
-        # (e.g., "Union Berlin" vs "1. FC Union Berlin", "Augsburg" vs "FC Augsburg")
+        # v25.3 (Fix 3): Use LAST 12 games per team instead of all-time average.
+        # Old logic averaged the entire season equally — Augsburg game from 6 months
+        # ago weighted the same as last week's game. Augsburg's recent under trend
+        # (5/8 of last 8 games under 2.5) was diluted by older high-scoring games.
+        # Hoffenheim/Augsburg 4/10: model said 73% over but team last-8 averages
+        # suggested ~50%. Recent form is the strongest soccer total signal.
         h_like = f'%{home}%'
-        h_stats = conn.execute("""
-            SELECT AVG(CASE WHEN home LIKE ? THEN home_score ELSE away_score END),
-                   AVG(CASE WHEN home LIKE ? THEN away_score ELSE home_score END),
-                   COUNT(*)
+        h_rows = conn.execute("""
+            SELECT CASE WHEN home LIKE ? THEN home_score ELSE away_score END as scored,
+                   CASE WHEN home LIKE ? THEN away_score ELSE home_score END as conceded
             FROM results
             WHERE (home LIKE ? OR away LIKE ?) AND sport = ? AND completed = 1
-            AND home_score IS NOT NULL
-        """, (h_like, h_like, h_like, h_like, sport)).fetchone()
+              AND home_score IS NOT NULL
+            ORDER BY commence_time DESC LIMIT 12
+        """, (h_like, h_like, h_like, h_like, sport)).fetchall()
 
-        # Away team scoring and conceding rates
         a_like = f'%{away}%'
-        a_stats = conn.execute("""
-            SELECT AVG(CASE WHEN home LIKE ? THEN home_score ELSE away_score END),
-                   AVG(CASE WHEN home LIKE ? THEN away_score ELSE home_score END),
-                   COUNT(*)
+        a_rows = conn.execute("""
+            SELECT CASE WHEN home LIKE ? THEN home_score ELSE away_score END as scored,
+                   CASE WHEN home LIKE ? THEN away_score ELSE home_score END as conceded
             FROM results
             WHERE (home LIKE ? OR away LIKE ?) AND sport = ? AND completed = 1
-            AND home_score IS NOT NULL
-        """, (a_like, a_like, a_like, a_like, sport)).fetchone()
+              AND home_score IS NOT NULL
+            ORDER BY commence_time DESC LIMIT 12
+        """, (a_like, a_like, a_like, a_like, sport)).fetchall()
 
-        if not h_stats or not a_stats or h_stats[2] < min_games or a_stats[2] < min_games:
+        if len(h_rows) < min_games or len(a_rows) < min_games:
             return None
 
-        h_atk, h_def = h_stats[0], h_stats[1]  # Home goals scored, conceded per game
-        a_atk, a_def = a_stats[0], a_stats[1]  # Away goals scored, conceded per game
+        h_atk = sum(r[0] for r in h_rows) / len(h_rows)
+        h_def = sum(r[1] for r in h_rows) / len(h_rows)
+        a_atk = sum(r[0] for r in a_rows) / len(a_rows)
+        a_def = sum(r[1] for r in a_rows) / len(a_rows)
 
         if not h_atk or not a_atk or not h_def or not a_def:
             return None
@@ -1702,6 +1741,7 @@ def generate_predictions(conn, sport=None, date=None):
                     # generated a -4.5 fav pick that flipped to +2.5 by game time.
                     # Soft weighting wasn't enough to prevent fake edges.
                     if _min_gp < 10:
+                        _log_divergence_block(conn, sp, eid, home, away, ms, mkt_hs, 'insufficient_elo_games')
                         skip_div += 1; continue
                     _sport_min = cfg.get('min_games_elo', 15)  # Target: 15+ games for full weight
                     _conf_w = min(1.0, _min_gp / _sport_min)
@@ -1814,6 +1854,7 @@ def generate_predictions(conn, sport=None, date=None):
                                         all_picks.append(pick)
                             elif _away_star_out and a_edge >= _min:
                                 print(f"    ⚠ INJURY GATE: {away} ML blocked — star player out ({a_imp:.1f} pts impact)")
+                _log_divergence_block(conn, sp, eid, home, away, ms, mkt_hs, 'post_elo_rescue')
                 skip_div += 1; continue
             
             # v12 FIX: If no spread line (common in baseball), check divergence via ML
@@ -1831,6 +1872,7 @@ def generate_predictions(conn, sport=None, date=None):
                     if _h_ml_imp > 0.01 and _h_ml_imp < 0.99:
                         implied_spread = -ml_sc * _m.log(_h_ml_imp / (1 - _h_ml_imp))
                         if abs(ms - implied_spread) > max_div:
+                            _log_divergence_block(conn, sp, eid, home, away, ms, implied_spread, 'ml_only_implied_spread')
                             skip_div += 1; continue
 
             # CONTEXT ADJUSTMENTS — schedule, travel, altitude, splits
@@ -2297,7 +2339,14 @@ def generate_predictions(conn, sport=None, date=None):
                     ml_implied = american_to_implied_prob(hml)
                 if ml_implied and spread_win_prob and 'soccer' not in sp:
                     # v21: Soccer cross-market ML disabled — 0W-8L historically.
-                    # Soccer dog MLs leak through here even though direct ML is blocked.
+                    # v25.3 (4/10/2026): Baseball cross-mkt was briefly disabled based on
+                    #   "catastrophic CLV" data (Michigan -25%, Saint Mary's NCAAB -37%, etc),
+                    #   but those CLVs turned out to be measurement artifacts from in-game
+                    #   snapshots in the odds table being labeled as "closing line." After
+                    #   the captured_at timezone fix and odds-table backfill, Michigan's CLV
+                    #   re-graded to +0.0%, Vandy's to +2.8%, etc. The cross-mkt sample
+                    #   (5 non-tainted picks, 1W-4L, -1.5u P/L) is too small to justify a
+                    #   structural change without a real CLV signal. Reverted, monitoring.
                     # Shadow-tracked: agent monitors if this changes.
                     cross_edge = min((spread_win_prob - ml_implied) * 100, 20.0)  # v20: cap at 20%
                     if cross_edge > 8.0:
@@ -2404,12 +2453,24 @@ def generate_predictions(conn, sport=None, date=None):
                         # Uses box_scores season ERA (preferred) or ESPN ERA (fallback).
                         _pitcher_era_ctx = ''
                         _era_adj = 0.0
+                        _best_era = None   # v25.3: lowest ERA in matchup (for asymmetric gate)
+                        _worst_era = None  # v25.3: highest ERA in matchup
                         if sp == 'baseball_mlb' and _mlb_pitcher_info:
                             try:
-                                _era_adj, _pitcher_era_ctx = _mlb_pitcher_era_adjustment(
+                                _era_adj, _pitcher_era_ctx, _best_era, _worst_era = _mlb_pitcher_era_adjustment(
                                     conn, _mlb_pitcher_info)
                                 if _era_adj != 0:
                                     model_total += _era_adj
+                                    # v25.3 (Fix 2): Pitcher quality is part of the RAW model,
+                                    # not just context. Apply era_adj to _raw_model_total too,
+                                    # so the v25.1 direction gate catches downstream context
+                                    # (bullpen, H2H, pace) that contradicts pitcher quality.
+                                    # Brewers/Nats 4/10: Patrick (3.27) made era_adj=+0.1, but
+                                    # raw_model_total=8.5 still passed direction gate. Bullpen
+                                    # +0.4 + H2H +1.1 + pace +0.4 then pushed final to 10.5.
+                                    # By baking pitcher quality into raw, we keep the direction
+                                    # gate honest about what the base model actually thinks.
+                                    _raw_model_total += _era_adj
                             except Exception:
                                 pass
 
@@ -2499,8 +2560,14 @@ def generate_predictions(conn, sport=None, date=None):
                         # v24: Pitching gate — elite pitching matchup vetoes OVERs
                         # When combined pitcher ERA adj is -0.5+ (strong suppression),
                         # the pitching context contradicts the OVER direction
+                        # v25.3 (Fix 1): ALSO veto when ANY pitcher in the matchup is elite
+                        # (best_era < 3.50). Old gate used the SUM of both pitchers, so an
+                        # elite + bad combo (e.g., Patrick 3.27 + Irvin 5.00 → +0.1) silently
+                        # passed. New gate: if the best arm in the matchup is sub-3.5 ERA,
+                        # the over is at structural risk regardless of the other side.
                         _pitching_veto_over = (sp in ('baseball_mlb', 'baseball_ncaa')
-                                               and _era_adj <= -0.5)
+                                               and (_era_adj <= -0.5
+                                                    or (_best_era is not None and _best_era < 3.50)))
                         # v25.1: Direction gate — raw model must agree with bet direction.
                         # Context factors (pace, pitching, H2H) can inflate model_total past
                         # the line even when the raw model disagrees. 9 of 14 MLB overs and
@@ -2605,8 +2672,12 @@ def generate_predictions(conn, sport=None, date=None):
                         # v24: Pitching gate — bad pitching matchup vetoes UNDERs
                         # When combined ERA adj is +0.5+ (both starters above avg),
                         # pitching context says "expect more runs" = contradicts UNDER
+                        # v25.3 (Fix 1): ALSO veto when ANY pitcher in the matchup is bad
+                        # (worst_era > 5.50). Mirror of the OVER gate — a single bad arm
+                        # creates structural over risk regardless of the other side.
                         _pitching_veto_under = (sp in ('baseball_mlb', 'baseball_ncaa')
-                                                and _era_adj >= 0.5)
+                                                and (_era_adj >= 0.5
+                                                     or (_worst_era is not None and _worst_era > 5.50)))
                         # v25.1: Direction gate — raw model must agree with UNDER direction
                         _direction_veto_under = (('soccer' in sp or sp == 'baseball_mlb')
                                                  and _raw_model_total > (under_total or 0))
