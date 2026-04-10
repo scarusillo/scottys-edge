@@ -2536,15 +2536,15 @@ def generate_predictions(conn, sport=None, date=None):
 
                         # Baseball: skip totals with near-zero model conviction
                         # MLB uses model_total vs line; NCAA uses model_spread (no model_total)
-                        # v25: NCAA BB unders raised to 1.0 conviction floor.
-                        # Data: |spread| < 1.0 unders are 9W-17L -47.8u;
-                        #        |spread| >= 1.0 unders are 15W-4L +43.2u.
-                        # Overs stay at 0.5 (19W-10L +30.6u across all conviction).
+                        # v25.4 (4/10/2026): NCAA UNDER conviction floor rolled back from
+                        # 1.0 → 0.5. The v25 raise to 1.0 was over-tuned to one bad day —
+                        # 14-day backtest of 257 games showed |ms|>=0.5 produces +100.8u
+                        # vs |ms|>=1.0 at +45.0u. The 1.0 floor was costing ~55u/14d.
                         if sp == 'baseball_mlb':
                             _mlb_skip_total = abs(model_total - over_total) < 0.5
                         elif sp == 'baseball_ncaa':
                             _mlb_skip_total = abs(ms) < 0.5  # Overs: 0.5 floor
-                            _ncaa_skip_under = abs(ms) < 1.0  # Unders: 1.0 floor
+                            _ncaa_skip_under = abs(ms) < 0.5  # v25.4: was 1.0, rolled back
                         else:
                             _mlb_skip_total = False
                         if sp != 'baseball_ncaa':
@@ -2634,16 +2634,13 @@ def generate_predictions(conn, sport=None, date=None):
                         # v22: NCAA baseball UNDER filters — surgical fix for -10.7u bleed
                         # Friday UNDERs: 2W-5L, -17.7u. Lines 12.5+: 8W-10L, -15.4u.
                         # Saturday UNDERs (8W-3L, +17.9u) and lines 10.5-12 (9W-5L, +11.4u) stay.
-                        _block_ncaa_under = False
-                        if sp == 'baseball_ncaa' and under_total is not None:
-                            try:
-                                _game_et = datetime.fromisoformat(commence.replace('Z', '+00:00')).astimezone(EASTERN)
-                                if _game_et.strftime('%A') == 'Friday':
-                                    _block_ncaa_under = True
-                            except Exception:
-                                pass
-                            if under_total > 12.0:
-                                _block_ncaa_under = True
+                        # v25.4 (4/10/2026): BOTH blocks REMOVED. 14-day 257-game backtest:
+                        #   - Friday UNDERs: 38-20 (66% win rate), +51.9u  ← was BLOCKED, leaving $$ on table
+                        #   - line > 12.0 UNDERs: 79-57 (58% win rate), +54.4u  ← was BLOCKED, ditto
+                        # The v22 fixes were over-tuned to a single bad week. The broader
+                        # data shows both filters removing winners. NCAA UNDERs are the
+                        # model's strongest edge and the filters were eating it.
+                        _block_ncaa_under = False  # v25.4: kept variable to avoid renaming downstream
                         # v24: Pace/altitude gate — fast-paced or altitude vetoes NBA UNDERs
                         # Data: NBA unders with pace/altitude 1W-4L -15.7u, without 3W-1L +7.8u
                         _pace_veto_under = False
