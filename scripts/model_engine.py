@@ -2337,16 +2337,22 @@ def generate_predictions(conn, sport=None, date=None):
                 ml_implied, aml_dv, _ = devig_ml_odds(hml, aml)
                 if ml_implied is None:
                     ml_implied = american_to_implied_prob(hml)
-                if ml_implied and spread_win_prob and 'soccer' not in sp:
+                if ml_implied and spread_win_prob and 'soccer' not in sp and 'baseball' not in sp:
                     # v21: Soccer cross-market ML disabled — 0W-8L historically.
-                    # v25.3 (4/10/2026): Baseball cross-mkt was briefly disabled based on
-                    #   "catastrophic CLV" data (Michigan -25%, Saint Mary's NCAAB -37%, etc),
-                    #   but those CLVs turned out to be measurement artifacts from in-game
-                    #   snapshots in the odds table being labeled as "closing line." After
-                    #   the captured_at timezone fix and odds-table backfill, Michigan's CLV
-                    #   re-graded to +0.0%, Vandy's to +2.8%, etc. The cross-mkt sample
-                    #   (5 non-tainted picks, 1W-4L, -1.5u P/L) is too small to justify a
-                    #   structural change without a real CLV signal. Reverted, monitoring.
+                    # v25.5 (4/10/2026): Baseball cross-mkt disabled — OPPORTUNITY COST.
+                    #   Historical fires: 5 non-tainted picks across 6 weeks, 2W-3L, -1.5u net.
+                    #   Almost zero alpha. But the feature is FLOODING baseball pick generation
+                    #   today (14 cross-mkt baseball_ncaa + 2 baseball_mlb per run) and eating
+                    #   the per-sport-soft cap (5/run), squeezing out OVER/UNDER picks where
+                    #   the model has its strongest edge (NCAA baseball OVERs: 21-10, +39.7u
+                    #   season profit). The opportunity cost of keeping cross-mkt — losing
+                    #   5-15u/day of OVER/UNDER alpha — vastly exceeds the historical break-even
+                    #   value of the cross-mkt picks themselves.
+                    #   v25.3 (earlier today) tried this and reverted because the catastrophic
+                    #   CLVs that justified the kill turned out to be timezone-bug artifacts.
+                    #   v25.5 ships with a DIFFERENT justification: not "feature is broken" but
+                    #   "feature crowds out our best edge." Direct ML picks still fire from the
+                    #   regular spread/ML pipeline (e.g., Vandy ML on 4/9 was direct, not cross-mkt).
                     # Shadow-tracked: agent monitors if this changes.
                     cross_edge = min((spread_win_prob - ml_implied) * 100, 20.0)  # v20: cap at 20%
                     if cross_edge > 8.0:
