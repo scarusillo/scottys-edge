@@ -15,6 +15,33 @@ DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.d
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'briefing_data.json')
 
 
+def _lump_tennis(rows):
+    """Collapse all tennis_* sport rows into a single 'TENNIS' row.
+
+    Stops the briefing from showing one line per ended/active tournament
+    (e.g. tennis_atp_miami_open + tennis_atp_monte_carlo_masters → TENNIS).
+    Each input row must be a dict with at least: sport, W, L, pnl.
+    Order is preserved; the lumped TENNIS row appears where the first
+    tennis_* row was.
+    """
+    out = []
+    tennis_agg = None
+    for r in rows:
+        sp = r.get('sport') or ''
+        if sp.startswith('tennis_'):
+            if tennis_agg is None:
+                tennis_agg = {'sport': 'TENNIS', 'W': 0, 'L': 0, 'pnl': 0.0}
+                out.append(tennis_agg)
+            tennis_agg['W'] += r.get('W') or 0
+            tennis_agg['L'] += r.get('L') or 0
+            tennis_agg['pnl'] += r.get('pnl') or 0.0
+        else:
+            out.append(r)
+    if tennis_agg is not None:
+        tennis_agg['pnl'] = round(tennis_agg['pnl'], 1)
+    return out
+
+
 def export_data():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -61,8 +88,8 @@ def export_data():
     """).fetchone()
     season_stats = dict(season) if season else {}
 
-    # By sport
-    sport_stats = [dict(r) for r in conn.execute("""
+    # By sport — lump all tennis tournaments into a single TENNIS row
+    sport_stats = _lump_tennis([dict(r) for r in conn.execute("""
         SELECT sport,
                SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END) as W,
                SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END) as L,
@@ -71,7 +98,7 @@ def export_data():
         WHERE DATE(created_at) >= '2026-03-04'
         AND result IN ('WIN','LOSS') AND units >= 3.5
         GROUP BY sport
-    """).fetchall()]
+    """).fetchall()])
 
     # Context factor performance (all time)
     ctx_rows = conn.execute("""
@@ -323,7 +350,7 @@ def generate_local_briefing(conn=None):
     s_roi = round(s_pnl / s_wag * 100, 1) if s_wag > 0 else 0
 
     # ── By sport ──
-    sport_stats = [dict(r) for r in conn.execute("""
+    sport_stats = _lump_tennis([dict(r) for r in conn.execute("""
         SELECT sport,
                SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END) as W,
                SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END) as L,
@@ -332,7 +359,9 @@ def generate_local_briefing(conn=None):
         WHERE DATE(created_at) >= '2026-03-04'
         AND result IN ('WIN','LOSS') AND units >= 3.5
         GROUP BY sport ORDER BY pnl DESC
-    """).fetchall()]
+    """).fetchall()])
+    # Re-sort after lumping (TENNIS row's position may have changed P/L rank)
+    sport_stats.sort(key=lambda x: x.get('pnl') or 0, reverse=True)
 
     # ── Context factor performance ──
     ctx_rows = conn.execute("""
