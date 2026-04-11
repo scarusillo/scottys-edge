@@ -69,7 +69,7 @@ try:
         SPORT_BADGE_COLORS[_tk] = (200, 200, 50)  # Yellow-gold for tennis
 except ImportError:
     pass
-SOCIALS = "IG: @scottys_edge | X: @Scottys_edge | Discord: discord.gg/JQ6rRfuN"
+SOCIALS = "IG: @scottys_edge | Discord: discord.gg/JQ6rRfuN"
 DISCLAIMER = ("For entertainment and informational purposes only. Not gambling advice. "
               "Past performance does not guarantee future results. Please gamble responsibly. "
               "If you or someone you know has a gambling problem, call 1-800-GAMBLER. "
