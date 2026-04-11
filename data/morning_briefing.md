@@ -1,103 +1,76 @@
 # Scotty's Edge Morning Briefing
-**Date:** Friday, April 10, 2026 | **Generated:** 05:10 AM ET
-**Game Date Graded:** 2026-04-09
+**Date:** Saturday, April 11, 2026 | **Generated:** 06:41 AM ET
+**Game Date Graded:** 2026-04-10
 
 ---
 ## Yesterday's Results
 
-**2W-6L-0P | -21.9u | RED DAY**
+**6W-2L-0P | +13.4u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Chicago White Sox@Kansas City Royals UNDER 9. | baseball_mlb | UNDER | -121 | 5.0 | **W** | +4.1 | 1.0% |
-| Vanderbilt Commodores ML | baseball_ncaa | FAVORITE | -125 | 5.0 | **W** | +4.0 | -19.8% |
-| Detroit Tigers@Minnesota Twins OVER 8.0 | baseball_mlb | OVER | -114 | 5.0 | **L** | -5.0 | -4.5% |
-| Calgary Flames@Colorado Avalanche OVER 6.0 | icehockey_nhl | OVER | -122 | 5.0 | **L** | -5.0 | 0.5% |
-| Vancouver Canucks@Los Angeles Kings OVER 5.5 | icehockey_nhl | OVER | -138 | 5.0 | **L** | -5.0 | 1.0% |
-| Elly De La Cruz OVER 0.5 RUNS | baseball_mlb | PROP_OVER | +118 | 5.0 | **L** | -5.0 | -25.5% |
-| Minnesota Wild@Dallas Stars UNDER 6.5 | icehockey_nhl | UNDER | -135 | 5.0 | **L** | -5.0 | 0.0% |
-| Reed Sheppard OVER 2.5 THREES | basketball_nba | PROP_OVER | +112 | 5.0 | **L** | -5.0 | 0.0% |
+| Washington Nationals@Milwaukee Brewers OVER 8 | baseball_mlb | OVER | -106 | 5.0 | **W** | +4.7 | 0.5% |
+| Stanford Cardinal@Louisville Cardinals OVER 1 | baseball_ncaa | OVER | -113 | 5.0 | **W** | +4.4 | 1.0% |
+| West Virginia Mountaineers@Texas Tech Red Rai | baseball_ncaa | OVER | -115 | 5.0 | **W** | +4.3 | -0.5% |
+| Florida Gators@Georgia Bulldogs UNDER 11.5 | baseball_ncaa | UNDER | -125 | 5.0 | **W** | +4.0 | 0.0% |
+| Girona@Real Madrid UNDER 3.5 | soccer_spain_la_liga | UNDER | -137 | 5.0 | **W** | +3.6 | 0.0% |
+| TSG Hoffenheim@Augsburg OVER 2.5 | soccer_germany_bundesliga | OVER | -177 | 4.0 | **W** | +2.3 | 1.0% |
+| Jakob Poeltl OVER 0.5 BLOCKS | basketball_nba | PROP_OVER | +125 | 5.0 | **L** | -5.0 | 5.6% |
+| Arizona Wildcats@TCU Horned Frogs OVER 9.0 | baseball_ncaa | OVER | -115 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
 
-### Detroit Tigers@Minnesota Twins OVER 8.0
-- **Category:** MODEL ERROR
-- **Analysis:** Negative CLV (-4.5%) -- line moved against us. Model may have been wrong.
-- **Final Score:** Detroit Tigers 1 @ Minnesota Twins 3
-- **Model Spread:** +0.4 | Actual Margin: +2
-- **Context:** [SHADOW] Midweek game | Minnesota Twins SP: Mick Abel (6.02 ERA) | Detroit Tigers SP: Jack Flaherty (6.29 ERA) | Pitching: Mick Abel 5.28 vs Jack Flaherty 5.05 (+0.9) | Park: Target Field (+0.2) | Bullpen: Twins 4.44 vs Tigers 3.68 (+0.1)
-
-### Calgary Flames@Colorado Avalanche OVER 6.0
+### Jakob Poeltl OVER 0.5 BLOCKS
 - **Category:** VARIANCE
-- **Analysis:** Positive CLV (+0.5%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Calgary Flames 1 @ Colorado Avalanche 3
-- **Model Spread:** -1.2 | Actual Margin: +2
-- **Context:** Away fast-paced (+0.6) | Goalies: Mackenzie Blackwood 3.00 (recent 4.50) vs Dustin Wolf 3.31 (+0.4)
+- **Analysis:** Positive CLV (+5.6%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** Toronto Raptors 95 @ New York Knicks 112
 
-### Vancouver Canucks@Los Angeles Kings OVER 5.5
-- **Category:** VARIANCE
-- **Analysis:** Positive CLV (+1.0%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Vancouver Canucks 1 @ Los Angeles Kings 4
-- **Model Spread:** -1.0 | Actual Margin: +3
-- **Context:** [SHADOW] Home fast-paced (+0.3) | Away fast-paced (+0.4) | Goalies: Darcy Kuemper 3.38 (recent 5.00) vs Nikita Tolopilo 4.80 (recent 4.00) (+1.0)
-
-### Elly De La Cruz OVER 0.5 RUNS
-- **Category:** MODEL ERROR
-- **Analysis:** Negative CLV (-25.5%) -- line moved against us. Model may have been wrong.
-- **Final Score:** Cincinnati Reds 1 @ Miami Marlins 8
-
-### Minnesota Wild@Dallas Stars UNDER 6.5
+### Arizona Wildcats@TCU Horned Frogs OVER 9.0
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Minnesota Wild 4 @ Dallas Stars 5
-- **Model Spread:** -0.1 | Actual Margin: +1
-- **Context:** Home slow-paced (-0.3) | Refs push over (Ref: Francois St. Laurent (+1.0, 21g), Furman South (+0.1, 21g)) | Division familiarity (-0.3) | Goalies: Jake Oettinger 2.36 vs Filip Gustavsson 3.23 (-0.0)
-
-### Reed Sheppard OVER 2.5 THREES
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Philadelphia 76ers 102 @ Houston Rockets 113
+- **Context:** Friday game | TCU Horned Frogs allows 6.7 R/friday | Arizona Wildcats allows 5.3 R/friday | Pitching edge: Arizona Wildcats (-0.4 pts)
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **156W-124L** |
-| Win Rate | 55.7% |
-| P/L | **+41.5u** |
-| ROI | +3.0% |
-| Wagered | 1365.0u |
+| Record | **162W-126L** |
+| Win Rate | 56.2% |
+| P/L | **+54.9u** |
+| ROI | +3.9% |
+| Wagered | 1404.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| baseball_ncaa | 53 | 36 | +49.1u |
+| baseball_ncaa | 56 | 37 | +56.9u |
 | icehockey_nhl | 41 | 25 | +19.7u |
 | basketball_ncaab | 17 | 12 | +18.7u |
-| basketball_nba | 26 | 22 | +5.4u |
-| soccer_germany_bundesliga | 1 | 1 | -0.2u |
+| soccer_spain_la_liga | 1 | 0 | +3.6u |
+| soccer_germany_bundesliga | 2 | 1 | +2.0u |
+| basketball_nba | 26 | 23 | +0.4u |
 | tennis_atp_miami_open | 1 | 1 | -1.1u |
 | soccer_italy_serie_a | 1 | 1 | -1.8u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | tennis_atp_monte_carlo_masters | 1 | 3 | -10.7u |
-| baseball_mlb | 15 | 21 | -28.0u |
+| baseball_mlb | 16 | 21 | -23.3u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
 
 | Factor | Record | P/L |
 |--------|--------|-----|
-| Friday game | 5W-10L | -28.2u |
 | Home fast-paced | 3W-8L | -27.4u |
+| Friday game | 9W-11L | -15.7u |
 | Park: Chase Field | 1W-3L | -10.4u |
 | Away bounce-back | 4W-4L | -8.0u |
 | Pitching edge: Clemson Tigers | 1W-2L | -7.2u |
-| [SHADOW] Home fast-paced | 3W-4L | -6.2u |
 | Altitude | 2W-3L | -6.1u |
 | Home hot streak | 1W-2L | -5.4u |
+| H2H high-scoring | 1W-2L | -5.3u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
 | Away revenge game | 5W-5L | -4.4u |
 | Midweek game | 15W-13L | -3.8u |
@@ -109,7 +82,7 @@
 ---
 ## Shadow Pick Report
 
-Found 12 shadow-tagged picks.
+Found 14 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -128,8 +101,8 @@ Found 12 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 108W-87L (55.4%) | +48.2u | 0.2 |
-| BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.3 |
+| AT_CAP | 114W-89L (56.2%) | +61.6u | 0.7 |
+| BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.1 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -156,45 +129,43 @@ Found 12 shadow-tagged picks.
 
 | Sport | Side | W | L | P/L |
 |-------|------|---|---|-----|
-| baseball_mlb | OVER | 6 | 9 | -18.6u |
+| baseball_mlb | OVER | 7 | 9 | -13.9u |
 | baseball_mlb | UNDER | 5 | 3 | +6.8u |
-| baseball_ncaa | OVER | 19 | 10 | +30.5u |
-| baseball_ncaa | UNDER | 24 | 21 | -4.6u |
+| baseball_ncaa | OVER | 21 | 11 | +34.3u |
+| baseball_ncaa | UNDER | 25 | 21 | -0.6u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
 | icehockey_nhl | OVER | 9 | 6 | +3.9u |
 | icehockey_nhl | UNDER | 12 | 6 | +16.1u |
-| soccer_germany_bundesliga | OVER | 1 | 0 | +4.8u |
+| soccer_germany_bundesliga | OVER | 2 | 0 | +7.0u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | OVER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | UNDER | 1 | 0 | +3.2u |
+| soccer_spain_la_liga | UNDER | 1 | 0 | +3.6u |
 | soccer_uefa_champs_league | OVER | 0 | 1 | -5.0u |
 | soccer_usa_mls | OVER | 0 | 1 | -4.5u |
 
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS WIN LOSS LOSS LOSS LOSS WIN LOSS LOSS
-- **Current Streak:** 2 LOSS
+- **Last 10:** WIN LOSS WIN WIN WIN WIN LOSS WIN LOSS LOSS
+- **Current Streak:** 1 WIN
 
 ---
 ## Action Items
 
-1. Big red day (-21.9u). Review if any model errors need parameter changes.
-2. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
-3. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
-4. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
-5. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
-6. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
-7. Factor 'Friday game' has -28.2u P/L over 15 bets. Consider reducing weight.
-8. Factor '[SHADOW] Home fast-paced' has -6.2u P/L over 7 bets. Consider reducing weight.
-9. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-10. Concentration risk detected. Review directional exposure limits.
-11. baseball_mlb OVERs: 6W-9L (-18.6u). Review totals model for this sport.
-12. baseball_ncaa UNDERs: 24W-21L (-4.6u). Review totals model for this sport.
-13. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
-14. 2 loss(es) yesterday with CLV < -3% (MODEL ERROR). Review those matchups.
+1. Factor 'Away bounce-back' has -8.0u P/L over 8 bets. Consider reducing weight.
+2. Factor 'Home fast-paced' has -27.4u P/L over 11 bets. Consider reducing weight.
+3. Factor 'Home hot streak' has -5.4u P/L over 3 bets. Consider reducing weight.
+4. Factor 'Altitude' has -6.1u P/L over 5 bets. Consider reducing weight.
+5. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
+6. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
+7. Factor 'Friday game' has -15.7u P/L over 20 bets. Consider reducing weight.
+8. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
+9. Concentration risk detected. Review directional exposure limits.
+10. baseball_mlb OVERs: 7W-9L (-13.9u). Review totals model for this sport.
+11. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-10 05:10 ET*
+*Generated locally by export_briefing_data.py | 2026-04-11 06:41 ET*
