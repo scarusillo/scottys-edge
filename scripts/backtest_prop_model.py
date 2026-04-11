@@ -21,8 +21,8 @@ DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.d
 
 from player_prop_model import (
     get_player_baseline, get_opponent_defense, get_player_context,
-    calculate_prop_edge, _ncdf, _get_player_team, _match_team,
-    MIN_EDGE_PCT, MIN_STARS, DEFAULT_STD, DECAY_RATE, MIN_PLAYER_GAMES,
+    calculate_prop_edge, _get_player_team, _match_team,
+    MIN_EDGE_PCT, MIN_STARS,
 )
 from props_engine import (
     american_to_implied, STAT_TYPE_MAP, PROP_LABEL,

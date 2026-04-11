@@ -21,8 +21,8 @@ Usage:
     python reel_generator.py picks      # Generate picks reel
     python reel_generator.py results --post  # Generate + post to Instagram
 """
-import sqlite3, os, sys, subprocess, tempfile, shutil, math, random
-from datetime import datetime, timedelta
+import sqlite3, os, sys, subprocess, shutil, math, random
+from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import numpy as np
 

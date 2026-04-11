@@ -881,10 +881,14 @@ def generate_stats_card(conn=None, output_path=None, start_date='2026-03-04'):
         elif b[1]=='LOSS': tier_data[tier]['L']+=1
         tier_data[tier]['pnl']+=(b[2] or 0); tier_data[tier]['wager']+=(b[3] or 0)
     # v17: By Sport replaces By Timing (hourly runs make timing irrelevant)
+    # All tennis tournaments lumped under "TENNIS" — no per-tournament breakdown
     sport_data={}
     for b in bets:
         sp=b[0] or 'UNKNOWN'
-        sp_label=SPORT_LABELS.get(sp, sp.replace('_',' ').title())
+        if sp.startswith('tennis_'):
+            sp_label='TENNIS'
+        else:
+            sp_label=SPORT_LABELS.get(sp, sp.replace('_',' ').title())
         if sp_label not in sport_data: sport_data[sp_label]={'W':0,'L':0,'pnl':0}
         if b[1]=='WIN': sport_data[sp_label]['W']+=1
         elif b[1]=='LOSS': sport_data[sp_label]['L']+=1
@@ -1063,158 +1067,6 @@ def generate_pick_writeups(picks, min_units=3.5):
 
     return '\n\n' + ('=' * 50 + '\n\n').join(writeups)
 
-
-# ═══════════════════════════════════════════════════════════════
-# TWITTER THREADS (multi-tweet deep analysis per pick)
-# ═══════════════════════════════════════════════════════════════
-
-def generate_thread(picks, min_units=3.5):
-    """Generate ready-to-post Twitter threads for each pick.
-    Each thread is 3 tweets: hook, data/context, closer with record."""
-    picks = [p for p in picks if p.get('units', 0) >= min_units]
-    if not picks:
-        return ""
-
-    SPORT_NAMES = {
-        'basketball_nba': 'NBA', 'basketball_ncaab': 'NCAAB', 'icehockey_nhl': 'NHL',
-        'baseball_ncaa': 'College Baseball', 'soccer_epl': 'EPL', 'soccer_italy_serie_a': 'Serie A',
-        'soccer_germany_bundesliga': 'Bundesliga', 'soccer_france_ligue_one': 'Ligue 1',
-        'soccer_spain_la_liga': 'La Liga', 'soccer_usa_mls': 'MLS',
-        'soccer_uefa_champs_league': 'UCL',
-    }
-
-    # Pull season record
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        all_g = conn.execute(
-            "SELECT result, pnl_units FROM graded_bets "
-            "WHERE DATE(created_at) >= '2026-03-04' AND result NOT IN ('DUPLICATE','PENDING','TAINTED') "
-            "AND units >= 3.5"
-        ).fetchall()
-        tw = sum(1 for r in all_g if r[0] == 'WIN')
-        tl = sum(1 for r in all_g if r[0] == 'LOSS')
-        tp = sum(r[1] or 0 for r in all_g)
-        conn.close()
-    except Exception:
-        tw, tl, tp = 0, 0, 0.0
-
-    win_pct = tw / (tw + tl) * 100 if (tw + tl) > 0 else 0
-
-    threads = []
-    for idx, p in enumerate(picks, 1):
-        sel = p.get('selection', '')
-        sport = SPORT_NAMES.get(p.get('sport', ''), p.get('sport', ''))
-        mtype = p.get('market_type', '')
-        odds = p.get('odds', 0)
-        edge = p.get('edge_pct', 0)
-        ctx = p.get('context', '') or ''
-        line = p.get('line', '')
-        home = p.get('home', '')
-        away = p.get('away', '')
-        odds_str = f"({odds:+.0f})" if odds else ''
-
-        # === TWEET 1: Hook ===
-        tweet1 = (
-            f"\U0001f9f5 Why our model loves {sel} {odds_str}\n\n"
-            f"{sport} | {edge:.0f}% edge | Data-backed analysis below \U0001f447"
-        )
-        # Trim if over 280
-        if len(tweet1) > 280:
-            tweet1 = (
-                f"\U0001f9f5 {sel} {odds_str}\n\n"
-                f"{sport} | {edge:.0f}% edge | Analysis below \U0001f447"
-            )
-
-        # === TWEET 2: The data ===
-        tweet2_lines = []
-
-        # Opening line based on market type
-        if mtype == 'TOTAL':
-            if 'OVER' in sel.upper():
-                tweet2_lines.append(
-                    f"The market has this total at {line}. Our model says it should be higher."
-                    if line else "Our model says this total is set too low."
-                )
-            else:
-                tweet2_lines.append(
-                    f"The market has this total at {line}. Our model says it's too high."
-                    if line else "Our model says this total is set too high."
-                )
-        elif mtype == 'SPREAD':
-            team = sel.split('+')[0].split('-')[0].strip() if sel else sel
-            tweet2_lines.append(
-                f"The market has {team} at {line}. Our model says they're undervalued."
-                if line else f"{team} is undervalued by the market."
-            )
-        elif mtype == 'MONEYLINE':
-            tweet2_lines.append(
-                f"{sel} at {odds_str} is mispriced. Our model sees {edge:.0f}% edge."
-            )
-        else:
-            tweet2_lines.append(f"Our model sees {edge:.0f}% edge here.")
-
-        tweet2_lines.append("\nHere's why:")
-
-        # Parse context factors
-        ctx_parts = [c.strip() for c in ctx.split('|') if c.strip()] if ctx else []
-        for c in ctx_parts:
-            cl = c.lower()
-            if 'sunday' in cl or 'monday' in cl or 'tuesday' in cl or 'wednesday' in cl or 'thursday' in cl or 'friday' in cl or 'saturday' in cl:
-                if 'allows' in cl or 'scores' in cl or 'r/' in cl:
-                    bullet = f"\U0001f525 {c}"
-                else:
-                    bullet = f"\U0001f4c5 {c} \u2014 we track day-of-week data"
-            elif 'slow-paced' in cl or 'slow pace' in cl:
-                bullet = f"\U0001f40c {c}"
-            elif 'fast-paced' in cl or 'fast pace' in cl:
-                bullet = f"\u26a1 {c}"
-            elif 'bounce-back' in cl or 'bounce back' in cl:
-                bullet = f"\U0001f4c8 {c}"
-            elif 'b2b' in cl or 'back-to-back' in cl:
-                bullet = f"\U0001f634 {c} \u2014 fatigue is real"
-            elif 'pitching' in cl or 'pitcher' in cl:
-                bullet = f"\u26be {c}"
-            elif 'division' in cl or 'familiarity' in cl:
-                bullet = f"\U0001f504 {c} \u2014 these games trend tighter"
-            elif 'altitude' in cl or 'denver' in cl or 'salt lake' in cl:
-                bullet = f"\U0001f3d4\ufe0f {c} \u2014 altitude effect"
-            elif 'derby' in cl or 'rivalry' in cl:
-                bullet = f"\U0001f525 {c} \u2014 rivalry games are tighter"
-            else:
-                bullet = f"\u2022 {c}"
-            tweet2_lines.append(bullet)
-
-        if not ctx_parts:
-            tweet2_lines.append("\u2022 Model spread disagrees with the market")
-
-        tweet2 = '\n'.join(tweet2_lines)
-        # Trim if over 280 — drop lines from the end until it fits
-        while len(tweet2) > 280 and len(tweet2_lines) > 2:
-            tweet2_lines.pop()
-            tweet2 = '\n'.join(tweet2_lines)
-
-        # === TWEET 3: The closer ===
-        tweet3 = (
-            f"Season record: {tw}W-{tl}L | {tp:+.1f}u | {win_pct:.0f}%\n"
-            f"Every pick tracked. Every loss shown. \U0001f4ca\n\n"
-            f"I'm always looking for that edge.\n\n"
-            f"\U0001f4f1 @scottys_edge | \U0001f426 @Scottys_edge"
-        )
-        if len(tweet3) > 280:
-            tweet3 = (
-                f"{tw}W-{tl}L | {tp:+.1f}u | {win_pct:.0f}%\n"
-                f"Every pick tracked. Every loss shown.\n\n"
-                f"I'm always looking for that edge.\n\n"
-                f"@scottys_edge | @Scottys_edge"
-            )
-
-        thread = f"THREAD {idx}:\n"
-        thread += f"---TWEET 1---\n{tweet1}\n\n"
-        thread += f"---TWEET 2---\n{tweet2}\n\n"
-        thread += f"---TWEET 3---\n{tweet3}"
-        threads.append(thread)
-
-    return '\n\n' + ('\n\n' + '=' * 50 + '\n\n').join(threads)
 
 
 # ═══════════════════════════════════════════════════════════════

@@ -21,12 +21,9 @@ from collections import defaultdict
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 
 # Import model components
-from elo_engine import ELO_CONFIG, _expected_score, _mov_multiplier, get_elo_ratings
-from model_engine import (
-    SPORT_CONFIG, spread_to_cover_prob, spread_to_win_prob,
-    american_to_implied_prob, _ncdf,
-)
-from scottys_edge import kelly_units, kelly_label
+from elo_engine import ELO_CONFIG, _expected_score, _mov_multiplier
+from model_engine import SPORT_CONFIG, _ncdf
+from scottys_edge import kelly_units
 
 
 def _rebuild_elo_chronological(games, sport):

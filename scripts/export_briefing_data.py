@@ -507,7 +507,24 @@ def generate_local_briefing(conn=None):
         add()
 
     # ── Context Factor Health ──
-    bad_factors = [f for f, d in factor_perf.items() if d['W'] + d['L'] >= 3 and d['pnl'] < 0]
+    # Suppress factors that are already shadowed or resolved (per data/shadow_factors.md)
+    # so the briefing doesn't keep generating ghost recommendations from frozen historical data.
+    SHADOWED_OR_RESOLVED_FACTORS = {
+        'Home fast-paced',      # shadowed v21
+        'Away bounce-back',     # shadowed v21
+        'Altitude',             # shadowed v21
+        'Home hot streak',      # shadowed v21
+        'Away revenge game',    # shadowed v21
+        'Away letdown spot',    # shadowed v24
+        'Friday game',          # resolved — driven by NCAA UNDERs that are now blocked
+    }
+    bad_factors = [
+        f for f, d in factor_perf.items()
+        if d['W'] + d['L'] >= 3
+        and d['pnl'] < 0
+        and f not in SHADOWED_OR_RESOLVED_FACTORS
+        and not f.startswith('[SHADOW]')
+    ]
     if bad_factors:
         add("---")
         add("## Context Factor Health (Negative P/L, 3+ bets)")
@@ -519,6 +536,7 @@ def generate_local_briefing(conn=None):
             add(f"| {f} | {d['W']}W-{d['L']}L | {d['pnl']:+.1f}u |")
         add()
         add("> Factors with consistent negative P/L may need weight adjustments or removal.")
+        add("> (Already-shadowed factors are filtered — see data/shadow_factors.md.)")
         add()
 
     # ── Shadow Factor Report ──

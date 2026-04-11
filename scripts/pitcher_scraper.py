@@ -26,7 +26,7 @@ Usage:
     python pitcher_scraper.py --analyze          # Show rotation analysis
     python pitcher_scraper.py --team "Vanderbilt" # Single team analysis
 """
-import sqlite3, json, os, sys, io, time, math
+import sqlite3, json, os, sys, io, time
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 

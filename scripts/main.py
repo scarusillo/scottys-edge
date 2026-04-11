@@ -2766,7 +2766,7 @@ Style: Dark ESPN SportsCenter studio. Athletes are fully visible and well-lit wi
 
 def cmd_grade(args):
     import sqlite3
-    from datetime import datetime
+    from datetime import datetime, timedelta
     from grader import daily_grade_and_report
     do_email = has_flag(args, '--email')
     db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')

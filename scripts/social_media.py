@@ -425,7 +425,7 @@ def _get_sport_tags(picks):
         hashtags.update(sport_hashtags.get(s, []))
 
     community_hashtags = ['#SportsBetting', '#FreePicks', '#BettingPicks',
-                          '#GamblingTwitter', '#BettingCommunity', '#ScottysEdge',
+                          '#BettingCommunity', '#ScottysEdge',
                           '#SportsAnalytics', '#BettingModel', '#DataDriven']
     all_hashtags = list(hashtags) + community_hashtags
 

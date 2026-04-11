@@ -289,16 +289,6 @@ def vig_adjusted_spread(posted_spread, odds):
     return round(posted_spread + spread_adjustment, 3)
 
 
-def calculate_true_vig(odds):
-    """Calculate the actual vig/hold as a percentage."""
-    if odds is None:
-        return 4.55  # Assume standard -110/-110
-    if odds < 0:
-        return (abs(odds) / (abs(odds) + 100.0) - 0.5) * 100
-    else:
-        return (0.5 - 100.0 / (odds + 100.0)) * 100
-
-
 # ══════════════════════════════════════════════════════════════
 # 5. SPREAD vs MONEYLINE DECISION
 # ══════════════════════════════════════════════════════════════

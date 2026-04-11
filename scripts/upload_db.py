@@ -124,7 +124,8 @@ def upload_to_github():
          GZ_PATH,
          '--repo', 'scarusillo/scottys-edge',
          '--title', f'Database Snapshot — {today}',
-         '--notes', f'Slim agent DB (recent odds only). Generated {today}.'],
+         '--notes', f'Slim agent DB (recent odds only). Generated {today}.',
+         '--draft=false'],
         capture_output=True, text=True
     )
 
