@@ -240,26 +240,41 @@ def _capture_openers(conn, odds_rows, sport):
 
 def _update_consensus(conn, api_data, sport, tag):
     """Compute market consensus from all books for each event.
-    
+
     KEY DESIGN: Uses MEDIAN spread across books as the true market number.
     This prevents the bug where picking "best number" independently for each
     side leads to contradictory spreads (both sides shown as underdog).
-    
+
     The MEDIAN is what the model evaluates edge against.
     The BOOK recommendation is the best NY-legal line available.
-    
+
     For MLs: picks best available odds from NY-legal books.
     """
     NY_LEGAL = {'DraftKings', 'FanDuel', 'BetMGM', 'Caesars', 'BetRivers',
                 'ESPN BET', 'PointsBet (US)', 'Fanatics', 'Hard Rock Bet', 'Bally Bet'}
-    
+
     now = datetime.now().strftime('%Y-%m-%d')
+    # v25.12: In-progress skip — same as fetch_odds. Without this, live in-game
+    # h2h prices (e.g. Detroit -473 / Miami +380 with Miami losing 3-0 in the 7th)
+    # get written to market_consensus CURRENT row, overwriting the valid pre-game
+    # line. The odds table is correctly filtered, but consensus was not. This
+    # caused bogus BLOWOUT_GATE triggers and corrupted edge calculations for
+    # later picks on the same event.
+    now_utc = datetime.now(timezone.utc)
 
     for event in api_data:
         event_id = event['id']
         home = event['home_team']
         away = event['away_team']
         commence = event['commence_time']
+
+        # Skip in-progress games — never overwrite pre-game consensus with live odds
+        try:
+            gt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
+            if gt <= now_utc:
+                continue
+        except Exception:
+            pass
 
         # ── Collect ALL lines from ALL books ──
         home_spreads = []     # [(point, price, book, is_legal)]
