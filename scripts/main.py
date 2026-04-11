@@ -3558,4 +3558,27 @@ def main():
         print(f"Unknown command: {cmd}"); print(__doc__)
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception as _uncaught_e:
+        import traceback, logging
+        _tb = traceback.format_exc()
+        # Always dump tracebacks to pipeline.log — scheduled tasks don't capture
+        # stderr so without this, uncaught exceptions are invisible.
+        try:
+            _err_log_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                          '..', 'data', 'pipeline.log')
+            with open(_err_log_path, 'a', encoding='utf-8') as _f:
+                from datetime import datetime as _dt
+                _ts = _dt.now().strftime('%Y-%m-%d %H:%M:%S')
+                _f.write(f"{_ts}  UNCAUGHT EXCEPTION: {_uncaught_e}\n")
+                for _line in _tb.splitlines():
+                    _f.write(f"{_ts}    {_line}\n")
+        except Exception:
+            pass
+        # Also try to print to stderr (for manual runs)
+        try:
+            print(f"\nUNCAUGHT EXCEPTION: {_uncaught_e}\n{_tb}", file=sys.stderr)
+        except Exception:
+            pass
+        sys.exit(1)
