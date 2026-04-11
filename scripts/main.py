@@ -1673,6 +1673,7 @@ def _social_media_card(picks):
     
     lines.append(f"")
     lines.append(f"━━━━━━━━━━━━━━━━━━━━")
+    tu = sum(p.get('units', 0) or 0 for p in picks)
     lines.append(f"📊 {len(picks)} plays • {tu:.0f}u total")
     lines.append(f"Every pick tracked & graded")
     lines.append(f"")
