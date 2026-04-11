@@ -65,8 +65,18 @@ AWAY_PENALTY = 0.98
 MIN_EDGE_PCT = 20.0
 MIN_STARS = 2.0
 MAX_PROP_PICKS = 3  # v24: Reduced from 5 — props are a selective add-on, not the main card
-MAX_PROP_ODDS = 150  # v25: Lowered from +200. Above +150 is 1W-3L -6.3u. Below is 12W-10L +5.7u.
+MAX_PROP_ODDS = 140  # v25.13: Lowered from +150. Season calibration showed +141..+150 was 0-2
+                    # and +151..+199 was 1-5 (6 of 10 losing picks were in this zone).
+                    # Below +140 is the only consistently profitable plus-money prop zone.
 MAX_PROP_EDGE = 25.0  # Cap edge like game lines — extreme edges are overestimates
+# v25.13: Prop model calibration — 20-game hit rate captures hot streaks that don't persist.
+# Backtest of 10 graded MLB counting-stat props showed the 20-game rate was 5-30 points
+# higher than the full-season rate on EVERY single pick. Blending 50/50 between recent
+# form and full-season ground truth would have saved ~15u. Required minimum sample of
+# 40 total games to use the blend (otherwise fall back to existing logic).
+PROP_CALIBRATION_BLEND_RECENT = 0.5      # Weight on 20-game rate
+PROP_CALIBRATION_BLEND_SEASON = 0.5      # Weight on full-season rate
+PROP_CALIBRATION_MIN_SEASON_GAMES = 40   # Minimum games required for season rate
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -552,7 +562,30 @@ def _binary_over_prob(projection, line):
     return 1.0 - math.exp(-projection)
 
 
-def calculate_prop_edge(projection, std, market_line, odds, season_values=None):
+def get_full_season_rate(conn, player, stat_type, sport, market_line, min_games=40):
+    """
+    Compute hit rate from ALL available games (no 20-game limit).
+
+    v25.13: Used to regress the 20-game hit rate toward a longer-term baseline.
+    The 20-game window captures hot streaks that don't persist — backtesting
+    showed every one of 10 graded MLB counting-stat losses had a season rate
+    5-30 points lower than the 20-game rate.
+
+    Returns None if player has < min_games of history (fall back to existing logic).
+    """
+    rows = conn.execute("""
+        SELECT stat_value FROM box_scores
+        WHERE player = ? AND stat_type = ? AND sport = ?
+        ORDER BY game_date DESC
+    """, (player, stat_type, sport)).fetchall()
+    if len(rows) < min_games:
+        return None
+    hits = sum(1 for r in rows if r[0] > market_line)
+    return hits / len(rows)
+
+
+def calculate_prop_edge(projection, std, market_line, odds, season_values=None,
+                       full_season_rate=None):
     """
     Calculate edge for an OVER bet.
 
@@ -563,6 +596,12 @@ def calculate_prop_edge(projection, std, market_line, odds, season_values=None):
       - 23% of all MLB players showed "20% edge" under Poisson — not real
     The actual hit rate is the ground truth for binary outcomes.
 
+    v25.13 CALIBRATION: The 20-game hit rate passed in season_values captures
+    hot streaks that don't persist. Backtest of 10 graded MLB counting-stat
+    losses showed every single player's 20-game rate was 5-30 points higher
+    than their full-season rate. When full_season_rate is provided, blend 50/50
+    with the 20-game rate so recent form is one signal, not the only signal.
+
     For continuous lines (1.5+), uses normal CDF as before.
     """
     diff = projection - market_line
@@ -572,18 +611,29 @@ def calculate_prop_edge(projection, std, market_line, odds, season_values=None):
     if std <= 0:
         return 0.0, 0.0
 
-    # Compute actual hit rate from box scores when available
-    season_hit_rate = None
+    # Compute 20-game hit rate from the baseline values (recency-weighted)
+    recent_hit_rate = None
     if season_values and len(season_values) >= 5:
         hits = sum(1 for v in season_values if v > market_line)
-        season_hit_rate = hits / len(season_values)
+        recent_hit_rate = hits / len(season_values)
+
+    # v25.13: Blend recent + full-season rates to regress hot streaks toward mean.
+    # full_season_rate is None when caller doesn't have 40+ games of history — in
+    # that case fall back to the pre-v25.13 logic (20-game rate only).
+    if recent_hit_rate is not None and full_season_rate is not None:
+        season_hit_rate = (
+            PROP_CALIBRATION_BLEND_RECENT * recent_hit_rate
+            + PROP_CALIBRATION_BLEND_SEASON * full_season_rate
+        )
+    else:
+        season_hit_rate = recent_hit_rate
 
     # v25: Use actual hit rate for ALL lines when sufficient data available.
     # Normal CDF overestimates by 3-5% across NBA points, rebounds, assists.
     # Actual hit rate is ground truth — use it for 0.5 AND higher lines.
     # Blend: 70% actual hit rate + 30% CDF model (anchors to data while
     # still using the projection for directional signal).
-    if season_hit_rate is not None and len(season_values) >= 10:
+    if season_hit_rate is not None and season_values and len(season_values) >= 10:
         if market_line == 0.5:
             # Binary: actual hit rate IS the probability (no blending needed)
             raw_prob = season_hit_rate
@@ -900,9 +950,17 @@ def generate_prop_projections(conn=None):
                 if _hit_rate < _implied_break:
                     continue  # Actual hit rate below breakeven — no real edge
 
+            # v25.13: Pull full-season hit rate (40+ games) to regress 20-game rate.
+            # See get_full_season_rate() for rationale — 20-game hot streaks don't
+            # persist, blending with full season is more predictive.
+            _full_season_rate = get_full_season_rate(
+                conn, player, stat_type, sport, line,
+                min_games=PROP_CALIBRATION_MIN_SEASON_GAMES,
+            )
             edge, capped_prob = calculate_prop_edge(
                 proj['projection'], proj['std'], line, odds,
                 season_values=proj.get('values'),
+                full_season_rate=_full_season_rate,
             )
             edge = min(edge, MAX_PROP_EDGE)  # Cap extreme edges
             if edge < MIN_EDGE_PCT:
