@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-12 07:41",
+  "generated_at": "2026-04-12 07:45",
   "game_date": "2026-04-11",
   "yesterday": [
     {
@@ -179,73 +179,21 @@
       "closing_line": 11.0,
       "event_id": "88dd33157aa8fd9a0230cdc356b08127",
       "dt": "2026-04-11"
-    },
-    {
-      "selection": "Xavier Edwards OVER 0.5 RUNS",
-      "sport": "baseball_mlb",
-      "market_type": "PROP",
-      "side_type": "PROP_OVER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 24.18,
-      "odds": 145.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": 0.5,
-      "event_id": "a23f07d17eae739724cce22627234e9d",
-      "dt": "2026-04-11",
-      "actual_score": {
-        "home": "Detroit Tigers",
-        "away": "Miami Marlins",
-        "home_score": 6,
-        "away_score": 1,
-        "actual_total": 7,
-        "actual_margin": 5
-      }
-    },
-    {
-      "selection": "Drake Baldwin OVER 0.5 RUNS",
-      "sport": "baseball_mlb",
-      "market_type": "PROP",
-      "side_type": "PROP_OVER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 24.55,
-      "odds": 120.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": 0.5,
-      "event_id": "5242327588eadc6af4c8050a32d92f63",
-      "dt": "2026-04-11",
-      "actual_score": {
-        "home": "Atlanta Braves",
-        "away": "Cleveland Guardians",
-        "home_score": 0,
-        "away_score": 6,
-        "actual_total": 6,
-        "actual_margin": -6
-      }
     }
   ],
   "season": {
     "result": "LOSS",
     "W": 167,
-    "L": 132,
-    "pnl": 45.5,
-    "wagered": 1459.0
+    "L": 130,
+    "pnl": 55.5,
+    "wagered": 1449.0
   },
   "by_sport": [
     {
       "sport": "baseball_mlb",
       "W": 17,
-      "L": 23,
-      "pnl": -29.0
+      "L": 21,
+      "pnl": -19.0
     },
     {
       "sport": "baseball_ncaa",
@@ -824,13 +772,6 @@
     },
     {
       "day_of_week": "Saturday",
-      "sport": "baseball_mlb",
-      "W": 5,
-      "L": 4,
-      "pnl": 2.9
-    },
-    {
-      "day_of_week": "Saturday",
       "sport": "basketball_nba",
       "W": 2,
       "L": 1,
@@ -907,6 +848,13 @@
       "pnl": 11.4
     },
     {
+      "day_of_week": "Saturday",
+      "sport": "baseball_mlb",
+      "W": 5,
+      "L": 2,
+      "pnl": 12.9
+    },
+    {
       "day_of_week": "Tuesday",
       "sport": "icehockey_nhl",
       "W": 6,
@@ -939,8 +887,8 @@
     {
       "bucket": "AT_CAP",
       "W": 119,
-      "L": 95,
-      "pnl": 52.2,
+      "L": 93,
+      "pnl": 62.2,
       "avg_clv": 0.7
     },
     {
@@ -1146,8 +1094,6 @@
   ],
   "ungraded": [],
   "last_10": [
-    "LOSS",
-    "LOSS",
     "WIN",
     "WIN",
     "LOSS",
@@ -1155,10 +1101,12 @@
     "LOSS",
     "WIN",
     "WIN",
+    "WIN",
+    "LOSS",
     "WIN"
   ],
   "streak": 2,
-  "streak_type": "LOSS",
+  "streak_type": "WIN",
   "shadow_blocked_picks": [
     {
       "created_at": "2026-04-12T00:03:12.240864+00:00",
@@ -2409,12 +2357,12 @@
     },
     {
       "book": "BetMGM",
-      "bets": 61,
+      "bets": 59,
       "wins": 31,
-      "losses": 30,
-      "pnl": -29.0,
-      "wagered": 296.5,
-      "avg_clv": 0.21
+      "losses": 28,
+      "pnl": -19.0,
+      "wagered": 286.5,
+      "avg_clv": 0.22
     }
   ]
 }

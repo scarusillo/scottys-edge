@@ -1,11 +1,11 @@
 # Scotty's Edge Morning Briefing
-**Date:** Sunday, April 12, 2026 | **Generated:** 07:41 AM ET
+**Date:** Sunday, April 12, 2026 | **Generated:** 07:45 AM ET
 **Game Date Graded:** 2026-04-11
 
 ---
 ## Yesterday's Results
 
-**5W-6L-0P | -9.4u | RED DAY**
+**5W-4L-0P | +0.6u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
@@ -18,8 +18,6 @@
 | Udinese@AC Milan UNDER 2.5 | soccer_italy_serie_a | UNDER | +102 | 5.0 | **L** | -5.0 | 0.0% |
 | West Virginia Mountaineers@Texas Tech Red Rai | baseball_ncaa | OVER | -115 | 5.0 | **L** | -5.0 | 0.0% |
 | Virginia Cavaliers@Notre Dame Fighting Irish  | baseball_ncaa | OVER | -115 | 5.0 | **L** | -5.0 | 0.0% |
-| Xavier Edwards OVER 0.5 RUNS | baseball_mlb | PROP_OVER | +145 | 5.0 | **L** | -5.0 | 0.0% |
-| Drake Baldwin OVER 0.5 RUNS | baseball_mlb | PROP_OVER | +120 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
@@ -48,26 +46,16 @@
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
 - **Context:** Saturday game | Notre Dame Fighting Irish allows 5.9 R/saturday | Virginia Cavaliers allows 7.9 R/saturday | Pitching edge: Notre Dame Fighting Irish (+0.6 pts)
 
-### Xavier Edwards OVER 0.5 RUNS
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Miami Marlins 1 @ Detroit Tigers 6
-
-### Drake Baldwin OVER 0.5 RUNS
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Cleveland Guardians 6 @ Atlanta Braves 0
-
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **167W-132L** |
-| Win Rate | 55.9% |
-| P/L | **+45.5u** |
-| ROI | +3.1% |
-| Wagered | 1459.0u |
+| Record | **167W-130L** |
+| Win Rate | 56.2% |
+| P/L | **+55.5u** |
+| ROI | +3.8% |
+| Wagered | 1449.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -82,7 +70,7 @@
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | 1 | 2 | -6.8u |
 | TENNIS | 2 | 4 | -11.8u |
-| baseball_mlb | 17 | 23 | -29.0u |
+| baseball_mlb | 17 | 21 | -19.0u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -123,7 +111,7 @@ Found 15 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 119W-95L (55.6%) | +52.2u | 0.7 |
+| AT_CAP | 119W-93L (56.1%) | +62.2u | 0.7 |
 | BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.1 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -172,20 +160,19 @@ Found 15 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS WIN WIN LOSS LOSS LOSS WIN WIN WIN
-- **Current Streak:** 2 LOSS
+- **Last 10:** WIN WIN LOSS LOSS LOSS WIN WIN WIN LOSS WIN
+- **Current Streak:** 2 WIN
 
 ---
 ## Action Items
 
-1. Big red day (-9.4u). Review if any model errors need parameter changes.
-2. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
-3. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
-4. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
-5. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-6. Concentration risk detected. Review directional exposure limits.
-7. baseball_mlb OVERs: 7W-9L (-13.9u). Review totals model for this sport.
-8. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+1. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
+2. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
+3. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
+4. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
+5. Concentration risk detected. Review directional exposure limits.
+6. baseball_mlb OVERs: 7W-9L (-13.9u). Review totals model for this sport.
+7. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-12 07:41 ET*
+*Generated locally by export_briefing_data.py | 2026-04-12 07:45 ET*
