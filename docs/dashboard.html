@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scotty's Edge | P&L Dashboard</title>
+<meta name="theme-color" content="#0d1117">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0d1117; --bg-card: #141e2a; --green: #00e676; --red: #ff5252;
+  --white: #ffffff; --white-80: #cccccc; --white-60: #999999;
+}
+body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); padding: 20px; max-width: 1200px; margin: 0 auto; }
+h1 { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; color: var(--green); margin-bottom: 5px; }
+.subtitle { color: var(--white-60); margin-bottom: 30px; font-size: 0.9rem; }
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 30px; }
+.stat-card { background: var(--bg-card); border-radius: 12px; padding: 20px; text-align: center; }
+.stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; }
+.stat-value.green { color: var(--green); }
+.stat-value.red { color: var(--red); }
+.stat-label { color: var(--white-60); font-size: 0.8rem; text-transform: uppercase; margin-top: 5px; }
+.chart-container { background: var(--bg-card); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.chart-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--white-80); margin-bottom: 15px; }
+canvas { max-height: 300px; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+th, td { padding: 10px 15px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.1); }
+th { color: var(--white-60); font-size: 0.8rem; text-transform: uppercase; }
+td { font-size: 0.95rem; }
+.positive { color: var(--green); }
+.negative { color: var(--red); }
+a { color: var(--green); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.back-link { margin-bottom: 20px; display: inline-block; }
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  h1 { font-size: 1.8rem; }
+}
+</style>
+</head>
+<body>
+<a href="index.html" class="back-link">&larr; Back to Home</a>
+<h1>P&L Dashboard</h1>
+<p class="subtitle">Updated 2026-04-13 04:30 PM ET | Public record (3.5u+ picks)</p>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <div class="stat-value green">177W-137L</div>
+    <div class="stat-label">Season Record</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value green">+64.7u</div>
+    <div class="stat-label">Season P&L</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value green">56.4%</div>
+    <div class="stat-label">Win Rate</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value green">$8,235</div>
+    <div class="stat-label">Bankroll</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value red">-62.8u</div>
+    <div class="stat-label">Max Drawdown</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">319</div>
+    <div class="stat-label">Total Bets</div>
+  </div>
+</div>
+
+<div class="chart-container">
+  <div class="chart-title">Equity Curve (Cumulative P&L)</div>
+  <canvas id="equityChart"></canvas>
+</div>
+
+<div class="chart-container">
+  <div class="chart-title">Weekly P&L</div>
+  <canvas id="weeklyChart"></canvas>
+</div>
+
+<div class="chart-container">
+  <div class="chart-title">Drawdown</div>
+  <canvas id="drawdownChart"></canvas>
+</div>
+
+<div class="chart-container">
+  <div class="chart-title">P&L by Sport</div>
+  <canvas id="sportChart"></canvas>
+</div>
+
+<div class="chart-container">
+  <div class="chart-title">Monthly Breakdown</div>
+  <table>
+    <thead><tr><th>Month</th><th>Bets</th><th>W-L</th><th>Win%</th><th>P&L</th><th>CLV</th></tr></thead>
+    <tbody>
+      <tr><td>2026-03</td><td>214</td><td>125W-86L</td><td>59.2%</td><td class="positive">+88.5u</td><td>+0.35</td></tr>
+      <tr><td>2026-04</td><td>105</td><td>52W-51L</td><td>50.5%</td><td class="negative">-23.7u</td><td>+0.40</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="chart-container">
+  <div class="chart-title">P&L by Book</div>
+  <table>
+    <thead><tr><th>Book</th><th>Bets</th><th>W-L</th><th>Win%</th><th>P&L</th></tr></thead>
+    <tbody>
+      <tr><td>FanDuel</td><td>75</td><td>49W-26L</td><td>65.3%</td><td class="positive">+75.5u</td></tr>
+      <tr><td>Fanatics</td><td>27</td><td>18W-9L</td><td>66.7%</td><td class="positive">+29.6u</td></tr>
+      <tr><td>BetRivers</td><td>38</td><td>22W-15L</td><td>59.5%</td><td class="positive">+15.4u</td></tr>
+      <tr><td>None</td><td>1</td><td>1W-0L</td><td>100.0%</td><td class="positive">+6.5u</td></tr>
+      <tr><td>BetMGM</td><td>59</td><td>31W-28L</td><td>52.5%</td><td class="negative">-19.0u</td></tr>
+      <tr><td>Caesars</td><td>40</td><td>18W-20L</td><td>47.4%</td><td class="negative">-19.2u</td></tr>
+      <tr><td>DraftKings</td><td>79</td><td>38W-39L</td><td>49.4%</td><td class="negative">-24.0u</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<p style="color: var(--white-60); font-size: 0.8rem; text-align: center; margin-top: 30px;">
+  Not gambling advice &bull; 21+ &bull; 1-800-GAMBLER<br>
+  <a href="https://instagram.com/scottys_edge">@scottys_edge</a> &bull;
+  <a href="https://discord.gg/JQ6rRfuN">Discord</a>
+</p>
+
+<script>
+const chartDefaults = {
+  responsive: true,
+  plugins: { legend: { display: false } },
+};
+Chart.defaults.color = '#999';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+
+// Equity Curve
+new Chart(document.getElementById('equityChart'), {
+  type: 'line',
+  data: {
+    labels: ["2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-08", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12"],
+    datasets: [{
+      data: [2.8, 10.0, 14.9, 8.1, 11.6, 19.9, 18.7, 30.8, 40.1, 34.3, 33.6, 39.0, 53.8, 54.6, 56.3, 93.9, 107.1, 103.6, 93.9, 100.6, 76.7, 95.7, 90.7, 76.1, 88.5, 78.5, 77.4, 79.2, 104.0, 84.2, 61.2, 74.1, 66.2, 44.3, 57.7, 58.3, 64.7],
+      borderColor: '#00e676',
+      backgroundColor: 'rgba(0,230,118,0.1)',
+      fill: true,
+      tension: 0.3,
+      pointRadius: 0,
+      borderWidth: 2,
+    }]
+  },
+  options: { ...chartDefaults, scales: { y: { title: { display: true, text: 'Units' } } } }
+});
+
+// Weekly P&L
+new Chart(document.getElementById('weeklyChart'), {
+  type: 'bar',
+  data: {
+    labels: ["2026-W09", "2026-W10", "2026-W11", "2026-W12", "2026-W13", "2026-W14"],
+    datasets: [{
+      data: [11.6, 21.9, 60.3, -3.2, -6.5, -19.4],
+      backgroundColor: ["rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)"],
+      borderRadius: 4,
+    }]
+  },
+  options: { ...chartDefaults, scales: { y: { title: { display: true, text: 'Units' } } } }
+});
+
+// Drawdown
+new Chart(document.getElementById('drawdownChart'), {
+  type: 'line',
+  data: {
+    labels: ["2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-08", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12"],
+    datasets: [{
+      data: [0.0, 0.0, 0.0, -6.8, -3.3, 0.0, -1.2, 0.0, 0.0, -5.8, -6.5, -1.1, 0.0, 0.0, 0.0, 0.0, 0.0, -3.5, -13.2, -6.5, -30.4, -11.4, -16.4, -31.0, -18.6, -28.6, -29.7, -27.9, -3.1, -22.9, -45.9, -33.0, -40.9, -62.8, -49.4, -48.8, -42.4],
+      borderColor: '#ff5252',
+      backgroundColor: 'rgba(255,82,82,0.1)',
+      fill: true,
+      tension: 0.3,
+      pointRadius: 0,
+      borderWidth: 2,
+    }]
+  },
+  options: { ...chartDefaults, scales: { y: { title: { display: true, text: 'Units from peak' } } } }
+});
+
+// Sport P&L
+new Chart(document.getElementById('sportChart'), {
+  type: 'bar',
+  data: {
+    labels: ["NCAA", "NHL", "NCAAB", "SPAIN_LA_LIGA", "GERMANY_BUNDESLIGA", "NBA", "TENNIS_ATP_MIAMI_OPEN", "USA_MLS", "UEFA_CHAMPS_LEAGUE", "ITALY_SERIE_A", "TENNIS_ATP_MONTE_CARLO_MASTERS", "MLB"],
+    datasets: [{
+      data: [54.6, 30.4, 13.1, 7.8, 2.0, 0.5, -1.1, -4.5, -5.0, -6.8, -10.7, -15.6],
+      backgroundColor: ["rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)"],
+      borderRadius: 4,
+    }]
+  },
+  options: { ...chartDefaults, indexAxis: 'y', scales: { x: { title: { display: true, text: 'Units' } } } }
+});
+</script>
+</body>
+</html>

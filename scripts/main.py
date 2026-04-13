@@ -3197,7 +3197,16 @@ def cmd_grade(args):
         except Exception as e:
             print(f"  Kling prompt: {e}")
 
-        grade_report = (report or "") + agent_block + kling_section
+        # Generate P&L dashboard (updates docs/dashboard.html for GitHub Pages)
+        dashboard_section = ""
+        try:
+            from generate_dashboard import generate as gen_dashboard
+            gen_dashboard()
+            dashboard_section = f"\n\n{'='*60}\nP&L DASHBOARD: https://scarusillo.github.io/scottys-edge/dashboard.html\n{'='*60}"
+        except Exception as e:
+            print(f"  Dashboard: {e}")
+
+        grade_report = (report or "") + agent_block + kling_section + dashboard_section
         email_ok = send_grading_email(grade_report, html_body=results_html_content, attachment_paths=card_paths)
         if not email_ok:
             print("  ❌ EMAIL FAILED — grades were saved but not delivered. Check GMAIL_APP_PASSWORD env var.")
