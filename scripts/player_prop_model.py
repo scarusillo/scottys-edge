@@ -38,6 +38,13 @@ from box_scores import get_player_batting_order
 
 MIN_PLAYER_GAMES = 15  # v24: Was 5 — too low, firing on early-season noise (Murakami 10 games)
 MIN_OPP_GAMES = 10
+
+# v25.16: Current-season volume gates for MLB props.
+# Prevents firing on players with only prior-season data or tiny 2026 samples.
+# Pitchers: 20 IP = ~3-4 starts. Enough to confirm role + current form.
+# Batters: 40 AB = ~10 games. Enough to establish 2026 baseline.
+MLB_PITCHER_MIN_IP_CURRENT_SEASON = 20.0
+MLB_BATTER_MIN_AB_CURRENT_SEASON = 40
 DECAY_RATE = 0.92  # 0.92^10 = 0.43 → game 10 ago has 43% weight
 
 # Population-level std defaults (used when player has < 8 games)
@@ -916,6 +923,29 @@ def generate_prop_projections(conn=None):
                             continue
             except Exception:
                 pass
+
+        # v25.16: Current-season volume gate for MLB
+        # Pitchers need 20+ IP, batters need 40+ AB in the current season.
+        # Prevents betting on players with only prior-year data.
+        if 'baseball_mlb' in (sport or ''):
+            _current_year = datetime.now(timezone.utc).strftime('%Y')
+            _season_start = f'{_current_year}-01-01'
+            if stat_type in PITCHER_STATS:
+                _ip_row = conn.execute("""
+                    SELECT COALESCE(SUM(stat_value), 0) / 3.0 FROM box_scores
+                    WHERE player = ? AND stat_type = 'pitcher_outs'
+                    AND sport = 'baseball_mlb' AND game_date >= ?
+                """, (player, _season_start)).fetchone()
+                if not _ip_row or _ip_row[0] < MLB_PITCHER_MIN_IP_CURRENT_SEASON:
+                    continue  # Not enough current-season innings
+            elif stat_type in BATTER_STATS:
+                _ab_row = conn.execute("""
+                    SELECT COALESCE(SUM(stat_value), 0) FROM box_scores
+                    WHERE player = ? AND stat_type = 'at_bats'
+                    AND sport = 'baseball_mlb' AND game_date >= ?
+                """, (player, _season_start)).fetchone()
+                if not _ab_row or _ab_row[0] < MLB_BATTER_MIN_AB_CURRENT_SEASON:
+                    continue  # Not enough current-season at-bats
 
         # Project this player's stat
         proj = project_player_stat(conn, player, stat_type, sport,
