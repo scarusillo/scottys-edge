@@ -121,6 +121,7 @@ def calculate_book_disagreement(book_odds):
         return None  # No soft books to compare against
 
     sharp_consensus = statistics.mean(sharp_implieds)
+    sharp_lines = [l for l in sharp_lines if l is not None]
     sharp_line = statistics.median(sharp_lines) if sharp_lines else None
 
     # Calculate edge for each soft book
