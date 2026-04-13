@@ -352,7 +352,7 @@ EXCLUDED_BOOKS = {'Bovada', 'BetOnline.ag', 'BetUS', 'MyBookie.ag', 'LowVig.ag'}
 KELLY_FRACTION = 0.125
 MAX_UNITS = 5.0
 MIN_UNITS = 0.5
-MIN_ODDS = -180          # Block heavy favorites (odds worse than -180)
+MIN_ODDS = -150          # Block heavy favorites (odds worse than -150)
 
 
 # ═══════════════════════════════════════════════════════════════

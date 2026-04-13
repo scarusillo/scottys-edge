@@ -56,11 +56,10 @@ def send_email(subject, body, to_addr=None, attachment_path=None):
             print(f"  ⚠ Attachment failed: {e}")
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(GMAIL_ADDRESS, GMAIL_PASSWORD.replace(' ', ''))
-        server.send_message(msg)
-        server.quit()
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(GMAIL_ADDRESS, GMAIL_PASSWORD.replace(' ', ''))
+            server.send_message(msg)
         print(f"  ✅ Email sent: {subject}")
         return True
     except smtplib.SMTPAuthenticationError:
@@ -123,11 +122,10 @@ def _send_multi_attachment(subject, body, paths):
             print(f"  📎 Attached: {os.path.basename(path)}")
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(GMAIL_ADDRESS, GMAIL_PASSWORD.replace(' ', ''))
-        server.send_message(msg)
-        server.quit()
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(GMAIL_ADDRESS, GMAIL_PASSWORD.replace(' ', ''))
+            server.send_message(msg)
         print(f"  ✅ Email sent: {subject}")
         return True
     except Exception as e:
@@ -191,11 +189,10 @@ def send_html_email(subject, plain_body, html_body, to_addr=None, attachment_pat
                 print(f"  ⚠ Attachment failed: {e}")
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(GMAIL_ADDRESS, GMAIL_PASSWORD.replace(' ', ''))
-        server.send_message(msg)
-        server.quit()
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login(GMAIL_ADDRESS, GMAIL_PASSWORD.replace(' ', ''))
+            server.send_message(msg)
         print(f"  ✅ Email sent: {subject}")
         return True
     except Exception as e:

@@ -621,20 +621,25 @@ def _mlb_pitcher_era_adjustment(conn, mlb_pitcher_info):
     Brewers/Nats 4/10: Patrick 3.27 vs Irvin 5.00 → sum +0.1 → no veto under
     old logic. New logic: best_era=3.27 → veto over.
 
-    Returns (adjustment, context_string, best_era, worst_era) tuple.
+    Returns (adjustment, context_string, best_era, worst_era, both_reliable) tuple.
     best_era/worst_era are None if no data.
+    both_reliable: True if both starters have a confirmed ERA source.
     """
     LEAGUE_AVG_ERA = 4.00
     SCALE_FACTOR = 1.5  # Each 1.0 ERA above avg -> ~0.375 more runs allowed
     MAX_ADJ = 2.0
 
     if not mlb_pitcher_info:
-        return 0.0, '', None, None
+        return 0.0, '', None, None, False
 
     home_pitcher = mlb_pitcher_info.get('home_pitcher')
     away_pitcher = mlb_pitcher_info.get('away_pitcher')
 
     # Get ERA for each pitcher: prefer box_scores season ERA, fall back to ESPN ERA
+    # v25.14: Opener detection — if avg IP/appearance < 3.0, pitcher is a
+    # bulk opener or reliever (e.g. Grant Taylor 1.0 IP avg). Their low ERA
+    # reflects 1-inning work, not starter quality. Fall through to ESPN gate
+    # (which requires 30+ IP) or return None → league average adjustment.
     def _get_best_era(pitcher_name, espn_era):
         """Get best available ERA: box_scores first, then ESPN."""
         if pitcher_name:
@@ -644,13 +649,19 @@ def _mlb_pitcher_era_adjustment(conn, mlb_pitcher_info):
                         SUM(CASE WHEN stat_type='pitcher_er' THEN stat_value ELSE 0 END) * 9.0 /
                         NULLIF(SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END), 0)
                     , 2) as era,
-                    SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END) as total_ip
+                    SUM(CASE WHEN stat_type='pitcher_ip' THEN stat_value ELSE 0 END) as total_ip,
+                    COUNT(DISTINCT game_date) as appearances
                     FROM box_scores
                     WHERE sport='baseball_mlb'
                     AND player LIKE ?
                     AND stat_type IN ('pitcher_er', 'pitcher_ip')
                 """, (f"%{pitcher_name}%",)).fetchone()
                 if row and row[0] is not None and row[1] and row[1] >= 10:
+                    # Opener check: avg IP per appearance < 3.0 = reliever/opener
+                    avg_ip = row[1] / row[2] if row[2] and row[2] > 0 else 0
+                    if avg_ip < 3.0:
+                        print(f"  ⚠ {pitcher_name}: avg {avg_ip:.1f} IP/app ({row[1]:.0f} IP / {row[2]} games) — opener, using league avg")
+                        return None  # Fall through to league average
                     return row[0]  # Enough IP for reliable ERA
             except Exception:
                 pass
@@ -704,7 +715,10 @@ def _mlb_pitcher_era_adjustment(conn, mlb_pitcher_info):
     best_era = min(eras) if eras else None
     worst_era = max(eras) if eras else None
 
-    return total_adj, ctx_str, best_era, worst_era
+    # v25.14: both_reliable = True only if BOTH starters have confirmed ERA
+    both_reliable = (home_era is not None and away_era is not None)
+
+    return total_adj, ctx_str, best_era, worst_era, both_reliable
 
 
 def _log_park_veto(conn, sport, event_id, selection, park_adj, park_ctx):
@@ -2461,9 +2475,10 @@ def generate_predictions(conn, sport=None, date=None):
                         _era_adj = 0.0
                         _best_era = None   # v25.3: lowest ERA in matchup (for asymmetric gate)
                         _worst_era = None  # v25.3: highest ERA in matchup
+                        _both_era_reliable = False  # v25.14: both starters have confirmed ERA
                         if sp == 'baseball_mlb' and _mlb_pitcher_info:
                             try:
-                                _era_adj, _pitcher_era_ctx, _best_era, _worst_era = _mlb_pitcher_era_adjustment(
+                                _era_adj, _pitcher_era_ctx, _best_era, _worst_era, _both_era_reliable = _mlb_pitcher_era_adjustment(
                                     conn, _mlb_pitcher_info)
                                 if _era_adj != 0:
                                     model_total += _era_adj
@@ -2574,6 +2589,22 @@ def generate_predictions(conn, sport=None, date=None):
                         _pitching_veto_over = (sp in ('baseball_mlb', 'baseball_ncaa')
                                                and (_era_adj <= -0.5
                                                     or (_best_era is not None and _best_era < 3.50)))
+                        # v25.14: ERA reliability gate — MLB totals require both starters
+                        # to have a confirmed ERA. If either shows ?.?? the model is guessing
+                        # (e.g. Gallen 5.38 from 2025 box_scores when 2026 is 0.82 ERA).
+                        _era_reliability_veto = (sp == 'baseball_mlb' and not _both_era_reliable)
+                        if _era_reliability_veto:
+                            try:
+                                conn.execute("""
+                                    INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
+                                        market_type, line, odds, edge_pct, units, reason)
+                                    VALUES (?, ?, ?, ?, 'TOTAL', ?, NULL, NULL, NULL, ?)
+                                """, (datetime.now().isoformat(), sp, eid,
+                                      f"{away}@{home} OVER {over_total}", over_total,
+                                      f"ERA_RELIABILITY_GATE (missing reliable ERA for 1+ starters: {_pitcher_era_ctx})"))
+                                conn.commit()
+                            except Exception:
+                                pass
                         # v25.1: Direction gate — raw model must agree with bet direction.
                         # Context factors (pace, pitching, H2H) can inflate model_total past
                         # the line even when the raw model disagrees. 9 of 14 MLB overs and
@@ -2581,7 +2612,7 @@ def generate_predictions(conn, sport=None, date=None):
                         # (MLB) and 0W-2L (soccer). Context should confirm, not override.
                         _direction_veto_over = (('soccer' in sp or sp == 'baseball_mlb')
                                                 and _raw_model_total < over_total)
-                        if k not in seen and not _mlb_skip_total and not _park_veto_over and not _pitching_veto_over and not _direction_veto_over:
+                        if k not in seen and not _mlb_skip_total and not _park_veto_over and not _pitching_veto_over and not _direction_veto_over and not _era_reliability_veto:
                             total_diff = model_total - over_total
                             if total_diff > 0:  # Model says higher scoring
                                 pv = calculate_point_value_totals(model_total, over_total, sp)
@@ -2684,7 +2715,20 @@ def generate_predictions(conn, sport=None, date=None):
                         # v25.1: Direction gate — raw model must agree with UNDER direction
                         _direction_veto_under = (('soccer' in sp or sp == 'baseball_mlb')
                                                  and _raw_model_total > (under_total or 0))
-                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _ncaa_skip_under and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under and not _pitching_veto_under and not _direction_veto_under:
+                        # v25.14: ERA reliability gate for UNDERs too
+                        if _era_reliability_veto and under_total is not None:
+                            try:
+                                conn.execute("""
+                                    INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
+                                        market_type, line, odds, edge_pct, units, reason)
+                                    VALUES (?, ?, ?, ?, 'TOTAL', ?, NULL, NULL, NULL, ?)
+                                """, (datetime.now().isoformat(), sp, eid,
+                                      f"{away}@{home} UNDER {under_total}", under_total,
+                                      f"ERA_RELIABILITY_GATE (missing reliable ERA for 1+ starters: {_pitcher_era_ctx})"))
+                                conn.commit()
+                            except Exception:
+                                pass
+                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _ncaa_skip_under and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under and not _pitching_veto_under and not _direction_veto_under and not _era_reliability_veto:
                             k = f"{eid}|T|UNDER"
                             if k not in seen:
                                 total_diff_u = under_total - model_total
@@ -2852,7 +2896,7 @@ def generate_predictions(conn, sport=None, date=None):
         # v18: Block heavy favorites — odds worse than -180 are un-bettable
         from config import MIN_ODDS
         p_odds = p.get('odds')
-        if p_odds is not None and p_odds < MIN_ODDS:
+        if p_odds is not None and p_odds <= MIN_ODDS:
             continue
         is_ml = p.get('market_type') == 'MONEYLINE'
         min_stars = 1.0 if is_ml else 2.0
