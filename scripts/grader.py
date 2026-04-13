@@ -204,14 +204,25 @@ def get_closing_line(conn, event_id, market, selection, bet_book=None):
     if '@' in odds_selection and ('OVER' in selection or 'UNDER' in selection):
         odds_selection = 'Over' if 'OVER' in selection else 'Under'
 
+    # v25.16: Filter out in-game live odds (mirrors _get_prop_closing_line)
+    ct_row = conn.execute(
+        "SELECT commence_time FROM odds WHERE event_id=? AND commence_time IS NOT NULL LIMIT 1",
+        (event_id,)
+    ).fetchone()
+    commence_filter = ""
+    params_ct = ()
+    if ct_row and ct_row[0]:
+        commence_filter = " AND (snapshot_date || ' ' || snapshot_time) < ?"
+        params_ct = (ct_row[0],)
+
     # Priority 1: Same book's last snapshot (apples-to-apples comparison)
     if bet_book:
         row = conn.execute("""
             SELECT line, odds, snapshot_date, snapshot_time, book FROM odds
-            WHERE event_id=? AND market=? AND selection=? AND book=?
+            WHERE event_id=? AND market=? AND selection=? AND book=?""" + commence_filter + """
             ORDER BY snapshot_date DESC, snapshot_time DESC
             LIMIT 1
-        """, (event_id, market, odds_selection, bet_book)).fetchone()
+        """, (event_id, market, odds_selection, bet_book) + params_ct).fetchone()
         if row:
             snap_ts = f"{row[2]} {row[3]}" if row[2] and row[3] else None
             return row[0], row[1], snap_ts, row[4]
@@ -224,12 +235,12 @@ def get_closing_line(conn, event_id, market, selection, bet_book=None):
         INNER JOIN (
             SELECT book, MAX(snapshot_date || ' ' || snapshot_time) as max_snap
             FROM odds
-            WHERE event_id=? AND market=? AND selection=?
+            WHERE event_id=? AND market=? AND selection=?""" + commence_filter + """
             GROUP BY book
         ) latest ON o.book = latest.book
             AND (o.snapshot_date || ' ' || o.snapshot_time) = latest.max_snap
-        WHERE o.event_id=? AND o.market=? AND o.selection=?
-    """, (event_id, market, odds_selection, event_id, market, odds_selection)).fetchall()
+        WHERE o.event_id=? AND o.market=? AND o.selection=?""" + commence_filter + """
+    """, (event_id, market, odds_selection) + params_ct + (event_id, market, odds_selection) + params_ct).fetchall()
     
     if not rows:
         # v25: Check prop_snapshots table for prop markets
