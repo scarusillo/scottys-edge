@@ -2876,8 +2876,18 @@ def cmd_grade(args):
                     _event_counts[b[6]] = _event_counts.get(b[6], 0) + 1
             _correlated = {k: v for k, v in _event_counts.items() if v >= 2}
 
+            # Bankroll tracking
+            from config import BANKROLL_START, UNIT_VALUE
+            _season_units = conn.execute("SELECT COALESCE(SUM(pnl_units), 0) FROM graded_bets WHERE result IN ('WIN','LOSS','PUSH') AND units >= 3.5").fetchone()[0]
+            _bankroll_pnl = _season_units * UNIT_VALUE
+            _bankroll_current = BANKROLL_START + _bankroll_pnl
+            _day_dollars = _gpnl * UNIT_VALUE
+
             _qa_lines = []
-            _qa_lines.append(f"{_gw}W-{_gl}L {_gpnl:+.1f}u — {_day_label}")
+            _dd_sign = '+' if _day_dollars >= 0 else '-'
+            _bp_sign = '+' if _bankroll_pnl >= 0 else '-'
+            _qa_lines.append(f"{_gw}W-{_gl}L {_gpnl:+.1f}u ({_dd_sign}${abs(_day_dollars):,.0f}) \u2014 {_day_label}")
+            _qa_lines.append(f"Bankroll: ${_bankroll_current:,.0f} (started ${BANKROLL_START:,} | {_bp_sign}${abs(_bankroll_pnl):,.0f})")
 
             if _neg_clv:
                 _qa_lines.append(f"CLV flags: {len(_neg_clv)} pick(s) with CLV < -3% (model error)")
@@ -3030,7 +3040,12 @@ def cmd_grade(args):
         if _yp >= 10: ig += " \U0001f525"
         ig += f"\n\n{verdict}\n\n"
         ig += "\n".join(_lines)
-        ig += f"\n\nSeason: {_tw}W-{_tl}L | {_tp:+.1f}u | {_twp:.1f}%"
+        from config import BANKROLL_START, UNIT_VALUE
+        _br_pnl = _tp * UNIT_VALUE
+        _br_current = BANKROLL_START + _br_pnl
+        _br_sign = '+' if _br_pnl >= 0 else '-'
+        ig += f"\n\nSeason: {_tw}W-{_tl}L | {_tp:+.1f}u ({_br_sign}${abs(_br_pnl):,.0f}) | {_twp:.1f}%"
+        ig += f"\nBankroll: ${_br_current:,.0f}"
         ig += "\nEvery pick tracked & graded \U0001f4ca"
         if _yp < 0:
             ig += "\n\nIt's all part of the game."

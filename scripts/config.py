@@ -354,6 +354,15 @@ MAX_UNITS = 5.0
 MIN_UNITS = 0.5
 MIN_ODDS = -150          # Block heavy favorites (odds worse than -150)
 
+# ═══════════════════════════════════════════════════════════════
+# BANKROLL TRACKING
+# ═══════════════════════════════════════════════════════════════
+# Starting bankroll and unit value for P&L tracking in dollars.
+# Unit value = BANKROLL_START / 100. Review monthly.
+# This does NOT change bet sizing — it's for reporting only.
+BANKROLL_START = 5000     # Starting bankroll in dollars
+UNIT_VALUE = 50           # Dollars per unit (BANKROLL_START / 100)
+
 
 # ═══════════════════════════════════════════════════════════════
 # STAR THRESHOLDS (point value % -> star rating)

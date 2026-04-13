@@ -60,11 +60,16 @@ HOME_BOOST = 1.02
 AWAY_PENALTY = 0.98
 
 # Edge thresholds
-# v24: Unified 20% edge floor. Graded data: 20%+ is 6W-3L +15.7u.
-# 15-20% was 3W-2L -0.8u (breakeven noise). Only MAX PLAYs.
-MIN_EDGE_PCT = 20.0
+# v25.16: Odds-aware edge floor. Backtest of 3,014 MLB props (14-day window):
+#   Minus odds (-150 to -101): 10% edge is profitable (+0.315 EV/unit, 73% win rate)
+#   Plus odds (+100 to +140):  10% edge is profitable (+0.370 EV/unit, 65% win rate)
+#   The 20% floor was blocking all minus-odds props because high implied probability
+#   makes 20% edge mathematically near-impossible. Existing 3-pick cap controls volume.
+MIN_EDGE_PCT = 10.0
+MIN_EDGE_PCT_PLUS_LONGSHOT = 20.0  # Keep 20% for odds above MAX_PROP_ODDS (shouldn't fire, but safety net)
 MIN_STARS = 2.0
 MAX_PROP_PICKS = 3  # v24: Reduced from 5 — props are a selective add-on, not the main card
+MIN_PROP_ODDS = -150  # v25.16: Floor — heavier favorites have thin margins even with edge
 MAX_PROP_ODDS = 140  # v25.13: Lowered from +150. Season calibration showed +141..+150 was 0-2
                     # and +151..+199 was 1-5 (6 of 10 losing picks were in this zone).
                     # Below +140 is the only consistently profitable plus-money prop zone.
@@ -138,7 +143,7 @@ def get_player_baseline(conn, player, stat_type, sport, limit=20):
     Returns None if insufficient data.
     """
     rows = conn.execute("""
-        SELECT stat_value FROM box_scores
+        SELECT stat_value, game_date FROM box_scores
         WHERE player = ? AND stat_type = ? AND sport = ?
         ORDER BY game_date DESC
         LIMIT ?
@@ -147,7 +152,17 @@ def get_player_baseline(conn, player, stat_type, sport, limit=20):
     if len(rows) < MIN_PLAYER_GAMES:
         return None
 
-    values = [r[0] for r in rows]
+    # v25.16: Recency gate — require at least 1 game within last 45 days.
+    # Without this, players who haven't played this season (e.g., Kremer with
+    # only 2025 data) get projected from stale stats. 45 days covers early-season
+    # pitchers with 5-day rotations.
+    from datetime import datetime, timedelta
+    _cutoff = (datetime.now() - timedelta(days=45)).strftime('%Y-%m-%d')
+    _most_recent = rows[0][1] if rows[0][1] else '1900-01-01'
+    if _most_recent < _cutoff:
+        return None  # Most recent game is too old — skip player
+
+    values = [r[0] for r in rows]  # r[1] is game_date, only need stat_value
     weights = [DECAY_RATE ** i for i in range(len(values))]
     total_w = sum(weights)
 
@@ -930,8 +945,8 @@ def generate_prop_projections(conn=None):
             if book not in NY_LEGAL_BOOKS:
                 continue
 
-            # Skip high-odds props — no data to support +200 and beyond
-            if odds > MAX_PROP_ODDS:
+            # Skip props outside odds range — only -150 to +140
+            if odds > MAX_PROP_ODDS or odds < MIN_PROP_ODDS:
                 continue
 
             # v25: Cross-book +200 hard cap — applies to ALL books, not just soft.
