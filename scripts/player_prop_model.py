@@ -783,10 +783,17 @@ def generate_prop_projections(conn=None):
         except Exception:
             gt = None
 
-        # v25: MLB prop timing gate — only fire within 3 hours of game time
-        if gt and 'baseball' in (sport or ''):
+        # v25.16: Same-day gate — only fire props on games happening today.
+        # Jokic OVER 9.5 ASSISTS fired 5 days early because the only check
+        # was "hasn't started yet." Props on future games have stale/unreliable
+        # odds that reprice as game day approaches.
+        if gt:
             hours_until = (gt - now_utc).total_seconds() / 3600
-            if hours_until > MLB_PROP_WINDOW_HOURS:
+            if hours_until > 24:
+                continue  # Game is more than 24 hours away — skip
+
+            # v25: MLB prop timing gate — only fire within 3 hours of game time
+            if 'baseball' in (sport or '') and hours_until > MLB_PROP_WINDOW_HOURS:
                 continue
 
         # Parse player name and side from selection
