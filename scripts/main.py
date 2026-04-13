@@ -3050,6 +3050,7 @@ def cmd_grade(args):
         if _yp < 0:
             ig += "\n\nIt's all part of the game."
         ig += "\n\n\u26a0\ufe0f Not gambling advice \u2022 21+ \u2022 1-800-GAMBLER"
+        ig += f"\n\nFull stats: scarusillo.github.io/scottys-edge/dashboard.html"
         ig += f"\n\nFollow for daily picks:\n\U0001f4f1 IG: @scottys_edge\n\U0001f4ac Discord: discord.gg/JQ6rRfuN\n\n{' '.join(_ig_hashtags)}"
         # v25.3: Twitter caption block removed — @Scottys_Edge suspended April 2026.
         results_caption = "INSTAGRAM CAPTION:\n" + "="*40 + "\n" + ig
