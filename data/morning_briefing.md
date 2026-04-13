@@ -1,67 +1,54 @@
 # Scotty's Edge Morning Briefing
-**Date:** Sunday, April 12, 2026 | **Generated:** 07:45 AM ET
-**Game Date Graded:** 2026-04-11
+**Date:** Monday, April 13, 2026 | **Generated:** 05:15 AM ET
+**Game Date Graded:** 2026-04-12
 
 ---
 ## Yesterday's Results
 
-**5W-4L-0P | +0.6u | GREEN DAY**
+**4W-2L-0P | +6.4u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Vancouver Canucks@San Jose Sharks OVER 6.5 | icehockey_nhl | OVER | -114 | 5.0 | **W** | +4.4 | 0.0% |
-| Chicago White Sox@Kansas City Royals UNDER 9. | baseball_mlb | UNDER | -115 | 5.0 | **W** | +4.3 | 0.0% |
-| Alavés@Real Sociedad OVER 2.5 | soccer_spain_la_liga | OVER | -122 | 5.0 | **W** | +4.1 | 0.0% |
-| Indiana Hoosiers@Maryland Terrapins OVER 13.5 | baseball_ncaa | OVER | -128 | 5.0 | **W** | +3.9 | 0.0% |
-| Virginia Tech Hokies@Boston College Eagles OV | baseball_ncaa | OVER | -130 | 5.0 | **W** | +3.9 | 1.0% |
-| Columbus Blue Jackets@Montréal Canadiens UNDE | icehockey_nhl | UNDER | -125 | 5.0 | **L** | -5.0 | 0.0% |
-| Udinese@AC Milan UNDER 2.5 | soccer_italy_serie_a | UNDER | +102 | 5.0 | **L** | -5.0 | 0.0% |
-| West Virginia Mountaineers@Texas Tech Red Rai | baseball_ncaa | OVER | -115 | 5.0 | **L** | -5.0 | 0.0% |
-| Virginia Cavaliers@Notre Dame Fighting Irish  | baseball_ncaa | OVER | -115 | 5.0 | **L** | -5.0 | 0.0% |
+| Minnesota Twins@Toronto Blue Jays OVER 7.5 | baseball_mlb | OVER | -117 | 5.0 | **W** | +4.3 | 0.0% |
+| Washington Nationals@Milwaukee Brewers OVER 7 | baseball_mlb | OVER | -122 | 5.0 | **W** | +4.1 | 0.0% |
+| Vancouver Canucks@Anaheim Ducks OVER 6.5 | icehockey_nhl | OVER | -124 | 5.0 | **W** | +4.0 | 0.5% |
+| Montréal Canadiens@New York Islanders UNDER 6 | icehockey_nhl | UNDER | -125 | 5.0 | **W** | +4.0 | 0.0% |
+| Utah Mammoth@Calgary Flames OVER 5.5 | icehockey_nhl | OVER | -135 | 5.0 | **L** | -5.0 | 1.0% |
+| Chicago White Sox@Kansas City Royals UNDER 9. | baseball_mlb | UNDER | -121 | 5.0 | **L** | -5.0 | 1.0% |
 
 ---
 ## Loss Analysis
 
-### Columbus Blue Jackets@Montréal Canadiens UNDER 6.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Columbus Blue Jackets 5 @ Montréal Canadiens 2
-- **Model Spread:** -0.7 | Actual Margin: -3
-- **Context:** Home slow-paced (-0.3) | Goalies: Jakub Dobes 2.25 vs Jet Greaves 2.65 (recent 3.00) (-0.3)
+### Utah Mammoth@Calgary Flames OVER 5.5
+- **Category:** VARIANCE
+- **Analysis:** Positive CLV (+1.0%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** Utah Mammoth 1 @ Calgary Flames 4
+- **Model Spread:** +0.7 | Actual Margin: +3
+- **Context:** Away fast-paced (+0.4) | Goalies: Dustin Wolf 3.21 (recent 4.00) vs Vitek Vanecek 3.67 (+0.6)
 
-### Udinese@AC Milan UNDER 2.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Udinese 3 @ AC Milan 0
-- **Model Spread:** -1.3 | Actual Margin: -3
-- **Context:** Weather: 25mph wind (-0.5)
-
-### West Virginia Mountaineers@Texas Tech Red Raiders 
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** [SHADOW] Home fast-paced (+0.3) | Saturday game | Texas Tech Red Raiders allows 6.3 R/saturday | West Virginia Mountaineers allows 5.0 R/saturday | Pitching edge: West Virginia Mountaineers (-0.4 pts)
-
-### Virginia Cavaliers@Notre Dame Fighting Irish OVER 
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Saturday game | Notre Dame Fighting Irish allows 5.9 R/saturday | Virginia Cavaliers allows 7.9 R/saturday | Pitching edge: Notre Dame Fighting Irish (+0.6 pts)
+### Chicago White Sox@Kansas City Royals UNDER 9.5
+- **Category:** VARIANCE
+- **Analysis:** Positive CLV (+1.0%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** Chicago White Sox 6 @ Kansas City Royals 5
+- **Model Spread:** -0.3 | Actual Margin: -1
+- **Context:** Both teams slow-paced (-1.0) | Weather: moderate rain, 13mph wind (-1.5) | Sunday game | Kansas City Royals SP: Noah Cameron (2.43 ERA) | Chicago White Sox SP: Grant Taylor | Pitching: Noah Cameron 2.60 vs Grant Taylor 2.20 (-1.2) | Park: Kauffman Stadium (-0.1 decay=25%) | Bullpen: Royals 3.76 vs Sox 4.57 (+0.1)
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **167W-130L** |
-| Win Rate | 56.2% |
-| P/L | **+55.5u** |
-| ROI | +3.8% |
-| Wagered | 1449.0u |
+| Record | **171W-132L** |
+| Win Rate | 56.4% |
+| P/L | **+61.9u** |
+| ROI | +4.2% |
+| Wagered | 1479.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
 | baseball_ncaa | 58 | 39 | +54.6u |
-| icehockey_nhl | 42 | 26 | +19.0u |
+| icehockey_nhl | 44 | 27 | +22.1u |
 | basketball_ncaab | 17 | 12 | +18.7u |
 | soccer_spain_la_liga | 2 | 0 | +7.8u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
@@ -70,7 +57,7 @@
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | 1 | 2 | -6.8u |
 | TENNIS | 2 | 4 | -11.8u |
-| baseball_mlb | 17 | 21 | -19.0u |
+| baseball_mlb | 19 | 22 | -15.6u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -111,7 +98,7 @@ Found 15 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 119W-93L (56.1%) | +62.2u | 0.7 |
+| AT_CAP | 123W-95L (56.4%) | +68.6u | 0.7 |
 | BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.1 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -139,15 +126,15 @@ Found 15 shadow-tagged picks.
 
 | Sport | Side | W | L | P/L |
 |-------|------|---|---|-----|
-| baseball_mlb | OVER | 7 | 9 | -13.9u |
-| baseball_mlb | UNDER | 6 | 3 | +11.1u |
+| baseball_mlb | OVER | 9 | 9 | -5.5u |
+| baseball_mlb | UNDER | 6 | 4 | +6.1u |
 | baseball_ncaa | OVER | 23 | 13 | +32.1u |
 | baseball_ncaa | UNDER | 25 | 21 | -0.6u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
-| icehockey_nhl | OVER | 10 | 6 | +8.3u |
-| icehockey_nhl | UNDER | 12 | 7 | +11.1u |
+| icehockey_nhl | OVER | 11 | 7 | +7.3u |
+| icehockey_nhl | UNDER | 13 | 7 | +15.1u |
 | soccer_germany_bundesliga | OVER | 2 | 0 | +7.0u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | OVER | 0 | 1 | -5.0u |
@@ -160,8 +147,8 @@ Found 15 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** WIN WIN LOSS LOSS LOSS WIN WIN WIN LOSS WIN
-- **Current Streak:** 2 WIN
+- **Last 10:** LOSS WIN WIN LOSS WIN WIN WIN WIN LOSS LOSS
+- **Current Streak:** 1 LOSS
 
 ---
 ## Action Items
@@ -171,8 +158,8 @@ Found 15 shadow-tagged picks.
 3. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
 4. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
 5. Concentration risk detected. Review directional exposure limits.
-6. baseball_mlb OVERs: 7W-9L (-13.9u). Review totals model for this sport.
+6. baseball_mlb OVERs: 9W-9L (-5.5u). Review totals model for this sport.
 7. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-12 07:45 ET*
+*Generated locally by export_briefing_data.py | 2026-04-13 05:15 ET*
