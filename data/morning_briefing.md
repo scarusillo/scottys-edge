@@ -1,54 +1,52 @@
 # Scotty's Edge Morning Briefing
-**Date:** Monday, April 13, 2026 | **Generated:** 05:15 AM ET
-**Game Date Graded:** 2026-04-12
+**Date:** Tuesday, April 14, 2026 | **Generated:** 05:11 AM ET
+**Game Date Graded:** 2026-04-13
 
 ---
 ## Yesterday's Results
 
-**4W-2L-0P | +6.4u | GREEN DAY**
+**4W-2L-0P | +8.2u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Minnesota Twins@Toronto Blue Jays OVER 7.5 | baseball_mlb | OVER | -117 | 5.0 | **W** | +4.3 | 0.0% |
-| Washington Nationals@Milwaukee Brewers OVER 7 | baseball_mlb | OVER | -122 | 5.0 | **W** | +4.1 | 0.0% |
-| Vancouver Canucks@Anaheim Ducks OVER 6.5 | icehockey_nhl | OVER | -124 | 5.0 | **W** | +4.0 | 0.5% |
-| Montréal Canadiens@New York Islanders UNDER 6 | icehockey_nhl | UNDER | -125 | 5.0 | **W** | +4.0 | 0.0% |
-| Utah Mammoth@Calgary Flames OVER 5.5 | icehockey_nhl | OVER | -135 | 5.0 | **L** | -5.0 | 1.0% |
-| Chicago White Sox@Kansas City Royals UNDER 9. | baseball_mlb | UNDER | -121 | 5.0 | **L** | -5.0 | 1.0% |
+| Colorado Avalanche@Edmonton Oilers UNDER 6.5 | icehockey_nhl | UNDER | +100 | 5.0 | **W** | +5.0 | 0.0% |
+| Houston Astros@Seattle Mariners OVER 7.5 | baseball_mlb | OVER | -104 | 5.0 | **W** | +4.8 | 0.0% |
+| BYU Cougars@Lamar Cardinals UNDER 11.5 | baseball_ncaa | UNDER | -113 | 5.0 | **W** | +4.4 | 0.0% |
+| New York Rangers@Florida Panthers UNDER 6.5 | icehockey_nhl | UNDER | -125 | 5.0 | **W** | +4.0 | 0.0% |
+| Detroit Red Wings@Tampa Bay Lightning UNDER 6 | icehockey_nhl | UNDER | -125 | 5.0 | **L** | -5.0 | 0.0% |
+| Dean Kremer OVER 15.5 OUTS | baseball_mlb | PROP_OVER | +131 | 5.0 | **L** | -5.0 | 0.2% |
 
 ---
 ## Loss Analysis
 
-### Utah Mammoth@Calgary Flames OVER 5.5
-- **Category:** VARIANCE
-- **Analysis:** Positive CLV (+1.0%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Utah Mammoth 1 @ Calgary Flames 4
-- **Model Spread:** +0.7 | Actual Margin: +3
-- **Context:** Away fast-paced (+0.4) | Goalies: Dustin Wolf 3.21 (recent 4.00) vs Vitek Vanecek 3.67 (+0.6)
+### Detroit Red Wings@Tampa Bay Lightning UNDER 6.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Final Score:** Detroit Red Wings 3 @ Tampa Bay Lightning 4
+- **Model Spread:** -0.5 | Actual Margin: +1
+- **Context:** Both teams slow-paced (-0.0) | Goalies: Andrei Vasilevskiy 1.90 vs John Gibson 2.20 (recent 3.00) (-0.6)
 
-### Chicago White Sox@Kansas City Royals UNDER 9.5
+### Dean Kremer OVER 15.5 OUTS
 - **Category:** VARIANCE
-- **Analysis:** Positive CLV (+1.0%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Chicago White Sox 6 @ Kansas City Royals 5
-- **Model Spread:** -0.3 | Actual Margin: -1
-- **Context:** Both teams slow-paced (-1.0) | Weather: moderate rain, 13mph wind (-1.5) | Sunday game | Kansas City Royals SP: Noah Cameron (2.43 ERA) | Chicago White Sox SP: Grant Taylor | Pitching: Noah Cameron 2.60 vs Grant Taylor 2.20 (-1.2) | Park: Kauffman Stadium (-0.1 decay=25%) | Bullpen: Royals 3.76 vs Sox 4.57 (+0.1)
+- **Analysis:** Positive CLV (+0.2%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** Arizona Diamondbacks 7 @ Baltimore Orioles 9
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **171W-132L** |
-| Win Rate | 56.4% |
-| P/L | **+61.9u** |
-| ROI | +4.2% |
-| Wagered | 1479.0u |
+| Record | **175W-134L** |
+| Win Rate | 56.6% |
+| P/L | **+70.1u** |
+| ROI | +4.6% |
+| Wagered | 1509.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| baseball_ncaa | 58 | 39 | +54.6u |
-| icehockey_nhl | 44 | 27 | +22.1u |
+| baseball_ncaa | 59 | 39 | +59.1u |
+| icehockey_nhl | 46 | 28 | +26.1u |
 | basketball_ncaab | 17 | 12 | +18.7u |
 | soccer_spain_la_liga | 2 | 0 | +7.8u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
@@ -57,7 +55,7 @@
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | 1 | 2 | -6.8u |
 | TENNIS | 2 | 4 | -11.8u |
-| baseball_mlb | 19 | 22 | -15.6u |
+| baseball_mlb | 20 | 23 | -15.8u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -69,7 +67,6 @@
 | Weather: light rain, 11mph wind | 1W-2L | -5.7u |
 | H2H high-scoring | 1W-2L | -5.3u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
-| Midweek game | 15W-13L | -3.8u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
 
@@ -79,7 +76,7 @@
 ---
 ## Shadow Pick Report
 
-Found 15 shadow-tagged picks.
+Found 17 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -98,8 +95,8 @@ Found 15 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 123W-95L (56.4%) | +68.6u | 0.7 |
-| BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.1 |
+| AT_CAP | 127W-97L (56.7%) | +76.9u | 0.3 |
+| BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -126,15 +123,15 @@ Found 15 shadow-tagged picks.
 
 | Sport | Side | W | L | P/L |
 |-------|------|---|---|-----|
-| baseball_mlb | OVER | 9 | 9 | -5.5u |
+| baseball_mlb | OVER | 10 | 9 | -0.7u |
 | baseball_mlb | UNDER | 6 | 4 | +6.1u |
 | baseball_ncaa | OVER | 23 | 13 | +32.1u |
-| baseball_ncaa | UNDER | 25 | 21 | -0.6u |
+| baseball_ncaa | UNDER | 26 | 21 | +3.9u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
 | icehockey_nhl | OVER | 11 | 7 | +7.3u |
-| icehockey_nhl | UNDER | 13 | 7 | +15.1u |
+| icehockey_nhl | UNDER | 15 | 8 | +19.1u |
 | soccer_germany_bundesliga | OVER | 2 | 0 | +7.0u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | OVER | 0 | 1 | -5.0u |
@@ -147,7 +144,7 @@ Found 15 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS WIN WIN LOSS WIN WIN WIN WIN LOSS LOSS
+- **Last 10:** LOSS WIN WIN WIN LOSS WIN LOSS WIN WIN LOSS
 - **Current Streak:** 1 LOSS
 
 ---
@@ -158,8 +155,7 @@ Found 15 shadow-tagged picks.
 3. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
 4. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
 5. Concentration risk detected. Review directional exposure limits.
-6. baseball_mlb OVERs: 9W-9L (-5.5u). Review totals model for this sport.
-7. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+6. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-13 05:15 ET*
+*Generated locally by export_briefing_data.py | 2026-04-14 05:11 ET*
