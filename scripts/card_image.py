@@ -680,22 +680,40 @@ def _render_results_slide(bets, fonts, label, accent_color, daily_record, daily_
     # v17: Fixed layout — date above record, units below, verdict right-aligned
     big_f=_font(fonts,'bold',big_sz); med_f=_font(fonts,'bold',med_sz); lbl_f=_font(fonts,'regular',17)
     yw,yl = daily_record
-    content_block = 95*S
+    content_block = 130*S
     sum_top = max(0, (summary_h - content_block) // 2)
-    # Date first (above the record)
+    from config import BANKROLL_START, UNIT_VALUE
+    # Row 1: Date
     draw.text((PADDING+20*S,y+sum_top),latest_date,fill=WHITE_40,font=lbl_f)
-    # Record below date
+    # Row 2: Record (left) — Dollar P/L (center) — Verdict (right)
     draw.text((PADDING+20*S,y+sum_top+24*S),f"{yw}W-{yl}L",fill=WHITE,font=big_f)
-    # P/L next to record
-    pnl_color=GREEN if daily_pnl>=0 else RED
-    draw.text((PADDING+380*S,y+sum_top+34*S),f"{daily_pnl:+.1f}u",fill=pnl_color,font=med_f)
-    draw.text((PADDING+380*S,y+sum_top+76*S),"DAILY P/L",fill=WHITE_40,font=lbl_f)
+    _rec_end = PADDING + 20*S + draw.textlength(f"{yw}W-{yl}L", font=big_f)
+    # Calculate verdict position first so we can center dollar between record and verdict
+    _verdict_x = CARD_WIDTH - PADDING  # default: right edge (no verdict)
     if show_verdict:
         if daily_pnl>=10: verdict,vc="HUGE DAY",GREEN
         elif daily_pnl>=0: verdict,vc="GREEN DAY",GREEN
         elif daily_pnl>=-5: verdict,vc="MINOR LOSS",YELLOW
         else: verdict,vc="TOUGH DAY",RED
-        draw.text((PADDING+630*S,y+sum_top+34*S),verdict,fill=vc,font=_font(fonts,'bold',verdict_sz))
+        vf=_font(fonts,'bold',verdict_sz)
+        vw=draw.textlength(verdict,font=vf)
+        _verdict_x = CARD_WIDTH - PADDING - vw
+        draw.text((_verdict_x,y+sum_top+34*S),verdict,fill=vc,font=vf)
+    # Dollar amount — exactly centered between record end and verdict start
+    pnl_color=GREEN if daily_pnl>=0 else RED
+    _day_dollars = daily_pnl * UNIT_VALUE
+    _dd_sign = '+' if _day_dollars >= 0 else '-'
+    _dollar_text = f"{_dd_sign}${abs(_day_dollars):,.0f}"
+    _dollar_w = draw.textlength(_dollar_text, font=med_f)
+    _mid = (_rec_end + _verdict_x) / 2
+    _dollar_x = int(_mid - _dollar_w / 2)
+    draw.text((_dollar_x,y+sum_top+30*S),_dollar_text,fill=pnl_color,font=med_f)
+    # Units subtitle — centered under dollar text, with spacing
+    _unit_text = f"({daily_pnl:+.1f} units)"
+    _unit_f = _font(fonts,'regular',max(14,int(16*sum_scale)))
+    _unit_w = draw.textlength(_unit_text, font=_unit_f)
+    _unit_x = int(_mid - _unit_w / 2)
+    draw.text((_unit_x,y+sum_top+82*S),_unit_text,fill=WHITE_60,font=_unit_f)
     y+=summary_h; _draw_divider(draw,y); y+=20*S + section_pad
 
     # Section label
@@ -732,19 +750,31 @@ def _render_results_slide(bets, fonts, label, accent_color, daily_record, daily_
     rec_title_sz = max(18, min(28, int(18 * rec_scale)))
     rec_num_sz = max(26, min(44, int(26 * rec_scale)))
     rec_sub_sz = max(15, min(22, int(15 * rec_scale)))
-    # Content block height: title(40) + numbers(40) + subtitle(30) = ~110*S
-    content_block_h = 132*S
+    # Content block: title + record line + bankroll line + subtitle
+    content_block_h = 170*S
     rec_top = max(0, (record_h - content_block_h) // 2)
     ry = y + rec_top
     draw.text((PADDING,ry),"RUNNING RECORD",fill=GREEN,font=_font(fonts,'bold',rec_title_sz))
     ry+=42*S
+    # Line 1: Record  Win%  P/L  ROI
     rf=_font(fonts,'bold',rec_num_sz)
-    draw.text((PADDING+20*S,ry),f"{total_wins}W-{total_losses}L",fill=WHITE,font=rf)
     twp=total_wins/(total_wins+total_losses)*100 if (total_wins+total_losses)>0 else 0
+    draw.text((PADDING+20*S,ry),f"{total_wins}W-{total_losses}L",fill=WHITE,font=rf)
     draw.text((PADDING+260*S,ry),f"{twp:.1f}%",fill=GREEN if twp>52 else RED,font=rf)
     draw.text((PADDING+440*S,ry),f"{total_pnl:+.1f}u",fill=GREEN if total_pnl>=0 else RED,font=rf)
     draw.text((PADDING+620*S,ry),f"ROI {total_roi:+.1f}%",fill=GREEN if total_roi>=0 else RED,font=rf)
-    ry+=56*S
+    ry+=52*S
+    # Line 2: Bankroll
+    _br_pnl = total_pnl * UNIT_VALUE
+    _br_current = BANKROLL_START + _br_pnl
+    _br_sign = '+' if _br_pnl >= 0 else '-'
+    br_f = _font(fonts,'bold',max(16,int(18*rec_scale)))
+    br_sub_f = _font(fonts,'regular',max(13,int(14*rec_scale)))
+    draw.text((PADDING+20*S,ry),f"Bankroll: ${_br_current:,.0f}",fill=GREEN if _br_pnl>=0 else RED,font=br_f)
+    _br_main_w = draw.textlength(f"Bankroll: ${_br_current:,.0f}",font=br_f)
+    draw.text((PADDING+30*S+_br_main_w,ry+4*S),f"({_br_sign}${abs(_br_pnl):,.0f} from ${BANKROLL_START:,})",fill=WHITE_40,font=br_sub_f)
+    ry+=38*S
+    # Line 3: Subtitle
     days=(datetime.now()-datetime.strptime(start_date,'%Y-%m-%d')).days
     draw.text((PADDING+20*S,ry),f"Since {start_date}  \u2022  {days} days  \u2022  {total_wins+total_losses} total picks",fill=WHITE_40,font=_font(fonts,'regular',rec_sub_sz))
     y+=record_h
@@ -914,7 +944,11 @@ def generate_stats_card(conn=None, output_path=None, start_date='2026-03-04'):
     draw.text((PADDING+760*S,y+10*S),f"{roi:+.1f}%",fill=GREEN if roi>=0 else RED,font=mf)
     draw.text((PADDING+760*S,y+52*S),"ROI",fill=WHITE_40,font=lf)
     y+=85*S
-    draw.text((PADDING+20*S,y),f"{total_wagered:.0f} units wagered  \u2022  {wins+losses} total picks",fill=WHITE_40,font=_font(fonts,'regular',16))
+    from config import BANKROLL_START, UNIT_VALUE
+    _stats_br_pnl = total_pnl * UNIT_VALUE
+    _stats_br = BANKROLL_START + _stats_br_pnl
+    _stats_sign = '+' if _stats_br_pnl >= 0 else '-'
+    draw.text((PADDING+20*S,y),f"{total_wagered:.0f} units wagered  \u2022  {wins+losses} total picks  \u2022  Bankroll: ${_stats_br:,.0f} ({_stats_sign}${abs(_stats_br_pnl):,.0f})",fill=WHITE_40,font=_font(fonts,'regular',16))
     y+=35*S; _draw_divider(draw,y); y+=25*S
 
     secf=_font(fonts,'bold',18); rowf=_font(fonts,'regular',19); numf=_font(fonts,'bold',19)

@@ -1,5 +1,5 @@
 # Scotty's Edge Morning Briefing
-**Date:** Tuesday, April 14, 2026 | **Generated:** 05:24 AM ET
+**Date:** Tuesday, April 14, 2026 | **Generated:** 05:39 AM ET
 **Game Date Graded:** 2026-04-13
 
 ---
@@ -152,4 +152,4 @@ Found 17 shadow-tagged picks.
 6. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-14 05:24 ET*
+*Generated locally by export_briefing_data.py | 2026-04-14 05:39 ET*
