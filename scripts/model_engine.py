@@ -3089,6 +3089,28 @@ def save_picks_to_db(conn, picks):
         context_adj = p.get('context_adj', 0.0)
         market_tier = _classify_market_tier(p.get('sport', ''))
         model_spread = p.get('model_spread', None)
+
+        # v25.17: Log steam signal as context (no stake/selection change yet).
+        # Informational only — review at April 20 checkpoint for NBA signal.
+        try:
+            from steam_engine import get_steam_signal, format_steam_context
+            side_hint = p.get('side_type', '') or side_type
+            # Map SIDE types to what steam_engine expects
+            if p['market_type'] == 'TOTAL':
+                steam_side = 'OVER' if 'OVER' in side_hint.upper() or 'over' in (p.get('selection','').lower()) else 'UNDER'
+            elif p['market_type'] == 'SPREAD':
+                steam_side = 'FAVORITE' if side_hint == 'FAVORITE' else 'DOG'
+            else:
+                steam_side = None
+            if steam_side and p.get('event_id') and p.get('line') is not None:
+                _sig, _info = get_steam_signal(conn, p['sport'], p['event_id'],
+                                                p['market_type'], steam_side,
+                                                p['line'], p.get('odds'))
+                _steam_ctx = format_steam_context(_sig, _info)
+                if _steam_ctx:
+                    context_factors = (context_factors + ' | ' + _steam_ctx) if context_factors else _steam_ctx
+        except Exception:
+            pass
         
         conn.execute("""
             INSERT INTO bets (created_at, sport, event_id, market_type, selection,
