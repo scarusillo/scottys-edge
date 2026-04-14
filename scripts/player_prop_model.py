@@ -784,15 +784,20 @@ def generate_prop_projections(conn=None):
             gt = None
 
         # v25.16: Same-day gate — only fire props on games happening today.
-        # Jokic OVER 9.5 ASSISTS fired 5 days early because the only check
-        # was "hasn't started yet." Props on future games have stale/unreliable
-        # odds that reprice as game day approaches.
+        # Uses midnight ET cutoff (same logic as game-line engine).
+        # Kalkbrenner OVER 4.5 PTS slipped through 24hr gate at 23.4hrs —
+        # clearly a tomorrow game. Calendar-day check is more robust.
         if gt:
-            hours_until = (gt - now_utc).total_seconds() / 3600
-            if hours_until > 24:
-                continue  # Game is more than 24 hours away — skip
+            # Midnight ET = 4:00 UTC (EDT) or 5:00 UTC (EST)
+            _offset = 4 if 3 <= now_utc.month <= 10 else 5
+            _midnight_et = now_utc.replace(hour=_offset, minute=0, second=0, microsecond=0)
+            if now_utc.hour >= 5:
+                _midnight_et += timedelta(days=1)
+            if gt > _midnight_et:
+                continue  # Game is after midnight ET tonight — tomorrow's game
 
             # v25: MLB prop timing gate — only fire within 3 hours of game time
+            hours_until = (gt - now_utc).total_seconds() / 3600
             if 'baseball' in (sport or '') and hours_until > MLB_PROP_WINDOW_HOURS:
                 continue
 
