@@ -1219,6 +1219,19 @@ def estimate_model_total(home, away, ratings, sport, conn):
                 h_def_ratio = h_r['home_def']  # Note: home team's defense at home
                 a_atk_ratio = a_r['away_off']
                 a_def_ratio = a_r['away_def']  # Away team's defense on the road
+
+                # v25.17: Adjust def_ratios for confirmed starter (MLB pitcher / NHL goalie).
+                # Caps at ±40%, weighted 50% for MLB, 30% for NHL. Falls back to no
+                # adjustment (multiplier 1.0) if starter data unavailable.
+                if sport in ('baseball_mlb', 'icehockey_nhl'):
+                    try:
+                        from starter_adjust import get_starter_adjustment
+                        h_mult, a_mult, _ = get_starter_adjustment(conn, sport, home, away)
+                        h_def_ratio = h_def_ratio * h_mult
+                        a_def_ratio = a_def_ratio * a_mult
+                    except Exception:
+                        pass
+
                 _use_precomputed = True
     except Exception:
         pass
