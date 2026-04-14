@@ -2508,45 +2508,12 @@ def generate_predictions(conn, sport=None, date=None):
                         _worst_era = None  # v25.3: highest ERA in matchup
                         _both_era_reliable = False  # v25.14: both starters have confirmed ERA
 
-                        # v25.17: NCAA baseball midweek pitcher-data gate. ESPN does not
-                        # publish probable starters for college baseball (0/93 games checked),
-                        # and box score coverage is sparse for mid-major schools (~1-2%).
-                        # Weekend conference series (Fri/Sat/Sun) we have data (39W-25L +41.6u).
-                        # Midweek (Tue/Wed/Thu) we don't (12W-9L +3.5u, flat on 21 picks) —
-                        # sharp money moves midweek lines 1-2 runs against us because they
-                        # know who's pitching and we don't. Block midweek NCAA totals when
-                        # pitcher_stats is empty for either team in last 30 days.
+                        # v25.17: NCAA midweek pitcher-data gate was considered and removed
+                        # same-day. On reflection, NCAA baseball is best sport (+59u overall)
+                        # and most picks fire without pitcher data anyway (only 6% of weekend
+                        # picks had data, yet went 34-24 +25.4u). One bad-looking midweek day
+                        # isn't a pattern. Keep the gate stub at False.
                         _ncaa_pitcher_data_veto = False
-                        if sp == 'baseball_ncaa':
-                            try:
-                                # Check day of week from commence_time
-                                _ct = commence if isinstance(commence, str) else ''
-                                _dow = None
-                                if _ct:
-                                    try:
-                                        _dow = datetime.fromisoformat(_ct.replace('Z', '+00:00')).weekday()
-                                    except Exception:
-                                        pass
-                                _is_midweek = _dow is not None and _dow in (1, 2, 3)  # Tue/Wed/Thu
-                                if _is_midweek:
-                                    _h_pc = conn.execute("""
-                                        SELECT COUNT(*) FROM pitcher_stats
-                                        WHERE team=? AND is_starter=1
-                                        AND game_date >= DATE('now', '-30 days')
-                                    """, (home,)).fetchone()[0]
-                                    _a_pc = conn.execute("""
-                                        SELECT COUNT(*) FROM pitcher_stats
-                                        WHERE team=? AND is_starter=1
-                                        AND game_date >= DATE('now', '-30 days')
-                                    """, (away,)).fetchone()[0]
-                                    if _h_pc == 0 or _a_pc == 0:
-                                        _ncaa_pitcher_data_veto = True
-                                        _missing = []
-                                        if _h_pc == 0: _missing.append(home)
-                                        if _a_pc == 0: _missing.append(away)
-                                        _ncaa_missing_ctx = ', '.join(_missing)
-                            except Exception:
-                                pass
 
                         if sp == 'baseball_mlb' and _mlb_pitcher_info:
                             try:
@@ -2677,19 +2644,7 @@ def generate_predictions(conn, sport=None, date=None):
                                 conn.commit()
                             except Exception:
                                 pass
-                        # v25.17: NCAA pitcher-data gate logging
-                        if _ncaa_pitcher_data_veto:
-                            try:
-                                conn.execute("""
-                                    INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
-                                        market_type, line, odds, edge_pct, units, reason)
-                                    VALUES (?, ?, ?, ?, 'TOTAL', ?, NULL, NULL, NULL, ?)
-                                """, (datetime.now().isoformat(), sp, eid,
-                                      f"{away}@{home} OVER {over_total}", over_total,
-                                      f"NCAA_MIDWEEK_PITCHER_GATE (no recent pitcher_stats for: {_ncaa_missing_ctx})"))
-                                conn.commit()
-                            except Exception:
-                                pass
+                        # (NCAA midweek pitcher-data gate removed — see stub above)
                         # v25.1: Direction gate — raw model must agree with bet direction.
                         # Context factors (pace, pitching, H2H) can inflate model_total past
                         # the line even when the raw model disagrees. 9 of 14 MLB overs and
