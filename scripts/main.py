@@ -2954,6 +2954,15 @@ def cmd_grade(args):
     except Exception as e:
         print(f"  Elo rebuild: {e}")
 
+    # Auto team ratings rebuild (off/def power ratings from results)
+    print("  Rebuilding team ratings...")
+    try:
+        from team_ratings_engine import build_all_team_ratings
+        build_all_team_ratings()
+        print("  Team ratings updated")
+    except Exception as e:
+        print(f"  Team ratings rebuild: {e}")
+
     # Soccer standings refresh (FREE — ESPN API)
     print("  Updating soccer standings...")
     try:

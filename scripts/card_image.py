@@ -1805,3 +1805,10 @@ def generate_engagement_comments(picks: list) -> list:
         print(f"Error writing comments to {output_path}: {e}")
 
     return comments
+
+
+def save_engagement_comments(picks: list) -> str:
+    """Save engagement comments to JSON. Returns path to output file."""
+    comments = generate_engagement_comments(picks)
+    output_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'cowork_comments.json')
+    return output_path if os.path.exists(output_path) else None

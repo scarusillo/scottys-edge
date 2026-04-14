@@ -150,6 +150,23 @@ def _get_prop_closing_line(conn, event_id, market, selection, bet_book=None):
     """, (event_id, market, player_name, side, bet_line) + params_extra +
          (event_id, market, player_name, side, bet_line) + params_extra).fetchall()
 
+    # Fallback: STRIKEOUTS can be pitcher or batter — try the other if no rows
+    if not rows and market == 'pitcher_strikeouts':
+        rows = conn.execute(f"""
+            SELECT ps.line, ps.odds, ps.book, ps.captured_at
+            FROM prop_snapshots ps
+            INNER JOIN (
+                SELECT book, MAX(captured_at) as max_cap
+                FROM prop_snapshots
+                WHERE event_id=? AND market='batter_strikeouts' AND player=? AND side=? AND line=?
+                {commence_filter}
+                GROUP BY book
+            ) latest ON ps.book = latest.book AND ps.captured_at = latest.max_cap
+            WHERE ps.event_id=? AND ps.market='batter_strikeouts' AND ps.player=? AND ps.side=? AND ps.line=?
+            {commence_filter}
+        """, (event_id, player_name, side, bet_line) + params_extra +
+             (event_id, player_name, side, bet_line) + params_extra).fetchall()
+
     if not rows:
         return None, None, None, None
 
@@ -806,12 +823,14 @@ def _market_key(market_type, selection=''):
             'SHOTS': 'player_shots', 'SOT': 'player_shots_on_target',
             'HITS': 'batter_hits', 'TOTAL_BASES': 'batter_total_bases',
             'HOME_RUNS': 'batter_home_runs', 'RBIS': 'batter_rbis',
-            'RUNS': 'batter_runs_scored', 'STRIKEOUTS': 'pitcher_k',
-            'OUTS': 'pitcher_outs', 'HITS ALLOWED': 'pitcher_h_allowed',
-            'EARNED RUNS': 'pitcher_er', 'WALKS': 'pitcher_bb',
+            'RUNS': 'batter_runs_scored', 'STRIKEOUTS': 'pitcher_strikeouts',
+            'OUTS': 'pitcher_outs', 'HITS ALLOWED': 'pitcher_hits_allowed',
+            'EARNED RUNS': 'pitcher_earned_runs', 'WALKS': 'pitcher_bb',
             'STOLEN_BASES': 'batter_stolen_bases',
         }
-        for label, market in PROP_MARKET_MAP.items():
+        # Sort by key length descending so 'HITS ALLOWED' matches before 'HITS',
+        # 'EARNED RUNS' before 'RUNS', etc.
+        for label, market in sorted(PROP_MARKET_MAP.items(), key=lambda x: -len(x[0])):
             if label in sel_upper:
                 return market
         return 'player_points'  # Default fallback

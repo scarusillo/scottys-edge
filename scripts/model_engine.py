@@ -1205,31 +1205,49 @@ def estimate_model_total(home, away, ratings, sport, conn):
 
     league_per_team = league_avg / 2  # Average points per team per game
 
-    # Recency-weighted, home/away split, opponent-adjusted stats
-    elo_data = None
+    # Try precomputed team ratings first (exponential decay, Elo-adjusted)
+    # Falls back to inline _weighted_team_stats if not available
+    _use_precomputed = False
     try:
-        from elo_engine import get_elo_ratings
-        elo_data = get_elo_ratings(conn, sport)
+        from team_ratings_engine import get_team_ratings
+        _tr = get_team_ratings(conn, sport)
+        if _tr and home in _tr and away in _tr:
+            h_r = _tr[home]
+            a_r = _tr[away]
+            if h_r.get('confidence') != 'LOW' and a_r.get('confidence') != 'LOW':
+                h_atk_ratio = h_r['home_off']
+                h_def_ratio = h_r['home_def']  # Note: home team's defense at home
+                a_atk_ratio = a_r['away_off']
+                a_def_ratio = a_r['away_def']  # Away team's defense on the road
+                _use_precomputed = True
     except Exception:
         pass
 
-    h_stats = _weighted_team_stats(conn, home, sport, elo_ratings=elo_data)
-    a_stats = _weighted_team_stats(conn, away, sport, elo_ratings=elo_data)
+    if not _use_precomputed:
+        # Fallback: inline computation
+        elo_data = None
+        try:
+            from elo_engine import get_elo_ratings
+            elo_data = get_elo_ratings(conn, sport)
+        except Exception:
+            pass
 
-    if not h_stats or not a_stats:
-        return None
+        h_stats = _weighted_team_stats(conn, home, sport, elo_ratings=elo_data)
+        a_stats = _weighted_team_stats(conn, away, sport, elo_ratings=elo_data)
 
-    # Use HOME splits for home team, AWAY splits for away team
-    h_off = h_stats['home_offense'] * h_stats['elo_adj']
-    h_def = h_stats['home_defense'] / h_stats['elo_adj']
-    a_off = a_stats['away_offense'] * a_stats['elo_adj']
-    a_def = a_stats['away_defense'] / a_stats['elo_adj']
+        if not h_stats or not a_stats:
+            return None
 
-    # Attack/defense ratios relative to league average
-    h_atk_ratio = h_off / league_per_team if league_per_team > 0 else 1.0
-    a_atk_ratio = a_off / league_per_team if league_per_team > 0 else 1.0
-    h_def_ratio = h_def / league_per_team if league_per_team > 0 else 1.0
-    a_def_ratio = a_def / league_per_team if league_per_team > 0 else 1.0
+        # Use HOME splits for home team, AWAY splits for away team
+        h_off = h_stats['home_offense'] * h_stats['elo_adj']
+        h_def = h_stats['home_defense'] / h_stats['elo_adj']
+        a_off = a_stats['away_offense'] * a_stats['elo_adj']
+        a_def = a_stats['away_defense'] / a_stats['elo_adj']
+
+        h_atk_ratio = h_off / league_per_team if league_per_team > 0 else 1.0
+        a_atk_ratio = a_off / league_per_team if league_per_team > 0 else 1.0
+        h_def_ratio = h_def / league_per_team if league_per_team > 0 else 1.0
+        a_def_ratio = a_def / league_per_team if league_per_team > 0 else 1.0
 
     # Matchup-based expected scoring
     exp_home_pts = league_per_team * h_atk_ratio * a_def_ratio
