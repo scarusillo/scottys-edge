@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-14 05:11",
+  "generated_at": "2026-04-14 05:24",
   "game_date": "2026-04-13",
   "yesterday": [
     {
@@ -99,47 +99,21 @@
         "actual_total": 7,
         "actual_margin": 1
       }
-    },
-    {
-      "selection": "Dean Kremer OVER 15.5 OUTS",
-      "sport": "baseball_mlb",
-      "market_type": "PROP",
-      "side_type": "PROP_OVER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.2,
-      "edge_pct": 24.07,
-      "odds": 131.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": 15.5,
-      "event_id": "f0a7004057c75d3a27566a9cadac71de",
-      "dt": "2026-04-13",
-      "actual_score": {
-        "home": "Baltimore Orioles",
-        "away": "Arizona Diamondbacks",
-        "home_score": 9,
-        "away_score": 7,
-        "actual_total": 16,
-        "actual_margin": 2
-      }
     }
   ],
   "season": {
     "result": "LOSS",
     "W": 175,
-    "L": 134,
-    "pnl": 70.1,
-    "wagered": 1509.0
+    "L": 133,
+    "pnl": 75.1,
+    "wagered": 1504.0
   },
   "by_sport": [
     {
       "sport": "baseball_mlb",
       "W": 20,
-      "L": 23,
-      "pnl": -15.8
+      "L": 22,
+      "pnl": -10.8
     },
     {
       "sport": "baseball_ncaa",
@@ -593,13 +567,6 @@
   ],
   "day_of_week": [
     {
-      "day_of_week": "Monday",
-      "sport": "baseball_mlb",
-      "W": 2,
-      "L": 6,
-      "pnl": -20.1
-    },
-    {
       "day_of_week": "Saturday",
       "sport": "icehockey_nhl",
       "W": 8,
@@ -612,6 +579,13 @@
       "W": 9,
       "L": 11,
       "pnl": -16.4
+    },
+    {
+      "day_of_week": "Monday",
+      "sport": "baseball_mlb",
+      "W": 2,
+      "L": 5,
+      "pnl": -15.1
     },
     {
       "day_of_week": "Sunday",
@@ -849,8 +823,8 @@
     {
       "bucket": "AT_CAP",
       "W": 127,
-      "L": 97,
-      "pnl": 76.9,
+      "L": 96,
+      "pnl": 81.9,
       "avg_clv": 0.3
     },
     {
@@ -1067,7 +1041,6 @@
     }
   ],
   "last_10": [
-    "LOSS",
     "WIN",
     "WIN",
     "WIN",
@@ -1076,10 +1049,11 @@
     "LOSS",
     "WIN",
     "WIN",
-    "LOSS"
+    "LOSS",
+    "WIN"
   ],
-  "streak": 1,
-  "streak_type": "LOSS",
+  "streak": 3,
+  "streak_type": "WIN",
   "shadow_blocked_picks": [
     {
       "created_at": "2026-04-13T23:03:38.062503+00:00",
@@ -2320,6 +2294,15 @@
       "avg_clv": 1.41
     },
     {
+      "book": "DraftKings",
+      "bets": 82,
+      "wins": 40,
+      "losses": 41,
+      "pnl": -18.5,
+      "wagered": 402.5,
+      "avg_clv": -0.77
+    },
+    {
       "book": "BetMGM",
       "bets": 59,
       "wins": 31,
@@ -2327,15 +2310,6 @@
       "pnl": -19.0,
       "wagered": 286.5,
       "avg_clv": 0.22
-    },
-    {
-      "book": "DraftKings",
-      "bets": 83,
-      "wins": 40,
-      "losses": 42,
-      "pnl": -23.5,
-      "wagered": 407.5,
-      "avg_clv": -0.76
     }
   ]
 }

@@ -1,11 +1,11 @@
 # Scotty's Edge Morning Briefing
-**Date:** Tuesday, April 14, 2026 | **Generated:** 05:11 AM ET
+**Date:** Tuesday, April 14, 2026 | **Generated:** 05:24 AM ET
 **Game Date Graded:** 2026-04-13
 
 ---
 ## Yesterday's Results
 
-**4W-2L-0P | +8.2u | GREEN DAY**
+**4W-1L-0P | +13.2u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
@@ -14,7 +14,6 @@
 | BYU Cougars@Lamar Cardinals UNDER 11.5 | baseball_ncaa | UNDER | -113 | 5.0 | **W** | +4.4 | 0.0% |
 | New York Rangers@Florida Panthers UNDER 6.5 | icehockey_nhl | UNDER | -125 | 5.0 | **W** | +4.0 | 0.0% |
 | Detroit Red Wings@Tampa Bay Lightning UNDER 6 | icehockey_nhl | UNDER | -125 | 5.0 | **L** | -5.0 | 0.0% |
-| Dean Kremer OVER 15.5 OUTS | baseball_mlb | PROP_OVER | +131 | 5.0 | **L** | -5.0 | 0.2% |
 
 ---
 ## Loss Analysis
@@ -26,21 +25,16 @@
 - **Model Spread:** -0.5 | Actual Margin: +1
 - **Context:** Both teams slow-paced (-0.0) | Goalies: Andrei Vasilevskiy 1.90 vs John Gibson 2.20 (recent 3.00) (-0.6)
 
-### Dean Kremer OVER 15.5 OUTS
-- **Category:** VARIANCE
-- **Analysis:** Positive CLV (+0.2%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Arizona Diamondbacks 7 @ Baltimore Orioles 9
-
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **175W-134L** |
-| Win Rate | 56.6% |
-| P/L | **+70.1u** |
-| ROI | +4.6% |
-| Wagered | 1509.0u |
+| Record | **175W-133L** |
+| Win Rate | 56.8% |
+| P/L | **+75.1u** |
+| ROI | +5.0% |
+| Wagered | 1504.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -54,8 +48,8 @@
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | 1 | 2 | -6.8u |
+| baseball_mlb | 20 | 22 | -10.8u |
 | TENNIS | 2 | 4 | -11.8u |
-| baseball_mlb | 20 | 23 | -15.8u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -95,7 +89,7 @@ Found 17 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 127W-97L (56.7%) | +76.9u | 0.3 |
+| AT_CAP | 127W-96L (57.0%) | +81.9u | 0.3 |
 | BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -144,8 +138,8 @@ Found 17 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS WIN WIN WIN LOSS WIN LOSS WIN WIN LOSS
-- **Current Streak:** 1 LOSS
+- **Last 10:** WIN WIN WIN LOSS WIN LOSS WIN WIN LOSS WIN
+- **Current Streak:** 3 WIN
 
 ---
 ## Action Items
@@ -158,4 +152,4 @@ Found 17 shadow-tagged picks.
 6. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-14 05:11 ET*
+*Generated locally by export_briefing_data.py | 2026-04-14 05:24 ET*
