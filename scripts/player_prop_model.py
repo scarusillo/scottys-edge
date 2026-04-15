@@ -689,6 +689,80 @@ def calculate_prop_edge(projection, std, market_line, odds, season_values=None,
     return max(0.0, round(edge_pct, 2)), round(prob, 4)
 
 
+def calculate_prop_edge_under(projection, std, market_line, odds, season_values=None,
+                               full_season_rate=None):
+    """
+    Calculate edge for an UNDER bet. Mirror of calculate_prop_edge for the
+    under side: probability the stat falls at or below the line.
+
+    v25.17: Enables UNDER props. Uses same projection infrastructure —
+    just inverts the CDF / hit rate. Full_season_rate here is the over-rate
+    (fraction of games where stat > line); we invert to 1 - rate for UNDER.
+    """
+    diff = projection - market_line
+    # For UNDER, we WANT projection < market_line (negative diff)
+    # If projection >= line, the model doesn't favor UNDER
+    if diff >= 0:
+        return 0.0, 0.0
+
+    if std <= 0:
+        return 0.0, 0.0
+
+    # Compute 20-game UNDER hit rate (how often stat stayed under line)
+    recent_under_rate = None
+    if season_values and len(season_values) >= 5:
+        unders = sum(1 for v in season_values if v <= market_line)
+        recent_under_rate = unders / len(season_values)
+
+    # Blend with full-season UNDER rate (invert the OVER-rate we were passed)
+    full_season_under = None
+    if full_season_rate is not None:
+        full_season_under = 1.0 - full_season_rate
+
+    if recent_under_rate is not None and full_season_under is not None:
+        season_under_rate = (
+            PROP_CALIBRATION_BLEND_RECENT * recent_under_rate
+            + PROP_CALIBRATION_BLEND_SEASON * full_season_under
+        )
+    else:
+        season_under_rate = recent_under_rate
+
+    # Use actual under-rate for all lines with sufficient data
+    if season_under_rate is not None and season_values and len(season_values) >= 10:
+        if market_line == 0.5:
+            # Binary: actual under-rate IS the probability
+            raw_prob = season_under_rate
+        else:
+            # Higher lines: blend under-rate with inverted CDF
+            z = diff / std  # negative since projection < line
+            cdf_prob = 1.0 - _ncdf(z)  # probability stat <= line
+            raw_prob = 0.70 * season_under_rate + 0.30 * cdf_prob
+    elif market_line == 0.5:
+        # No history: use 1 - binary_over_prob
+        raw_prob = 1.0 - _binary_over_prob(projection, market_line)
+    else:
+        z = diff / std
+        raw_prob = 1.0 - _ncdf(z)
+
+    implied = american_to_implied(odds)
+    if not implied or implied <= 0:
+        return 0.0, 0.0
+
+    prob = raw_prob
+
+    # Blend with market implied when model is very confident
+    if prob > 0.70:
+        prob = 0.6 * prob + 0.4 * implied
+
+    # Hard cap at 0.75 unless under-rate justifies higher
+    if prob > 0.75:
+        if season_under_rate is None or season_under_rate < 0.65:
+            prob = 0.75
+
+    edge_pct = (prob - implied) * 100.0
+    return max(0.0, round(edge_pct, 2)), round(prob, 4)
+
+
 # ═══════════════════════════════════════════════════════════════════
 # PLAYER TEAM LOOKUP
 # ═══════════════════════════════════════════════════════════════════
@@ -810,11 +884,13 @@ def generate_prop_projections(conn=None):
         elif ' - Under' in selection:
             player = selection.split(' - Under')[0].strip()
             side = 'Under'
-        if not player or side != 'Over':
-            continue  # OVER only
+        # v25.17: Enable UNDER props (was OVER-only)
+        if not player or side not in ('Over', 'Under'):
+            continue
 
         game_info[eid] = {'sport': sport, 'home': home, 'away': away, 'commence': commence}
-        grouped[(eid, player, market)].append({
+        # Key includes side so OVER and UNDER are processed separately
+        grouped[(eid, player, market, side)].append({
             'book': book, 'line': line, 'odds': odds,
         })
 
@@ -827,7 +903,7 @@ def generate_prop_projections(conn=None):
     _team_cache = {}
     _opp_cache = {}
 
-    for (eid, player, market), book_entries in grouped.items():
+    for (eid, player, market, side), book_entries in grouped.items():
         gi = game_info.get(eid)
         if not gi:
             continue
@@ -1000,25 +1076,35 @@ def generate_prop_projections(conn=None):
                 continue  # Another book has it above our cap — not a real edge
 
             # Hit rate gate: check actual clearing rate vs implied breakeven
+            # For OVER: need hit_rate (stat > line) >= implied
+            # For UNDER: need under_rate (stat <= line) >= implied
             if _hit_rate_data and len(_hit_rate_data) >= 10:
-                _hits = sum(1 for v in _hit_rate_data if v > line)
+                if side == 'Over':
+                    _hits = sum(1 for v in _hit_rate_data if v > line)
+                else:
+                    _hits = sum(1 for v in _hit_rate_data if v <= line)
                 _hit_rate = _hits / len(_hit_rate_data)
                 _implied_break = american_to_implied(odds) or 0.5
                 if _hit_rate < _implied_break:
-                    continue  # Actual hit rate below breakeven — no real edge
+                    continue  # Actual rate below breakeven — no real edge
 
             # v25.13: Pull full-season hit rate (40+ games) to regress 20-game rate.
-            # See get_full_season_rate() for rationale — 20-game hot streaks don't
-            # persist, blending with full season is more predictive.
             _full_season_rate = get_full_season_rate(
                 conn, player, stat_type, sport, line,
                 min_games=PROP_CALIBRATION_MIN_SEASON_GAMES,
             )
-            edge, capped_prob = calculate_prop_edge(
-                proj['projection'], proj['std'], line, odds,
-                season_values=proj.get('values'),
-                full_season_rate=_full_season_rate,
-            )
+            if side == 'Over':
+                edge, capped_prob = calculate_prop_edge(
+                    proj['projection'], proj['std'], line, odds,
+                    season_values=proj.get('values'),
+                    full_season_rate=_full_season_rate,
+                )
+            else:
+                edge, capped_prob = calculate_prop_edge_under(
+                    proj['projection'], proj['std'], line, odds,
+                    season_values=proj.get('values'),
+                    full_season_rate=_full_season_rate,
+                )
             edge = min(edge, MAX_PROP_EDGE)  # Cap extreme edges
             if edge < MIN_EDGE_PCT:
                 continue
@@ -1042,10 +1128,16 @@ def generate_prop_projections(conn=None):
 
                     # Soft check: sharp book must confirm >=20% edge
                     _sharp_best = max(e['odds'] for e in _sharp_entries)
-                    _sharp_edge, _ = calculate_prop_edge(
-                        proj['projection'], proj['std'], line, _sharp_best,
-                        season_values=proj.get('values'),
-                    )
+                    if side == 'Over':
+                        _sharp_edge, _ = calculate_prop_edge(
+                            proj['projection'], proj['std'], line, _sharp_best,
+                            season_values=proj.get('values'),
+                        )
+                    else:
+                        _sharp_edge, _ = calculate_prop_edge_under(
+                            proj['projection'], proj['std'], line, _sharp_best,
+                            season_values=proj.get('values'),
+                        )
                     _sharp_edge = min(_sharp_edge, MAX_PROP_EDGE)
                     if _sharp_edge < 20.0:
                         continue  # Sharp book doesn't confirm edge
@@ -1081,7 +1173,7 @@ def generate_prop_projections(conn=None):
                 'home': home,
                 'away': away,
                 'market_type': 'PROP',
-                'selection': f"{player} OVER {line} {label}",
+                'selection': f"{player} {'OVER' if side == 'Over' else 'UNDER'} {line} {label}",
                 'book': book,
                 'line': line,
                 'odds': odds,
