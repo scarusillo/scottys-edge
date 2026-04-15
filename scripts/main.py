@@ -2450,8 +2450,11 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                 return sel.split(word)[0].strip()
         return sel
     
-    # ── Prop filters — backtest 3/23: cleaned 14W-29L (-18u) into profitable ──
-    # 1. OVER only — Unders are 3W-14L (-49u). Books price downside accurately.
+    # ── Prop filters ──
+    # 1. UNDER enable (v25.17, 4/14): UNDERs fire now that player_prop_model has
+    #    proper UNDER infrastructure (hit-rate blend, cross-book, batting order).
+    #    The old "OVER only" filter was based on a 3/23 backtest against a
+    #    pre-v25 engine and is no longer valid.
     # 2. No FanDuel — 2W-13L (-50.8u). FanDuel lines look like edges but aren't.
     # 3. Book count filter REMOVED v24 — was counting game-level books, not prop-level.
     #    Model builds own projection from box scores; book count is irrelevant.
@@ -2469,14 +2472,9 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             min_edge = max(min_edge, 22.0)
         if p.get('edge_pct', 0) < min_edge:
             continue
-        # Filter 1: OVER only — block all UNDER props
-        sel = p.get('selection', '')
-        if 'UNDER' in sel.upper():
-            continue
-        # Filter 2: Block FanDuel recommendations
         if p.get('book', '') in PROP_EXCLUDED_RECS:
             continue
-        # Filter 3: Block high odds props — cap at +200
+        # Filter: Block high odds props — cap at +200
         # v24: Was +151-250 dead zone (from March 23 consensus engine data).
         # Most binary 0.5 props (RBI, blocks) are +150-200 naturally.
         # Old filter killed every prop. Now: allow up to +200, block +201+.
@@ -2724,13 +2722,13 @@ def _generate_kling_prompt(conn):
     if not bets:
         return
 
-    # Group by sport
+    # Group by sport — each entry: (display label, athlete description, spotlight color)
     sport_labels = {
-        'basketball_nba': ('NBA', 'basketball player in orange jersey dribbling a ball, well-lit with orange spotlight'),
-        'icehockey_nhl': ('NHL', 'hockey player in blue jersey skating with a stick, well-lit with blue spotlight'),
-        'baseball_ncaa': ('College Baseball', 'college baseball player in white uniform swinging a bat, well-lit with green spotlight'),
-        'baseball_mlb': ('MLB', 'baseball player in pinstripe uniform pitching, well-lit with red spotlight'),
-        'basketball_ncaab': ('NCAAB', 'college basketball player shooting, well-lit with orange spotlight'),
+        'basketball_nba': ('NBA', 'An NBA guard in a crisp team jersey drives hard to the rim, mid-stride, ball cocked for a finish', 'deep orange'),
+        'icehockey_nhl': ('NHL', 'An NHL forward in full pads winds up for a slap shot, ice mist swirling around his skates', 'electric blue'),
+        'baseball_ncaa': ('College Baseball', 'A college baseball pitcher mid-windup on a lit mound, leg kicked high, jersey pinstripes sharp', 'crimson'),
+        'baseball_mlb': ('MLB', 'An MLB slugger in full uniform frozen at the top of his swing, bat blurred, eyes locked on the ball', 'warm red'),
+        'basketball_ncaab': ('NCAAB', 'A college basketball player elevates for a mid-range jumper, wrist flicked, ball spinning off fingertips', 'amber'),
     }
 
     sport_records = {}
@@ -2757,32 +2755,41 @@ def _generate_kling_prompt(conn):
     tw, tl = season[0] or 0, season[1] or 0
     twp = round(tw / (tw + tl) * 100) if (tw + tl) > 0 else 0
 
-    # Build athlete scenes
+    # Build athlete scenes — Sora 12s format, scenes 2..N span 3-9s (6s of runtime)
     scenes = []
     scene_num = 2
-    time_per = min(3, 9 // len(sport_records)) if sport_records else 3
-    t = 3
+    n_sports = len(sport_records) or 1
+    mid_budget = 6.0  # 3s–9s
+    time_per = mid_budget / n_sports
+    t = 3.0
     for label, rec in sport_records.items():
         sp_key = [k for k, v in sport_labels.items() if v[0] == label]
-        athlete_desc = sport_labels.get(sp_key[0], ('', 'athlete'))[1] if sp_key else 'athlete walking through'
+        if sp_key:
+            _, athlete_desc, spotlight = sport_labels[sp_key[0]]
+        else:
+            athlete_desc, spotlight = ('an athlete framed in a sport-specific spotlight', 'white')
         record_str = f"{rec['W']}-{rec['L']}"
-        color = 'green' if rec['W'] > rec['L'] else ('red' if rec['L'] > rec['W'] else 'white')
-        scenes.append(f'Scene {scene_num} ({t}-{t+time_per}s): A {athlete_desc}. The LED scoreboard behind shows "{record_str}" in {color} numbers.')
+        color = 'glowing green' if rec['W'] > rec['L'] else ('glowing red' if rec['L'] > rec['W'] else 'white')
+        t_end = t + time_per
+        scenes.append(
+            f'Scene {scene_num} ({t:.1f}-{t_end:.1f}s): {athlete_desc}, bathed in a {spotlight} spotlight against deep black. '
+            f'A sleek LED scoreboard behind reads "{label} {record_str}" in {color} numbers. Subtle camera dolly.'
+        )
         scene_num += 1
-        t += time_per
+        t = t_end
 
     total_w = sum(r['W'] for r in sport_records.values())
     total_l = sum(r['L'] for r in sport_records.values())
 
-    prompt = f"""Cinematic vertical video (9:16), 15 seconds. Dark sports broadcast studio with green neon lighting.
+    prompt = f"""Cinematic vertical video (9:16), 12 seconds. Dark premium sports broadcast studio with signature green neon lighting. No voiceover — all text is on-screen only.
 
-Scene 1 (0-3s): Camera enters a dark premium sports studio. A large neon sign on the wall reads "SCOTTY'S EDGE" with EDGE glowing bright green neon and SCOTTY'S in white neon tubes. The sign flickers on dramatically. Green neon light reflects off glossy black floors. Slow cinematic camera push toward the sign. A LED scoreboard below the sign shows "{total_w}-{total_l}" in large white numbers.
+Scene 1 (0-3s): Camera glides into a dark premium sports studio. A large neon sign on the wall reads "SCOTTY'S EDGE" — "EDGE" in bright green neon, "SCOTTY'S" in crisp white neon tubes. The sign flickers dramatically to life. Green neon light reflects across glossy black floors. On-screen text appears in a clean broadcast font beneath the sign: "WELCOME TO SCOTTY'S EDGE". A smaller LED scoreboard below shows tonight's record "{total_w}-{total_l}" in bold white numerals. Slow cinematic push toward the sign.
 
 {chr(10).join(scenes)}
 
-Scene {scene_num} ({t}-15s): Camera slowly pulls back to reveal the full studio. The neon "SCOTTY'S EDGE" sign glows on the wall. Scoreboard shows large green glowing numbers "{tw}-{tl}" with "{twp}%" below it pulsing green. All green neon lighting pulses slowly. Premium broadcast sign-off. Cinematic fade.
+Scene {scene_num} ({t:.1f}-12.0s): Camera pulls back smoothly to reveal the full studio. The neon "SCOTTY'S EDGE" sign glows steady above. A massive LED scoreboard shows season record "{tw}-{tl}" in large glowing green numerals with "{twp}%" pulsing beneath. Green neon accents across the studio pulse slowly in rhythm. Premium broadcast sign-off, cinematic fade to black.
 
-Style: Dark ESPN SportsCenter studio. Athletes are fully visible and well-lit with sport-specific colored lighting, NOT silhouettes. Green neon is the signature accent color. Numbers appear on LED scoreboards within the studio. Smooth slow camera movements. Premium sports broadcast quality."""
+Style: Dark ESPN SportsCenter aesthetic. Athletes are fully visible and well-lit with sport-specific colored spotlights — NOT silhouettes. Green neon is the signature accent color throughout. All numbers appear on LED scoreboards inside the studio. Smooth, slow camera movements. Premium sports broadcast quality. 9:16 vertical, 12 seconds total."""
 
     # Save prompt to file and email
     prompt_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'cards', 'kling_prompt.txt')
