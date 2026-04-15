@@ -26,13 +26,24 @@ zeroed out so they do not influence picks.
 
 ## Model Changes Log (for agent reference)
 
-### v22 — 2026-04-01
+### v22 — 2026-04-01 (PARTIALLY ROLLED BACK — see v25.4)
 
-**NCAA Baseball UNDER filters (model_engine.py):**
-- **Block all Friday NCAA baseball UNDERs** — were 2W-5L, -17.7u
-- **Block NCAA baseball UNDERs with line > 12.0** — lines 12.5+ were 8W-10L, -15.4u
-- Kept picks (Saturday/midweek, lines ≤ 12.0): 7W-2L, +19.1u (78%)
-- Net backtest impact: +29.8u saved
+**NCAA Baseball UNDER filters (model_engine.py):** — ORIGINAL v22 description, superseded by v25.4
+- ~~Block all Friday NCAA baseball UNDERs~~ — **ROLLED BACK v25.4 (4/10/2026)**
+- ~~Block NCAA baseball UNDERs with line > 12.0~~ — **ROLLED BACK v25.4 (4/10/2026)**
+- Original backtest (small sample): +29.8u saved
+- 14-day re-backtest (Apr 10) showed the gates were blocking **winners**, not losers.
+
+### v25.4 — 2026-04-10 (commit 58861af) — v22 NCAA UNDER filter rollback
+
+**The v22 NCAA baseball UNDER filters were REMOVED after a 14-day backtest showed they were costing ~140u/month:**
+- Friday UNDERs: **38W-20L (66%), +51.9u** — was being BLOCKED by v22
+- line > 12.0 UNDERs: **79W-57L (58%), +54.4u** — was being BLOCKED by v22
+- NCAA UNDER conviction floor rolled back 1.0 → 0.5 (|ms|>=0.5 unders: 60% win rate, +100.8u)
+
+**Current behavior:** NCAA baseball UNDERs fire on all days of week and at all line sizes, provided they meet the model's 20% edge floor + conviction >= 0.5. Code: `model_engine.py:2711-2720` sets `_block_ncaa_under = False`.
+
+**DO NOT flag this as a regression.** If NCAA UNDERs at lines > 12.0 or on Fridays fire, that is WORKING AS INTENDED.
 
 **Grader resilience (grader.py):**
 - Fresh-connection retry when primary score lookup fails
@@ -45,8 +56,10 @@ zeroed out so they do not influence picks.
 
 ### Issues Already Resolved — Do NOT Re-Recommend
 
-- **Friday game factor (-22.6u):** Driven almost entirely by NCAA baseball UNDERs (now blocked). Remaining Friday non-baseball is 11W-9L (-0.6u) — no action needed.
-- **NCAA Baseball UNDER concentration (7-8 per day):** Direction cap (max 4) was added 3/29. New UNDER filters further reduce volume.
+- **v22 NCAA baseball UNDER line > 12.0 block:** REMOVED in v25.4 (4/10). 14-day backtest proved the gate was blocking +54.4u of winners (79W-57L). If line-12+ NCAA UNDERs fire today, that is INTENDED. Do not flag them as "gate not firing."
+- **v22 Friday NCAA baseball UNDER block:** REMOVED in v25.4 (4/10). 14-day backtest: 38W-20L, +51.9u when unblocked. Friday UNDERs firing is INTENDED.
+- **Friday game factor (-22.6u, old v22-era claim):** Stale. After v25.4 rollback, Friday NCAA UNDERs are a profit center, not a drag.
+- **NCAA Baseball UNDER concentration (7-8 per day):** Direction cap (max 4) was added 3/29. Volume is self-regulated by the 20% edge floor + direction cap.
 - **Away bounce-back shadow bug (Islanders 3/31):** Code was correct, stale bytecache from scheduled task. One-time issue.
 - **BELOW_CAP picks (-11.1u drag):** Already fixed by v21 (3/31) which raised all edge floors to 20%. Only 2 below-cap picks since v21, both winners. The -11.1u was all pre-v21 history. No further action needed.
 
