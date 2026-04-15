@@ -81,7 +81,7 @@ These combos were losing pre-v24 but are mostly fixed by 20% floor + gates. Moni
 
 - **NHL Saturday** — Was 7W-9L -18.4u. After v24: 4W-2L +4.1u (7 losses were below-cap/away letdown). If it dips negative again post-v24, investigate.
 - **NBA Wednesday** — Was 1W-4L -14.3u. After v24: 1W-1L +0.2u. Small sample, keep watching.
-- **NBA Sunday** — Was 0W-3L -14.0u. After v24: 0W-2L -9.0u. Still negative but tiny sample (2 picks). Track.
+- **NBA Sunday** — RESOLVED. All 4 pre-v24 Sunday losses were on one day (Apr 5). WAS@BKN UNDER 230.5 "Both teams fast-paced" is now blocked by v24 PACE_GATE. Schroder prop would re-generate under v25 prop overhaul. Post-v24 NBA Sunday picks: **0 fired** (as of 4/15). Do NOT flag as regression.
 
 ### v24 — Context Gates (not shadows — these are directional vetoes)
 

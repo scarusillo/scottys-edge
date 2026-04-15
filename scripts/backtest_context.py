@@ -240,3 +240,4 @@ if __name__ == '__main__':
     print(f"  DELTA: {new_pnl - old_pnl:+.1f}u improvement from sign fix")
     print(f"  OLD total: {len(old)} picks, NEW total: {len(new)} picks")
     print(f"{'=' * 70}")
+    conn.close()
