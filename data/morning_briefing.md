@@ -1,54 +1,67 @@
 # Scotty's Edge Morning Briefing
-**Date:** Tuesday, April 14, 2026 | **Generated:** 05:39 AM ET
-**Game Date Graded:** 2026-04-13
+**Date:** Wednesday, April 15, 2026 | **Generated:** 05:23 AM ET
+**Game Date Graded:** 2026-04-14
 
 ---
 ## Yesterday's Results
 
-**4W-1L-0P | +13.2u | GREEN DAY**
+**5W-3L-0P | +8.6u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Colorado Avalanche@Edmonton Oilers UNDER 6.5 | icehockey_nhl | UNDER | +100 | 5.0 | **W** | +5.0 | 0.0% |
-| Houston Astros@Seattle Mariners OVER 7.5 | baseball_mlb | OVER | -104 | 5.0 | **W** | +4.8 | 0.0% |
-| BYU Cougars@Lamar Cardinals UNDER 11.5 | baseball_ncaa | UNDER | -113 | 5.0 | **W** | +4.4 | 0.0% |
-| New York Rangers@Florida Panthers UNDER 6.5 | icehockey_nhl | UNDER | -125 | 5.0 | **W** | +4.0 | 0.0% |
-| Detroit Red Wings@Tampa Bay Lightning UNDER 6 | icehockey_nhl | UNDER | -125 | 5.0 | **L** | -5.0 | 0.0% |
+| Ryan Kalkbrenner OVER 4.5 POINTS | basketball_nba | PROP_OVER | +124 | 5.0 | **W** | +6.2 | 1.0% |
+| Colorado Avalanche@Calgary Flames UNDER 6.5 | icehockey_nhl | UNDER | -110 | 5.0 | **W** | +4.5 | 0.0% |
+| New York Mets@Los Angeles Dodgers UNDER 7.5 | baseball_mlb | UNDER | -110 | 5.0 | **W** | +4.5 | 0.0% |
+| SE Louisiana Lions@Tulane Green Wave UNDER 12 | baseball_ncaa | UNDER | -115 | 5.0 | **W** | +4.3 | -1.0% |
+| Jesus Sanchez OVER 0.5 HITS | baseball_mlb | PROP_OVER | -125 | 5.0 | **W** | +4.0 | 0.0% |
+| Oso Ighodaro OVER 4.5 REBOUNDS | basketball_nba | PROP_OVER | +122 | 5.0 | **L** | -5.0 | 2.6% |
+| UTSA Roadrunners@Baylor Bears UNDER 14.5 | baseball_ncaa | UNDER | -115 | 5.0 | **L** | -5.0 | -1.5% |
+| Winnipeg Jets@Utah Mammoth UNDER 6.5 | icehockey_nhl | UNDER | -122 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
 
-### Detroit Red Wings@Tampa Bay Lightning UNDER 6.5
+### Oso Ighodaro OVER 4.5 REBOUNDS
+- **Category:** VARIANCE
+- **Analysis:** Positive CLV (+2.6%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** Portland Trail Blazers 114 @ Phoenix Suns 110
+
+### UTSA Roadrunners@Baylor Bears UNDER 14.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (-1.5%) -- borderline call.
+- **Context:** Home slow-paced (-0.4) | Midweek game | Baylor Bears allows 5.3 R/midweek | UTSA Roadrunners allows 5.6 R/midweek | Pitching edge: Baylor Bears (+0.1 pts)
+
+### Winnipeg Jets@Utah Mammoth UNDER 6.5
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Detroit Red Wings 3 @ Tampa Bay Lightning 4
-- **Model Spread:** -0.5 | Actual Margin: +1
-- **Context:** Both teams slow-paced (-0.0) | Goalies: Andrei Vasilevskiy 1.90 vs John Gibson 2.20 (recent 3.00) (-0.6)
+- **Final Score:** Winnipeg Jets 3 @ Utah Mammoth 5
+- **Model Spread:** -1.0 | Actual Margin: +2
+- **Context:** Goalies: Karel Vejmelka 2.40 (recent 3.25) vs Eric Comrie 2.50 (-0.2) | Steam: sharp opposes (+0.5)
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **175W-133L** |
-| Win Rate | 56.8% |
-| P/L | **+75.1u** |
-| ROI | +5.0% |
-| Wagered | 1504.0u |
+| Record | **180W-136L** |
+| Win Rate | 57.0% |
+| P/L | **+83.8u** |
+| ROI | +5.4% |
+| Wagered | 1544.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| baseball_ncaa | 59 | 39 | +59.1u |
-| icehockey_nhl | 46 | 28 | +26.1u |
+| baseball_ncaa | 60 | 40 | +58.4u |
+| icehockey_nhl | 47 | 29 | +25.6u |
 | basketball_ncaab | 17 | 12 | +18.7u |
 | soccer_spain_la_liga | 2 | 0 | +7.8u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
-| basketball_nba | 26 | 23 | +0.4u |
+| basketball_nba | 27 | 24 | +1.6u |
+| baseball_mlb | 22 | 22 | -2.2u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | 1 | 2 | -6.8u |
-| baseball_mlb | 20 | 22 | -10.8u |
 | TENNIS | 2 | 4 | -11.8u |
 
 ---
@@ -63,6 +76,7 @@
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
+| Midweek game | 17W-14L | -0.0u |
 
 > Factors with consistent negative P/L may need weight adjustments or removal.
 > (Already-shadowed factors are filtered — see data/shadow_factors.md.)
@@ -70,7 +84,7 @@
 ---
 ## Shadow Pick Report
 
-Found 17 shadow-tagged picks.
+Found 18 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -89,8 +103,8 @@ Found 17 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 127W-96L (57.0%) | +81.9u | 0.3 |
-| BELOW_CAP | 48W-37L (56.5%) | -6.7u | 0.6 |
+| AT_CAP | 131W-98L (57.2%) | +91.5u | 0.3 |
+| BELOW_CAP | 49W-38L (56.3%) | -7.7u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -118,14 +132,14 @@ Found 17 shadow-tagged picks.
 | Sport | Side | W | L | P/L |
 |-------|------|---|---|-----|
 | baseball_mlb | OVER | 10 | 9 | -0.7u |
-| baseball_mlb | UNDER | 6 | 4 | +6.1u |
+| baseball_mlb | UNDER | 7 | 4 | +10.7u |
 | baseball_ncaa | OVER | 23 | 13 | +32.1u |
-| baseball_ncaa | UNDER | 26 | 21 | +3.9u |
+| baseball_ncaa | UNDER | 27 | 22 | +3.2u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
 | icehockey_nhl | OVER | 11 | 7 | +7.3u |
-| icehockey_nhl | UNDER | 15 | 8 | +19.1u |
+| icehockey_nhl | UNDER | 16 | 9 | +18.7u |
 | soccer_germany_bundesliga | OVER | 2 | 0 | +7.0u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | OVER | 0 | 1 | -5.0u |
@@ -138,8 +152,8 @@ Found 17 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** WIN WIN WIN LOSS WIN LOSS WIN WIN LOSS WIN
-- **Current Streak:** 3 WIN
+- **Last 10:** WIN LOSS WIN LOSS WIN WIN LOSS WIN WIN WIN
+- **Current Streak:** 1 WIN
 
 ---
 ## Action Items
@@ -152,4 +166,4 @@ Found 17 shadow-tagged picks.
 6. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-14 05:39 ET*
+*Generated locally by export_briefing_data.py | 2026-04-15 05:23 ET*

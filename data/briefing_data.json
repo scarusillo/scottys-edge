@@ -1,81 +1,143 @@
 {
-  "generated_at": "2026-04-14 05:39",
-  "game_date": "2026-04-13",
+  "generated_at": "2026-04-15 05:23",
+  "game_date": "2026-04-14",
   "yesterday": [
     {
-      "selection": "Colorado Avalanche@Edmonton Oilers UNDER 6.5",
+      "selection": "Ryan Kalkbrenner OVER 4.5 POINTS",
+      "sport": "basketball_nba",
+      "market_type": "PROP",
+      "side_type": "PROP_OVER",
+      "result": "WIN",
+      "pnl_units": 6.2,
+      "clv": 1.0,
+      "edge_pct": 20.59,
+      "odds": 124.0,
+      "units": 5.0,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": 4.5,
+      "event_id": "25f53495c4044a1d8fb682e3715eb7b3",
+      "dt": "2026-04-14"
+    },
+    {
+      "selection": "Colorado Avalanche@Calgary Flames UNDER 6.5",
       "sport": "icehockey_nhl",
       "market_type": "TOTAL",
       "side_type": "UNDER",
       "result": "WIN",
-      "pnl_units": 5.0,
+      "pnl_units": 4.55,
       "clv": 0.0,
       "edge_pct": 20.0,
-      "odds": 100.0,
+      "odds": -110.0,
       "units": 5.0,
-      "context_factors": "Away slow-paced (-0.5) | Goalies: Connor Ingram 2.50 vs Mackenzie Blackwood 2.83 (recent 2.33) (-0.1)",
+      "context_factors": "Away slow-paced (-0.4) | Division familiarity (-0.3) | Goalies: Devin Cooley 2.55 (recent 3.33) vs Scott Wedgewood 1.67 (recent 0.67) (-0.6)",
       "context_confirmed": 1,
-      "model_spread": 0.36,
+      "model_spread": 0.31999999999999995,
       "closing_line": 6.5,
-      "event_id": "63a04dd550f7203005f749be9394826c",
-      "dt": "2026-04-13"
+      "event_id": "b051baa705c134e97ed62acc5754d71a",
+      "dt": "2026-04-14"
     },
     {
-      "selection": "Houston Astros@Seattle Mariners OVER 7.5",
+      "selection": "New York Mets@Los Angeles Dodgers UNDER 7.5",
       "sport": "baseball_mlb",
       "market_type": "TOTAL",
-      "side_type": "OVER",
+      "side_type": "UNDER",
       "result": "WIN",
-      "pnl_units": 4.81,
+      "pnl_units": 4.55,
       "clv": 0.0,
       "edge_pct": 20.0,
-      "odds": -104.0,
+      "odds": -110.0,
       "units": 5.0,
-      "context_factors": "[SHADOW] Midweek game | Seattle Mariners SP: George Kirby (4.48 ERA) | Houston Astros SP: Mike Burrows (4.75 ERA) | Pitching: George Kirby 4.76 vs Mike Burrows 4.62 (+0.5) | Bullpen: Mariners 3.40 vs Astros 4.26 (+0.0)",
+      "context_factors": "[SHADOW] Midweek game | Los Angeles Dodgers SP: Yoshinobu Yamamoto (2.40 ERA) | New York Mets SP: Nolan McLean (2.71 ERA) | Pitching: Yoshinobu Yamamoto 2.63 vs Nolan McLean 2.70 (-1.0) | Park: Dodger Stadium (+0.1) | Bullpen: Dodgers 3.95 vs Mets 3.56 (-0.0)",
       "context_confirmed": 1,
-      "model_spread": -0.31,
+      "model_spread": -2.08,
       "closing_line": 7.5,
-      "event_id": "d10f53a6fb57a00a4e08f7d5fe1d10de",
-      "dt": "2026-04-13"
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "dt": "2026-04-14"
     },
     {
-      "selection": "BYU Cougars@Lamar Cardinals UNDER 11.5",
+      "selection": "SE Louisiana Lions@Tulane Green Wave UNDER 12.5",
       "sport": "baseball_ncaa",
       "market_type": "TOTAL",
       "side_type": "UNDER",
       "result": "WIN",
-      "pnl_units": 4.42,
-      "clv": 0.0,
+      "pnl_units": 4.35,
+      "clv": -1.0,
       "edge_pct": 20.0,
-      "odds": -113.0,
+      "odds": -115.0,
       "units": 5.0,
-      "context_factors": "Away slow-paced (-0.4) | Midweek game | Lamar Cardinals allows 5.0 R/midweek | BYU Cougars allows 6.3 R/midweek | Pitching edge: Lamar Cardinals (+0.4 pts)",
+      "context_factors": "Away slow-paced (-0.3) | Midweek game | Tulane Green Wave allows 7.7 R/midweek | SE Louisiana Lions allows 4.5 R/midweek | Pitching edge: SE Louisiana Lions (-1.0 pts)",
       "context_confirmed": 1,
-      "model_spread": 0.81,
-      "closing_line": 11.5,
-      "event_id": "a31cb6c8c3ee3d75429c2228d23538a3",
-      "dt": "2026-04-13"
+      "model_spread": -1.09,
+      "closing_line": 13.5,
+      "event_id": "821d3299d2daa928efaa39b5351d9ec8",
+      "dt": "2026-04-14"
     },
     {
-      "selection": "New York Rangers@Florida Panthers UNDER 6.5",
-      "sport": "icehockey_nhl",
-      "market_type": "TOTAL",
-      "side_type": "UNDER",
+      "selection": "Jesus Sanchez OVER 0.5 HITS",
+      "sport": "baseball_mlb",
+      "market_type": "PROP",
+      "side_type": "PROP_OVER",
       "result": "WIN",
       "pnl_units": 4.0,
       "clv": 0.0,
-      "edge_pct": 20.0,
+      "edge_pct": 13.28,
       "odds": -125.0,
       "units": 5.0,
-      "context_factors": "[SHADOW] Home fast-paced (+0.4) | Division familiarity (-0.3) | Goalies: Sergei Bobrovsky 3.43 vs Igor Shesterkin 2.30 (+0.0)",
-      "context_confirmed": 1,
-      "model_spread": 0.43,
-      "closing_line": 6.5,
-      "event_id": "71a2a22f2aeb6a68b093f9d31ffe835a",
-      "dt": "2026-04-13"
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": 0.5,
+      "event_id": "9d2cb684d156eddca29c13df0d0bce22",
+      "dt": "2026-04-14"
     },
     {
-      "selection": "Detroit Red Wings@Tampa Bay Lightning UNDER 6.5",
+      "selection": "Oso Ighodaro OVER 4.5 REBOUNDS",
+      "sport": "basketball_nba",
+      "market_type": "PROP",
+      "side_type": "PROP_OVER",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 2.6,
+      "edge_pct": 18.76,
+      "odds": 122.0,
+      "units": 5.0,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": 4.5,
+      "event_id": "0999cb23cd03811476b378dd4045ea16",
+      "dt": "2026-04-14",
+      "actual_score": {
+        "home": "Phoenix Suns",
+        "away": "Portland Trail Blazers",
+        "home_score": 110,
+        "away_score": 114,
+        "actual_total": 224,
+        "actual_margin": -4
+      }
+    },
+    {
+      "selection": "UTSA Roadrunners@Baylor Bears UNDER 14.5",
+      "sport": "baseball_ncaa",
+      "market_type": "TOTAL",
+      "side_type": "UNDER",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": -1.5,
+      "edge_pct": 20.0,
+      "odds": -115.0,
+      "units": 5.0,
+      "context_factors": "Home slow-paced (-0.4) | Midweek game | Baylor Bears allows 5.3 R/midweek | UTSA Roadrunners allows 5.6 R/midweek | Pitching edge: Baylor Bears (+0.1 pts)",
+      "context_confirmed": 1,
+      "model_spread": 1.76,
+      "closing_line": 16.0,
+      "event_id": "f52d5a855d90a7fb44de400541817519",
+      "dt": "2026-04-14"
+    },
+    {
+      "selection": "Winnipeg Jets@Utah Mammoth UNDER 6.5",
       "sport": "icehockey_nhl",
       "market_type": "TOTAL",
       "side_type": "UNDER",
@@ -83,49 +145,49 @@
       "pnl_units": -5.0,
       "clv": 0.0,
       "edge_pct": 20.0,
-      "odds": -125.0,
+      "odds": -122.0,
       "units": 5.0,
-      "context_factors": "Both teams slow-paced (-0.0) | Goalies: Andrei Vasilevskiy 1.90 vs John Gibson 2.20 (recent 3.00) (-0.6)",
+      "context_factors": "Goalies: Karel Vejmelka 2.40 (recent 3.25) vs Eric Comrie 2.50 (-0.2) | Steam: sharp opposes (+0.5)",
       "context_confirmed": 1,
-      "model_spread": -0.51,
+      "model_spread": -1.01,
       "closing_line": 6.5,
-      "event_id": "f85edd1853a7f222a98966be1584348d",
-      "dt": "2026-04-13",
+      "event_id": "eddd0daf23e8cb700d1bf764bab4e4d6",
+      "dt": "2026-04-14",
       "actual_score": {
-        "home": "Tampa Bay Lightning",
-        "away": "Detroit Red Wings",
-        "home_score": 4,
+        "home": "Utah Mammoth",
+        "away": "Winnipeg Jets",
+        "home_score": 5,
         "away_score": 3,
-        "actual_total": 7,
-        "actual_margin": 1
+        "actual_total": 8,
+        "actual_margin": 2
       }
     }
   ],
   "season": {
     "result": "LOSS",
-    "W": 175,
-    "L": 133,
-    "pnl": 75.1,
-    "wagered": 1504.0
+    "W": 180,
+    "L": 136,
+    "pnl": 83.8,
+    "wagered": 1544.0
   },
   "by_sport": [
     {
       "sport": "baseball_mlb",
-      "W": 20,
+      "W": 22,
       "L": 22,
-      "pnl": -10.8
+      "pnl": -2.2
     },
     {
       "sport": "baseball_ncaa",
-      "W": 59,
-      "L": 39,
-      "pnl": 59.1
+      "W": 60,
+      "L": 40,
+      "pnl": 58.4
     },
     {
       "sport": "basketball_nba",
-      "W": 26,
-      "L": 23,
-      "pnl": 0.4
+      "W": 27,
+      "L": 24,
+      "pnl": 1.6
     },
     {
       "sport": "basketball_ncaab",
@@ -135,9 +197,9 @@
     },
     {
       "sport": "icehockey_nhl",
-      "W": 46,
-      "L": 28,
-      "pnl": 26.1
+      "W": 47,
+      "L": 29,
+      "pnl": 25.6
     },
     {
       "sport": "soccer_germany_bundesliga",
@@ -296,11 +358,11 @@
     },
     {
       "factor": "Midweek game",
-      "W": 16,
-      "L": 13,
-      "pnl": 0.6,
-      "first_half_pnl": 2.1,
-      "second_half_pnl": -1.4,
+      "W": 17,
+      "L": 14,
+      "pnl": -0.0,
+      "first_half_pnl": 6.4,
+      "second_half_pnl": -6.4,
       "trending": "WORSE"
     },
     {
@@ -319,6 +381,15 @@
       "pnl": 1.1,
       "first_half_pnl": 3.8,
       "second_half_pnl": -2.7,
+      "trending": "WORSE"
+    },
+    {
+      "factor": "Home slow-paced",
+      "W": 8,
+      "L": 6,
+      "pnl": 1.8,
+      "first_half_pnl": 27.6,
+      "second_half_pnl": -25.8,
       "trending": "WORSE"
     },
     {
@@ -376,15 +447,6 @@
       "trending": "BETTER"
     },
     {
-      "factor": "[SHADOW] Midweek game",
-      "W": 2,
-      "L": 1,
-      "pnl": 3.9,
-      "first_half_pnl": -5.0,
-      "second_half_pnl": 8.9,
-      "trending": "BETTER"
-    },
-    {
       "factor": "Away letdown spot",
       "W": 13,
       "L": 10,
@@ -412,15 +474,6 @@
       "trending": "WORSE"
     },
     {
-      "factor": "Home slow-paced",
-      "W": 8,
-      "L": 5,
-      "pnl": 6.8,
-      "first_half_pnl": 23.2,
-      "second_half_pnl": -16.4,
-      "trending": "WORSE"
-    },
-    {
       "factor": "Pitching edge: North Carolina Tar Heels",
       "W": 3,
       "L": 1,
@@ -437,6 +490,15 @@
       "first_half_pnl": 3.9,
       "second_half_pnl": 4.7,
       "trending": "STABLE"
+    },
+    {
+      "factor": "[SHADOW] Midweek game",
+      "W": 3,
+      "L": 1,
+      "pnl": 8.5,
+      "first_half_pnl": -0.9,
+      "second_half_pnl": 9.4,
+      "trending": "BETTER"
     },
     {
       "factor": "Cross-country trip",
@@ -520,15 +582,6 @@
       "trending": "WORSE"
     },
     {
-      "factor": "Away slow-paced",
-      "W": 18,
-      "L": 11,
-      "pnl": 20.0,
-      "first_half_pnl": -6.8,
-      "second_half_pnl": 26.8,
-      "trending": "BETTER"
-    },
-    {
       "factor": "Away on B2B",
       "W": 10,
       "L": 4,
@@ -547,13 +600,22 @@
       "trending": "WORSE"
     },
     {
+      "factor": "Away slow-paced",
+      "W": 20,
+      "L": 11,
+      "pnl": 28.9,
+      "first_half_pnl": -11.8,
+      "second_half_pnl": 40.7,
+      "trending": "BETTER"
+    },
+    {
       "factor": "Division familiarity",
-      "W": 14,
+      "W": 15,
       "L": 4,
-      "pnl": 34.3,
+      "pnl": 38.9,
       "first_half_pnl": 16.6,
-      "second_half_pnl": 17.8,
-      "trending": "STABLE"
+      "second_half_pnl": 22.3,
+      "trending": "BETTER"
     },
     {
       "factor": "Saturday game",
@@ -721,6 +783,13 @@
       "pnl": 4.7
     },
     {
+      "day_of_week": "Tuesday",
+      "sport": "basketball_nba",
+      "W": 2,
+      "L": 1,
+      "pnl": 5.1
+    },
+    {
       "day_of_week": "Thursday",
       "sport": "icehockey_nhl",
       "W": 12,
@@ -763,13 +832,6 @@
       "pnl": 8.0
     },
     {
-      "day_of_week": "Tuesday",
-      "sport": "baseball_mlb",
-      "W": 4,
-      "L": 3,
-      "pnl": 8.9
-    },
-    {
       "day_of_week": null,
       "sport": "baseball_ncaa",
       "W": 2,
@@ -784,6 +846,13 @@
       "pnl": 11.4
     },
     {
+      "day_of_week": "Tuesday",
+      "sport": "baseball_ncaa",
+      "W": 10,
+      "L": 6,
+      "pnl": 12.8
+    },
+    {
       "day_of_week": "Saturday",
       "sport": "baseball_mlb",
       "W": 5,
@@ -793,16 +862,16 @@
     {
       "day_of_week": "Tuesday",
       "sport": "icehockey_nhl",
-      "W": 6,
-      "L": 2,
-      "pnl": 13.3
+      "W": 7,
+      "L": 3,
+      "pnl": 12.9
     },
     {
       "day_of_week": "Tuesday",
-      "sport": "baseball_ncaa",
-      "W": 9,
-      "L": 5,
-      "pnl": 13.5
+      "sport": "baseball_mlb",
+      "W": 6,
+      "L": 3,
+      "pnl": 17.4
     },
     {
       "day_of_week": "Sunday",
@@ -822,16 +891,16 @@
   "edge_cap": [
     {
       "bucket": "AT_CAP",
-      "W": 127,
-      "L": 96,
-      "pnl": 81.9,
+      "W": 131,
+      "L": 98,
+      "pnl": 91.5,
       "avg_clv": 0.3
     },
     {
       "bucket": "BELOW_CAP",
-      "W": 48,
-      "L": 37,
-      "pnl": -6.7,
+      "W": 49,
+      "L": 38,
+      "pnl": -7.7,
       "avg_clv": 0.6
     }
   ],
@@ -918,9 +987,9 @@
     {
       "sport": "baseball_mlb",
       "side_type": "UNDER",
-      "W": 6,
+      "W": 7,
       "L": 4,
-      "pnl": 6.1
+      "pnl": 10.7
     },
     {
       "sport": "baseball_ncaa",
@@ -932,9 +1001,9 @@
     {
       "sport": "baseball_ncaa",
       "side_type": "UNDER",
-      "W": 26,
-      "L": 21,
-      "pnl": 3.9
+      "W": 27,
+      "L": 22,
+      "pnl": 3.2
     },
     {
       "sport": "basketball_nba",
@@ -967,9 +1036,9 @@
     {
       "sport": "icehockey_nhl",
       "side_type": "UNDER",
-      "W": 15,
-      "L": 8,
-      "pnl": 19.1
+      "W": 16,
+      "L": 9,
+      "pnl": 18.7
     },
     {
       "sport": "soccer_germany_bundesliga",
@@ -1028,1242 +1097,1231 @@
       "pnl": -4.5
     }
   ],
-  "ungraded": [
-    {
-      "selection": "Pelle Larsson OVER 9.5 POINTS",
-      "sport": "basketball_nba",
-      "dt": "2026-04-13"
-    },
-    {
-      "selection": "Ryan Kalkbrenner OVER 4.5 POINTS",
-      "sport": "basketball_nba",
-      "dt": "2026-04-13"
-    }
-  ],
+  "ungraded": [],
   "last_10": [
     "WIN",
-    "WIN",
-    "WIN",
     "LOSS",
     "WIN",
     "LOSS",
     "WIN",
     "WIN",
     "LOSS",
+    "WIN",
+    "WIN",
     "WIN"
   ],
-  "streak": 3,
+  "streak": 1,
   "streak_type": "WIN",
   "shadow_blocked_picks": [
     {
-      "created_at": "2026-04-13T23:03:38.062503+00:00",
+      "created_at": "2026-04-15T00:05:10.887708+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Adam Frazier runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Nolan McLean pitcher_h_allowed",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:38.061849+00:00",
+      "created_at": "2026-04-15T00:05:10.886579+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Josh Lowe runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Carson Benge runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:38.061199+00:00",
+      "created_at": "2026-04-15T00:05:10.885930+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Logan O'Hoppe runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Carson Benge runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:38.060549+00:00",
+      "created_at": "2026-04-15T00:05:10.885327+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Nolan Schanuel runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Brett Baty runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:38.059585+00:00",
+      "created_at": "2026-04-15T00:05:10.884832+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yoan Moncada runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Brett Baty runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:37.620599+00:00",
+      "created_at": "2026-04-15T00:05:10.884458+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jorge Soler runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Mark Vientos runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:37.618991+00:00",
+      "created_at": "2026-04-15T00:05:10.884045+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jo Adell runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Mark Vientos runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:37.188020+00:00",
+      "created_at": "2026-04-15T00:05:10.883592+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Zach Neto runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Marcus Semien runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:37.187172+00:00",
+      "created_at": "2026-04-15T00:05:10.883070+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Mike Trout runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Marcus Semien runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:30.173267+00:00",
+      "created_at": "2026-04-15T00:05:10.882572+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Adam Frazier rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jorge Polanco runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:26.941112+00:00",
+      "created_at": "2026-04-15T00:05:10.882063+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Nolan Schanuel rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jorge Polanco runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:26.940534+00:00",
+      "created_at": "2026-04-15T00:05:10.881638+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yoan Moncada rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Bo Bichette runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:26.939821+00:00",
+      "created_at": "2026-04-15T00:05:10.881125+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Zach Neto rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Bo Bichette runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:26.939068+00:00",
+      "created_at": "2026-04-15T00:05:10.879358+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Logan O'Hoppe rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Alvarez runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:26.937355+00:00",
+      "created_at": "2026-04-15T00:05:10.878463+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Mike Trout rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Alvarez runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:23.845486+00:00",
+      "created_at": "2026-04-15T00:05:10.877979+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jorge Soler rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Luis Robert Jr. runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:23.844201+00:00",
+      "created_at": "2026-04-15T00:05:10.877346+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jo Adell rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Luis Robert Jr. runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.182900+00:00",
+      "created_at": "2026-04-15T00:05:09.999452+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Josh Lowe rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Lindor runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.181012+00:00",
+      "created_at": "2026-04-15T00:05:09.997946+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yusei Kikuchi pitcher_h_allowed",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Lindor runs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.178898+00:00",
+      "created_at": "2026-04-15T00:05:05.732021+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Adam Frazier total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Carson Benge rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.178210+00:00",
+      "created_at": "2026-04-15T00:05:05.731466+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Logan O'Hoppe total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Carson Benge rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.177368+00:00",
+      "created_at": "2026-04-15T00:05:05.730929+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Josh Lowe total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Brett Baty rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.174770+00:00",
+      "created_at": "2026-04-15T00:05:05.730344+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yoan Moncada total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Brett Baty rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.173190+00:00",
+      "created_at": "2026-04-15T00:05:05.729674+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jorge Soler total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Marcus Semien rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.171359+00:00",
+      "created_at": "2026-04-15T00:05:05.728829+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Zach Neto total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Marcus Semien rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.170646+00:00",
+      "created_at": "2026-04-15T00:05:05.727172+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Mike Trout total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Mark Vientos rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.167152+00:00",
+      "created_at": "2026-04-15T00:05:05.726565+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jo Adell total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Mark Vientos rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.166286+00:00",
+      "created_at": "2026-04-15T00:05:05.726160+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Nolan Schanuel total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Luis Robert Jr. rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.163515+00:00",
+      "created_at": "2026-04-15T00:05:05.725644+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Adam Frazier hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Luis Robert Jr. rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.162355+00:00",
+      "created_at": "2026-04-15T00:05:05.725011+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Logan O'Hoppe hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Lindor rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:16.160363+00:00",
+      "created_at": "2026-04-15T00:05:05.724383+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Josh Lowe hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Lindor rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:13.740661+00:00",
+      "created_at": "2026-04-15T00:05:05.722879+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yoan Moncada hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jorge Polanco rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:11.341451+00:00",
+      "created_at": "2026-04-15T00:05:05.722094+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jorge Soler hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jorge Polanco rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:06.776357+00:00",
+      "created_at": "2026-04-15T00:05:05.721166+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Zach Neto hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Bo Bichette rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:04.379892+00:00",
+      "created_at": "2026-04-15T00:05:05.720056+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Nolan Schanuel hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Bo Bichette rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:04.379296+00:00",
+      "created_at": "2026-04-15T00:05:05.719458+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Mike Trout hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Alvarez rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:04.378642+00:00",
+      "created_at": "2026-04-15T00:05:05.709653+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jo Adell hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Alvarez rbi",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:04.378102+00:00",
+      "created_at": "2026-04-15T00:05:00.117189+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Adam Frazier hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Nolan McLean pitcher_h_allowed",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:04.367295+00:00",
+      "created_at": "2026-04-15T00:05:00.115582+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Logan O'Hoppe hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Bo Bichette total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:04.364404+00:00",
+      "created_at": "2026-04-15T00:05:00.115053+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Josh Lowe hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Lindor total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:03:01.558108+00:00",
+      "created_at": "2026-04-15T00:05:00.113863+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yoan Moncada hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jorge Polanco total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:02:58.769007+00:00",
+      "created_at": "2026-04-15T00:05:00.113387+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jorge Soler hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Luis Robert Jr. total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:02:53.281999+00:00",
+      "created_at": "2026-04-15T00:05:00.112903+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Nolan Schanuel hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Mark Vientos total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:02:53.278644+00:00",
+      "created_at": "2026-04-15T00:05:00.112111+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jo Adell hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Carson Benge total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:02:53.257132+00:00",
+      "created_at": "2026-04-15T00:05:00.110323+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Zach Neto hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Marcus Semien total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:02:49.980802+00:00",
+      "created_at": "2026-04-15T00:05:00.109787+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Mike Trout hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jared Young total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:02:49.963121+00:00",
+      "created_at": "2026-04-15T00:05:00.108805+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yusei Kikuchi pitcher_k",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Alvarez total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T23:02:49.956357+00:00",
+      "created_at": "2026-04-15T00:05:00.108416+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yusei Kikuchi pitcher_outs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Brett Baty total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:51.112903+00:00",
+      "created_at": "2026-04-15T00:05:00.107764+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Adam Frazier runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Mark Vientos total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:51.112290+00:00",
+      "created_at": "2026-04-15T00:05:00.107374+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Josh Lowe runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Bo Bichette total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:51.111635+00:00",
+      "created_at": "2026-04-15T00:05:00.106976+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Logan O'Hoppe runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Luis Robert Jr. total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:51.110988+00:00",
+      "created_at": "2026-04-15T00:05:00.106541+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Nolan Schanuel runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Carson Benge total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:51.110308+00:00",
+      "created_at": "2026-04-15T00:05:00.105073+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yoan Moncada runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Marcus Semien total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:50.657714+00:00",
+      "created_at": "2026-04-15T00:05:00.103523+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jorge Soler runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jorge Polanco total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:50.656219+00:00",
+      "created_at": "2026-04-15T00:05:00.102012+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jo Adell runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jared Young total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:50.232503+00:00",
+      "created_at": "2026-04-15T00:05:00.100499+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Zach Neto runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Alvarez total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:50.222726+00:00",
+      "created_at": "2026-04-15T00:05:00.099896+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Mike Trout runs",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Brett Baty total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:48.965163+00:00",
+      "created_at": "2026-04-15T00:05:00.097406+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Adam Frazier rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Lindor total_bases",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:48.520615+00:00",
+      "created_at": "2026-04-15T00:05:00.096521+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Nolan Schanuel rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Mark Vientos hr",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:48.520141+00:00",
+      "created_at": "2026-04-15T00:05:00.095630+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yoan Moncada rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Bo Bichette hr",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:48.519533+00:00",
+      "created_at": "2026-04-15T00:05:00.095033+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Zach Neto rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Carson Benge hr",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:48.518934+00:00",
+      "created_at": "2026-04-15T00:05:00.094277+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Logan O'Hoppe rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Luis Robert Jr. hr",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:48.517889+00:00",
+      "created_at": "2026-04-15T00:04:59.886560+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Mike Trout rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jorge Polanco hr",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:48.080829+00:00",
+      "created_at": "2026-04-15T00:04:59.885881+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jorge Soler rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Marcus Semien hr",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:48.070658+00:00",
+      "created_at": "2026-04-15T00:04:59.697378+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jo Adell rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jared Young hr",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.815859+00:00",
+      "created_at": "2026-04-15T00:04:59.511457+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Josh Lowe rbi",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Alvarez hr",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.814898+00:00",
+      "created_at": "2026-04-15T00:04:59.510763+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yusei Kikuchi pitcher_h_allowed",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Brett Baty hr",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.813639+00:00",
+      "created_at": "2026-04-15T00:04:59.326131+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Adam Frazier total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Lindor hr",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.813092+00:00",
+      "created_at": "2026-04-15T00:04:58.964000+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Logan O'Hoppe total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Mark Vientos hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.812573+00:00",
+      "created_at": "2026-04-15T00:04:58.963595+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Josh Lowe total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Luis Robert Jr. hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.810871+00:00",
+      "created_at": "2026-04-15T00:04:58.963128+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yoan Moncada total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Bo Bichette hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.809809+00:00",
+      "created_at": "2026-04-15T00:04:58.962181+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jorge Soler total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Carson Benge hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.808989+00:00",
+      "created_at": "2026-04-15T00:04:58.961482+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Zach Neto total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jorge Polanco hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.808559+00:00",
+      "created_at": "2026-04-15T00:04:58.960764+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Mike Trout total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Marcus Semien hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.807415+00:00",
+      "created_at": "2026-04-15T00:04:57.624105+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jo Adell total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jared Young hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.806989+00:00",
+      "created_at": "2026-04-15T00:04:57.195695+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Nolan Schanuel total_bases",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Brett Baty hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.806018+00:00",
+      "created_at": "2026-04-15T00:04:57.185761+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Adam Frazier hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Alvarez hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.805470+00:00",
+      "created_at": "2026-04-15T00:04:56.341167+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Logan O'Hoppe hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Lindor hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.804654+00:00",
+      "created_at": "2026-04-15T00:04:56.340195+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Josh Lowe hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Mark Vientos hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.644584+00:00",
+      "created_at": "2026-04-15T00:04:56.338667+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yoan Moncada hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Luis Robert Jr. hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.487165+00:00",
+      "created_at": "2026-04-15T00:04:56.337137+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jorge Soler hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Carson Benge hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.171073+00:00",
+      "created_at": "2026-04-15T00:04:56.336394+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Zach Neto hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Bo Bichette hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.010616+00:00",
+      "created_at": "2026-04-15T00:04:56.333608+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Nolan Schanuel hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Marcus Semien hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.010156+00:00",
+      "created_at": "2026-04-15T00:04:55.876595+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Mike Trout hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jorge Polanco hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.009050+00:00",
+      "created_at": "2026-04-15T00:04:55.433829+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jo Adell hr",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Jared Young hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.008483+00:00",
+      "created_at": "2026-04-15T00:04:54.491307+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Adam Frazier hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Alvarez hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.005808+00:00",
+      "created_at": "2026-04-15T00:04:54.490120+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Logan O'Hoppe hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Brett Baty hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:46.003393+00:00",
+      "created_at": "2026-04-15T00:04:54.488560+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Josh Lowe hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Francisco Lindor hits",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:45.559555+00:00",
+      "created_at": "2026-04-15T00:04:53.453378+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yoan Moncada hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Nolan McLean pitcher_k",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:45.120238+00:00",
+      "created_at": "2026-04-15T00:04:53.452274+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jorge Soler hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Nolan McLean pitcher_k",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:44.209548+00:00",
+      "created_at": "2026-04-15T00:04:53.451447+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Nolan Schanuel hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Nolan McLean pitcher_outs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:44.206451+00:00",
+      "created_at": "2026-04-15T00:04:53.450713+00:00",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Jo Adell hits",
+      "event_id": "bf8721941657f63c8758e23bdee938ba",
+      "selection": "Nolan McLean pitcher_outs",
       "market_type": "PROP",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "BLOWOUT_GATE (team_ml=+172, threshold=160)"
     },
     {
-      "created_at": "2026-04-13T22:03:44.190168+00:00",
+      "created_at": "2026-04-14T20:02:28.616566",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Zach Neto hits",
-      "market_type": "PROP",
+      "event_id": "70099d392f8cdba638b5d8e7d6dce3e2",
+      "selection": "Seattle Mariners@San Diego Padres OVER 7.0",
+      "market_type": "TOTAL",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "PARK_GATE (Park: Petco Park (-0.3))"
     },
     {
-      "created_at": "2026-04-13T22:03:43.776633+00:00",
+      "created_at": "2026-04-14T20:02:27.536153",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Mike Trout hits",
-      "market_type": "PROP",
+      "event_id": "4f93a0b7adae6d305b4095cc30172ed9",
+      "selection": "Texas Rangers@Athletics UNDER 9.0",
+      "market_type": "TOTAL",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "PARK_GATE (Park: Sacramento (Sutter Health Park) (+0.4))"
     },
     {
-      "created_at": "2026-04-13T22:03:43.774306+00:00",
-      "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yusei Kikuchi pitcher_k",
-      "market_type": "PROP",
+      "created_at": "2026-04-14T19:02:10.601224",
+      "sport": "icehockey_nhl",
+      "event_id": "d98f95763dabfa28c6fbe9b9cbb5d5fb",
+      "selection": "Minnesota Wild vs Anaheim Ducks",
+      "market_type": "SPREAD",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "DIVERGENCE_GATE (post_elo_rescue, div=2.0, ms=-0.5, mkt_sp=+1.5)"
     },
     {
-      "created_at": "2026-04-13T22:03:43.772411+00:00",
+      "created_at": "2026-04-14T19:02:09.184371",
       "sport": "baseball_mlb",
-      "event_id": "41cfc5f9fbe204005b41506b477dbe2a",
-      "selection": "Yusei Kikuchi pitcher_outs",
-      "market_type": "PROP",
+      "event_id": "70099d392f8cdba638b5d8e7d6dce3e2",
+      "selection": "Seattle Mariners@San Diego Padres OVER 7.0",
+      "market_type": "TOTAL",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+165, threshold=160)"
+      "reason": "PARK_GATE (Park: Petco Park (-0.3))"
     },
     {
-      "created_at": "2026-04-13T22:03:42.313819+00:00",
+      "created_at": "2026-04-14T19:02:08.298213",
       "sport": "baseball_mlb",
-      "event_id": "df0e15c1b18c2572248e1e6fa22b5271",
-      "selection": "Jorbit Vivas runs",
-      "market_type": "PROP",
+      "event_id": "4f93a0b7adae6d305b4095cc30172ed9",
+      "selection": "Texas Rangers@Athletics UNDER 9.0",
+      "market_type": "TOTAL",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+189, threshold=160)"
+      "reason": "PARK_GATE (Park: Sacramento (Sutter Health Park) (+0.4))"
     },
     {
-      "created_at": "2026-04-13T22:03:42.313226+00:00",
+      "created_at": "2026-04-14T19:02:07.620039",
       "sport": "baseball_mlb",
-      "event_id": "df0e15c1b18c2572248e1e6fa22b5271",
-      "selection": "Jorbit Vivas rbi",
-      "market_type": "PROP",
+      "event_id": "2142bbf2fe04a2b7b7ae829b27222697",
+      "selection": "Colorado Rockies@Houston Astros OVER 8.5",
+      "market_type": "TOTAL",
       "line": null,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+189, threshold=160)"
+      "reason": "PARK_GATE (Park: Minute Maid Park (-0.2))"
     },
     {
-      "created_at": "2026-04-13T22:03:42.312632+00:00",
+      "created_at": "2026-04-14T19:02:06.914275",
       "sport": "baseball_mlb",
-      "event_id": "df0e15c1b18c2572248e1e6fa22b5271",
-      "selection": "Jose Tena runs",
-      "market_type": "PROP",
-      "line": null,
+      "event_id": "c0eef6d4f9ed3511fcfdb17153b8f0a3",
+      "selection": "Cleveland Guardians@St. Louis Cardinals UNDER 9.0",
+      "market_type": "TOTAL",
+      "line": 9.0,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+189, threshold=160)"
+      "reason": "ERA_RELIABILITY_GATE (missing reliable ERA for 1+ starters: Pitching: Michael McGreevy 3.32 vs Joey Cantillo ?.?? (-0.3))"
     },
     {
-      "created_at": "2026-04-13T22:03:42.312143+00:00",
+      "created_at": "2026-04-14T19:02:06.913591",
       "sport": "baseball_mlb",
-      "event_id": "df0e15c1b18c2572248e1e6fa22b5271",
-      "selection": "Keibert Ruiz runs",
-      "market_type": "PROP",
-      "line": null,
+      "event_id": "c0eef6d4f9ed3511fcfdb17153b8f0a3",
+      "selection": "Cleveland Guardians@St. Louis Cardinals OVER 9.0",
+      "market_type": "TOTAL",
+      "line": 9.0,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "BLOWOUT_GATE (team_ml=+189, threshold=160)"
+      "reason": "ERA_RELIABILITY_GATE (missing reliable ERA for 1+ starters: Pitching: Michael McGreevy 3.32 vs Joey Cantillo ?.?? (-0.3))"
     }
   ],
   "book_performance": [
     {
       "book": "FanDuel",
-      "bets": 77,
-      "wins": 49,
-      "losses": 26,
-      "pnl": 75.1,
-      "wagered": 374.5,
+      "bets": 79,
+      "wins": 50,
+      "losses": 27,
+      "pnl": 74.7,
+      "wagered": 384.5,
       "avg_clv": 0.32
     },
     {
@@ -2286,21 +2344,12 @@
     },
     {
       "book": "Caesars",
-      "bets": 41,
-      "wins": 19,
+      "bets": 43,
+      "wins": 21,
       "losses": 20,
-      "pnl": 4.9,
-      "wagered": 194.5,
-      "avg_clv": 1.41
-    },
-    {
-      "book": "DraftKings",
-      "bets": 82,
-      "wins": 40,
-      "losses": 41,
-      "pnl": -18.5,
-      "wagered": 402.5,
-      "avg_clv": -0.77
+      "pnl": 15.7,
+      "wagered": 204.5,
+      "avg_clv": 1.37
     },
     {
       "book": "BetMGM",
@@ -2310,6 +2359,15 @@
       "pnl": -19.0,
       "wagered": 286.5,
       "avg_clv": 0.22
+    },
+    {
+      "book": "DraftKings",
+      "bets": 86,
+      "wins": 42,
+      "losses": 43,
+      "pnl": -20.2,
+      "wagered": 422.5,
+      "avg_clv": -0.74
     }
   ]
 }
