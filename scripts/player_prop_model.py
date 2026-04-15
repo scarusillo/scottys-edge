@@ -815,11 +815,22 @@ def generate_prop_projections(conn=None):
     now_utc = datetime.now(timezone.utc)
     window_start = now_utc.strftime('%Y-%m-%dT%H:%M:%SZ')
 
-    # Get today's prop lines
+    # Get today's prop lines.
+    # CRITICAL: `props` table accumulates every snapshot. If we select all rows,
+    # we'll pick up 2-day-old opener odds as phantom "best prices" — e.g. a book
+    # that opened a line at +128 days ago and has since moved it to -158 will
+    # still show +128 in props. Fix: only use the MOST RECENT snapshot per
+    # (book, event, market, selection, line). Plus a safety net — rows must be
+    # from the last 12 hours, to catch cases where a book stopped posting the
+    # line entirely (stale opener carried forward).
+    from datetime import timedelta
+    _recent_cutoff_dt = now_utc - timedelta(hours=12)
+    _recent_cutoff = _recent_cutoff_dt.strftime('%Y-%m-%d')
+    _recent_time_cutoff = _recent_cutoff_dt.strftime('%H:%M:%S')
     rows = conn.execute("""
         SELECT sport, event_id, commence_time, home, away,
                book, market, selection, line, odds
-        FROM props
+        FROM props p1
         WHERE market IN ('player_points','player_rebounds','player_assists','player_threes',
                          'player_blocks','player_steals',
                          'player_shots_on_goal','player_power_play_points','player_blocked_shots',
@@ -829,8 +840,19 @@ def generate_prop_projections(conn=None):
                          'pitcher_strikeouts','pitcher_outs','pitcher_hits_allowed',
                          'pitcher_earned_runs','pitcher_walks')
         AND commence_time >= ?
+        AND (snapshot_date > ? OR (snapshot_date = ? AND snapshot_time >= ?))
+        AND NOT EXISTS (
+            SELECT 1 FROM props p2
+            WHERE p2.book = p1.book
+              AND p2.event_id = p1.event_id
+              AND p2.market = p1.market
+              AND p2.selection = p1.selection
+              AND p2.line = p1.line
+              AND (p2.snapshot_date > p1.snapshot_date
+                   OR (p2.snapshot_date = p1.snapshot_date AND p2.snapshot_time > p1.snapshot_time))
+        )
         ORDER BY commence_time
-    """, (window_start,)).fetchall()
+    """, (window_start, _recent_cutoff, _recent_cutoff, _recent_time_cutoff)).fetchall()
 
     if not rows:
         if close:
