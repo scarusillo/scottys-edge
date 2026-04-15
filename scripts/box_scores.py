@@ -290,10 +290,11 @@ def _parse_hockey_box(data, sport, espn_id, game_date):
 
                 now = datetime.now().isoformat()
 
-                # SOG (shots on goal)
-                if 'SOG' in idx_map:
+                # SOG (shots on goal) — ESPN labels this 'S' (shotsTotal).
+                # The label 'SOG' in ESPN NHL box scores means *shootout goals*, not shots on goal.
+                if 'S' in idx_map:
                     try:
-                        val = float(stats[idx_map['SOG']])
+                        val = float(stats[idx_map['S']])
                         rows.append((now, game_date, sport, espn_id, team_name, player_name, 'sog', val))
                     except (ValueError, TypeError, IndexError):
                         pass
