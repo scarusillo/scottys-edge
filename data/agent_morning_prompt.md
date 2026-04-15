@@ -26,7 +26,7 @@ second_half stats for monitored factors
 shadow_blocked_picks: picks that had 20%+ edge but were blocked by concentration cap
 Do NOT spend time trying to install sqlite3 or query the DB if it's not available. The JSON has everything.
 
-STEP 2 — PRODUCE THE BRIEFING with these 6 sections ONLY:
+STEP 2 — PRODUCE THE BRIEFING with these 7 sections ONLY:
 
 Skip sections the local briefing already covers (yesterday's results table, season stats, by sport, over/under splits, streak, concentration risk counts). Focus on what ONLY you can do.
 
@@ -50,7 +50,18 @@ Check shadow_blocked_picks in the JSON. These are picks with real edge (20%+) th
 - Recommendation: raise/lower/keep the cap
 If shadow_blocked_picks is empty, say so and move on.
 
-### 6. ACTION ITEMS
+### 6. STEAM SIGNAL TRACKING (ALL SPORTS)
+Query `graded_bets` with `context_factors LIKE '%Steam%'` for the last 14 days, plus the full post-rebuild sample for baseline. Break down by `sport` × signal bucket (SHARP_CONFIRMS / SHARP_OPPOSES / NO_MOVEMENT).
+
+**Watch buckets (report progress toward n-thresholds):**
+- **NCAA Baseball NO_MOVEMENT** — target: stake-boost eval at n≥25 new picks post-Apr-15. Baseline: +12.3% ROI on n=77 post-rebuild.
+- **NHL NO_MOVEMENT** — target: n≥25. Baseline: +36.4% ROI on n=16. Highest ROI signal on the board.
+- **NBA SHARP_CONFIRMS** — target: n≥20 (decision at Apr 20 v24 checkpoint). Baseline: +14.1% ROI on n=10.
+- **NCAAB SHARP_CONFIRMS** — soft-market caveat, target n≥30. Baseline: +19.8% ROI on n=19.
+
+**Do NOT report on MLB steam** beyond baseline tracking — MLB morning-bet strategy is set. MLB SHARP_OPPOSES is flat (-1.1%, n=11) and does not warrant flagging individual picks. See `project_steam_monitor.md` for full context.
+
+### 7. ACTION ITEMS
 Concrete, numbered. NEVER recommend things already resolved in shadow_factors.md. Max 5 items.
 
 STEP 3 — SAVE AND PUSH:
