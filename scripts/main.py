@@ -2461,9 +2461,20 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     #    Was blocking Wembanyama 21.8% block edges because the GAME had 7+ books.
     # 4. No medium dog odds (+151 to +250) — 3W-15L (-49.8u).
     PROP_EXCLUDED_RECS = {'FanDuel'}  # Still use for consensus calc, never recommend
+    # Manual scrubs — specific picks the user has explicitly removed for today.
+    # Format: tuple of (player_substring, market_substring, commence_date_YYYYMMDD).
+    MANUAL_PROP_SCRUBS = {
+        ('Thomas Harley', 'SOG', '2026-04-15'),
+    }
     prop_filtered = []
     for p in (prop_picks or []):
         if p.get('units', 0) < PROP_MIN_UNITS:
+            continue
+        # Manual scrub check
+        _scrub_sel = (p.get('selection') or '').upper()
+        _scrub_commence = (p.get('commence') or '')[:10].replace('-', '')
+        _scrub_date = _scrub_commence[:4] + '-' + _scrub_commence[4:6] + '-' + _scrub_commence[6:8] if len(_scrub_commence) >= 8 else ''
+        if any(ps[0].upper() in _scrub_sel and ps[1].upper() in _scrub_sel and ps[2] == _scrub_date for ps in MANUAL_PROP_SCRUBS):
             continue
         market_key = _get_prop_market_key(p)
         min_edge = PROP_MIN_EDGE_THREES if market_key in LOW_LINE_MARKETS else PROP_MIN_EDGE
