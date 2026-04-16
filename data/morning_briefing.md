@@ -1,15 +1,14 @@
 # Scotty's Edge Morning Briefing
-**Date:** Thursday, April 16, 2026 | **Generated:** 05:18 AM ET
+**Date:** Thursday, April 16, 2026 | **Generated:** 05:22 AM ET
 **Game Date Graded:** 2026-04-15
 
 ---
 ## Yesterday's Results
 
-**4W-8L-0P | -21.5u | RED DAY**
+**3W-5L-0P | -12.4u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Nick Kurtz UNDER 0.5 RUNS | baseball_mlb | PROP_UNDER | +119 | 5.0 | **W** | +6.0 | 0.0% |
 | Kansas City Royals@Detroit Tigers UNDER 8.0 | baseball_mlb | UNDER | -102 | 5.0 | **W** | +4.9 | -0.5% |
 | Miami Marlins@Atlanta Braves OVER 8.5 | baseball_mlb | OVER | -122 | 5.0 | **W** | +4.1 | 0.5% |
 | New York Rangers@Tampa Bay Lightning UNDER 6. | icehockey_nhl | UNDER | -140 | 5.0 | **W** | +3.6 | 0.0% |
@@ -18,9 +17,6 @@
 | New York Mets@Los Angeles Dodgers UNDER 8.0 | baseball_mlb | UNDER | -115 | 5.0 | **L** | -5.0 | 0.5% |
 | San Francisco Giants@Cincinnati Reds UNDER 9. | baseball_mlb | UNDER | -108 | 5.0 | **L** | -5.0 | 0.0% |
 | Marshall Thundering Herd@Ohio State Buckeyes  | baseball_ncaa | UNDER | -115 | 5.0 | **L** | -5.0 | -1.0% |
-| Tyrese Maxey UNDER 28.5 POINTS | basketball_nba | PROP_UNDER | +106 | 5.0 | **L** | -5.0 | 0.0% |
-| Gary Payton II OVER 6.5 POINTS | basketball_nba | PROP_OVER | -118 | 5.0 | **L** | -5.0 | 0.0% |
-| Pavel Dorofeyev UNDER 2.5 SOG | icehockey_nhl | PROP_UNDER | +110 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
@@ -58,45 +54,30 @@
 - **Analysis:** Small CLV (-1.0%) -- borderline call.
 - **Context:** Midweek game | Ohio State Buckeyes allows 7.3 R/midweek | Marshall Thundering Herd allows 7.7 R/midweek | Pitching edge: Ohio State Buckeyes (+0.1 pts)
 
-### Tyrese Maxey UNDER 28.5 POINTS
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Orlando Magic 97 @ Philadelphia 76ers 109
-
-### Gary Payton II OVER 6.5 POINTS
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Golden State Warriors 126 @ Los Angeles Clippers 121
-
-### Pavel Dorofeyev UNDER 2.5 SOG
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Seattle Kraken 1 @ Vegas Golden Knights 4
-
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **184W-144L** |
-| Win Rate | 56.1% |
-| P/L | **+62.3u** |
-| ROI | +3.9% |
-| Wagered | 1604.0u |
+| Record | **183W-141L** |
+| Win Rate | 56.5% |
+| P/L | **+71.3u** |
+| ROI | +4.5% |
+| Wagered | 1584.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
 | baseball_ncaa | 60 | 41 | +53.4u |
-| icehockey_nhl | 48 | 31 | +19.2u |
+| icehockey_nhl | 48 | 30 | +24.2u |
 | basketball_ncaab | 17 | 12 | +18.7u |
 | soccer_spain_la_liga | 2 | 0 | +7.8u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
-| baseball_mlb | 25 | 25 | -2.3u |
+| basketball_nba | 27 | 24 | +1.6u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | 1 | 2 | -6.8u |
-| basketball_nba | 27 | 26 | -8.4u |
+| baseball_mlb | 24 | 25 | -8.2u |
 | TENNIS | 2 | 4 | -11.8u |
 
 ---
@@ -139,8 +120,8 @@ Found 23 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 134W-105L (56.1%) | +69.1u | 0.3 |
-| BELOW_CAP | 50W-39L (56.2%) | -6.8u | 0.6 |
+| AT_CAP | 134W-103L (56.5%) | +79.1u | 0.3 |
+| BELOW_CAP | 49W-38L (56.3%) | -7.7u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -188,13 +169,13 @@ Found 23 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** WIN LOSS LOSS LOSS LOSS LOSS WIN LOSS WIN WIN
-- **Current Streak:** 1 WIN
+- **Last 10:** LOSS LOSS WIN LOSS WIN WIN LOSS LOSS WIN LOSS
+- **Current Streak:** 2 LOSS
 
 ---
 ## Action Items
 
-1. Big red day (-21.5u). Review if any model errors need parameter changes.
+1. Big red day (-12.4u). Review if any model errors need parameter changes.
 2. Factor 'Midweek game' has -5.0u P/L over 32 bets. Consider reducing weight.
 3. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
 4. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
@@ -204,4 +185,4 @@ Found 23 shadow-tagged picks.
 8. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-16 05:18 ET*
+*Generated locally by export_briefing_data.py | 2026-04-16 05:22 ET*
