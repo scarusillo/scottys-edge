@@ -81,6 +81,12 @@ MAX_PROP_ODDS = 140  # v25.13: Lowered from +150. Season calibration showed +141
                     # and +151..+199 was 1-5 (6 of 10 losing picks were in this zone).
                     # Below +140 is the only consistently profitable plus-money prop zone.
 MAX_PROP_EDGE = 25.0  # Cap edge like game lines — extreme edges are overestimates
+# v25.18: Projection-line separation gate. Require the model's projection to
+# meaningfully disagree with the market before firing. Without this, hit-rate
+# math can produce phantom "edges" on coin-flip props where the projection
+# essentially matches the line (e.g., Dorofeyev proj 2.5 vs line 2.5).
+# 0.3 std means: for a stat with std=1.5, need >= 0.45 units of separation.
+MIN_PROJ_LINE_SEP_STD = 0.3
 # v25.13: Prop model calibration — 20-game hit rate captures hot streaks that don't persist.
 # Backtest of 10 graded MLB counting-stat props showed the 20-game rate was 5-30 points
 # higher than the full-season rate on EVERY single pick. Blending 50/50 between recent
@@ -189,7 +195,21 @@ def get_player_baseline(conn, player, stat_type, sport, limit=20):
         blend = len(values) / 8.0
         std = empirical_std * blend + pop_std * (1.0 - blend)
 
-    return {'avg': round(avg, 2), 'std': round(std, 2), 'games': len(values), 'values': values}
+    # v25.18: Career regression — blend career per-game average into projection
+    # when box score sample is small (< 40 games). Prevents the Stanton problem
+    # where 27 games of box scores show 4% HR rate when career is 26%.
+    try:
+        from career_stats import get_career_stat, career_regressed_projection
+        career_avg, career_games = get_career_stat(conn, player, stat_type, sport)
+        if career_avg is not None:
+            avg = career_regressed_projection(avg, len(values), career_avg, career_games, sport=sport)
+    except ImportError:
+        pass  # career_stats.py not available
+    except Exception:
+        pass  # Don't let career lookup failures kill the prop model
+
+    return {'avg': round(avg, 2), 'std': round(std, 2), 'games': len(values), 'values': values,
+            'baseline_avg': round(sum(v * w for v, w in zip(values, weights)) / total_w, 2)}
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -1097,6 +1117,17 @@ def generate_prop_projections(conn=None):
             if any(e['odds'] > MAX_PROP_ODDS for e in _all_book_entries):
                 continue  # Another book has it above our cap — not a real edge
 
+            # v25.18: Projection-line separation gate.
+            # Model must meaningfully disagree with the market — not just
+            # have hit-rate math that produces an "edge" while projecting
+            # the same number as the line. Kills coin-flip props.
+            _proj_val = proj['projection']
+            _std_val = proj['std']
+            if _std_val > 0:
+                _separation = abs(_proj_val - line) / _std_val
+                if _separation < MIN_PROJ_LINE_SEP_STD:
+                    continue  # Projection too close to line — coin flip
+
             # Hit rate gate: check actual clearing rate vs implied breakeven
             # For OVER: need hit_rate (stat > line) >= implied
             # For UNDER: need under_rate (stat <= line) >= implied
@@ -1315,7 +1346,7 @@ def generate_prop_projections(conn=None):
     MAX_PER_STAT = 2
     # v25: Daily caps — check what we've already bet today across all runs.
     # Without this, each hourly run adds 3 more props and RBIs pile up.
-    DAILY_MAX_PROPS = 4
+    DAILY_MAX_PROPS = 3  # v25.18: Lowered from 4 — props are 17W-19L lifetime, limit exposure until profitable
     DAILY_MAX_PER_STAT = 2
     _today_props = {}
     _today_total = 0

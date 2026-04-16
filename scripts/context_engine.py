@@ -2219,6 +2219,28 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
     # Even halved, it pushed totals in wrong direction and gave false context.
     # trend_adj, trend_info = _scoring_trend_adjustment(conn, home, away, sport)
     
+    # 12b. Injury Impact — SHADOW MODE (v25.18)
+    # Measures actual team performance WITH vs WITHOUT injured players.
+    # Shadow only: logs the adjustment in context_factors but does NOT apply
+    # to spread/total. Validate for 1-2 weeks before going live.
+    try:
+        from injury_impact import get_team_injury_adjustment
+        for _inj_team, _inj_label in [(home, 'Home'), (away, 'Away')]:
+            _inj_spread, _inj_total, _inj_details = get_team_injury_adjustment(
+                conn, _inj_team, sport)
+            if _inj_details:
+                all_factors[f'injury_{_inj_label.lower()}'] = _inj_details
+                _inj_names = ', '.join(d['player'].split()[-1] for d in _inj_details[:3])
+                if len(_inj_details) > 3:
+                    _inj_names += f' +{len(_inj_details)-3}'
+                spread_summaries.append(
+                    f"[SHADOW] {_inj_label} injuries: {_inj_names} "
+                    f"(spread {_inj_spread:+.1f}, total {_inj_total:+.1f})")
+    except ImportError:
+        pass
+    except Exception:
+        pass
+
     # ── SOCCER-SPECIFIC CONTEXT (v16 rebuild) ──
     if 'soccer' in sport:
         # 13a. Derby Detection — tighten spread, bump total for rivalry games

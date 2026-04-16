@@ -491,6 +491,13 @@ def grade_bets(conn, days_back=3):
     for b in bets:
         bid, sport, eid, mtype, sel, book, line, odds, edge, conf, units, created = b
 
+        # v25.18: Guard — skip if already graded by an earlier iteration's
+        # duplicate-marking block. Without this, a bet marked DUPLICATE by
+        # iteration N gets graded again as WIN/LOSS by iteration N+K,
+        # creating two graded_bets records for the same bet_id.
+        if conn.execute("SELECT 1 FROM graded_bets WHERE bet_id=?", (bid,)).fetchone():
+            continue
+
         # Pull analytical metadata from bets table
         meta = conn.execute("""
             SELECT side_type, spread_bucket, edge_bucket, timing,
@@ -731,8 +738,17 @@ def grade_bets(conn, days_back=3):
         if mtype == 'PROP':
             try:
                 from box_scores import grade_prop
-                bet_date = created[:10] if created else None
-                result = grade_prop(conn, sel, line, bet_date, sport=sport)
+                # v25.18: Use game commence_time for prop date, not bet creation date.
+                # Bets placed 1+ days before tip-off would look up the wrong day's
+                # box scores, leaving props stuck PENDING indefinitely.
+                _ct_row = conn.execute(
+                    "SELECT commence_time FROM results WHERE event_id=? AND sport=? LIMIT 1",
+                    (eid, sport)
+                ).fetchone() or conn.execute(
+                    "SELECT commence_time FROM odds WHERE event_id=? LIMIT 1", (eid,)
+                ).fetchone()
+                prop_date = _ct_row[0][:10] if (_ct_row and _ct_row[0]) else (created[:10] if created else None)
+                result = grade_prop(conn, sel, line, prop_date, sport=sport)
             except ImportError:
                 result = 'PENDING'  # box_scores.py not installed yet
             except Exception as e:

@@ -2602,6 +2602,25 @@ def generate_predictions(conn, sport=None, date=None):
                         # vs |ms|>=1.0 at +45.0u. The 1.0 floor was costing ~55u/14d.
                         if sp == 'baseball_mlb':
                             _mlb_skip_total = abs(model_total - over_total) < 0.5
+                            # v25.18: MLB side-conviction gate. When model can't pick a winner
+                            # (|model_spread| < 0.5), total projections rely entirely on
+                            # pitching/context multipliers with no underlying conviction.
+                            # Historical: |MS|<0.5 went 6W-11L -28.4u; |MS|>=0.5 went 12W-4L +32.8u.
+                            # MONITOR: Track via MLB_SIDE_CONVICTION_GATE in shadow_blocked_picks.
+                            if ms is not None and abs(ms) < 0.5:
+                                _mlb_skip_total = True
+                                try:
+                                    conn.execute("""
+                                        INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
+                                            market_type, line, odds, edge_pct, units, reason)
+                                        VALUES (?, ?, ?, ?, 'TOTAL', ?, NULL, NULL, NULL, ?)
+                                    """, (datetime.now().isoformat(), sp, eid,
+                                          f"{away}@{home} TOTAL {over_total}",
+                                          over_total,
+                                          f"MLB_SIDE_CONVICTION_GATE (|model_spread|={abs(ms):.2f} < 0.5, 6W-11L -28.4u historically)"))
+                                    conn.commit()
+                                except Exception:
+                                    pass
                         elif sp == 'baseball_ncaa':
                             _mlb_skip_total = abs(ms) < 0.5  # Overs: 0.5 floor
                             _ncaa_skip_under = abs(ms) < 0.5  # v25.4: was 1.0, rolled back
@@ -2652,7 +2671,26 @@ def generate_predictions(conn, sport=None, date=None):
                         # (MLB) and 0W-2L (soccer). Context should confirm, not override.
                         _direction_veto_over = (('soccer' in sp or sp == 'baseball_mlb')
                                                 and _raw_model_total < over_total)
-                        if k not in seen and not _mlb_skip_total and not _park_veto_over and not _pitching_veto_over and not _direction_veto_over and not _era_reliability_veto and not _ncaa_pitcher_data_veto:
+                        # v25.18: NHL pace gate for OVERs. Fast-paced NHL games go 6W-7L -11.5u
+                        # on overs vs 5W-1L +13.8u without pace tag. Fast teams don't produce
+                        # high-scoring games when facing good goalies — pace is misleading.
+                        # MONITOR: Track via NHL_PACE_OVER_GATE in shadow_blocked_picks.
+                        _nhl_pace_veto_over = False
+                        if sp == 'icehockey_nhl' and ctx_total and ctx_total.get('summary', ''):
+                            if 'fast-paced' in ctx_total['summary'].lower():
+                                _nhl_pace_veto_over = True
+                                try:
+                                    conn.execute("""
+                                        INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
+                                            market_type, line, odds, edge_pct, units, reason)
+                                        VALUES (?, ?, ?, ?, 'TOTAL', ?, NULL, NULL, NULL, ?)
+                                    """, (datetime.now().isoformat(), sp, eid,
+                                          f"{away}@{home} OVER {over_total}", over_total,
+                                          f"NHL_PACE_OVER_GATE (fast-paced context, 6W-7L -11.5u historically)"))
+                                    conn.commit()
+                                except Exception:
+                                    pass
+                        if k not in seen and not _mlb_skip_total and not _park_veto_over and not _pitching_veto_over and not _direction_veto_over and not _era_reliability_veto and not _ncaa_pitcher_data_veto and not _nhl_pace_veto_over:
                             total_diff = model_total - over_total
                             if total_diff > 0:  # Model says higher scoring
                                 pv = calculate_point_value_totals(model_total, over_total, sp)

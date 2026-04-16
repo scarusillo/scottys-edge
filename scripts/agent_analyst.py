@@ -180,6 +180,61 @@ def analyze_ungraded(conn):
     return ungraded
 
 
+def analyze_gate_health(conn):
+    """Monitor new v25.18 gates by checking shadow_blocked_picks and hypothetical results.
+
+    Gates to track:
+      - MLB_SIDE_CONVICTION_GATE: blocks MLB totals with |model_spread| < 0.5
+      - NHL_PACE_OVER_GATE: blocks NHL overs with fast-paced context
+      - Prop separation gate: logged implicitly (props that don't fire)
+      - NCAA UNDER CLV drift: high-line UNDERs with negative CLV
+    """
+    notes = []
+
+    # MLB Side Conviction Gate
+    mlb_blocks = conn.execute("""
+        SELECT COUNT(*) FROM shadow_blocked_picks
+        WHERE reason LIKE 'MLB_SIDE_CONVICTION_GATE%'
+    """).fetchone()[0]
+    if mlb_blocks > 0:
+        notes.append(f"MLB_SIDE_CONVICTION_GATE: {mlb_blocks} blocks (review at 25)")
+
+    # NHL Pace Over Gate
+    nhl_blocks = conn.execute("""
+        SELECT COUNT(*) FROM shadow_blocked_picks
+        WHERE reason LIKE 'NHL_PACE_OVER_GATE%'
+    """).fetchone()[0]
+    if nhl_blocks > 0:
+        notes.append(f"NHL_PACE_OVER_GATE: {nhl_blocks} blocks (review at 15)")
+
+    # Prop UNDER performance (v25.18 enabled, monitor through Apr 20)
+    prop_unders = conn.execute("""
+        SELECT result, COUNT(*), SUM(pnl_units) FROM graded_bets
+        WHERE side_type = 'PROP_UNDER' AND result IN ('WIN','LOSS')
+        GROUP BY result
+    """).fetchall()
+    if prop_unders:
+        pw = sum(r[1] for r in prop_unders if r[0] == 'WIN')
+        pl = sum(r[1] for r in prop_unders if r[0] == 'LOSS')
+        pp = sum(r[2] for r in prop_unders if r[2])
+        notes.append(f"PROP UNDER: {pw}W-{pl}L {pp:+.1f}u (monitoring through Apr 20)")
+
+    # NCAA UNDER CLV drift on high totals (lines > 14.0)
+    ncaa_high = conn.execute("""
+        SELECT COUNT(*), SUM(CASE WHEN clv < 0 THEN 1 ELSE 0 END),
+               SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END),
+               SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END)
+        FROM graded_bets
+        WHERE sport = 'baseball_ncaa' AND side_type = 'UNDER'
+        AND line > 14.0 AND result IN ('WIN','LOSS')
+    """).fetchone()
+    if ncaa_high and ncaa_high[0] >= 5:
+        total, neg_clv, nw, nl = ncaa_high
+        notes.append(f"NCAA UNDER >14.0: {nw}W-{nl}L, {neg_clv} neg-CLV of {total} (watch for drift)")
+
+    return notes
+
+
 def generate_briefing(conn):
     """Generate the full morning briefing."""
     lines = []
@@ -242,6 +297,13 @@ def generate_briefing(conn):
         if len(ungraded) > 5:
             lines.append(f"    ... and {len(ungraded) - 5} more")
     
+    # v25.18 Gate monitoring
+    gate_notes = analyze_gate_health(conn)
+    if gate_notes:
+        lines.append(f"\n  GATE MONITORING (v25.18):")
+        for g in gate_notes:
+            lines.append(f"    > {g}")
+
     # Today's outlook
     day_name = now.strftime('%A')
     if day_name == 'Monday':
