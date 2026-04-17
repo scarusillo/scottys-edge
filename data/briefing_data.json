@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-17 05:10",
+  "generated_at": "2026-04-17 05:22",
   "game_date": "2026-04-16",
   "yesterday": [
     {
@@ -18,6 +18,42 @@
       "model_spread": 0.22,
       "closing_line": 6.0,
       "event_id": "88586e525b98a2c062f1f6d75e8d0fe1",
+      "dt": "2026-04-16"
+    },
+    {
+      "selection": "Zach Hyman UNDER 2.5 SOG",
+      "sport": "icehockey_nhl",
+      "market_type": "PROP",
+      "side_type": "PROP_UNDER",
+      "result": "WIN",
+      "pnl_units": 4.35,
+      "clv": 0.0,
+      "edge_pct": 22.23,
+      "odds": -115.0,
+      "units": 5.0,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": 2.5,
+      "event_id": "9d37384a47dfd1b17638086559bb3726",
+      "dt": "2026-04-16"
+    },
+    {
+      "selection": "Brock Nelson UNDER 2.5 SOG",
+      "sport": "icehockey_nhl",
+      "market_type": "PROP",
+      "side_type": "PROP_UNDER",
+      "result": "WIN",
+      "pnl_units": 4.35,
+      "clv": 0.0,
+      "edge_pct": 16.41,
+      "odds": -115.0,
+      "units": 5.0,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": 2.5,
+      "event_id": "96784cc6006a3540914823666e6561d1",
       "dt": "2026-04-16"
     },
     {
@@ -147,10 +183,10 @@
   ],
   "season": {
     "result": "LOSS",
-    "W": 186,
+    "W": 188,
     "L": 147,
-    "pnl": 53.7,
-    "wagered": 1629.0
+    "pnl": 62.4,
+    "wagered": 1639.0
   },
   "by_sport": [
     {
@@ -179,9 +215,9 @@
     },
     {
       "sport": "icehockey_nhl",
-      "W": 50,
+      "W": 52,
       "L": 30,
-      "pnl": 32.4
+      "pnl": 41.1
     },
     {
       "sport": "soccer_germany_bundesliga",
@@ -885,13 +921,6 @@
       "pnl": 12.9
     },
     {
-      "day_of_week": "Thursday",
-      "sport": "icehockey_nhl",
-      "W": 14,
-      "L": 7,
-      "pnl": 13.8
-    },
-    {
       "day_of_week": "Tuesday",
       "sport": "baseball_mlb",
       "W": 6,
@@ -906,6 +935,13 @@
       "pnl": 18.3
     },
     {
+      "day_of_week": "Thursday",
+      "sport": "icehockey_nhl",
+      "W": 16,
+      "L": 7,
+      "pnl": 22.5
+    },
+    {
       "day_of_week": "Saturday",
       "sport": "baseball_ncaa",
       "W": 23,
@@ -916,16 +952,16 @@
   "edge_cap": [
     {
       "bucket": "AT_CAP",
-      "W": 137,
+      "W": 138,
       "L": 107,
-      "pnl": 71.5,
+      "pnl": 75.8,
       "avg_clv": 0.3
     },
     {
       "bucket": "BELOW_CAP",
-      "W": 49,
+      "W": 50,
       "L": 40,
-      "pnl": -17.7,
+      "pnl": -13.4,
       "avg_clv": 0.7
     }
   ],
@@ -1124,19 +1160,19 @@
   ],
   "ungraded": [],
   "last_10": [
+    "WIN",
     "LOSS",
     "LOSS",
     "LOSS",
     "WIN",
+    "WIN",
     "LOSS",
     "WIN",
     "WIN",
-    "LOSS",
-    "LOSS",
-    "WIN"
+    "LOSS"
   ],
-  "streak": 3,
-  "streak_type": "LOSS",
+  "streak": 1,
+  "streak_type": "WIN",
   "shadow_blocked_picks": [
     {
       "created_at": "2026-04-16T20:01:53.067314",
@@ -2360,12 +2396,12 @@
     },
     {
       "book": "Caesars",
-      "bets": 43,
-      "wins": 21,
+      "bets": 44,
+      "wins": 22,
       "losses": 20,
-      "pnl": 15.7,
-      "wagered": 204.5,
-      "avg_clv": 1.37
+      "pnl": 20.0,
+      "wagered": 209.5,
+      "avg_clv": 1.34
     },
     {
       "book": "BetRivers",
@@ -2387,12 +2423,12 @@
     },
     {
       "book": "DraftKings",
-      "bets": 91,
-      "wins": 43,
+      "bets": 92,
+      "wins": 44,
       "losses": 47,
-      "pnl": -35.3,
-      "wagered": 447.5,
-      "avg_clv": -0.71
+      "pnl": -30.9,
+      "wagered": 452.5,
+      "avg_clv": -0.7
     }
   ]
 }

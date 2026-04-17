@@ -1,15 +1,17 @@
 # Scotty's Edge Morning Briefing
-**Date:** Friday, April 17, 2026 | **Generated:** 05:10 AM ET
+**Date:** Friday, April 17, 2026 | **Generated:** 05:22 AM ET
 **Game Date Graded:** 2026-04-16
 
 ---
 ## Yesterday's Results
 
-**3W-4L-0P | -7.6u | RED DAY**
+**5W-4L-0P | +1.1u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
 | Los Angeles Kings@Calgary Flames UNDER 6.0 | icehockey_nhl | UNDER | -115 | 5.0 | **W** | +4.3 | 0.0% |
+| Zach Hyman UNDER 2.5 SOG | icehockey_nhl | PROP_UNDER | -115 | 5.0 | **W** | +4.3 | 0.0% |
+| Brock Nelson UNDER 2.5 SOG | icehockey_nhl | PROP_UNDER | -115 | 5.0 | **W** | +4.3 | 0.0% |
 | San Francisco Giants@Cincinnati Reds UNDER 8. | baseball_mlb | UNDER | -120 | 5.0 | **W** | +4.2 | 0.5% |
 | Seattle Kraken@Colorado Avalanche UNDER 6.5 | icehockey_nhl | UNDER | -130 | 5.0 | **W** | +3.9 | 0.0% |
 | Kansas City Royals@Detroit Tigers UNDER 8.0 | baseball_mlb | UNDER | -105 | 5.0 | **L** | -5.0 | -0.5% |
@@ -47,17 +49,17 @@
 
 | Metric | Value |
 |--------|-------|
-| Record | **186W-147L** |
-| Win Rate | 55.9% |
-| P/L | **+53.7u** |
-| ROI | +3.3% |
-| Wagered | 1629.0u |
+| Record | **188W-147L** |
+| Win Rate | 56.1% |
+| P/L | **+62.4u** |
+| ROI | +3.8% |
+| Wagered | 1639.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
 | baseball_ncaa | 60 | 43 | +43.4u |
-| icehockey_nhl | 50 | 30 | +32.4u |
+| icehockey_nhl | 52 | 30 | +41.1u |
 | basketball_ncaab | 17 | 12 | +18.7u |
 | soccer_spain_la_liga | 2 | 0 | +7.8u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
@@ -108,8 +110,8 @@ Found 25 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 137W-107L (56.1%) | +71.5u | 0.3 |
-| BELOW_CAP | 49W-40L (55.1%) | -17.7u | 0.7 |
+| AT_CAP | 138W-107L (56.3%) | +75.8u | 0.3 |
+| BELOW_CAP | 50W-40L (55.6%) | -13.4u | 0.7 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -157,21 +159,19 @@ Found 25 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS LOSS WIN LOSS WIN WIN LOSS LOSS WIN
-- **Current Streak:** 3 LOSS
+- **Last 10:** WIN LOSS LOSS LOSS WIN WIN LOSS WIN WIN LOSS
+- **Current Streak:** 1 WIN
 
 ---
 ## Action Items
 
-1. Big red day (-7.6u). Review if any model errors need parameter changes.
-2. 3-bet losing streak. Stay disciplined -- check if edges are still valid.
-3. Factor 'Midweek game' has -15.0u P/L over 34 bets. Consider reducing weight.
-4. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
-5. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
-6. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
-7. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-8. Concentration risk detected. Review directional exposure limits.
-9. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+1. Factor 'Midweek game' has -15.0u P/L over 34 bets. Consider reducing weight.
+2. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
+3. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
+4. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
+5. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
+6. Concentration risk detected. Review directional exposure limits.
+7. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-17 05:10 ET*
+*Generated locally by export_briefing_data.py | 2026-04-17 05:22 ET*
