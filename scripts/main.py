@@ -752,6 +752,109 @@ def cmd_run(args):
         except Exception as e:
             print(f"  Concentration check: {e}")
 
+        # ═══ NCAA BASEBALL BOOK-ARB (v25.25) ═══
+        # FD vs DK opener disagreement ≥ 2.0 runs = soft-vs-sharp inefficiency.
+        # Fire the soft side of DK regardless of model: OVER at DK when DK<FD,
+        # UNDER at DK when DK>FD. Tagged side_type='BOOK_ARB' for monitoring.
+        # Skip events we already picked (avoid competing with model or Option C).
+        # Currency check: current FD-DK gap must still be ≥1.0 in original direction.
+        try:
+            _existing_eids = {p.get('event_id') for p in all_picks if p.get('sport') == 'baseball_ncaa'}
+            _today_str = datetime.now().strftime('%Y-%m-%d')
+            _cand = conn.execute("""
+                SELECT DISTINCT event_id FROM openers
+                WHERE sport='baseball_ncaa' AND market='totals' AND book='FanDuel'
+                  AND snapshot_date = ?
+                INTERSECT
+                SELECT DISTINCT event_id FROM openers
+                WHERE sport='baseball_ncaa' AND market='totals' AND book='DraftKings'
+                  AND snapshot_date = ?
+            """, (_today_str, _today_str)).fetchall()
+            _book_arb = []
+            for (_eid,) in _cand:
+                if _eid in _existing_eids:
+                    continue
+                _fd_o = conn.execute(
+                    "SELECT line FROM openers WHERE event_id=? AND market='totals' AND book='FanDuel' AND snapshot_date=? LIMIT 1",
+                    (_eid, _today_str)).fetchone()
+                _dk_o = conn.execute(
+                    "SELECT line FROM openers WHERE event_id=? AND market='totals' AND book='DraftKings' AND snapshot_date=? LIMIT 1",
+                    (_eid, _today_str)).fetchone()
+                if not _fd_o or not _dk_o:
+                    continue
+                _fd_open, _dk_open = _fd_o[0], _dk_o[0]
+                _opener_gap = abs(_fd_open - _dk_open)
+                if _opener_gap < 2.0:
+                    continue
+                _side = 'OVER' if _dk_open < _fd_open else 'UNDER'
+                # Current latest DK line for this side
+                _cur_dk = conn.execute("""
+                    SELECT o.line, o.odds, o.home, o.away, o.commence_time FROM odds o
+                    WHERE o.event_id=? AND o.market='totals' AND o.book='DraftKings'
+                      AND UPPER(o.selection) LIKE ?
+                      AND NOT EXISTS (
+                          SELECT 1 FROM odds o2 WHERE o2.event_id=o.event_id AND o2.book=o.book
+                          AND o2.market=o.market AND o2.selection=o.selection
+                          AND (o2.snapshot_date > o.snapshot_date
+                               OR (o2.snapshot_date=o.snapshot_date AND o2.snapshot_time > o.snapshot_time))
+                      ) LIMIT 1
+                """, (_eid, f'%{_side}%')).fetchone()
+                if not _cur_dk:
+                    continue
+                _dk_line, _dk_odds, _home, _away, _commence = _cur_dk
+                # Current FD line
+                _cur_fd = conn.execute("""
+                    SELECT line FROM odds o WHERE event_id=? AND market='totals' AND book='FanDuel'
+                      AND UPPER(selection) LIKE ?
+                      AND NOT EXISTS (
+                          SELECT 1 FROM odds o2 WHERE o2.event_id=o.event_id AND o2.book=o.book
+                          AND o2.market=o.market AND o2.selection=o.selection
+                          AND (o2.snapshot_date > o.snapshot_date
+                               OR (o2.snapshot_date=o.snapshot_date AND o2.snapshot_time > o.snapshot_time))
+                      ) LIMIT 1
+                """, (_eid, f'%{_side}%')).fetchone()
+                if not _cur_fd:
+                    continue
+                _fd_now = _cur_fd[0]
+                # Currency check: gap must still exist in the same direction
+                if _side == 'OVER' and _dk_line >= _fd_now:
+                    print(f"  ⚠ NCAA_BOOK_ARB skipped: DK {_dk_line} no longer softer than FD {_fd_now} for OVER")
+                    continue
+                if _side == 'UNDER' and _dk_line <= _fd_now:
+                    print(f"  ⚠ NCAA_BOOK_ARB skipped: DK {_dk_line} no longer softer than FD {_fd_now} for UNDER")
+                    continue
+                _current_gap = abs(_fd_now - _dk_line)
+                if _current_gap < 1.0:
+                    print(f"  ⚠ NCAA_BOOK_ARB skipped: current gap {_current_gap:.1f} too thin")
+                    continue
+                # Skip started games (compare UTC timestamps as strings — good enough)
+                try:
+                    if _commence:
+                        _now_utc = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+                        if _commence < _now_utc:
+                            continue
+                except Exception:
+                    pass
+                _sel = f"{_away}@{_home} {_side} {_dk_line}"
+                _pick = {
+                    'sport': 'baseball_ncaa', 'event_id': _eid, 'market_type': 'TOTAL',
+                    'selection': _sel, 'book': 'DraftKings',
+                    'line': _dk_line, 'odds': _dk_odds,
+                    'edge_pct': round(_opener_gap * 5.0, 1),
+                    'confidence': 'BOOK_ARB', 'units': 5.0,
+                    'context': f'BOOK_ARB: FD opener {_fd_open} vs DK opener {_dk_open} (opener gap {_opener_gap:.1f}) | current FD {_fd_now} vs DK {_dk_line} (gap {_current_gap:.1f})',
+                    'commence': _commence, 'home': _home, 'away': _away,
+                    'star_rating': 3, 'model_prob': 0, 'implied_prob': 0,
+                    'side_type': 'BOOK_ARB', 'model_spread': None, 'timing': 'UNKNOWN',
+                }
+                _book_arb.append(_pick)
+                print(f"  💡 NCAA_BOOK_ARB: {_sel} @ {_dk_odds:+.0f} | opener gap {_opener_gap:.1f} | current gap {_current_gap:.1f}")
+            if _book_arb:
+                print(f"  💡 Added {len(_book_arb)} NCAA book-arb pick(s) to slate")
+                all_picks = list(all_picks) + _book_arb
+        except Exception as e:
+            print(f"  NCAA book-arb: {e}")
+
         # ═══ NCAA BASEBALL NO-SHARP SKIP (v25.24) ═══
         # Backtest: 11 no-sharp NCAA TOTAL picks went 3W-7L, -23.6u across all books.
         # When neither FanDuel nor BetRivers posts an opener, the market is too thin/noisy

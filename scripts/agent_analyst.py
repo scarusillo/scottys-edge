@@ -311,6 +311,34 @@ def analyze_fade_flip_strategy(conn):
         AND DATE(created_at) >= DATE('now', '-2 days')
         ORDER BY created_at DESC
     """).fetchall()
+
+    # Also track BOOK_ARB picks (v25.25 — NCAA Baseball FD-DK gap strategy)
+    ba_total = conn.execute("""
+        SELECT COUNT(*) FROM bets
+        WHERE (side_type = 'BOOK_ARB' OR context_factors LIKE '%BOOK_ARB%')
+    """).fetchone()[0]
+    ba_graded = conn.execute("""
+        SELECT result, pnl_units, clv FROM graded_bets
+        WHERE (side_type = 'BOOK_ARB' OR context_factors LIKE '%BOOK_ARB%')
+        AND result IN ('WIN','LOSS','PUSH')
+        ORDER BY created_at DESC
+    """).fetchall()
+    if ba_total > 0 or ba_graded:
+        summary.append(f"BOOK_ARB: {ba_total} picks fired since enablement")
+        if ba_graded:
+            baw = sum(1 for r in ba_graded if r[0] == 'WIN')
+            bal = sum(1 for r in ba_graded if r[0] == 'LOSS')
+            bap = sum((r[1] or 0) for r in ba_graded)
+            bac = [r[2] for r in ba_graded if r[2] is not None]
+            ba_clv = sum(bac)/len(bac) if bac else 0
+            summary.append(f"BOOK_ARB graded: {baw}W-{bal}L | {bap:+.1f}u | avg CLV {ba_clv:+.2f}")
+            n = len(ba_graded)
+            if n >= 5 and bap <= -10:
+                alerts.append(f"BOOK_ARB FAILING: {baw}W-{bal}L, {bap:+.1f}u on {n} — consider disabling")
+            if n >= 4 and baw == 0:
+                alerts.append(f"BOOK_ARB: 0 wins in {n} graded picks")
+            if n >= 5 and ba_clv < -0.3:
+                alerts.append(f"BOOK_ARB CLV degrading: {ba_clv:+.2f} — inefficiency may be closing")
     if pending:
         summary.append(f"FADE_FLIP pending grade: {len(pending)} pick(s) from last 2 days")
         for sel, line, odds, dt in pending[:3]:
@@ -395,7 +423,7 @@ def generate_briefing(conn):
         for a in fade_alerts:
             lines.append(f"    !! {a}")
     if fade_summary:
-        lines.append(f"\n  OPTION C MONITOR (NCAA DK fade-flip strategy):")
+        lines.append(f"\n  OPTION C / BOOK_ARB MONITOR (NCAA experimental strategies):")
         for s in fade_summary:
             lines.append(f"    > {s}")
 
