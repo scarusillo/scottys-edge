@@ -232,7 +232,91 @@ def analyze_gate_health(conn):
         total, neg_clv, nw, nl = ncaa_high
         notes.append(f"NCAA UNDER >14.0: {nw}W-{nl}L, {neg_clv} neg-CLV of {total} (watch for drift)")
 
+    # v25.23: NCAA DK tight-consensus skips
+    tight_skips = conn.execute("""
+        SELECT COUNT(*) FROM shadow_blocked_picks
+        WHERE reason LIKE 'NCAA_DK_TIGHT_SKIP%'
+    """).fetchone()[0]
+    if tight_skips > 0:
+        notes.append(f"NCAA_DK_TIGHT_SKIP: {tight_skips} skips (market efficient, should avoid -16u)")
+
     return notes
+
+
+def analyze_fade_flip_strategy(conn):
+    """CRITICAL: Track Option C fade-flip picks for NCAA DK.
+
+    When our model said one direction but sharps disagreed, we FLIP to bet the opposite
+    side. This is a new, small-sample experimental strategy (based on 7-pick backtest).
+    We must flag any sign it's not working so we can disable before losing money.
+
+    Returns (summary_lines, critical_alerts) — critical_alerts bubble to top of briefing.
+    """
+    summary = []
+    alerts = []
+
+    # Total fade-flip fires logged
+    total_flips = conn.execute("""
+        SELECT COUNT(*) FROM shadow_blocked_picks
+        WHERE reason LIKE 'NCAA_DK_FADE_FLIP%'
+    """).fetchone()[0]
+
+    # Graded outcomes of actual fade-flipped bets — tagged either in side_type OR
+    # context_factors ('FADE_FLIP: ...'). Match on either for backward compatibility.
+    graded = conn.execute("""
+        SELECT result, pnl_units, clv, selection, DATE(created_at) dt
+        FROM graded_bets
+        WHERE (side_type = 'FADE_FLIP' OR context_factors LIKE '%FADE_FLIP%')
+        AND result IN ('WIN','LOSS','PUSH')
+        ORDER BY created_at DESC
+    """).fetchall()
+
+    if total_flips == 0 and not graded:
+        return summary, alerts
+
+    summary.append(f"FADE_FLIP: {total_flips} picks flipped since enablement")
+
+    if graded:
+        wins = sum(1 for r in graded if r[0] == 'WIN')
+        losses = sum(1 for r in graded if r[0] == 'LOSS')
+        pnl = sum((r[1] or 0) for r in graded)
+        avg_clv = sum((r[2] or 0) for r in graded if r[2] is not None) / max(1, sum(1 for r in graded if r[2] is not None))
+        summary.append(f"FADE_FLIP graded: {wins}W-{losses}L | {pnl:+.1f}u | avg CLV {avg_clv:+.2f}")
+
+        # CRITICAL ALERT triggers — flag any sign strategy is breaking down
+        n_graded = len(graded)
+        if n_graded >= 5 and pnl <= -10:
+            alerts.append(f"FADE_FLIP FAILING: {wins}W-{losses}L, {pnl:+.1f}u on {n_graded} picks — consider disabling")
+        if n_graded >= 3 and wins == 0:
+            alerts.append(f"FADE_FLIP: 0 wins in {n_graded} graded picks — strategy may be broken")
+        # Consecutive losses check
+        consec = 0
+        for r in graded:  # already ordered DESC
+            if r[0] == 'LOSS':
+                consec += 1
+            else:
+                break
+        if consec >= 4:
+            alerts.append(f"FADE_FLIP: {consec} consecutive losses — review before next fire")
+        # Negative CLV on flipped picks means even this strategy isn't catching the sharps correctly
+        if n_graded >= 5 and avg_clv < -0.3:
+            alerts.append(f"FADE_FLIP CLV degrading: avg {avg_clv:+.2f} — sharps may no longer be predictive")
+
+    # Pending (ungraded) fade-flip picks from today — match on side_type or context
+    pending = conn.execute("""
+        SELECT selection, line, odds, DATE(created_at) dt
+        FROM bets
+        WHERE (side_type = 'FADE_FLIP' OR context_factors LIKE '%FADE_FLIP%')
+        AND (result IS NULL OR result = 'PENDING')
+        AND DATE(created_at) >= DATE('now', '-2 days')
+        ORDER BY created_at DESC
+    """).fetchall()
+    if pending:
+        summary.append(f"FADE_FLIP pending grade: {len(pending)} pick(s) from last 2 days")
+        for sel, line, odds, dt in pending[:3]:
+            summary.append(f"  • {dt} {sel} @ {odds}")
+
+    return summary, alerts
 
 
 def generate_briefing(conn):
@@ -304,6 +388,17 @@ def generate_briefing(conn):
         for g in gate_notes:
             lines.append(f"    > {g}")
 
+    # v25.23 / Option C — CRITICAL fade-flip monitoring
+    fade_summary, fade_alerts = analyze_fade_flip_strategy(conn)
+    if fade_alerts:
+        lines.append(f"\n  🚨 CRITICAL — OPTION C (FADE_FLIP) ALERTS:")
+        for a in fade_alerts:
+            lines.append(f"    !! {a}")
+    if fade_summary:
+        lines.append(f"\n  OPTION C MONITOR (NCAA DK fade-flip strategy):")
+        for s in fade_summary:
+            lines.append(f"    > {s}")
+
     # Today's outlook
     day_name = now.strftime('%A')
     if day_name == 'Monday':
@@ -325,6 +420,8 @@ def generate_briefing(conn):
         action_items.append(f"Grade {len(ungraded)} missing bets (ESPN may not have scores)")
     if vol_notes:
         action_items.append("Investigate low volume if it continues 2+ more days")
+    if fade_alerts:
+        action_items.append("URGENT: Review Option C (FADE_FLIP) — alerts above suggest strategy may be breaking")
     
     if action_items:
         lines.append(f"\n  ACTION ITEMS:")

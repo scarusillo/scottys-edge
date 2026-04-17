@@ -752,6 +752,171 @@ def cmd_run(args):
         except Exception as e:
             print(f"  Concentration check: {e}")
 
+        # ═══ NCAA BASEBALL NO-SHARP SKIP (v25.24) ═══
+        # Backtest: 11 no-sharp NCAA TOTAL picks went 3W-7L, -23.6u across all books.
+        # When neither FanDuel nor BetRivers posts an opener, the market is too thin/noisy
+        # (Sun Belt, midweek non-conf, backup-pitcher-heavy slates). Our model's edge
+        # estimate on these is based on unreliable run-allowed stats and day-of-week filters
+        # that don't have enough N for mid-majors. Absorbs the Thursday bleed and
+        # mid-major team bleed without separate rules.
+        try:
+            _ncaa_sharp_passed = []
+            _ncaa_no_sharp_blocked = []
+            for p in all_picks:
+                if not (p.get('sport') == 'baseball_ncaa' and p.get('market_type') == 'TOTAL'):
+                    _ncaa_sharp_passed.append(p)
+                    continue
+                eid = p.get('event_id', '')
+                rows = conn.execute(
+                    "SELECT book FROM openers WHERE event_id=? AND market='totals' "
+                    "AND book IN ('FanDuel','BetRivers')", (eid,)
+                ).fetchall()
+                if rows:
+                    _ncaa_sharp_passed.append(p)
+                else:
+                    _ncaa_no_sharp_blocked.append(p)
+                    print(f"  ⚠ NCAA_NO_SHARP_SKIP: {p.get('selection','')[:55]} — neither FD nor BR posted opener")
+            if _ncaa_no_sharp_blocked:
+                _now = datetime.now().isoformat()
+                for _p in _ncaa_no_sharp_blocked:
+                    conn.execute("""INSERT INTO shadow_blocked_picks
+                        (created_at, sport, event_id, selection, market_type, book, line, odds, edge_pct, units, reason)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (_now, _p.get('sport',''), _p.get('event_id',''),
+                         _p.get('selection',''), _p.get('market_type',''), _p.get('book',''),
+                         _p.get('line'), _p.get('odds'), _p.get('edge_pct', 0),
+                         _p.get('units', 0), 'NCAA_NO_SHARP_SKIP (neither FanDuel nor BetRivers posted opener)'))
+                conn.commit()
+            all_picks = _ncaa_sharp_passed
+        except Exception as e:
+            print(f"  NCAA no-sharp skip: {e}")
+
+        # ═══ NCAA BASEBALL DK GATE (v25.23 tight-skip + Option C fade-flip) ═══
+        # Two-pass gate on NCAA Baseball TOTAL picks at DraftKings:
+        #   (1) TIGHT CONSENSUS SKIP: if DK line == FD opener and (BR absent or BR == DK), skip.
+        #       Historical: 7 tight picks → 2W-5L, -16.30u. Market perfectly priced → no real edge.
+        #   (2) OPTION C FADE-FLIP: if FD or BR opens against our direction, FLIP the pick
+        #       to the opposite side (model said UNDER but sharps priced OVER → we bet OVER).
+        #       Historical: 7 flip candidates → flipped record ~5W-2L, +17u (vs 2W-5L, -11.48u
+        #       taken as model said). Uses sharp book as primary signal.
+        # Flipped picks are flagged in context_factors as 'FADE_FLIP' so monitoring/agents
+        # can track them specifically — CRITICAL for catching if this strategy breaks down.
+        try:
+            _ncaa_dk_kept = []
+            _ncaa_dk_skipped = []
+            _ncaa_dk_flipped = []
+            for p in all_picks:
+                if not (p.get('sport') == 'baseball_ncaa'
+                        and p.get('market_type') == 'TOTAL'
+                        and p.get('book') == 'DraftKings'):
+                    _ncaa_dk_kept.append(p)
+                    continue
+                eid = p.get('event_id', '')
+                bet_line = p.get('line')
+                sel = p.get('selection', '') or ''
+                is_under = 'UNDER' in sel.upper()
+                rows = conn.execute(
+                    "SELECT book, line FROM openers WHERE event_id=? AND market='totals' "
+                    "AND book IN ('FanDuel','BetRivers')", (eid,)
+                ).fetchall()
+                fd_open = next((l for b, l in rows if b == 'FanDuel'), None)
+                br_open = next((l for b, l in rows if b == 'BetRivers'), None)
+
+                if bet_line is None:
+                    _ncaa_dk_kept.append(p)
+                    continue
+
+                # (1) Tight consensus check — both sharps match DK line exactly
+                tight = False
+                if fd_open is not None and fd_open == bet_line:
+                    if br_open is None or br_open == bet_line:
+                        tight = True
+                elif br_open is not None and br_open == bet_line and fd_open is None:
+                    tight = True
+
+                if tight:
+                    _ncaa_dk_skipped.append((p, f'all books at {bet_line}'))
+                    print(f"  ⚠ NCAA_DK_TIGHT_SKIP: {sel[:50]} — all books at {bet_line} (market efficient)")
+                    continue
+
+                # (2) Sharp disagreement → FLIP (Option C)
+                flip_reason = None
+                if is_under:
+                    if fd_open is not None and fd_open > bet_line:
+                        flip_reason = f'FD opened {fd_open} > bet UNDER {bet_line} (sharp prices OVER)'
+                    elif br_open is not None and br_open > bet_line:
+                        flip_reason = f'BR opened {br_open} > bet UNDER {bet_line} (sharp prices OVER)'
+                else:  # OVER
+                    if fd_open is not None and fd_open < bet_line:
+                        flip_reason = f'FD opened {fd_open} < bet OVER {bet_line} (sharp prices UNDER)'
+                    elif br_open is not None and br_open < bet_line:
+                        flip_reason = f'BR opened {br_open} < bet OVER {bet_line} (sharp prices UNDER)'
+
+                if flip_reason:
+                    # Flip selection + fetch opposite-side odds at DK for same line
+                    if is_under:
+                        new_sel = sel.replace('UNDER', 'OVER')
+                        opp_marker = 'OVER'
+                    else:
+                        new_sel = sel.replace('OVER', 'UNDER')
+                        opp_marker = 'UNDER'
+                    # Look up latest DK odds for the opposite side at same line
+                    opp_row = conn.execute("""
+                        SELECT odds FROM odds o WHERE event_id=? AND market='totals'
+                        AND book='DraftKings' AND line=?
+                        AND UPPER(selection) LIKE ?
+                        AND NOT EXISTS (
+                            SELECT 1 FROM odds o2 WHERE o2.event_id=o.event_id AND o2.book=o.book
+                            AND o2.market=o.market AND o2.selection=o.selection AND o2.line=o.line
+                            AND (o2.snapshot_date > o.snapshot_date
+                                 OR (o2.snapshot_date=o.snapshot_date AND o2.snapshot_time > o.snapshot_time))
+                        )
+                        LIMIT 1
+                    """, (eid, bet_line, f'%{opp_marker}%')).fetchone()
+                    new_odds = opp_row[0] if opp_row else p.get('odds')
+                    # Build flipped pick
+                    p_new = dict(p)
+                    p_new['selection'] = new_sel
+                    p_new['odds'] = new_odds
+                    prior_ctx = (p_new.get('context', '') or '').strip()
+                    fade_tag = f'FADE_FLIP: {flip_reason}'
+                    p_new['context'] = f'{prior_ctx} | {fade_tag}'.strip(' |') if prior_ctx else fade_tag
+                    p_new['side_type'] = 'FADE_FLIP'  # makes it queryable
+                    _ncaa_dk_flipped.append((p, p_new, flip_reason))
+                    _ncaa_dk_kept.append(p_new)
+                    print(f"  🔄 NCAA_DK_FADE_FLIP: {sel[:45]} → {new_sel[:45]} @ {new_odds} ({flip_reason})")
+                    continue
+
+                # Default: keep as-is (sharp agrees or no sharp data)
+                _ncaa_dk_kept.append(p)
+
+            # Log skips and flips to shadow_blocked_picks
+            _now = datetime.now().isoformat()
+            for _p, _rsn in _ncaa_dk_skipped:
+                conn.execute("""INSERT INTO shadow_blocked_picks
+                    (created_at, sport, event_id, selection, market_type, book, line, odds, edge_pct, units, reason)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (_now, _p.get('sport',''), _p.get('event_id',''),
+                     _p.get('selection',''), _p.get('market_type',''), _p.get('book',''),
+                     _p.get('line'), _p.get('odds'), _p.get('edge_pct', 0),
+                     _p.get('units', 0), f'NCAA_DK_TIGHT_SKIP ({_rsn})'))
+            for _p_orig, _p_new, _rsn in _ncaa_dk_flipped:
+                conn.execute("""INSERT INTO shadow_blocked_picks
+                    (created_at, sport, event_id, selection, market_type, book, line, odds, edge_pct, units, reason)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (_now, _p_orig.get('sport',''), _p_orig.get('event_id',''),
+                     _p_orig.get('selection',''), _p_orig.get('market_type',''), _p_orig.get('book',''),
+                     _p_orig.get('line'), _p_orig.get('odds'), _p_orig.get('edge_pct', 0),
+                     _p_orig.get('units', 0),
+                     f'NCAA_DK_FADE_FLIP ({_rsn}) → betting {_p_new["selection"]}'))
+            if _ncaa_dk_skipped or _ncaa_dk_flipped:
+                conn.commit()
+            if _ncaa_dk_flipped:
+                print(f"  🔄 Option C active: {len(_ncaa_dk_flipped)} NCAA DK pick(s) flipped to opposite side")
+            all_picks = _ncaa_dk_kept
+        except Exception as e:
+            print(f"  NCAA DK gate: {e}")
+
         saved_picks = save_picks_to_db(conn, all_picks)
         if saved_picks is not None:
             all_picks = saved_picks  # Only use picks that actually saved to DB
@@ -2764,7 +2929,7 @@ def _generate_kling_prompt(conn):
         AND result IN ('WIN','LOSS') AND units >= 3.5
     """).fetchone()
     tw, tl = season[0] or 0, season[1] or 0
-    twp = round(tw / (tw + tl) * 100) if (tw + tl) > 0 else 0
+    twp = round(tw / (tw + tl) * 100, 1) if (tw + tl) > 0 else 0
 
     # Build athlete scenes — Sora 12s format, scenes 2..N span 3-9s (6s of runtime)
     scenes = []

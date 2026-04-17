@@ -862,12 +862,15 @@ def generate_prop_projections(conn=None):
         AND commence_time >= ?
         AND (snapshot_date > ? OR (snapshot_date = ? AND snapshot_time >= ?))
         AND NOT EXISTS (
+            -- v25.20: Drop selection+line from match. If a book posted ANY newer
+            -- row for (event, market), its older rows are stale — a book that pulls
+            -- a specific line or an entire player's offering shouldn't leave ghost
+            -- lines behind (e.g., BetRivers 14.5 @ +108 on 4/17 stayed "fresh" when
+            -- the book removed the 14.5 line from its 6am snapshot).
             SELECT 1 FROM props p2
             WHERE p2.book = p1.book
               AND p2.event_id = p1.event_id
               AND p2.market = p1.market
-              AND p2.selection = p1.selection
-              AND p2.line = p1.line
               AND (p2.snapshot_date > p1.snapshot_date
                    OR (p2.snapshot_date = p1.snapshot_date AND p2.snapshot_time > p1.snapshot_time))
         )

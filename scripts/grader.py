@@ -12,7 +12,8 @@ This grader:
   4. Generates reports by sport, confidence, CLV performance
 """
 import sqlite3, os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 
@@ -425,7 +426,7 @@ def grade_bets(conn, days_back=3):
         FROM bets
         WHERE DATE(created_at) >= ?
         AND units >= 3.5
-        AND (result IS NULL OR result NOT IN ('TAINTED'))
+        AND (result IS NULL OR result NOT IN ('TAINTED', 'DUPLICATE'))
         AND (
             id NOT IN (SELECT bet_id FROM graded_bets WHERE bet_id IS NOT NULL)
             OR id IN (SELECT bet_id FROM graded_bets WHERE result = 'PENDING')
@@ -741,13 +742,24 @@ def grade_bets(conn, days_back=3):
                 # v25.18: Use game commence_time for prop date, not bet creation date.
                 # Bets placed 1+ days before tip-off would look up the wrong day's
                 # box scores, leaving props stuck PENDING indefinitely.
+                # v25.19: Convert commence_time UTC→ET before extracting date.
+                # box_scores.game_date is local ET; late NHL/NBA games roll to next
+                # UTC day, so raw [:10] slice mismatched and left props PENDING.
                 _ct_row = conn.execute(
                     "SELECT commence_time FROM results WHERE event_id=? AND sport=? LIMIT 1",
                     (eid, sport)
                 ).fetchone() or conn.execute(
                     "SELECT commence_time FROM odds WHERE event_id=? LIMIT 1", (eid,)
                 ).fetchone()
-                prop_date = _ct_row[0][:10] if (_ct_row and _ct_row[0]) else (created[:10] if created else None)
+                prop_date = None
+                if _ct_row and _ct_row[0]:
+                    try:
+                        _ts = _ct_row[0].replace('Z', '+00:00')
+                        prop_date = datetime.fromisoformat(_ts).astimezone(ZoneInfo('America/New_York')).strftime('%Y-%m-%d')
+                    except Exception:
+                        prop_date = _ct_row[0][:10]
+                elif created:
+                    prop_date = created[:10]
                 result = grade_prop(conn, sel, line, prop_date, sport=sport)
             except ImportError:
                 result = 'PENDING'  # box_scores.py not installed yet

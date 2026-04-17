@@ -3140,7 +3140,9 @@ def save_picks_to_db(conn, picks):
             continue
         
         # ── Derive analytical dimensions ──
-        side_type = _classify_side(p)
+        # v25.22+: if caller set p['side_type'] explicitly (e.g. 'FADE_FLIP' from
+        # Option C NCAA DK gate), preserve it. Otherwise infer from pick data.
+        side_type = p.get('side_type') or _classify_side(p)
         spread_bucket = _classify_spread_bucket(p)
         edge_bucket = _classify_edge_bucket(p.get('edge_pct', 0))
         timing = p.get('timing', 'UNKNOWN')

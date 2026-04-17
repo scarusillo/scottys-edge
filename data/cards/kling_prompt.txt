@@ -1,11 +1,11 @@
-Cinematic vertical video (9:16), 12 seconds. Dark sports broadcast studio with green neon lighting.
+Cinematic vertical video (9:16), 12 seconds. Dark premium sports broadcast studio with signature green neon lighting. No voiceover — all text is on-screen only.
 
-Scene 1 (0-3s): Camera enters a dark premium sports studio. A large neon sign on the wall reads "SCOTTY'S EDGE" with EDGE glowing bright green neon and SCOTTY'S in white neon tubes. The sign flickers on dramatically. Green neon light reflects off glossy black floors. Slow cinematic camera push toward the sign. A LED scoreboard below the sign shows "4-2" in large white numbers.
+Scene 1 (0-3s): Camera glides into a dark premium sports studio. A large neon sign on the wall reads "SCOTTY'S EDGE" — "EDGE" in bright green neon, "SCOTTY'S" in crisp white neon tubes. The sign flickers dramatically to life. Green neon light reflects across glossy black floors. On-screen text appears in a clean broadcast font beneath the sign: "WELCOME TO SCOTTY'S EDGE". A smaller LED scoreboard below shows tonight's record "5-4" in bold white numerals. Slow cinematic push toward the sign.
 
-Scene 2 (3-6s): A baseball player in a white uniform mid-swing, well-lit with red spotlight. The LED scoreboard behind shows "2-1" in green numbers.
+Scene 2 (3.0-5.0s): An NHL forward in full pads winds up for a slap shot, ice mist swirling around his skates, bathed in a electric blue spotlight against deep black. A sleek LED scoreboard behind reads "NHL 4-0" in glowing green numbers. Subtle camera dolly.
+Scene 3 (5.0-7.0s): An MLB slugger in full uniform frozen at the top of his swing, bat blurred, eyes locked on the ball, bathed in a warm red spotlight against deep black. A sleek LED scoreboard behind reads "MLB 1-2" in glowing red numbers. Subtle camera dolly.
+Scene 4 (7.0-9.0s): A college baseball pitcher mid-windup on a lit mound, leg kicked high, jersey pinstripes sharp, bathed in a crimson spotlight against deep black. A sleek LED scoreboard behind reads "College Baseball 0-2" in glowing red numbers. Subtle camera dolly.
 
-Scene 3 (6-9s): A hockey player in a dark jersey skating with a stick, well-lit with blue spotlight. The LED scoreboard behind shows "2-1" in green numbers.
+Scene 5 (9.0-12.0s): Camera pulls back smoothly to reveal the full studio. The neon "SCOTTY'S EDGE" sign glows steady above. A massive LED scoreboard shows season record "188-147" in large glowing green numerals with "56.1%" pulsing beneath. Green neon accents across the studio pulse slowly in rhythm. Premium broadcast sign-off, cinematic fade to black.
 
-Scene 4 (9-12s): Camera slowly pulls back to reveal the full studio. The neon "SCOTTY'S EDGE" sign glows on the wall. Scoreboard shows large green glowing numbers "171-132" with "56%" below it pulsing green. All green neon lighting pulses slowly. Premium broadcast sign-off. Cinematic fade.
-
-Style: Dark ESPN SportsCenter studio. Athletes are fully visible and well-lit with sport-specific colored lighting, NOT silhouettes. Green neon is the signature accent color. Numbers appear on LED scoreboards within the studio. Smooth slow camera movements. Premium sports broadcast quality.
+Style: Dark ESPN SportsCenter aesthetic. Athletes are fully visible and well-lit with sport-specific colored spotlights — NOT silhouettes. Green neon is the signature accent color throughout. All numbers appear on LED scoreboards inside the studio. Smooth, slow camera movements. Premium sports broadcast quality. 9:16 vertical, 12 seconds total.

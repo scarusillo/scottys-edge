@@ -47,16 +47,6 @@ def american_to_implied(odds):
     return 0.5
 
 
-def implied_to_american(prob):
-    """Convert implied probability back to American odds."""
-    if prob <= 0 or prob >= 1:
-        return 0
-    if prob >= 0.5:
-        return round(-100 * prob / (1 - prob))
-    else:
-        return round(100 * (1 - prob) / prob)
-
-
 def get_current_odds_by_book(conn, event_id, market, selection):
     """
     Get the most recent odds snapshot for each book on a specific market.
