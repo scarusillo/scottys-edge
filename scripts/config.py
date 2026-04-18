@@ -223,112 +223,12 @@ TENNIS_ML_CAP = 200
 # ═══════════════════════════════════════════════════════════════
 # SPORT MODEL PARAMETERS
 # ═══════════════════════════════════════════════════════════════
-
-SPORT_CONFIG = {
-    'basketball_ncaab': {
-        'logistic_scale': 6.3, 'spread_std': 11.0,
-        'home_court': HOME_ADVANTAGE['basketball_ncaab'],
-        'max_spread_divergence': 4.5,
-        'ml_scale': 7.5,
-    },
-    'basketball_nba': {
-        'logistic_scale': 6.3, 'spread_std': 11.0,
-        'home_court': HOME_ADVANTAGE['basketball_nba'],
-        'max_spread_divergence': 4.0,
-        'ml_scale': 7.5,
-    },
-    'icehockey_nhl': {
-        'logistic_scale': 0.49, 'spread_std': 2.2,
-        'home_court': HOME_ADVANTAGE['icehockey_nhl'],
-        'max_spread_divergence': 1.5,
-        'ml_scale': 2.2,
-    },
-    'soccer_epl': {
-        'logistic_scale': 0.40, 'spread_std': 1.3,
-        'home_court': HOME_ADVANTAGE['soccer_epl'],
-        'max_spread_divergence': 0.75,
-        'ml_scale': 1.0,
-    },
-    'soccer_italy_serie_a': {
-        'logistic_scale': 0.40, 'spread_std': 1.3,
-        'home_court': HOME_ADVANTAGE['soccer_italy_serie_a'],
-        'max_spread_divergence': 0.75,
-        'ml_scale': 1.0,
-    },
-    'soccer_spain_la_liga': {
-        'logistic_scale': 0.40, 'spread_std': 1.3,
-        'home_court': HOME_ADVANTAGE['soccer_spain_la_liga'],
-        'max_spread_divergence': 0.75,
-        'ml_scale': 1.0,
-    },
-    'soccer_germany_bundesliga': {
-        'logistic_scale': 0.40, 'spread_std': 1.3,
-        'home_court': HOME_ADVANTAGE['soccer_germany_bundesliga'],
-        'max_spread_divergence': 0.75,
-        'ml_scale': 1.0,
-    },
-    'soccer_france_ligue_one': {
-        'logistic_scale': 0.40, 'spread_std': 1.3,
-        'home_court': HOME_ADVANTAGE['soccer_france_ligue_one'],
-        'max_spread_divergence': 0.75,
-        'ml_scale': 1.0,
-    },
-    'soccer_uefa_champs_league': {
-        'logistic_scale': 0.40, 'spread_std': 1.3,
-        'home_court': HOME_ADVANTAGE['soccer_uefa_champs_league'],
-        'max_spread_divergence': 0.75,
-        'ml_scale': 1.0,
-    },
-    'soccer_usa_mls': {
-        'logistic_scale': 0.40, 'spread_std': 1.3,
-        'home_court': HOME_ADVANTAGE['soccer_usa_mls'],
-        'max_spread_divergence': 0.75,
-        'ml_scale': 1.0,
-    },
-    'soccer_mexico_ligamx': {
-        'logistic_scale': 0.40, 'spread_std': 1.3,
-        'home_court': HOME_ADVANTAGE['soccer_mexico_ligamx'],
-        'max_spread_divergence': 0.75,
-        'ml_scale': 1.0,
-    },
-    'baseball_ncaa': {
-        'logistic_scale': 1.8, 'spread_std': 10.0,
-        'home_court': HOME_ADVANTAGE['baseball_ncaa'],
-        'max_spread_divergence': 2.0,
-        'ml_scale': 3.5,
-    },
-    'baseball_mlb': {
-        'logistic_scale': 1.8, 'spread_std': 8.0,
-        'home_court': HOME_ADVANTAGE['baseball_mlb'],
-        'max_spread_divergence': 4.0,
-        'ml_scale': 3.5,
-    },
-}
-# Tennis SPORT_CONFIG — game handicap (set handicap) based.
-# Tennis spreads are in games (e.g., -3.5 games), totals in total games.
-# logistic_scale: steeper than soccer (1 set diff ~ big impact), gentler than basketball
-# spread_std: game-based variance (best-of-3 avg ~24 games, std ~5)
-# ml_scale: for win probability — tennis ML is the primary market
-_TENNIS_CONFIG_HARD = {
-    'logistic_scale': 2.5, 'spread_std': 5.0, 'home_court': 0.0,
-    'max_spread_divergence': 4.0, 'ml_scale': 2.5,
-}
-_TENNIS_CONFIG_CLAY = {
-    'logistic_scale': 2.5, 'spread_std': 5.5, 'home_court': 0.0,  # Clay: more upsets, wider std
-    'max_spread_divergence': 2.5, 'ml_scale': 2.5,  # v24: Was 4.5 — model spread near 0 was generating phantom edges at +3.5/+4.5 lines
-}
-_TENNIS_CONFIG_GRASS = {
-    'logistic_scale': 2.5, 'spread_std': 4.5, 'home_court': 0.0,  # Grass: serve-dominant, tighter
-    'max_spread_divergence': 3.5, 'ml_scale': 2.5,
-}
-for _tk in TENNIS_SPORTS:
-    _surf = TENNIS_SURFACES.get(_tk, 'hard')
-    if _surf == 'clay':
-        SPORT_CONFIG[_tk] = dict(_TENNIS_CONFIG_CLAY)
-    elif _surf == 'grass':
-        SPORT_CONFIG[_tk] = dict(_TENNIS_CONFIG_GRASS)
-    else:
-        SPORT_CONFIG[_tk] = dict(_TENNIS_CONFIG_HARD)
+# SPORT_CONFIG lived here historically but drifted out of sync with the
+# copy in model_engine.py. The runtime uses model_engine.py's version
+# (verified 2026-04-18: all live imports point there — backtest.py,
+# backtester.py, backtest_soccer.py). config.py's copy was dead code and
+# was removed to prevent future "which one wins" confusion. If you need
+# to tune a spread threshold, edit model_engine.py SPORT_CONFIG only.
 
 
 # ═══════════════════════════════════════════════════════════════
