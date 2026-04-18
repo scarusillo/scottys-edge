@@ -894,6 +894,210 @@ def cmd_run(args):
         except Exception as e:
             print(f"  NCAA no-sharp skip: {e}")
 
+        # ═══ BOOK-ARB GATES (v25.28) — NBA totals, NHL + MLB spreads ═══
+        # Signal: sharp (FD/BR) and soft (DK/BetMGM/Caesars/Fanatics/ESPN BET) disagree
+        # on the opener by a meaningful gap. Bet the soft side at the soft book — we're
+        # taking the easier number on the side the sharp thinks will win.
+        #
+        # Backtest across paired-opener events with results (see session 2026-04-18):
+        #   NBA totals  gap ≥ 1.0:  50 bets, 70.0% WR, +16.6u, +33.2% ROI
+        #   NHL spreads gap ≥ 1.5:  42 bets, 85.7% WR, +7.7u,  +18.4% ROI (flipped favorite)
+        #   MLB spreads gap ≥ 1.5:  34 bets, 79.4% WR, +6.5u,  +19.2% ROI (flipped favorite)
+        # (NBA spreads, MLB totals, NCAA baseball spreads all showed no edge or reversed signal.)
+        #
+        # Standard (non-max) sizing at 3.5u — passes the units≥3.5 tracked-record filter.
+        # Sample is still thin (<60 bets per gate) — revisit sizing after ~100 live bets.
+        try:
+            _today_str = datetime.now().strftime('%Y-%m-%d')
+            _SOFT_BOOKS = ('DraftKings','BetMGM','Caesars','Fanatics','ESPN BET')
+            _SHARP_BOOKS = ('FanDuel','BetRivers')
+
+            def _book_arb_scan(sport_, market_, opener_thr, current_thr):
+                """Find book-arb opportunities. Returns list of pick dicts."""
+                # Events where BOTH a sharp and a soft book posted openers today
+                cands = conn.execute("""
+                    SELECT DISTINCT o.event_id FROM openers o
+                    WHERE o.sport=? AND o.market=? AND o.snapshot_date=?
+                      AND o.book IN ('FanDuel','BetRivers')
+                    INTERSECT
+                    SELECT DISTINCT o.event_id FROM openers o
+                    WHERE o.sport=? AND o.market=? AND o.snapshot_date=?
+                      AND o.book IN ('DraftKings','BetMGM','Caesars','Fanatics','ESPN BET')
+                """, (sport_, market_, _today_str, sport_, market_, _today_str)).fetchall()
+
+                existing_eids = {p.get('event_id') for p in all_picks if p.get('sport') == sport_}
+                picks_out = []
+
+                for (eid,) in cands:
+                    if eid in existing_eids:
+                        continue
+                    # Pull home/away/commence from odds
+                    ev_meta = conn.execute("""
+                        SELECT home, away, commence_time FROM odds
+                        WHERE event_id=? LIMIT 1
+                    """, (eid,)).fetchone()
+                    if not ev_meta:
+                        continue
+                    _home, _away, _commence = ev_meta
+
+                    # Skip started games
+                    if _commence:
+                        _now_utc = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+                        if _commence < _now_utc:
+                            continue
+
+                    rows = conn.execute("""
+                        SELECT book, selection, line, odds FROM openers
+                        WHERE event_id=? AND market=? AND snapshot_date=?
+                    """, (eid, market_, _today_str)).fetchall()
+
+                    if market_ == 'totals':
+                        # Get Over line per book (same line as Under)
+                        over_by_book = {b: (ln, od) for b, sel, ln, od in rows if (sel or '').lower() == 'over'}
+                        best = None  # (soft_book, sharp_book, gap, sharp_ln, soft_ln, soft_odds_over, soft_odds_under)
+                        under_by_book = {b: (ln, od) for b, sel, ln, od in rows if (sel or '').lower() == 'under'}
+                        for sharp in _SHARP_BOOKS:
+                            if sharp not in over_by_book: continue
+                            sharp_ln = over_by_book[sharp][0]
+                            for soft in _SOFT_BOOKS:
+                                if soft not in over_by_book: continue
+                                soft_ln, _ = over_by_book[soft]
+                                gap = soft_ln - sharp_ln
+                                if abs(gap) < opener_thr: continue
+                                if best is None or abs(gap) > abs(best[2]):
+                                    soft_over_odds = over_by_book[soft][1] or -110
+                                    soft_under_odds = under_by_book.get(soft, (None, -110))[1] or -110
+                                    best = (soft, sharp, gap, sharp_ln, soft_ln, soft_over_odds, soft_under_odds)
+                        if not best: continue
+                        soft, sharp, gap, sharp_open, soft_open, so_over, so_under = best
+                        side = 'UNDER' if gap > 0 else 'OVER'
+                        # Currency check: current soft line vs current sharp line still
+                        # mispriced in the same direction, by at least current_thr
+                        _cur_soft = conn.execute("""
+                            SELECT line, odds FROM odds o WHERE event_id=? AND market='totals'
+                              AND book=? AND UPPER(selection) LIKE ?
+                              AND NOT EXISTS (
+                                  SELECT 1 FROM odds o2 WHERE o2.event_id=o.event_id AND o2.book=o.book
+                                  AND o2.market=o.market AND o2.selection=o.selection
+                                  AND (o2.snapshot_date > o.snapshot_date
+                                       OR (o2.snapshot_date=o.snapshot_date AND o2.snapshot_time > o.snapshot_time))
+                              ) LIMIT 1
+                        """, (eid, soft, f'%{side}%')).fetchone()
+                        _cur_sharp = conn.execute("""
+                            SELECT line FROM odds o WHERE event_id=? AND market='totals'
+                              AND book=? AND UPPER(selection) LIKE ?
+                              AND NOT EXISTS (
+                                  SELECT 1 FROM odds o2 WHERE o2.event_id=o.event_id AND o2.book=o.book
+                                  AND o2.market=o.market AND o2.selection=o.selection
+                                  AND (o2.snapshot_date > o.snapshot_date
+                                       OR (o2.snapshot_date=o.snapshot_date AND o2.snapshot_time > o.snapshot_time))
+                              ) LIMIT 1
+                        """, (eid, sharp, f'%{side}%')).fetchone()
+                        if not _cur_soft or not _cur_sharp: continue
+                        cur_soft_ln, cur_soft_odds = _cur_soft
+                        cur_sharp_ln = _cur_sharp[0]
+                        cur_gap = cur_soft_ln - cur_sharp_ln
+                        # Direction must still match opener direction and meet current threshold
+                        if (gap > 0 and cur_gap <= 0) or (gap < 0 and cur_gap >= 0):
+                            print(f"  ⚠ {sport_}_BOOK_ARB_TOTAL skipped: gap reversed ({cur_soft_ln} vs {cur_sharp_ln})")
+                            continue
+                        if abs(cur_gap) < current_thr:
+                            print(f"  ⚠ {sport_}_BOOK_ARB_TOTAL skipped: current gap {abs(cur_gap):.1f} < {current_thr}")
+                            continue
+                        _sel = f"{_away}@{_home} {side} {cur_soft_ln}"
+                        pick = {
+                            'sport': sport_, 'event_id': eid, 'market_type': 'TOTAL',
+                            'selection': _sel, 'book': soft,
+                            'line': cur_soft_ln, 'odds': cur_soft_odds or -110,
+                            'edge_pct': round(abs(gap) * 5.0, 1),
+                            'confidence': 'BOOK_ARB', 'units': 3.5,
+                            'context': f'BOOK_ARB: {sharp} opener {sharp_open} vs {soft} opener {soft_open} (gap {gap:+.1f}) | current gap {cur_gap:+.1f}',
+                            'commence': _commence, 'home': _home, 'away': _away,
+                            'star_rating': 3, 'model_prob': 0, 'implied_prob': 0,
+                            'side_type': 'BOOK_ARB', 'model_spread': None, 'timing': 'UNKNOWN',
+                        }
+                        picks_out.append(pick)
+                        print(f"  💡 {sport_}_BOOK_ARB_TOTAL: {_sel} @ {soft} {cur_soft_odds:+.0f} | opener gap {gap:+.1f}, current {cur_gap:+.1f}")
+
+                    elif market_ == 'spreads':
+                        # Per-team lines; compare home line across books
+                        home_by_book = {b: (ln, od) for b, sel, ln, od in rows if sel == _home}
+                        away_by_book = {b: (ln, od) for b, sel, ln, od in rows if sel == _away}
+                        best = None  # (soft, sharp, gap, bet_team, bet_line, bet_odds)
+                        for sharp in _SHARP_BOOKS:
+                            if sharp not in home_by_book: continue
+                            sharp_h = home_by_book[sharp][0]
+                            for soft in _SOFT_BOOKS:
+                                if soft not in home_by_book: continue
+                                soft_h = home_by_book[soft][0]
+                                gap = soft_h - sharp_h
+                                if abs(gap) < opener_thr: continue
+                                if best is None or abs(gap) > abs(best[2]):
+                                    # gap > 0: soft has home weaker than sharp → sharp likes home → bet HOME at soft
+                                    # gap < 0: bet AWAY at soft
+                                    if gap > 0:
+                                        bet_team, bet_ln, bet_odds = _home, soft_h, (home_by_book[soft][1] or -110)
+                                    else:
+                                        a = away_by_book.get(soft, (-soft_h, -110))
+                                        bet_team, bet_ln, bet_odds = _away, a[0], (a[1] or -110)
+                                    best = (soft, sharp, gap, bet_team, bet_ln, bet_odds)
+                        if not best: continue
+                        soft, sharp, gap, bet_team, bet_line_open, bet_odds_open = best
+                        # Currency check via latest odds
+                        _cur = conn.execute("""
+                            SELECT line, odds FROM odds o WHERE event_id=? AND market='spreads'
+                              AND book=? AND selection=?
+                              AND NOT EXISTS (
+                                  SELECT 1 FROM odds o2 WHERE o2.event_id=o.event_id AND o2.book=o.book
+                                  AND o2.market=o.market AND o2.selection=o.selection
+                                  AND (o2.snapshot_date > o.snapshot_date
+                                       OR (o2.snapshot_date=o.snapshot_date AND o2.snapshot_time > o.snapshot_time))
+                              ) LIMIT 1
+                        """, (eid, soft, bet_team)).fetchone()
+                        _cur_sharp = conn.execute("""
+                            SELECT line FROM odds o WHERE event_id=? AND market='spreads'
+                              AND book=? AND selection=?
+                              AND NOT EXISTS (
+                                  SELECT 1 FROM odds o2 WHERE o2.event_id=o.event_id AND o2.book=o.book
+                                  AND o2.market=o.market AND o2.selection=o.selection
+                                  AND (o2.snapshot_date > o.snapshot_date
+                                       OR (o2.snapshot_date=o.snapshot_date AND o2.snapshot_time > o.snapshot_time))
+                              ) LIMIT 1
+                        """, (eid, sharp, bet_team)).fetchone()
+                        if not _cur or not _cur_sharp: continue
+                        cur_line, cur_odds = _cur
+                        cur_sharp = _cur_sharp[0]
+                        # bet_team should be better-priced at soft than at sharp; measure cushion
+                        cur_gap = cur_line - cur_sharp
+                        if abs(cur_gap) < current_thr:
+                            print(f"  ⚠ {sport_}_BOOK_ARB_SPREAD skipped: current gap {abs(cur_gap):.1f} < {current_thr}")
+                            continue
+                        _sel = f"{_away}@{_home} {bet_team} {cur_line:+g}"
+                        pick = {
+                            'sport': sport_, 'event_id': eid, 'market_type': 'SPREAD',
+                            'selection': _sel, 'book': soft,
+                            'line': cur_line, 'odds': cur_odds or -110,
+                            'edge_pct': round(abs(gap) * 4.0, 1),
+                            'confidence': 'BOOK_ARB', 'units': 3.5,
+                            'context': f'BOOK_ARB: {sharp} home opener {home_by_book[sharp][0]} vs {soft} home opener {home_by_book[soft][0]} (gap {gap:+.1f}) | current gap {cur_gap:+.1f}',
+                            'commence': _commence, 'home': _home, 'away': _away,
+                            'star_rating': 3, 'model_prob': 0, 'implied_prob': 0,
+                            'side_type': 'BOOK_ARB', 'model_spread': None, 'timing': 'UNKNOWN',
+                        }
+                        picks_out.append(pick)
+                        print(f"  💡 {sport_}_BOOK_ARB_SPREAD: {_sel} @ {soft} {cur_odds:+.0f} | opener gap {gap:+.1f}, current {cur_gap:+.1f}")
+                return picks_out
+
+            _new_picks = []
+            _new_picks += _book_arb_scan('basketball_nba', 'totals',  opener_thr=1.0, current_thr=0.5)
+            _new_picks += _book_arb_scan('icehockey_nhl',  'spreads', opener_thr=1.5, current_thr=1.0)
+            _new_picks += _book_arb_scan('baseball_mlb',   'spreads', opener_thr=1.5, current_thr=1.0)
+            if _new_picks:
+                print(f"  💡 v25.28 book-arb added {len(_new_picks)} pick(s) across NBA totals / NHL & MLB spreads")
+                all_picks = list(all_picks) + _new_picks
+        except Exception as e:
+            print(f"  Book-arb (v25.28): {e}")
+
         # ═══ NCAA BASEBALL DK GATE (v25.23 tight-skip + Option C fade-flip) ═══
         # Two-pass gate on NCAA Baseball TOTAL picks at DraftKings:
         #   (1) TIGHT CONSENSUS SKIP: if DK line == FD opener and (BR absent or BR == DK), skip.
