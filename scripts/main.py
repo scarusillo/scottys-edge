@@ -1249,6 +1249,13 @@ def cmd_run(args):
                         LIMIT 1
                     """, (eid, bet_line, f'%{opp_marker}%')).fetchone()
                     new_odds = opp_row[0] if opp_row else p.get('odds')
+                    # Global MIN_ODDS policy — never fire at worse than -150 even on a flip
+                    from config import MIN_ODDS as _FF_MIN_ODDS
+                    _eff_flip_odds = new_odds if new_odds is not None else -110
+                    if _eff_flip_odds <= _FF_MIN_ODDS:
+                        print(f"  ⚠ NCAA_DK_FADE_FLIP skipped: flip side {new_sel[:35]} @ {_eff_flip_odds:+.0f} worse than MIN_ODDS {_FF_MIN_ODDS}")
+                        # Drop the original too (sharp disagreed, flip price unacceptable → no play)
+                        continue
                     # Build flipped pick
                     p_new = dict(p)
                     p_new['selection'] = new_sel
