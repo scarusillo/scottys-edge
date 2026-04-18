@@ -1,74 +1,71 @@
 # Scotty's Edge Morning Briefing
-**Date:** Friday, April 17, 2026 | **Generated:** 05:22 AM ET
-**Game Date Graded:** 2026-04-16
+**Date:** Saturday, April 18, 2026 | **Generated:** 06:39 AM ET
+**Game Date Graded:** 2026-04-17
 
 ---
 ## Yesterday's Results
 
-**5W-4L-0P | +1.1u | GREEN DAY**
+**4W-4L-0P | +0.3u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Los Angeles Kings@Calgary Flames UNDER 6.0 | icehockey_nhl | UNDER | -115 | 5.0 | **W** | +4.3 | 0.0% |
-| Zach Hyman UNDER 2.5 SOG | icehockey_nhl | PROP_UNDER | -115 | 5.0 | **W** | +4.3 | 0.0% |
-| Brock Nelson UNDER 2.5 SOG | icehockey_nhl | PROP_UNDER | -115 | 5.0 | **W** | +4.3 | 0.0% |
-| San Francisco Giants@Cincinnati Reds UNDER 8. | baseball_mlb | UNDER | -120 | 5.0 | **W** | +4.2 | 0.5% |
-| Seattle Kraken@Colorado Avalanche UNDER 6.5 | icehockey_nhl | UNDER | -130 | 5.0 | **W** | +3.9 | 0.0% |
-| Kansas City Royals@Detroit Tigers UNDER 8.0 | baseball_mlb | UNDER | -105 | 5.0 | **L** | -5.0 | -0.5% |
-| Clemson Tigers@Virginia Cavaliers OVER 10.5 | baseball_ncaa | OVER | -105 | 5.0 | **L** | -5.0 | 0.5% |
-| Giancarlo Stanton UNDER 0.5 RUNS | baseball_mlb | PROP_UNDER | +104 | 5.0 | **L** | -5.0 | 0.0% |
-| Georgia Bulldogs@Arkansas Razorbacks OVER 9.5 | baseball_ncaa | OVER | -130 | 5.0 | **L** | -5.0 | 0.0% |
+| Elly De La Cruz OVER 0.5 RUNS | baseball_mlb | PROP_OVER | +130 | 5.0 | **W** | +6.5 | 2.8% |
+| De'Anthony Melton OVER 2.5 ASSISTS | basketball_nba | PROP_OVER | +115 | 5.0 | **W** | +5.8 | 0.7% |
+| Jeff McNeil UNDER 0.5 RUNS | baseball_mlb | PROP_UNDER | -109 | 5.0 | **W** | +4.6 | 0.0% |
+| Como@Sassuolo OVER 2.5 | soccer_italy_serie_a | OVER | -143 | 5.0 | **W** | +3.5 | 0.0% |
+| Coby White OVER 2.5 REBOUNDS | basketball_nba | PROP_OVER | -107 | 5.0 | **L** | -5.0 | -1.4% |
+| Ohio State Buckeyes@Purdue Boilermakers UNDER | baseball_ncaa | UNDER | -115 | 5.0 | **L** | -5.0 | -1.0% |
+| Oregon Ducks@Illinois Fighting Illini UNDER 1 | baseball_ncaa | UNDER | -105 | 5.0 | **L** | -5.0 | -0.5% |
+| Vanderbilt Commodores@Kentucky Wildcats OVER  | baseball_ncaa | OVER | -122 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
 
-### Kansas City Royals@Detroit Tigers UNDER 8.0
+### Coby White OVER 2.5 REBOUNDS
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (-1.4%) -- borderline call.
+- **Final Score:** Charlotte Hornets 90 @ Orlando Magic 121
+
+### Ohio State Buckeyes@Purdue Boilermakers UNDER 15.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (-1.0%) -- borderline call.
+- **Context:** Friday game | Purdue Boilermakers allows 4.3 R/friday | Ohio State Buckeyes allows 7.2 R/friday | Pitching edge: Purdue Boilermakers (+0.9 pts) | Steam: sharp opposes (+1.0)
+
+### Oregon Ducks@Illinois Fighting Illini UNDER 14.0
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (-0.5%) -- borderline call.
-- **Final Score:** Kansas City Royals 9 @ Detroit Tigers 10
-- **Model Spread:** -1.6 | Actual Margin: +1
-- **Context:** Both teams slow-paced (-0.9) | Weather: light rain, 13mph wind (-1.5) | [SHADOW] Midweek game | Detroit Tigers SP: Keider Montero (2.93 ERA) | Kansas City Royals SP: Kris Bubic (2.00 ERA) | Pitching: Keider Montero 3.66 vs Kris Bubic 2.29 (-0.8) | Park: Comerica Park (+0.0 decay=50%) | Bullpen: Tigers 3.57 vs Royals 3.79 (-0.1)
+- **Context:** Friday game | Oregon Ducks SP: Will Sanford (1.90 ERA) | Illinois Fighting Illini allows 4.1 R/friday | Oregon Ducks allows 2.4 R/friday | Pitching edge: Oregon Ducks (-0.5 pts)
 
-### Clemson Tigers@Virginia Cavaliers OVER 10.5
-- **Category:** VARIANCE
-- **Analysis:** Positive CLV (+0.5%) -- the line moved our way. Right side, wrong result.
-- **Context:** Midweek game | Virginia Cavaliers allows 5.4 R/midweek | Clemson Tigers allows 6.0 R/midweek | Pitching edge: Virginia Cavaliers (+0.2 pts)
-
-### Giancarlo Stanton UNDER 0.5 RUNS
+### Vanderbilt Commodores@Kentucky Wildcats OVER 11.0
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Los Angeles Angels 11 @ New York Yankees 4
-
-### Georgia Bulldogs@Arkansas Razorbacks OVER 9.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Away fast-paced (+0.4) | Midweek game | Arkansas Razorbacks SP: Gabe Gaeckle (4.45 ERA) | Georgia Bulldogs SP: Joey Volchko (4.60 ERA) | Arkansas Razorbacks allows 4.3 R/midweek | Georgia Bulldogs allows 4.9 R/midweek | Pitching edge: Arkansas Razorbacks (+0.2 pts) | Steam: sharp opposes (-1.0)
+- **Context:** Friday game | Kentucky Wildcats SP: Jaxon Jelkin (4.39 ERA) | Vanderbilt Commodores SP: Aiden Stillman (27.00 ERA) | Kentucky Wildcats allows 4.6 R/friday | Vanderbilt Commodores allows 15.2 R/friday | Pitching edge: Kentucky Wildcats (+1.0 pts)
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **188W-147L** |
-| Win Rate | 56.1% |
-| P/L | **+62.4u** |
-| ROI | +3.8% |
-| Wagered | 1639.0u |
+| Record | **192W-151L** |
+| Win Rate | 56.0% |
+| P/L | **+62.8u** |
+| ROI | +3.7% |
+| Wagered | 1679.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| baseball_ncaa | 60 | 43 | +43.4u |
 | icehockey_nhl | 52 | 30 | +41.1u |
+| baseball_ncaa | 60 | 46 | +28.4u |
 | basketball_ncaab | 17 | 12 | +18.7u |
 | soccer_spain_la_liga | 2 | 0 | +7.8u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
+| baseball_mlb | 27 | 27 | -3.0u |
+| soccer_italy_serie_a | 2 | 2 | -3.3u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
-| soccer_italy_serie_a | 1 | 2 | -6.8u |
-| basketball_nba | 27 | 26 | -8.4u |
+| basketball_nba | 28 | 27 | -7.7u |
 | TENNIS | 2 | 4 | -11.8u |
-| baseball_mlb | 25 | 27 | -14.1u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -77,11 +74,11 @@
 |--------|--------|-----|
 | Midweek game | 17W-17L | -15.0u |
 | Park: Chase Field | 1W-3L | -10.4u |
+| Steam: sharp opposes | 3W-4L | -8.0u |
 | Pitching edge: Clemson Tigers | 1W-2L | -7.2u |
 | Weather: light rain, 11mph wind | 1W-2L | -5.7u |
 | H2H high-scoring | 1W-2L | -5.3u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
-| Steam: sharp opposes | 3W-3L | -3.0u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
 
@@ -91,7 +88,7 @@
 ---
 ## Shadow Pick Report
 
-Found 25 shadow-tagged picks.
+Found 26 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -110,8 +107,8 @@ Found 25 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 138W-107L (56.3%) | +75.8u | 0.3 |
-| BELOW_CAP | 50W-40L (55.6%) | -13.4u | 0.7 |
+| AT_CAP | 140W-110L (56.0%) | +70.8u | 0.3 |
+| BELOW_CAP | 52W-41L (55.9%) | -8.1u | 0.7 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -140,8 +137,8 @@ Found 25 shadow-tagged picks.
 |-------|------|---|---|-----|
 | baseball_mlb | OVER | 11 | 10 | -1.6u |
 | baseball_mlb | UNDER | 9 | 7 | +4.7u |
-| baseball_ncaa | OVER | 23 | 15 | +22.1u |
-| baseball_ncaa | UNDER | 27 | 23 | -1.8u |
+| baseball_ncaa | OVER | 23 | 16 | +17.1u |
+| baseball_ncaa | UNDER | 27 | 25 | -11.8u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
@@ -149,7 +146,7 @@ Found 25 shadow-tagged picks.
 | icehockey_nhl | UNDER | 19 | 9 | +30.4u |
 | soccer_germany_bundesliga | OVER | 2 | 0 | +7.0u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
-| soccer_italy_serie_a | OVER | 0 | 1 | -5.0u |
+| soccer_italy_serie_a | OVER | 1 | 1 | -1.5u |
 | soccer_italy_serie_a | UNDER | 1 | 1 | -1.8u |
 | soccer_spain_la_liga | OVER | 1 | 0 | +4.1u |
 | soccer_spain_la_liga | UNDER | 1 | 0 | +3.6u |
@@ -159,8 +156,8 @@ Found 25 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** WIN LOSS LOSS LOSS WIN WIN LOSS WIN WIN LOSS
-- **Current Streak:** 1 WIN
+- **Last 10:** WIN WIN LOSS LOSS LOSS LOSS WIN WIN WIN LOSS
+- **Current Streak:** 2 WIN
 
 ---
 ## Action Items
@@ -170,8 +167,10 @@ Found 25 shadow-tagged picks.
 3. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
 4. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
 5. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-6. Concentration risk detected. Review directional exposure limits.
-7. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+6. Factor 'Steam: sharp opposes' has -8.0u P/L over 7 bets. Consider reducing weight.
+7. Concentration risk detected. Review directional exposure limits.
+8. baseball_ncaa UNDERs: 27W-25L (-11.8u). Review totals model for this sport.
+9. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-17 05:22 ET*
+*Generated locally by export_briefing_data.py | 2026-04-18 06:39 ET*
