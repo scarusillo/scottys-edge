@@ -312,33 +312,76 @@ def analyze_fade_flip_strategy(conn):
         ORDER BY created_at DESC
     """).fetchall()
 
-    # Also track BOOK_ARB picks (v25.25 — NCAA Baseball FD-DK gap strategy)
+    # Also track BOOK_ARB picks — aggregate + per-gate breakdown.
+    # Four gates live: v25.25 (NCAA baseball totals), v25.28 (NBA totals, NHL spreads,
+    # MLB spreads). Per-gate breakdown prevents one failing gate from being masked
+    # by others. Each (sport, market_type) pair is its own gate.
     ba_total = conn.execute("""
         SELECT COUNT(*) FROM bets
         WHERE (side_type = 'BOOK_ARB' OR context_factors LIKE '%BOOK_ARB%')
     """).fetchone()[0]
     ba_graded = conn.execute("""
-        SELECT result, pnl_units, clv FROM graded_bets
+        SELECT result, pnl_units, clv, sport, market_type FROM graded_bets
         WHERE (side_type = 'BOOK_ARB' OR context_factors LIKE '%BOOK_ARB%')
         AND result IN ('WIN','LOSS','PUSH')
         ORDER BY created_at DESC
     """).fetchall()
     if ba_total > 0 or ba_graded:
-        summary.append(f"BOOK_ARB: {ba_total} picks fired since enablement")
+        summary.append(f"BOOK_ARB: {ba_total} picks fired across all gates")
         if ba_graded:
+            # Overall aggregate
             baw = sum(1 for r in ba_graded if r[0] == 'WIN')
             bal = sum(1 for r in ba_graded if r[0] == 'LOSS')
             bap = sum((r[1] or 0) for r in ba_graded)
             bac = [r[2] for r in ba_graded if r[2] is not None]
             ba_clv = sum(bac)/len(bac) if bac else 0
-            summary.append(f"BOOK_ARB graded: {baw}W-{bal}L | {bap:+.1f}u | avg CLV {ba_clv:+.2f}")
+            summary.append(f"BOOK_ARB overall: {baw}W-{bal}L | {bap:+.1f}u | avg CLV {ba_clv:+.2f}")
+
+            # Per-gate breakdown — group by (sport, market_type)
+            SPORT_LABEL = {
+                'baseball_ncaa': 'NCAA-BB', 'baseball_mlb': 'MLB',
+                'basketball_nba': 'NBA', 'icehockey_nhl': 'NHL',
+                'basketball_ncaab': 'NCAAB',
+            }
+            gates = {}
+            for result, pnl, clv, sp, mt in ba_graded:
+                key = (sp or '?', mt or '?')
+                if key not in gates:
+                    gates[key] = {'w':0, 'l':0, 'p':0, 'pnl':0.0, 'clv':[]}
+                g = gates[key]
+                if result == 'WIN':  g['w'] += 1
+                elif result == 'LOSS': g['l'] += 1
+                else: g['p'] += 1
+                g['pnl'] += (pnl or 0)
+                if clv is not None: g['clv'].append(clv)
+            for (sp, mt), g in sorted(gates.items()):
+                n = g['w'] + g['l'] + g['p']
+                wr = g['w']/(g['w']+g['l'])*100 if (g['w']+g['l']) else 0
+                clv_str = f"{sum(g['clv'])/len(g['clv']):+.2f}" if g['clv'] else 'n/a'
+                label = f"{SPORT_LABEL.get(sp, sp)} {mt}"
+                summary.append(f"  • {label}: {g['w']}W-{g['l']}L | {g['pnl']:+.1f}u | {wr:.0f}% WR | CLV {clv_str}")
+
+            # Alerts — aggregate level
             n = len(ba_graded)
             if n >= 5 and bap <= -10:
-                alerts.append(f"BOOK_ARB FAILING: {baw}W-{bal}L, {bap:+.1f}u on {n} — consider disabling")
+                alerts.append(f"BOOK_ARB FAILING (aggregate): {baw}W-{bal}L, {bap:+.1f}u on {n}")
             if n >= 4 and baw == 0:
                 alerts.append(f"BOOK_ARB: 0 wins in {n} graded picks")
             if n >= 5 and ba_clv < -0.3:
-                alerts.append(f"BOOK_ARB CLV degrading: {ba_clv:+.2f} — inefficiency may be closing")
+                alerts.append(f"BOOK_ARB CLV degrading (aggregate): {ba_clv:+.2f}")
+
+            # Alerts — per-gate level, fire earlier so one bad gate can't hide
+            # behind winning gates
+            for (sp, mt), g in gates.items():
+                gn = g['w'] + g['l'] + g['p']
+                label = f"{SPORT_LABEL.get(sp, sp)} {mt}"
+                if gn >= 5 and g['pnl'] <= -10:
+                    alerts.append(f"BOOK_ARB {label} FAILING: {g['w']}W-{g['l']}L, {g['pnl']:+.1f}u on {gn} — consider disabling this gate")
+                if gn >= 4 and g['w'] == 0:
+                    alerts.append(f"BOOK_ARB {label}: 0 wins in {gn} graded picks — urgent review")
+                if gn >= 8 and g['w']/(g['w']+g['l']) < 0.55 and (g['w']+g['l']) > 0:
+                    wr = g['w']/(g['w']+g['l'])*100
+                    alerts.append(f"BOOK_ARB {label} WR low: {wr:.1f}% on {gn} (backtest 65-85%)")
     if pending:
         summary.append(f"FADE_FLIP pending grade: {len(pending)} pick(s) from last 2 days")
         for sel, line, odds, dt in pending[:3]:
