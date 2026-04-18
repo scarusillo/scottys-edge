@@ -59,7 +59,7 @@ None. 🎉
 - [ ] H2H high-scoring factor — 1W-2L, -5.3u (watch for accumulation)
 - [ ] Chase Field park double-counting — 1W-3L, -10.4u (already reduced from +0.9 → +0.6 in v23.1)
 - [ ] Add tennis surface-specialist Elo override (deferred until tennis returns — clay tightening in v24 may already be sufficient)
-- [ ] **v24 two-week review** — due April 20, 2026. Validate all new gates with production data.
+- [x] **v24 two-week review** — completed Apr 18 (2 days early). Verdict: successful. CLV +0.21 → +0.41; record -18u is variance on 88 bets (CI [39.6%, 60.4%] includes pre-v24 56.8%). See `project_v24_review_apr18.md`. Next review: May 2.
 
 ### Cleanups completed 2026-04-18
 
