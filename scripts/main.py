@@ -3989,6 +3989,90 @@ def cmd_fix_names(args):
     full_fix(sports=sports, diagnose_only=diagnose_only)
 
 
+def cmd_scrub(args):
+    """Scrub a bet: mark bets.units=0/result='TAINTED' and write a matching
+    full-column graded_bets row so it's excluded from every downstream query.
+
+    Usage: python main.py scrub <bet_id> [reason]
+
+    Replaces the ad-hoc direct-SQL scrub pattern that left minimal graded_bets
+    rows and tripped the code auditor. One path, full column set, audit-traceable.
+    """
+    import sqlite3
+    from datetime import datetime
+    db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+
+    if not args or args[0].startswith('--'):
+        print("Usage: python main.py scrub <bet_id> [reason]")
+        return
+    try:
+        bid = int(args[0])
+    except ValueError:
+        print(f"bet_id must be an integer, got: {args[0]}"); return
+    reason = ' '.join(args[1:]).strip() if len(args) > 1 else 'manual scrub'
+
+    conn = sqlite3.connect(db)
+    try:
+        bet = conn.execute("""
+            SELECT id, created_at, sport, event_id, market_type, selection,
+                   book, line, odds, edge_pct, confidence, units, result,
+                   side_type, spread_bucket, edge_bucket, timing,
+                   context_factors, context_confirmed, market_tier,
+                   model_spread, day_of_week
+            FROM bets WHERE id = ?
+        """, (bid,)).fetchone()
+        if not bet:
+            print(f"Bet id={bid} not found."); return
+
+        (_id, created, sport, eid, mtype, sel, book, line, odds, edge, conf,
+         units, result, side_type, spread_bucket, edge_bucket, timing,
+         context, context_confirmed, market_tier, model_spread, dow) = bet
+
+        if result == 'TAINTED' and units == 0:
+            existing = conn.execute("SELECT id FROM graded_bets WHERE bet_id=?", (bid,)).fetchone()
+            if existing:
+                print(f"Bet {bid} already scrubbed (bets + graded_bets consistent). No-op.")
+                return
+            print(f"Bet {bid} is TAINTED in bets but missing graded_bets row — backfilling.")
+
+        tagged_ctx = (context or '').strip()
+        scrub_tag = f'SCRUB: {reason}'
+        new_ctx = f'{tagged_ctx} | {scrub_tag}'.strip(' |') if tagged_ctx else scrub_tag
+
+        now = datetime.now().isoformat()
+        conn.execute("""
+            UPDATE bets SET units=0, result='TAINTED', context_factors=?
+            WHERE id=?
+        """, (new_ctx, bid))
+
+        existing = conn.execute("SELECT id, result FROM graded_bets WHERE bet_id=?", (bid,)).fetchone()
+        if existing:
+            conn.execute("""
+                UPDATE graded_bets SET result='TAINTED', units=0, pnl_units=0,
+                    context_factors=?, graded_at=?
+                WHERE bet_id=?
+            """, (new_ctx, now, bid))
+            print(f"Updated existing graded_bets row (was {existing[1]}) to TAINTED.")
+        else:
+            conn.execute("""
+                INSERT INTO graded_bets (graded_at, bet_id, sport, event_id, selection,
+                    market_type, book, line, odds, edge_pct, confidence, units,
+                    result, pnl_units, closing_line, clv, created_at,
+                    side_type, spread_bucket, edge_bucket, timing,
+                    context_factors, context_confirmed, market_tier, model_spread, day_of_week)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """, (now, bid, sport, eid, sel, mtype, book, line, odds, edge, conf,
+                  0, 'TAINTED', 0, None, None, created,
+                  side_type, spread_bucket, edge_bucket, timing,
+                  new_ctx, context_confirmed, market_tier, model_spread, dow))
+            print(f"Inserted new graded_bets row marked TAINTED.")
+
+        conn.commit()
+        print(f"✓ Scrubbed bet {bid}: {sel[:60]} — reason: {reason}")
+    finally:
+        conn.close()
+
+
 def cmd_backtest(args):
     """Backtest model accuracy against historical results."""
     from backtest import run_all_backtests
@@ -4015,7 +4099,7 @@ COMMANDS = {
     'run-soccer': cmd_run_soccer,
     'budget': cmd_budget, 'log': cmd_log, 'setup-scheduler': cmd_setup_scheduler,
     'historical': cmd_historical, 'elo': cmd_elo, 'fix-names': cmd_fix_names,
-    'backtest': cmd_backtest,
+    'backtest': cmd_backtest, 'scrub': cmd_scrub,
 }
 
 def main():
