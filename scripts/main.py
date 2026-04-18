@@ -840,6 +840,17 @@ def cmd_run(args):
                 if _current_gap < 1.0:
                     print(f"  ⚠ NCAA_BOOK_ARB skipped: current gap {_current_gap:.1f} too thin")
                     continue
+                # v25.33: only bet on TODAY's games (ET)
+                if _commence:
+                    try:
+                        from zoneinfo import ZoneInfo
+                        _ET = ZoneInfo('America/New_York')
+                        _dt_et = datetime.fromisoformat(_commence.replace('Z','+00:00')).astimezone(_ET)
+                        _today_et = datetime.now(_ET).strftime('%Y-%m-%d')
+                        if _dt_et.strftime('%Y-%m-%d') != _today_et:
+                            continue  # not today in ET
+                    except Exception:
+                        pass
                 # Skip started games (compare UTC timestamps as strings — good enough)
                 try:
                     if _commence:
@@ -961,6 +972,20 @@ def cmd_run(args):
                     if not ev_meta:
                         continue
                     _home, _away, _commence = ev_meta
+
+                    # v25.33: only bet on TODAY's games (ET). Book-arb scanner was
+                    # picking up Monday opener gaps (e.g. Raptors/Cavs Game 2) because
+                    # early openers are posted 48h out. We only bet same-day.
+                    if _commence:
+                        try:
+                            from zoneinfo import ZoneInfo
+                            _ET = ZoneInfo('America/New_York')
+                            _dt_et = datetime.fromisoformat(_commence.replace('Z','+00:00')).astimezone(_ET)
+                            _today_et = datetime.now(_ET).strftime('%Y-%m-%d')
+                            if _dt_et.strftime('%Y-%m-%d') != _today_et:
+                                continue  # not today in ET
+                        except Exception:
+                            pass
 
                     # Skip started games
                     if _commence:
@@ -2530,10 +2555,24 @@ def _prop_book_arb_scan(conn, existing_eids=None):
 
     # Organize by (event_id, player, market, side) then by book -> lines[]
     from collections import defaultdict
+    try:
+        from zoneinfo import ZoneInfo
+        _ET = ZoneInfo('America/New_York')
+    except Exception:
+        _ET = None
+    _today_et = datetime.now(_ET).strftime('%Y-%m-%d') if _ET else datetime.now().strftime('%Y-%m-%d')
     by_group = defaultdict(lambda: defaultdict(list))  # (eid,player,market,side) -> book -> [(line, odds)]
     meta = {}  # (eid,player,market,side) -> (sport, commence, home, away)
     for sport, eid, commence, home, away, book, market, player, side, line, odds in rows:
         if book in EXCLUDED: continue
+        # v25.33: only fire on TODAY's games in ET
+        if commence and _ET:
+            try:
+                _dt_et = datetime.fromisoformat(commence.replace('Z','+00:00')).astimezone(_ET)
+                if _dt_et.strftime('%Y-%m-%d') != _today_et:
+                    continue  # game not today in ET
+            except Exception:
+                pass
         key = (eid, player, market, side)
         by_group[key][book].append((line, odds))
         meta[key] = (sport, commence, home, away)
