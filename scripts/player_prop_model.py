@@ -1131,6 +1131,57 @@ def generate_prop_projections(conn=None):
                 if _separation < MIN_PROJ_LINE_SEP_STD:
                     continue  # Projection too close to line — coin flip
 
+            # v25.30: PROP_DIVERGENCE_GATE — model projection vs market median line.
+            # Mirror of spread/total DIVERGENCE_GATE. When the model's projection is
+            # far from the consensus line across books, the market has absorbed info
+            # (lineup change, late scratch, role shift) our model doesn't have. Skip.
+            # Triggering case: Kennard UNDER 4.5 on 2026-04-18. Model proj=2.2 vs
+            # market median 5.5 (Memphis missing Morant/Jerome/Pippen → Kennard
+            # primary ball handler). Old gate fired; this gate would have blocked.
+            try:
+                import statistics as _stats
+                _PROP_DIV_THR = {
+                    'player_points': 3.0,
+                    'player_assists': 1.5,
+                    'player_rebounds': 1.5,
+                    'player_threes': 0.75,
+                    'player_blocks': 0.75,
+                    'player_steals': 0.75,
+                    'player_shots_on_goal': 1.0,
+                    'batter_runs_scored': 0.6,
+                    'batter_rbis': 0.6,
+                    'batter_total_bases': 0.6,
+                    'batter_hits': 0.6,
+                    'pitcher_strikeouts': 1.5,
+                }
+                _div_thr = _PROP_DIV_THR.get(stat_type, 1.0)  # conservative default
+                # Median line across OTHER books (collapse alternates per book)
+                _per_book = {}
+                for _e in legal_entries:
+                    if _e['book'] == book: continue
+                    _per_book.setdefault(_e['book'], []).append(_e['line'])
+                _book_lines = [_stats.median(v) for v in _per_book.values()]
+                if len(_book_lines) >= 3:
+                    _market_median = _stats.median(_book_lines)
+                    _proj_gap = abs(_proj_val - _market_median)
+                    if _proj_gap > _div_thr:
+                        # Log to shadow for monitoring / backtest
+                        try:
+                            conn.execute("""INSERT INTO shadow_blocked_picks
+                                (created_at, sport, event_id, selection, market_type,
+                                 book, line, odds, edge_pct, units, reason)
+                                VALUES (?, ?, ?, ?, 'PROP', ?, ?, ?, NULL, NULL, ?)""",
+                                (datetime.now(timezone.utc).isoformat(), sport, eid,
+                                 f"{player} {'OVER' if side == 'Over' else 'UNDER'} {line} {stat_type}",
+                                 book, line, odds,
+                                 f"PROP_DIVERGENCE_GATE (proj={_proj_val:.1f} vs market_median={_market_median:.1f}, gap={_proj_gap:.1f} > thr {_div_thr}, books={len(_book_lines)})"))
+                            conn.commit()
+                        except Exception:
+                            pass
+                        continue  # skip this pick
+            except Exception as _e:
+                pass  # never break pick gen on gate errors
+
             # Hit rate gate: check actual clearing rate vs implied breakeven
             # For OVER: need hit_rate (stat > line) >= implied
             # For UNDER: need under_rate (stat <= line) >= implied
