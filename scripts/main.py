@@ -1020,6 +1020,70 @@ def cmd_run(args):
         except Exception as e:
             print(f"  NCAA DK gate: {e}")
 
+        # ═══ NCAA BASEBALL SHARP LINE-MOVE GATE (v25.26) ═══
+        # Runs on ALL NCAA Baseball TOTAL picks regardless of book.
+        # If FanDuel's current total has moved ≥ 1.5 runs AGAINST our bet direction
+        # since its opener, sharp money has pounded the other side — skip.
+        # Rationale: bet 954 (TTU@Utah OVER 15.5 at BetRivers) was scrubbed 4/17
+        # because FD moved 17.5→15.5 (sharp on UNDER) and no book-scoped gate caught it.
+        try:
+            _lm_kept, _lm_blocked = [], []
+            for p in all_picks:
+                if not (p.get('sport') == 'baseball_ncaa' and p.get('market_type') == 'TOTAL'):
+                    _lm_kept.append(p); continue
+                _eid = p.get('event_id', '')
+                _bet_line = p.get('line')
+                _sel = p.get('selection', '') or ''
+                _is_under = 'UNDER' in _sel.upper()
+                if _bet_line is None:
+                    _lm_kept.append(p); continue
+                _fd_open_r = conn.execute(
+                    "SELECT line FROM openers WHERE event_id=? AND market='totals' AND book='FanDuel' LIMIT 1",
+                    (_eid,)).fetchone()
+                if not _fd_open_r:
+                    _lm_kept.append(p); continue
+                _fd_open = _fd_open_r[0]
+                _fd_cur_r = conn.execute("""
+                    SELECT line FROM odds o WHERE event_id=? AND market='totals' AND book='FanDuel'
+                    AND NOT EXISTS (
+                        SELECT 1 FROM odds o2 WHERE o2.event_id=o.event_id AND o2.book=o.book
+                        AND o2.market=o.market AND o2.selection=o.selection
+                        AND (o2.snapshot_date > o.snapshot_date
+                             OR (o2.snapshot_date=o.snapshot_date AND o2.snapshot_time > o.snapshot_time))
+                    ) LIMIT 1
+                """, (_eid,)).fetchone()
+                if not _fd_cur_r:
+                    _lm_kept.append(p); continue
+                _fd_cur = _fd_cur_r[0]
+                _move = _fd_cur - _fd_open  # + = line went up
+                _against = False
+                _rsn = ''
+                if _is_under and _move >= 1.5:
+                    _against = True
+                    _rsn = f'FD total climbed {_fd_open} → {_fd_cur} (+{_move:.1f}, sharp on OVER)'
+                elif (not _is_under) and _move <= -1.5:
+                    _against = True
+                    _rsn = f'FD total dropped {_fd_open} → {_fd_cur} ({_move:+.1f}, sharp on UNDER)'
+                if _against:
+                    _lm_blocked.append((p, _rsn))
+                    print(f"  ⚠ NCAA_SHARP_LINE_MOVE: {_sel[:50]} — {_rsn}")
+                else:
+                    _lm_kept.append(p)
+            if _lm_blocked:
+                _now = datetime.now().isoformat()
+                for _p, _rsn in _lm_blocked:
+                    conn.execute("""INSERT INTO shadow_blocked_picks
+                        (created_at, sport, event_id, selection, market_type, book, line, odds, edge_pct, units, reason)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                        (_now, _p.get('sport',''), _p.get('event_id',''),
+                         _p.get('selection',''), _p.get('market_type',''), _p.get('book',''),
+                         _p.get('line'), _p.get('odds'), _p.get('edge_pct', 0),
+                         _p.get('units', 0), f'NCAA_SHARP_LINE_MOVE ({_rsn})'))
+                conn.commit()
+            all_picks = _lm_kept
+        except Exception as e:
+            print(f"  NCAA sharp line-move gate: {e}")
+
         saved_picks = save_picks_to_db(conn, all_picks)
         if saved_picks is not None:
             all_picks = saved_picks  # Only use picks that actually saved to DB
