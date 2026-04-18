@@ -905,8 +905,10 @@ def cmd_run(args):
         #   MLB spreads gap ≥ 1.5:  34 bets, 79.4% WR, +6.5u,  +19.2% ROI (flipped favorite)
         # (NBA spreads, MLB totals, NCAA baseball spreads all showed no edge or reversed signal.)
         #
-        # Standard (non-max) sizing at 3.5u — passes the units≥3.5 tracked-record filter.
-        # Sample is still thin (<60 bets per gate) — revisit sizing after ~100 live bets.
+        # User decision 4/18: max-play sizing (5.0u), matching the existing v25.25 NCAA
+        # Baseball book-arb gate. Sample is <60 bets per new gate (95% CI lower bound on
+        # NBA WR is ~55%), but user accepts variance risk on backtested edge.
+        # Revisit sizing if first 50 live bets underperform backtest median by >10% WR.
         try:
             _today_str = datetime.now().strftime('%Y-%m-%d')
             _SOFT_BOOKS = ('DraftKings','BetMGM','Caesars','Fanatics','ESPN BET')
@@ -1010,7 +1012,7 @@ def cmd_run(args):
                             'selection': _sel, 'book': soft,
                             'line': cur_soft_ln, 'odds': cur_soft_odds or -110,
                             'edge_pct': round(abs(gap) * 5.0, 1),
-                            'confidence': 'BOOK_ARB', 'units': 3.5,
+                            'confidence': 'BOOK_ARB', 'units': 5.0,
                             'context': f'BOOK_ARB: {sharp} opener {sharp_open} vs {soft} opener {soft_open} (gap {gap:+.1f}) | current gap {cur_gap:+.1f}',
                             'commence': _commence, 'home': _home, 'away': _away,
                             'star_rating': 3, 'model_prob': 0, 'implied_prob': 0,
@@ -1078,7 +1080,7 @@ def cmd_run(args):
                             'selection': _sel, 'book': soft,
                             'line': cur_line, 'odds': cur_odds or -110,
                             'edge_pct': round(abs(gap) * 4.0, 1),
-                            'confidence': 'BOOK_ARB', 'units': 3.5,
+                            'confidence': 'BOOK_ARB', 'units': 5.0,
                             'context': f'BOOK_ARB: {sharp} home opener {home_by_book[sharp][0]} vs {soft} home opener {home_by_book[soft][0]} (gap {gap:+.1f}) | current gap {cur_gap:+.1f}',
                             'commence': _commence, 'home': _home, 'away': _away,
                             'star_rating': 3, 'model_prob': 0, 'implied_prob': 0,
