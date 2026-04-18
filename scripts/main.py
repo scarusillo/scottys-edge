@@ -2625,9 +2625,10 @@ def _prop_book_arb_scan(conn, existing_eids=None):
         picks_out.append(pick)
         print(f"  💡 PROP_BOOK_ARB: {sel} @ {soft_book} {soft_odds:+.0f} | sharp_med={sharp_median:.1f} soft={soft_line} gap={gap:+.1f}")
 
-    # Volume cap: max 5 prop arb picks per run (conservative until we see live performance)
-    # If more than 5 fire, keep the largest-gap ones.
-    MAX_PROP_ARB_PER_RUN = 5
+    # Volume cap: max 3 prop arb picks per run. Keeps highest-gap signals only,
+    # prevents prop arb from bloating slate volume past the v24 "fewer, higher
+    # quality" target (~7 picks/day). Revisit if first 20 live arbs go positive.
+    MAX_PROP_ARB_PER_RUN = 3
     if len(picks_out) > MAX_PROP_ARB_PER_RUN:
         picks_out.sort(key=lambda p: abs(p['_signals']['gap']), reverse=True)
         _dropped = len(picks_out) - MAX_PROP_ARB_PER_RUN
