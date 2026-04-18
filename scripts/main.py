@@ -902,12 +902,21 @@ def cmd_run(args):
         #       to the opposite side (model said UNDER but sharps priced OVER → we bet OVER).
         #       Historical: 7 flip candidates → flipped record ~5W-2L, +17u (vs 2W-5L, -11.48u
         #       taken as model said). Uses sharp book as primary signal.
+        #   (2a) v25.27 SHARP-AGREE BLOCK: if one sharp strictly disagrees but the OTHER
+        #        sharp strictly agrees with the model direction, don't flip. Split-sharp
+        #        disagreements where a sharp actively endorses the model (e.g. BR opens
+        #        UNDER the DK line on our UNDER pick) are a different regime than the
+        #        backtested 7 (all had either both-disagree or one-disagree+other-neutral).
+        #        Auburn@Florida 4/17 was the triggering case: BR opened 9.0 on our UNDER 9.5
+        #        (sharp agrees), FD opened 10.5 (disagrees). Flipped OVER lost; UNDER 9.5
+        #        would have won (final 8 runs).
         # Flipped picks are flagged in context_factors as 'FADE_FLIP' so monitoring/agents
         # can track them specifically — CRITICAL for catching if this strategy breaks down.
         try:
             _ncaa_dk_kept = []
             _ncaa_dk_skipped = []
             _ncaa_dk_flipped = []
+            _ncaa_dk_flip_blocked = []  # v25.27: flip candidates where a sharp agreed
             for p in all_picks:
                 if not (p.get('sport') == 'baseball_ncaa'
                         and p.get('market_type') == 'TOTAL'
@@ -942,18 +951,44 @@ def cmd_run(args):
                     print(f"  ⚠ NCAA_DK_TIGHT_SKIP: {sel[:50]} — all books at {bet_line} (market efficient)")
                     continue
 
-                # (2) Sharp disagreement → FLIP (Option C)
-                flip_reason = None
+                # (2a) v25.27: if any sharp strictly AGREES with the model direction,
+                # block the flip — split-sharp-with-agreement is outside the backtest regime.
+                sharp_agrees = False
+                agree_src = None
                 if is_under:
-                    if fd_open is not None and fd_open > bet_line:
-                        flip_reason = f'FD opened {fd_open} > bet UNDER {bet_line} (sharp prices OVER)'
-                    elif br_open is not None and br_open > bet_line:
-                        flip_reason = f'BR opened {br_open} > bet UNDER {bet_line} (sharp prices OVER)'
-                else:  # OVER
                     if fd_open is not None and fd_open < bet_line:
-                        flip_reason = f'FD opened {fd_open} < bet OVER {bet_line} (sharp prices UNDER)'
+                        sharp_agrees, agree_src = True, f'FD opened {fd_open} < bet UNDER {bet_line}'
                     elif br_open is not None and br_open < bet_line:
-                        flip_reason = f'BR opened {br_open} < bet OVER {bet_line} (sharp prices UNDER)'
+                        sharp_agrees, agree_src = True, f'BR opened {br_open} < bet UNDER {bet_line}'
+                else:  # OVER
+                    if fd_open is not None and fd_open > bet_line:
+                        sharp_agrees, agree_src = True, f'FD opened {fd_open} > bet OVER {bet_line}'
+                    elif br_open is not None and br_open > bet_line:
+                        sharp_agrees, agree_src = True, f'BR opened {br_open} > bet OVER {bet_line}'
+
+                # (2) Sharp disagreement → FLIP (Option C). Only evaluate if no sharp agrees.
+                flip_reason = None
+                if not sharp_agrees:
+                    if is_under:
+                        if fd_open is not None and fd_open > bet_line:
+                            flip_reason = f'FD opened {fd_open} > bet UNDER {bet_line} (sharp prices OVER)'
+                        elif br_open is not None and br_open > bet_line:
+                            flip_reason = f'BR opened {br_open} > bet UNDER {bet_line} (sharp prices OVER)'
+                    else:  # OVER
+                        if fd_open is not None and fd_open < bet_line:
+                            flip_reason = f'FD opened {fd_open} < bet OVER {bet_line} (sharp prices UNDER)'
+                        elif br_open is not None and br_open < bet_line:
+                            flip_reason = f'BR opened {br_open} < bet OVER {bet_line} (sharp prices UNDER)'
+                elif sharp_agrees:
+                    # Log the blocked flip for monitoring — were we about to flip?
+                    would_flip = False
+                    if is_under:
+                        would_flip = (fd_open is not None and fd_open > bet_line) or (br_open is not None and br_open > bet_line)
+                    else:
+                        would_flip = (fd_open is not None and fd_open < bet_line) or (br_open is not None and br_open < bet_line)
+                    if would_flip:
+                        _ncaa_dk_flip_blocked.append((p, agree_src))
+                        print(f"  🛑 NCAA_DK_FLIP_BLOCKED: {sel[:45]} — sharp agrees with model ({agree_src})")
 
                 if flip_reason:
                     # Flip selection + fetch opposite-side odds at DK for same line
@@ -1012,7 +1047,15 @@ def cmd_run(args):
                      _p_orig.get('line'), _p_orig.get('odds'), _p_orig.get('edge_pct', 0),
                      _p_orig.get('units', 0),
                      f'NCAA_DK_FADE_FLIP ({_rsn}) → betting {_p_new["selection"]}'))
-            if _ncaa_dk_skipped or _ncaa_dk_flipped:
+            for _p, _agree in _ncaa_dk_flip_blocked:
+                conn.execute("""INSERT INTO shadow_blocked_picks
+                    (created_at, sport, event_id, selection, market_type, book, line, odds, edge_pct, units, reason)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (_now, _p.get('sport',''), _p.get('event_id',''),
+                     _p.get('selection',''), _p.get('market_type',''), _p.get('book',''),
+                     _p.get('line'), _p.get('odds'), _p.get('edge_pct', 0),
+                     _p.get('units', 0), f'NCAA_DK_FLIP_BLOCKED (sharp agrees: {_agree})'))
+            if _ncaa_dk_skipped or _ncaa_dk_flipped or _ncaa_dk_flip_blocked:
                 conn.commit()
             if _ncaa_dk_flipped:
                 print(f"  🔄 Option C active: {len(_ncaa_dk_flipped)} NCAA DK pick(s) flipped to opposite side")
@@ -3073,6 +3116,12 @@ def _generate_kling_prompt(conn):
         'baseball_mlb': ('MLB', 'An MLB slugger in full uniform frozen at the top of his swing, bat blurred, eyes locked on the ball', 'warm red'),
         'basketball_ncaab': ('NCAAB', 'A college basketball player elevates for a mid-range jumper, wrist flicked, ball spinning off fingertips', 'amber'),
     }
+    # Display-label overrides (soccer leagues + tennis tours map to generic labels
+    # with their own athlete cinematography — matches the landing-page / card style)
+    label_athletes = {
+        'Soccer': ('A soccer striker mid-strike, boot connecting with the ball, stadium lights catching the turf', 'golden'),
+        'Tennis': ('A tennis player mid-serve, racket fully extended overhead, ball suspended at contact point', 'white'),
+    }
 
     sport_records = {}
     for sp, result, pnl in bets:
@@ -3109,6 +3158,8 @@ def _generate_kling_prompt(conn):
         sp_key = [k for k, v in sport_labels.items() if v[0] == label]
         if sp_key:
             _, athlete_desc, spotlight = sport_labels[sp_key[0]]
+        elif label in label_athletes:
+            athlete_desc, spotlight = label_athletes[label]
         else:
             athlete_desc, spotlight = ('an athlete framed in a sport-specific spotlight', 'white')
         record_str = f"{rec['W']}-{rec['L']}"
