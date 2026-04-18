@@ -1143,19 +1143,23 @@ def generate_prop_projections(conn=None):
             try:
                 import statistics as _stats
                 from config import MIN_ODDS as _PROP_MIN_ODDS
+                # Keys match stat_type (short form from STAT_TYPE_MAP), not the
+                # prop_snapshots.market long form. Earlier bug: had 'player_points'
+                # as key while runtime stat_type is 'pts', falling back to the
+                # default 1.0 threshold for every prop. Fixed to use short-form keys.
                 _PROP_DIV_THR = {
-                    'player_points': 3.0,
-                    'player_assists': 1.5,
-                    'player_rebounds': 1.5,
-                    'player_threes': 0.75,
-                    'player_blocks': 0.75,
-                    'player_steals': 0.75,
-                    'player_shots_on_goal': 1.0,
-                    'batter_runs_scored': 0.6,
-                    'batter_rbis': 0.6,
-                    'batter_total_bases': 0.6,
-                    'batter_hits': 0.6,
-                    'pitcher_strikeouts': 1.5,
+                    'pts': 3.0,
+                    'ast': 1.5,
+                    'reb': 1.5,
+                    'threes': 0.75,
+                    'blk': 0.75,
+                    'stl': 0.75,
+                    'sog': 1.0,
+                    'runs': 0.6,
+                    'rbi': 0.6,
+                    'total_bases': 0.6,
+                    'hits': 0.6,
+                    'pitcher_k': 1.5,
                 }
                 _div_thr = _PROP_DIV_THR.get(stat_type, 1.0)
                 # Median line across OTHER books (collapse alternates per book)
