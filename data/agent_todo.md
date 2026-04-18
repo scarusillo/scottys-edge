@@ -50,8 +50,8 @@ None. 🎉
 
 ## 🟡 Today-Specific (check if still relevant)
 
-- [ ] Sanity-check TOR + ATL power ratings if model fires picks on those teams today
-- [ ] Audit `pitcher_scraper` for opener/bulk vs starter classification — Tatsuya Imai logged 0.1 IP as starter (decided: working as designed, not a bug)
+- [x] **TOR/ATL power ratings sanity check** — stale, resolved 2026-04-18. Picks fired on these teams post-4/11 went 2-1 (+3.4u); model calibration is fine.
+- [x] **`pitcher_scraper` Imai classification** — stale, resolved 2026-04-18. Imai has only 7.5 IP total across 3 starts — well below the 30-IP ERA gate, so he can't affect model calculations. Original note confirmed "not a bug."
 
 ## 🟢 Monitor / Backlog
 
