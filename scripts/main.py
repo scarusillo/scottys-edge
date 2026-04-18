@@ -1007,13 +1007,19 @@ def cmd_run(args):
                             print(f"  ⚠ {sport_}_BOOK_ARB_TOTAL skipped: current gap {abs(cur_gap):.1f} < {current_thr}")
                             continue
                         _sel = f"{_away}@{_home} {side} {cur_soft_ln}"
+                        _reason = (
+                            f'BOOK ARB — Sharp {sharp} opened total at {sharp_open}, '
+                            f'soft {soft} opened at {soft_open} (opener gap {gap:+.1f}). '
+                            f'Betting {side} {cur_soft_ln} at {soft}: easier number on the side sharp likes. '
+                            f'Current gap {cur_gap:+.1f}.'
+                        )
                         pick = {
                             'sport': sport_, 'event_id': eid, 'market_type': 'TOTAL',
                             'selection': _sel, 'book': soft,
                             'line': cur_soft_ln, 'odds': cur_soft_odds or -110,
                             'edge_pct': round(abs(gap) * 5.0, 1),
                             'confidence': 'BOOK_ARB', 'units': 5.0,
-                            'context': f'BOOK_ARB: {sharp} opener {sharp_open} vs {soft} opener {soft_open} (gap {gap:+.1f}) | current gap {cur_gap:+.1f}',
+                            'context': _reason,
                             'commence': _commence, 'home': _home, 'away': _away,
                             'star_rating': 3, 'model_prob': 0, 'implied_prob': 0,
                             'side_type': 'BOOK_ARB', 'model_spread': None, 'timing': 'UNKNOWN',
@@ -1075,13 +1081,21 @@ def cmd_run(args):
                             print(f"  ⚠ {sport_}_BOOK_ARB_SPREAD skipped: current gap {abs(cur_gap):.1f} < {current_thr}")
                             continue
                         _sel = f"{_away}@{_home} {bet_team} {cur_line:+g}"
+                        _sharp_h = home_by_book[sharp][0]
+                        _soft_h = home_by_book[soft][0]
+                        _reason = (
+                            f'BOOK ARB — Sharp {sharp} opened home at {_sharp_h:+g}, '
+                            f'soft {soft} opened home at {_soft_h:+g} (opener gap {gap:+.1f}). '
+                            f'Betting {bet_team} {cur_line:+g} at {soft}: easier spread on the team sharp likes. '
+                            f'Current gap {cur_gap:+.1f}.'
+                        )
                         pick = {
                             'sport': sport_, 'event_id': eid, 'market_type': 'SPREAD',
                             'selection': _sel, 'book': soft,
                             'line': cur_line, 'odds': cur_odds or -110,
                             'edge_pct': round(abs(gap) * 4.0, 1),
                             'confidence': 'BOOK_ARB', 'units': 5.0,
-                            'context': f'BOOK_ARB: {sharp} home opener {home_by_book[sharp][0]} vs {soft} home opener {home_by_book[soft][0]} (gap {gap:+.1f}) | current gap {cur_gap:+.1f}',
+                            'context': _reason,
                             'commence': _commence, 'home': _home, 'away': _away,
                             'star_rating': 3, 'model_prob': 0, 'implied_prob': 0,
                             'side_type': 'BOOK_ARB', 'model_spread': None, 'timing': 'UNKNOWN',
@@ -1744,7 +1758,8 @@ def _generate_html_card(picks):
     <div class="sport-header">{sport_label}</div>""")
 
         for p in sport_picks:
-            kl = kelly_label(p['units'])
+            is_book_arb = p.get('side_type') == 'BOOK_ARB'
+            kl = 'BOOK ARB' if is_book_arb else kelly_label(p['units'])
             sp = p.get('sport', 'other')
             icon = sport_icons.get(sp, '🏟️')
             game_time = ''
@@ -1756,8 +1771,17 @@ def _generate_html_card(picks):
                 except Exception:
                     pass
 
-            conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
-            ctx_html = f'<div class="pick-context">📍 {p.get("context", "")}</div>' if p.get('context') else ''
+            if is_book_arb:
+                conv_class = 'conviction-bookarb'
+            else:
+                conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
+            _ctx = p.get('context', '')
+            if is_book_arb:
+                ctx_html = f'<div class="pick-context" style="background:#1a2b42;border-left:3px solid #5b8fd0;padding:6px 8px;margin-top:4px;">🔗 <b>WHY:</b> {_ctx}</div>'
+            elif _ctx:
+                ctx_html = f'<div class="pick-context">📍 {_ctx}</div>'
+            else:
+                ctx_html = ''
 
             pick_blocks.append(f"""
     <div class="pick">
@@ -1782,7 +1806,8 @@ def _generate_html_card(picks):
             pick_blocks.append(f"""
     <div class="sport-header">{sport_label}</div>""")
             for p in sport_picks:
-                kl = kelly_label(p['units'])
+                is_book_arb = p.get('side_type') == 'BOOK_ARB'
+                kl = 'BOOK ARB' if is_book_arb else kelly_label(p['units'])
                 sp = p.get('sport', 'other')
                 icon = sport_icons.get(sp, '🏟️')
                 game_time = ''
@@ -1793,8 +1818,17 @@ def _generate_html_card(picks):
                         game_time = est.strftime('%I:%M %p') + f' {tz}'
                     except Exception:
                         pass
-                conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
-                ctx_html = f'<div class="pick-context">📍 {p.get("context", "")}</div>' if p.get('context') else ''
+                if is_book_arb:
+                    conv_class = 'conviction-bookarb'
+                else:
+                    conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
+                _ctx = p.get('context', '')
+                if is_book_arb:
+                    ctx_html = f'<div class="pick-context" style="background:#1a2b42;border-left:3px solid #5b8fd0;padding:6px 8px;margin-top:4px;">🔗 <b>WHY:</b> {_ctx}</div>'
+                elif _ctx:
+                    ctx_html = f'<div class="pick-context">📍 {_ctx}</div>'
+                else:
+                    ctx_html = ''
                 pick_blocks.append(f"""
     <div class="pick">
       <div class="pick-icon">{icon}</div>
@@ -1920,6 +1954,7 @@ def _generate_html_card(picks):
   .conviction-max {{ background: rgba(0,230,118,0.15); color: #00e676; }}
   .conviction-strong {{ background: rgba(255,193,7,0.15); color: #ffc107; }}
   .conviction-solid {{ background: rgba(100,181,246,0.15); color: #64b5f6; }}
+  .conviction-bookarb {{ background: rgba(91,143,208,0.22); color: #8bb4f0; }}
   .footer {{
     padding: 28px 52px 20px; position: relative; z-index: 1;
     display: flex; justify-content: space-between; align-items: center;
