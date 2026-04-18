@@ -835,6 +835,12 @@ def cmd_run(args):
                             continue
                 except Exception:
                     pass
+                # Global MIN_ODDS policy — never fire at worse than -150
+                from config import MIN_ODDS as _NBA_MIN_ODDS
+                _eff_odds = _dk_odds if _dk_odds is not None else -110
+                if _eff_odds <= _NBA_MIN_ODDS:
+                    print(f"  ⚠ NCAA_BOOK_ARB skipped: DK {_side} {_eff_odds:+.0f} worse than MIN_ODDS {_NBA_MIN_ODDS}")
+                    continue
                 _sel = f"{_away}@{_home} {_side} {_dk_line}"
                 _pick = {
                     'sport': 'baseball_ncaa', 'event_id': _eid, 'market_type': 'TOTAL',
@@ -913,6 +919,7 @@ def cmd_run(args):
             _today_str = datetime.now().strftime('%Y-%m-%d')
             _SOFT_BOOKS = ('DraftKings','BetMGM','Caesars','Fanatics','ESPN BET')
             _SHARP_BOOKS = ('FanDuel','BetRivers')
+            from config import MIN_ODDS as _BA_MIN_ODDS  # e.g. -150
 
             def _book_arb_scan(sport_, market_, opener_thr, current_thr):
                 """Find book-arb opportunities. Returns list of pick dicts."""
@@ -1006,6 +1013,11 @@ def cmd_run(args):
                         if abs(cur_gap) < current_thr:
                             print(f"  ⚠ {sport_}_BOOK_ARB_TOTAL skipped: current gap {abs(cur_gap):.1f} < {current_thr}")
                             continue
+                        # Global MIN_ODDS policy — never fire at worse than -150
+                        _eff_odds = cur_soft_odds if cur_soft_odds is not None else -110
+                        if _eff_odds <= _BA_MIN_ODDS:
+                            print(f"  ⚠ {sport_}_BOOK_ARB_TOTAL skipped: {side} at {soft} {_eff_odds:+.0f} worse than MIN_ODDS {_BA_MIN_ODDS}")
+                            continue
                         _sel = f"{_away}@{_home} {side} {cur_soft_ln}"
                         _reason = (
                             f'BOOK ARB — Sharp {sharp} opened total at {sharp_open}, '
@@ -1079,6 +1091,11 @@ def cmd_run(args):
                         cur_gap = cur_line - cur_sharp
                         if abs(cur_gap) < current_thr:
                             print(f"  ⚠ {sport_}_BOOK_ARB_SPREAD skipped: current gap {abs(cur_gap):.1f} < {current_thr}")
+                            continue
+                        # Global MIN_ODDS policy — never fire at worse than -150
+                        _eff_odds = cur_odds if cur_odds is not None else -110
+                        if _eff_odds <= _BA_MIN_ODDS:
+                            print(f"  ⚠ {sport_}_BOOK_ARB_SPREAD skipped: {bet_team} at {soft} {_eff_odds:+.0f} worse than MIN_ODDS {_BA_MIN_ODDS}")
                             continue
                         _sel = f"{_away}@{_home} {bet_team} {cur_line:+g}"
                         _sharp_h = home_by_book[sharp][0]
