@@ -2544,6 +2544,34 @@ def generate_predictions(conn, sport=None, date=None):
                         # isn't a pattern. Keep the gate stub at False.
                         _ncaa_pitcher_data_veto = False
 
+                        # v25.32: NCAA ERA RELIABILITY GATE — if pitcher_ctx returns named
+                        # starters but EITHER has < 15 career IP (per `both_reliable` flag),
+                        # skip the pick. The derived "ERA" on a 4-IP pitcher is noise-driven.
+                        # Triggering case: Miami/Stanford UNDER 13.5 on 4/18 game 2 — scraper
+                        # returned Marsh (4.1 career IP) and Evans (11.5 career IP) from
+                        # game 1 of the doubleheader, built a 20% "edge" on unreliable data.
+                        # Gate fires ONLY when pitcher_ctx exists and named starters exist but
+                        # one is unreliable. Picks with no pitcher data at all still fire per
+                        # historical pattern (weekend NCAA without pitcher data still +25u).
+                        _ncaa_era_reliability_veto = False
+                        if sp == 'baseball_ncaa' and pitcher_ctx:
+                            if (pitcher_ctx.get('home_starter') and pitcher_ctx.get('away_starter')
+                                and not pitcher_ctx.get('both_reliable', False)):
+                                _ncaa_era_reliability_veto = True
+                                try:
+                                    _h_ip = pitcher_ctx.get('home_starter_ip') or 0
+                                    _a_ip = pitcher_ctx.get('away_starter_ip') or 0
+                                    conn.execute("""
+                                        INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
+                                            market_type, line, odds, edge_pct, units, reason)
+                                        VALUES (?, ?, ?, ?, 'TOTAL', ?, NULL, NULL, NULL, ?)
+                                    """, (datetime.now().isoformat(), sp, eid,
+                                          f"{away}@{home}", None,
+                                          f"NCAA_ERA_RELIABILITY_GATE ({pitcher_ctx['home_starter']} {_h_ip:.1f} IP, {pitcher_ctx['away_starter']} {_a_ip:.1f} IP; need >=15)"))
+                                    conn.commit()
+                                except Exception:
+                                    pass
+
                         if sp == 'baseball_mlb' and _mlb_pitcher_info:
                             try:
                                 _era_adj, _pitcher_era_ctx, _best_era, _worst_era, _both_era_reliable = _mlb_pitcher_era_adjustment(
@@ -2719,7 +2747,7 @@ def generate_predictions(conn, sport=None, date=None):
                                     conn.commit()
                                 except Exception:
                                     pass
-                        if k not in seen and not _mlb_skip_total and not _park_veto_over and not _pitching_veto_over and not _direction_veto_over and not _era_reliability_veto and not _ncaa_pitcher_data_veto and not _nhl_pace_veto_over:
+                        if k not in seen and not _mlb_skip_total and not _park_veto_over and not _pitching_veto_over and not _direction_veto_over and not _era_reliability_veto and not _ncaa_pitcher_data_veto and not _ncaa_era_reliability_veto and not _nhl_pace_veto_over:
                             total_diff = model_total - over_total
                             if total_diff > 0:  # Model says higher scoring
                                 pv = calculate_point_value_totals(model_total, over_total, sp)
@@ -2835,7 +2863,7 @@ def generate_predictions(conn, sport=None, date=None):
                                 conn.commit()
                             except Exception:
                                 pass
-                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _ncaa_skip_under and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under and not _pitching_veto_under and not _direction_veto_under and not _era_reliability_veto and not _ncaa_pitcher_data_veto:
+                        if under_total is not None and under_odds is not None and not _mlb_skip_total and not _ncaa_skip_under and not _block_ncaa_under and not _park_veto_under and not _pace_veto_under and not _pitching_veto_under and not _direction_veto_under and not _era_reliability_veto and not _ncaa_pitcher_data_veto and not _ncaa_era_reliability_veto:
                             k = f"{eid}|T|UNDER"
                             if k not in seen:
                                 total_diff_u = under_total - model_total

@@ -943,6 +943,9 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
         'away_starter': None,
         'home_starter_era': None,
         'away_starter_era': None,
+        'home_starter_ip': None,  # v25.32: career IP for reliability gate
+        'away_starter_ip': None,
+        'both_reliable': False,   # v25.32: both starters have >=15 career IP (NCAA) / 30 (MLB)
         'day_type': 'unknown',
     }
 
@@ -1015,21 +1018,29 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
                 away_starter_row = (prob[1], prob[3], None, None)
     else:
         # College baseball: day-of-week matching from pitcher_stats (no probable pitchers data)
+        # v25.32: EXCLUDE today's date to avoid doubleheader contamination. If team X
+        # already played game 1 today, their "most recent Saturday starter" match would
+        # return TODAY's game-1 starter — wrong for game 2 which has a different pitcher.
+        # Miami/Stanford 4/18: Marsh/Evans opened game 1 (1.0 and 0.2 IP), scraper
+        # then returned them as "Saturday starters" for game 2. Excluding today fixes it.
+        today_str = datetime.now(_ET).strftime('%Y-%m-%d')
         home_starter_row = conn.execute("""
             SELECT pitcher_name, era, innings_pitched, earned_runs
             FROM pitcher_stats
             WHERE team=? AND is_starter=1
             AND CAST(strftime('%w', game_date) AS INTEGER) = ?
+            AND game_date < ?
             ORDER BY game_date DESC LIMIT 1
-        """, (home, (dow + 1) % 7)).fetchone()  # SQLite %w: 0=Sun, Python weekday: 0=Mon
+        """, (home, (dow + 1) % 7, today_str)).fetchone()  # SQLite %w: 0=Sun, Python weekday: 0=Mon
 
         away_starter_row = conn.execute("""
             SELECT pitcher_name, era, innings_pitched, earned_runs
             FROM pitcher_stats
             WHERE team=? AND is_starter=1
             AND CAST(strftime('%w', game_date) AS INTEGER) = ?
+            AND game_date < ?
             ORDER BY game_date DESC LIMIT 1
-        """, (away, (dow + 1) % 7)).fetchone()
+        """, (away, (dow + 1) % 7, today_str)).fetchone()
 
     # Use pitcher_stats ERA only if pitcher has 3+ starts. Otherwise fall back to
     # box_scores ERA (includes 2025 data). A 1-start ERA (e.g., 12.27) is noise.
@@ -1084,6 +1095,28 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
         result['home_starter'], result['home_starter_era'] = _reliable_era(home_starter_row)
     if away_starter_row:
         result['away_starter'], result['away_starter_era'] = _reliable_era(away_starter_row)
+
+    # v25.32: compute career IP for each starter + set both_reliable flag.
+    # NCAA threshold: 15 IP (shorter seasons than MLB's 30 IP). MLB uses
+    # _mlb_pitcher_era_adjustment's separate reliability check.
+    MIN_RELIABLE_IP_NCAA = 15.0
+    def _career_ip(name):
+        if not name: return 0.0
+        row = conn.execute(
+            "SELECT COALESCE(SUM(innings_pitched), 0) FROM pitcher_stats WHERE pitcher_name=?",
+            (name,)).fetchone()
+        return float(row[0] or 0.0)
+    if result['home_starter']:
+        result['home_starter_ip'] = _career_ip(result['home_starter'])
+    if result['away_starter']:
+        result['away_starter_ip'] = _career_ip(result['away_starter'])
+    if sport != 'baseball_mlb':  # MLB has its own reliability path in _mlb_pitcher_era_adjustment
+        h_ip = result['home_starter_ip'] or 0.0
+        a_ip = result['away_starter_ip'] or 0.0
+        result['both_reliable'] = (result['home_starter'] is not None
+                                    and result['away_starter'] is not None
+                                    and h_ip >= MIN_RELIABLE_IP_NCAA
+                                    and a_ip >= MIN_RELIABLE_IP_NCAA)
 
     # Calculate pitching adjustments
     # Use day-specific data if available (3+ games), else overall
