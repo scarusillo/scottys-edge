@@ -1176,7 +1176,16 @@ def generate_prop_projections(conn=None):
                 if len(_book_lines) >= 3:
                     _market_median = _stats.median(_book_lines)
                     _proj_gap = abs(_proj_val - _market_median)
-                    if _proj_gap > _div_thr:
+                    # v25.34: skip gate entirely when the current side isn't the model's
+                    # NATURAL direction (e.g. proj 16.8 with UNDER iteration — UNDER would
+                    # never fire a real pick via calc_prop_edge_under since diff>=0 short-
+                    # circuits it). Old gate was creating phantom flips on these sides and
+                    # beating the natural OVER pick in dedup via its edge-multiplier.
+                    _model_fires_this_side = (
+                        (side == 'Over' and _proj_val > line) or
+                        (side == 'Under' and _proj_val < line)
+                    )
+                    if _proj_gap > _div_thr and _model_fires_this_side:
                         # Direction check
                         _market_agrees = (side == 'Over' and _market_median > line) or \
                                          (side == 'Under' and _market_median < line)
