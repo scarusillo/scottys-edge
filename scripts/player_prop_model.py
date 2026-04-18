@@ -1222,6 +1222,11 @@ def generate_prop_projections(conn=None):
                         elif _gate_action == 'flip':
                             # Build flipped pick (opposite side, same book, same line)
                             _flip_sel = f"{player} {'OVER' if _flip_side == 'Over' else 'UNDER'} {line} {stat_type}"
+                            _flip_ctx = (
+                                f'PROP_FADE_FLIP v25.31 — model proj {_proj_val:.1f} vs '
+                                f'market median {_market_median:.1f} (gap {_proj_gap:.1f} > thr {_div_thr} {stat_type}). '
+                                f'Market on opposite side of line {line} → flipped {side.upper()}->{_flip_side.upper()} at {book} {_flip_odds:+.0f}.'
+                            )
                             _flip_pick = {
                                 'sport': sport, 'event_id': eid, 'commence': commence,
                                 'home': home, 'away': away,
@@ -1233,7 +1238,8 @@ def generate_prop_projections(conn=None):
                                 'star_rating': 3, 'units': 3.5,
                                 'confidence': 'FADE_FLIP', 'spread_or_ml': 'PROP',
                                 'timing': 'STANDARD',
-                                'notes': f'PROP_FADE_FLIP proj={_proj_val:.1f} mkt={_market_median:.1f}',
+                                'context': _flip_ctx,
+                                'notes': _flip_ctx,
                                 'side_type': 'PROP_FADE_FLIP',
                                 '_signals': {
                                     'projection': _proj_val, 'baseline_avg': proj['baseline_avg'],
