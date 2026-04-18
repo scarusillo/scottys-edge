@@ -57,12 +57,16 @@ def post_to_discord(picks):
     picks = sorted(picks, key=lambda p: p['units'], reverse=True)
     pick_lines = []
     for p in picks:
-        is_book_arb = p.get('side_type') == 'BOOK_ARB'
-        kl = 'BOOK ARB' if is_book_arb else kelly_label(p['units'])
+        _st = p.get('side_type')
+        is_book_arb = _st == 'BOOK_ARB'
+        is_div_exp = _st == 'DIV_EXPANDED'
+        kl = 'BOOK ARB' if is_book_arb else ('NHL DIV' if is_div_exp else kelly_label(p['units']))
         icon = sport_icons.get(p.get('sport', ''), '🏟️')
         odds_str = f"{p['odds']:+.0f}" if p['odds'] else ''
         if is_book_arb:
             tier = '🔗'
+        elif is_div_exp:
+            tier = '⚖️'
         else:
             tier = '🔥' if kl == 'MAX PLAY' else '⭐' if kl == 'STRONG' else '✅'
 
@@ -75,14 +79,19 @@ def post_to_discord(picks):
             except Exception:
                 pass
 
-        line = f"{tier} {icon} **{p['selection']}** ({odds_str}) • {p['units']:.0f}u {kl}"
+        line = f"{tier} {icon} **{p['selection']}** ({odds_str}) • {p['units']:.1f}u {kl}"
         if game_time:
             line += f" • {game_time} {tz}"
         pick_lines.append(line)
 
         # Add context if available
         if p.get('context'):
-            prefix = '🔗 WHY:' if is_book_arb else '📍'
+            if is_book_arb:
+                prefix = '🔗 WHY:'
+            elif is_div_exp:
+                prefix = '⚖️ NHL DIV v25.29:'
+            else:
+                prefix = '📍'
             pick_lines.append(f"  └ {prefix} {p['context']}")
     
     tu = sum(p['units'] for p in picks)

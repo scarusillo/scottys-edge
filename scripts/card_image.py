@@ -42,7 +42,8 @@ YELLOW = (255, 193, 7)
 BLUE = (100, 181, 246)
 ORANGE = (255, 152, 0)
 BOOKARB_BLUE = (139, 180, 240)
-TIER_COLORS = {'MAX PLAY': GREEN, 'STRONG': YELLOW, 'SOLID': BLUE, 'LEAN': WHITE_60, 'SPRINKLE': WHITE_40, 'BOOK ARB': BOOKARB_BLUE}
+DIVEXP_PURPLE = (185, 156, 255)
+TIER_COLORS = {'MAX PLAY': GREEN, 'STRONG': YELLOW, 'SOLID': BLUE, 'LEAN': WHITE_60, 'SPRINKLE': WHITE_40, 'BOOK ARB': BOOKARB_BLUE, 'NHL DIV': DIVEXP_PURPLE}
 
 SPORT_LABELS = {
     'basketball_nba': 'NBA', 'basketball_ncaab': 'NCAAB', 'icehockey_nhl': 'NHL',
@@ -256,7 +257,7 @@ def _render_picks_slide(picks, fonts, section_label, show_units_explain=True):
     name_max_w = CARD_WIDTH - PADDING*2 - 22*S - right_col_w - 10*S  # 10*S gap
 
     for p in picks:
-        kl=('BOOK ARB' if p.get('side_type')=='BOOK_ARB' else kelly_label(p['units'])); tier_color=TIER_COLORS.get(kl, WHITE_60)
+        _st = p.get('side_type'); kl=('BOOK ARB' if _st=='BOOK_ARB' else ('NHL DIV' if _st=='DIV_EXPANDED' else kelly_label(p['units']))); tier_color=TIER_COLORS.get(kl, WHITE_60)
         game_time=_to_eastern(p.get('commence','')); ctx=p.get('context','')
         if ctx: ctx = ctx.replace('[SHADOW] ', '').replace('?.??', 'N/A')  # v23.1: strip internal tags from public cards
         matchup=f"{p.get('home','')} vs {p.get('away','')} \u2022 {game_time}"
@@ -389,7 +390,7 @@ def _render_picks_slide_grouped(items, fonts, section_label, show_units_explain=
             continue
 
         p = item
-        kl=('BOOK ARB' if p.get('side_type')=='BOOK_ARB' else kelly_label(p['units'])); tier_color=TIER_COLORS.get(kl, WHITE_60)
+        _st = p.get('side_type'); kl=('BOOK ARB' if _st=='BOOK_ARB' else ('NHL DIV' if _st=='DIV_EXPANDED' else kelly_label(p['units']))); tier_color=TIER_COLORS.get(kl, WHITE_60)
         game_time=_to_eastern(p.get('commence','')); ctx=p.get('context','')
         if ctx: ctx = ctx.replace('[SHADOW] ', '').replace('?.??', 'N/A')  # v23.1: strip internal tags from public cards
         matchup=f"{p.get('home','')} vs {p.get('away','')} \u2022 {game_time}"

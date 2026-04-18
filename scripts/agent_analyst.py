@@ -344,6 +344,39 @@ def analyze_fade_flip_strategy(conn):
         for sel, line, odds, dt in pending[:3]:
             summary.append(f"  • {dt} {sel} @ {odds}")
 
+    # Also track DIV_EXPANDED picks (v25.29 — NHL divergence threshold 1.5→2.5)
+    dx_total = conn.execute("""
+        SELECT COUNT(*) FROM bets
+        WHERE (side_type = 'DIV_EXPANDED' OR context_factors LIKE '%DIV EXPANDED%')
+    """).fetchone()[0]
+    dx_graded = conn.execute("""
+        SELECT result, pnl_units, clv FROM graded_bets
+        WHERE (side_type = 'DIV_EXPANDED' OR context_factors LIKE '%DIV EXPANDED%')
+        AND result IN ('WIN','LOSS','PUSH')
+        ORDER BY created_at DESC
+    """).fetchall()
+    if dx_total > 0 or dx_graded:
+        summary.append(f"DIV_EXPANDED (NHL v25.29): {dx_total} picks fired since enablement")
+        if dx_graded:
+            dxw = sum(1 for r in dx_graded if r[0] == 'WIN')
+            dxl = sum(1 for r in dx_graded if r[0] == 'LOSS')
+            dxp = sum((r[1] or 0) for r in dx_graded)
+            dxc = [r[2] for r in dx_graded if r[2] is not None]
+            dx_clv = sum(dxc)/len(dxc) if dxc else 0
+            wr = dxw/(dxw+dxl)*100 if (dxw+dxl) else 0
+            summary.append(f"DIV_EXPANDED graded: {dxw}W-{dxl}L | {dxp:+.1f}u | {wr:.1f}% WR | avg CLV {dx_clv:+.2f}")
+            n = len(dx_graded)
+            # Backtest basis: 17-3 = 85% WR, +27u at 3.5u sizing.
+            # Alert thresholds reflect that baseline.
+            if n >= 5 and dxp <= -10:
+                alerts.append(f"DIV_EXPANDED FAILING: {dxw}W-{dxl}L, {dxp:+.1f}u on {n} — consider reverting NHL threshold 2.5→1.5")
+            if n >= 8 and wr < 65:
+                alerts.append(f"DIV_EXPANDED WR drop: {wr:.1f}% WR on {n} picks (backtest was 85%) — monitor carefully")
+            if n >= 4 and dxw == 0:
+                alerts.append(f"DIV_EXPANDED: 0 wins in {n} graded picks — urgent review")
+            if n >= 5 and dx_clv < -0.3:
+                alerts.append(f"DIV_EXPANDED CLV degrading: {dx_clv:+.2f} — edge may be closing")
+
     return summary, alerts
 
 

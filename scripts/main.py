@@ -1759,7 +1759,8 @@ def _generate_html_card(picks):
 
         for p in sport_picks:
             is_book_arb = p.get('side_type') == 'BOOK_ARB'
-            kl = 'BOOK ARB' if is_book_arb else kelly_label(p['units'])
+            is_div_exp = p.get('side_type') == 'DIV_EXPANDED'
+            kl = 'BOOK ARB' if is_book_arb else ('NHL DIV' if is_div_exp else kelly_label(p['units']))
             sp = p.get('sport', 'other')
             icon = sport_icons.get(sp, '🏟️')
             game_time = ''
@@ -1773,11 +1774,15 @@ def _generate_html_card(picks):
 
             if is_book_arb:
                 conv_class = 'conviction-bookarb'
+            elif is_div_exp:
+                conv_class = 'conviction-divexp'
             else:
                 conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
             _ctx = p.get('context', '')
             if is_book_arb:
                 ctx_html = f'<div class="pick-context" style="background:#1a2b42;border-left:3px solid #5b8fd0;padding:6px 8px;margin-top:4px;">🔗 <b>WHY:</b> {_ctx}</div>'
+            elif is_div_exp:
+                ctx_html = f'<div class="pick-context" style="background:#2a1f42;border-left:3px solid #b99cff;padding:6px 8px;margin-top:4px;">⚖️ <b>NHL DIV v25.29:</b> {_ctx}</div>'
             elif _ctx:
                 ctx_html = f'<div class="pick-context">📍 {_ctx}</div>'
             else:
@@ -1807,7 +1812,8 @@ def _generate_html_card(picks):
     <div class="sport-header">{sport_label}</div>""")
             for p in sport_picks:
                 is_book_arb = p.get('side_type') == 'BOOK_ARB'
-                kl = 'BOOK ARB' if is_book_arb else kelly_label(p['units'])
+                is_div_exp = p.get('side_type') == 'DIV_EXPANDED'
+                kl = 'BOOK ARB' if is_book_arb else ('NHL DIV' if is_div_exp else kelly_label(p['units']))
                 sp = p.get('sport', 'other')
                 icon = sport_icons.get(sp, '🏟️')
                 game_time = ''
@@ -1820,11 +1826,15 @@ def _generate_html_card(picks):
                         pass
                 if is_book_arb:
                     conv_class = 'conviction-bookarb'
+                elif is_div_exp:
+                    conv_class = 'conviction-divexp'
                 else:
                     conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
                 _ctx = p.get('context', '')
                 if is_book_arb:
                     ctx_html = f'<div class="pick-context" style="background:#1a2b42;border-left:3px solid #5b8fd0;padding:6px 8px;margin-top:4px;">🔗 <b>WHY:</b> {_ctx}</div>'
+                elif is_div_exp:
+                    ctx_html = f'<div class="pick-context" style="background:#2a1f42;border-left:3px solid #b99cff;padding:6px 8px;margin-top:4px;">⚖️ <b>NHL DIV v25.29:</b> {_ctx}</div>'
                 elif _ctx:
                     ctx_html = f'<div class="pick-context">📍 {_ctx}</div>'
                 else:
@@ -1955,6 +1965,7 @@ def _generate_html_card(picks):
   .conviction-strong {{ background: rgba(255,193,7,0.15); color: #ffc107; }}
   .conviction-solid {{ background: rgba(100,181,246,0.15); color: #64b5f6; }}
   .conviction-bookarb {{ background: rgba(91,143,208,0.22); color: #8bb4f0; }}
+  .conviction-divexp {{ background: rgba(185,156,255,0.18); color: #b99cff; }}
   .footer {{
     padding: 28px 52px 20px; position: relative; z-index: 1;
     display: flex; justify-content: space-between; align-items: center;

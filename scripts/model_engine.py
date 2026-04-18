@@ -101,7 +101,11 @@ SPORT_CONFIG = {
     },
     'icehockey_nhl': {
         'logistic_scale': 0.49, 'spread_std': 2.2, 'home_court': 0.15,
-        'max_spread_divergence': 1.5,   # v12.2: Was 1.2 — filtering 56% of games. NHL record is 11W-6L +12.6u. Model earned more room.
+        'max_spread_divergence': 2.5,   # v25.29: raised from 1.5. Puckline is rigid ±1.5;
+                                         # any model spread >±3 goals is expected NHL divergence,
+                                         # not model error. Backtest of 20 previously-blocked NHL
+                                         # puckline picks at div 1.5-2.5: 17W-3L (85%), +27.4u at
+                                         # 3.5u sizing. Picks in the 1.5-2.5 zone tagged DIV_EXPANDED.
         'ml_scale': 2.2,
     },
     'soccer_epl': {
@@ -1952,6 +1956,17 @@ def generate_predictions(conn, sport=None, date=None):
             inj_spread_adj = round(inj_diff * 0.5, 2)  # 50% weight — market prices some
             ms_inj = ms - inj_spread_adj if abs(inj_spread_adj) >= 0.5 else ms
 
+            # v25.29: DIV_EXPANDED tracking — picks that only pass due to a loosened
+            # divergence threshold get tagged + unit-capped so we can monitor whether
+            # the loosening was right. If backtest-justified WR doesn't hold live, agents
+            # flag it. Currently only NHL (raised 1.5→2.5 on 2026-04-18).
+            _DIV_EXPANDED_ORIG = {'icehockey_nhl': 1.5}
+            _orig_div = _DIV_EXPANDED_ORIG.get(sp)
+            _is_div_expanded = (
+                _orig_div is not None and mkt_hs is not None
+                and abs(ms - mkt_hs) > _orig_div
+            )
+
             # HOME SPREAD
             if mkt_hs is not None and mkt_hs_odds is not None:
                 k = f"{eid}|S|{home}"
@@ -1994,6 +2009,13 @@ def generate_predictions(conn, sport=None, date=None):
                                 pick['context'] = ' | '.join(_ctx_parts)
                                 if ctx:
                                     pick['context_adj'] = ctx['spread_adj']
+                            # v25.29: tag + unit-cap for DIV_EXPANDED picks
+                            if _is_div_expanded:
+                                _div_val = abs(ms - mkt_hs)
+                                _div_tag = f'DIV EXPANDED v25.29 — div {_div_val:.1f} (orig threshold {_orig_div})'
+                                pick['context'] = f"{pick.get('context','')} | {_div_tag}".strip(' |')
+                                pick['side_type'] = 'DIV_EXPANDED'
+                                pick['units'] = min(pick.get('units', 3.5), 3.5)
                             seen.add(k)
                             all_picks.append(pick)
                     else: skip_w += 1
@@ -2037,6 +2059,13 @@ def generate_predictions(conn, sport=None, date=None):
                                 pick['context'] = ' | '.join(_ctx_parts)
                                 if ctx:
                                     pick['context_adj'] = ctx['spread_adj']
+                            # v25.29: tag + unit-cap for DIV_EXPANDED picks (away spread)
+                            if _is_div_expanded:
+                                _div_val = abs(ms - mkt_hs)
+                                _div_tag = f'DIV EXPANDED v25.29 — div {_div_val:.1f} (orig threshold {_orig_div})'
+                                pick['context'] = f"{pick.get('context','')} | {_div_tag}".strip(' |')
+                                pick['side_type'] = 'DIV_EXPANDED'
+                                pick['units'] = min(pick.get('units', 3.5), 3.5)
                             seen.add(k)
                             all_picks.append(pick)
                     else: skip_w += 1
