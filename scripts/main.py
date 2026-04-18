@@ -571,6 +571,19 @@ def cmd_run(args):
     # Step 7c: Merge consensus + model props (dedup: keep higher edge)
     prop_picks = _merge_prop_sources(consensus_props, model_props)
 
+    # Step 7d: PROP_BOOK_ARB scanner (v25.31) — fire pure book-disagreement picks.
+    # When sharp (FD/BR) and soft (DK/BetMGM/Caesars/Fanatics/ESPN BET) post
+    # meaningfully different lines on the same player+stat+side, bet the soft
+    # side at the soft book — the sharp is more likely right, and soft's line
+    # gives us a better number. Mirror of v25.28 book-arb for game lines.
+    try:
+        prop_arb_picks = _prop_book_arb_scan(conn, existing_eids={p.get('event_id') for p in prop_picks})
+        if prop_arb_picks:
+            print(f"  💡 PROP_BOOK_ARB added {len(prop_arb_picks)} prop arb pick(s)")
+            prop_picks = list(prop_picks) + prop_arb_picks
+    except Exception as e:
+        print(f"  Prop book-arb: {e}")
+
     # ═══ MERGE, DEDUP, SELECT BEST PICKS ═══
     all_picks = _merge_and_select(game_picks, prop_picks, conn=conn)
 
@@ -1782,9 +1795,14 @@ def _generate_html_card(picks):
     <div class="sport-header">{sport_label}</div>""")
 
         for p in sport_picks:
-            is_book_arb = p.get('side_type') == 'BOOK_ARB'
-            is_div_exp = p.get('side_type') == 'DIV_EXPANDED'
-            kl = 'BOOK ARB' if is_book_arb else ('NHL DIV' if is_div_exp else kelly_label(p['units']))
+            _st = p.get('side_type')
+            is_book_arb = _st in ('BOOK_ARB', 'PROP_BOOK_ARB')
+            is_div_exp = _st == 'DIV_EXPANDED'
+            is_prop_flip = _st == 'PROP_FADE_FLIP'
+            if is_book_arb: kl = 'BOOK ARB'
+            elif is_prop_flip: kl = 'PROP FLIP'
+            elif is_div_exp: kl = 'NHL DIV'
+            else: kl = kelly_label(p['units'])
             sp = p.get('sport', 'other')
             icon = sport_icons.get(sp, '🏟️')
             game_time = ''
@@ -1798,13 +1816,17 @@ def _generate_html_card(picks):
 
             if is_book_arb:
                 conv_class = 'conviction-bookarb'
+            elif is_prop_flip:
+                conv_class = 'conviction-bookarb'
             elif is_div_exp:
                 conv_class = 'conviction-divexp'
             else:
                 conv_class = 'conviction-max' if kl == 'MAX PLAY' else 'conviction-strong' if kl == 'STRONG' else 'conviction-solid'
-            _ctx = p.get('context', '')
+            _ctx = p.get('context', '') or p.get('notes', '')
             if is_book_arb:
                 ctx_html = f'<div class="pick-context" style="background:#1a2b42;border-left:3px solid #5b8fd0;padding:6px 8px;margin-top:4px;">🔗 <b>WHY:</b> {_ctx}</div>'
+            elif is_prop_flip:
+                ctx_html = f'<div class="pick-context" style="background:#2b1a2a;border-left:3px solid #e07878;padding:6px 8px;margin-top:4px;">🔄 <b>PROP FLIP:</b> {_ctx}</div>'
             elif is_div_exp:
                 ctx_html = f'<div class="pick-context" style="background:#2a1f42;border-left:3px solid #b99cff;padding:6px 8px;margin-top:4px;">⚖️ <b>NHL DIV v25.29:</b> {_ctx}</div>'
             elif _ctx:
@@ -2449,6 +2471,169 @@ def _validate_picks(picks):
         print(f"  🛡️ Validation: blocked {flagged} wrong-direction pick(s)")
     
     return valid
+
+
+def _prop_book_arb_scan(conn, existing_eids=None):
+    """v25.31: scan for player props where sharp (FD/BR) and soft (DK/BetMGM/Caesars/
+    Fanatics/ESPN BET) books disagree on the line by enough to indicate inefficiency.
+
+    Fire on the SOFT side at the SOFT book — bet direction follows which book is
+    offering the softer/easier number. Excludes Bovada, BetOnline, BetUS, MyBookie,
+    LowVig (per EXCLUDED_BOOKS). Applies MIN_ODDS (-150) and dedupes against
+    existing prop picks (model + Option C flips) by (event_id, player, stat).
+    """
+    from datetime import datetime, timezone, timedelta
+    from config import MIN_ODDS as _PBA_MIN_ODDS
+    import statistics as _stats
+    existing_eids = existing_eids or set()
+    SHARP = {'FanDuel', 'BetRivers'}
+    SOFT = {'DraftKings', 'BetMGM', 'Caesars', 'Fanatics', 'ESPN BET'}
+    EXCLUDED = {'Bovada', 'BetOnline.ag', 'BetUS', 'MyBookie.ag', 'LowVig.ag'}
+    THRESHOLDS = {
+        # NBA + NHL where books share a consistent "main line" convention
+        'player_points': 1.5, 'player_assists': 1.0, 'player_rebounds': 1.0,
+        'player_threes': 0.5, 'player_blocks': 0.5, 'player_steals': 0.5,
+        'player_shots_on_goal': 0.5,
+        # MLB pitcher — also consistent
+        'pitcher_strikeouts': 1.0,
+        # MLB batter stats (total_bases, hits, runs, rbi) EXCLUDED: sharp and soft
+        # books use different main lines (sharp's balanced alternate is often 1.5
+        # while soft's main is 0.5). Creates phantom gaps. Revisit when we add
+        # main-line-overlap detection logic.
+    }
+    STAT_LABEL = {
+        'player_points': 'POINTS', 'player_assists': 'ASSISTS', 'player_rebounds': 'REBOUNDS',
+        'player_threes': 'THREES', 'player_blocks': 'BLOCKS', 'player_steals': 'STEALS',
+        'player_shots_on_goal': 'SOG',
+        'batter_runs_scored': 'RUNS', 'batter_rbis': 'RBI', 'batter_total_bases': 'TOTAL BASES',
+        'batter_hits': 'HITS', 'pitcher_strikeouts': 'STRIKEOUTS',
+    }
+    picks_out = []
+
+    # Pull latest prop_snapshots per (event_id, player, market, book, side, line) for today
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    rows = conn.execute("""
+        SELECT sport, event_id, commence_time, home, away, book, market, player, side, line, odds
+        FROM prop_snapshots
+        WHERE DATE(captured_at) = ?
+          AND captured_at = (
+              SELECT MAX(captured_at) FROM prop_snapshots p2
+              WHERE p2.event_id = prop_snapshots.event_id
+                AND p2.player = prop_snapshots.player
+                AND p2.book = prop_snapshots.book
+                AND p2.market = prop_snapshots.market
+                AND p2.side = prop_snapshots.side
+                AND p2.line = prop_snapshots.line
+                AND DATE(p2.captured_at) = ?
+          )
+    """, (today, today)).fetchall()
+
+    # Organize by (event_id, player, market, side) then by book -> lines[]
+    from collections import defaultdict
+    by_group = defaultdict(lambda: defaultdict(list))  # (eid,player,market,side) -> book -> [(line, odds)]
+    meta = {}  # (eid,player,market,side) -> (sport, commence, home, away)
+    for sport, eid, commence, home, away, book, market, player, side, line, odds in rows:
+        if book in EXCLUDED: continue
+        key = (eid, player, market, side)
+        by_group[key][book].append((line, odds))
+        meta[key] = (sport, commence, home, away)
+
+    # For each group, find sharp/soft book disagreement
+    fired = set()  # (eid, player, market) — fire only one direction per player/stat
+    for key, book_map in by_group.items():
+        eid, player, market, side = key
+        if (eid, player, market) in fired: continue
+        threshold = THRESHOLDS.get(market)
+        if threshold is None: continue
+        sport, commence, home, away = meta[key]
+
+        # Collapse per-book alternates: pick the entry whose odds are closest to -110
+        # (the standard "main line" pricing). This prevents a book's alternate-line
+        # menu (0.5, 1.5, 2.5, ...) from falsely looking like a "sharp" signal at 1.5.
+        def collapse(book, entries):
+            if not entries: return None
+            return min(entries, key=lambda e: abs((e[1] if e[1] is not None else -110) - (-110)))
+
+        sharp_lines = []  # [(book, line, odds)]
+        soft_lines = []
+        for book, entries in book_map.items():
+            col = collapse(book, entries)
+            if not col: continue
+            if book in SHARP:
+                sharp_lines.append((book, col[0], col[1]))
+            elif book in SOFT:
+                soft_lines.append((book, col[0], col[1]))
+
+        if not sharp_lines or not soft_lines:
+            continue
+
+        sharp_median = _stats.median([x[1] for x in sharp_lines])
+
+        # Find the soft book with the biggest gap vs sharp median, in the favorable
+        # direction for THIS side (OVER wants soft < sharp; UNDER wants soft > sharp)
+        best_soft = None  # (book, line, odds, gap)
+        for sb, sl, so in soft_lines:
+            gap = sl - sharp_median
+            # If we're on OVER side and soft line < sharp → OVER at soft is easier
+            # If we're on UNDER side and soft line > sharp → UNDER at soft is easier
+            favorable = (side == 'Over' and gap < 0) or (side == 'Under' and gap > 0)
+            if not favorable: continue
+            if abs(gap) < threshold: continue
+            if best_soft is None or abs(gap) > abs(best_soft[3]):
+                best_soft = (sb, sl, so, gap)
+        if not best_soft:
+            continue
+        soft_book, soft_line, soft_odds, gap = best_soft
+
+        # MIN_ODDS safety
+        if soft_odds is None or soft_odds <= _PBA_MIN_ODDS:
+            continue
+
+        # Dedup: skip if model or Option C already has a pick for this event/player/stat
+        dedup_key = (eid, player, market)
+        if eid in existing_eids:
+            continue
+        if dedup_key in fired:
+            continue
+        fired.add(dedup_key)
+
+        label = STAT_LABEL.get(market, market.upper())
+        sel = f"{player} {'OVER' if side == 'Over' else 'UNDER'} {soft_line} {label}"
+        reason = (f"PROP_BOOK_ARB — Sharp median {sharp_median:.1f} vs {soft_book} {soft_line} "
+                  f"(gap {gap:+.1f}). Betting {side.upper()} at {soft_book} — easier number on sharp's side.")
+
+        pick = {
+            'sport': sport, 'event_id': eid, 'commence': commence,
+            'home': home, 'away': away,
+            'market_type': 'PROP', 'selection': sel,
+            'book': soft_book, 'line': soft_line, 'odds': soft_odds,
+            'model_spread': None,
+            'model_prob': 0, 'implied_prob': 0,
+            'edge_pct': round(abs(gap) * 5.0, 1),
+            'star_rating': 3, 'units': 3.5,
+            'confidence': 'BOOK_ARB', 'spread_or_ml': 'PROP',
+            'timing': 'STANDARD',
+            'notes': reason,
+            'context': reason,
+            'side_type': 'PROP_BOOK_ARB',
+            '_signals': {
+                'sharp_median': sharp_median, 'soft_line': soft_line,
+                'gap': gap, 'book_count_sharp': len(sharp_lines), 'book_count_soft': len(soft_lines),
+            },
+            '_source': 'PROP_BOOK_ARB',
+        }
+        picks_out.append(pick)
+        print(f"  💡 PROP_BOOK_ARB: {sel} @ {soft_book} {soft_odds:+.0f} | sharp_med={sharp_median:.1f} soft={soft_line} gap={gap:+.1f}")
+
+    # Volume cap: max 5 prop arb picks per run (conservative until we see live performance)
+    # If more than 5 fire, keep the largest-gap ones.
+    MAX_PROP_ARB_PER_RUN = 5
+    if len(picks_out) > MAX_PROP_ARB_PER_RUN:
+        picks_out.sort(key=lambda p: abs(p['_signals']['gap']), reverse=True)
+        _dropped = len(picks_out) - MAX_PROP_ARB_PER_RUN
+        picks_out = picks_out[:MAX_PROP_ARB_PER_RUN]
+        print(f"  ⚠ PROP_BOOK_ARB volume cap: kept top {MAX_PROP_ARB_PER_RUN} by gap, dropped {_dropped}")
+    return picks_out
 
 
 def _merge_prop_sources(consensus_props, model_props):

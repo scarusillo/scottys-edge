@@ -1131,15 +1131,18 @@ def generate_prop_projections(conn=None):
                 if _separation < MIN_PROJ_LINE_SEP_STD:
                     continue  # Projection too close to line — coin flip
 
-            # v25.30: PROP_DIVERGENCE_GATE — model projection vs market median line.
-            # Mirror of spread/total DIVERGENCE_GATE. When the model's projection is
-            # far from the consensus line across books, the market has absorbed info
-            # (lineup change, late scratch, role shift) our model doesn't have. Skip.
-            # Triggering case: Kennard UNDER 4.5 on 2026-04-18. Model proj=2.2 vs
-            # market median 5.5 (Memphis missing Morant/Jerome/Pippen → Kennard
-            # primary ball handler). Old gate fired; this gate would have blocked.
+            # v25.30 / v25.31: PROP_DIVERGENCE_GATE + PROP_OPTION_C flip.
+            # Gate triggers when |model_proj - market_median_line| > threshold.
+            # What happens next depends on whether market agrees with our side:
+            #   (a) Market agrees directionally (e.g. we bet OVER 5.5, market median 7.0):
+            #       ALLOW. Market supports our direction AND our line is favorable.
+            #   (b) Market disagrees directionally (Kennard case: we bet UNDER 4.5,
+            #       market median 5.5): FLIP to the opposite side at same book+line
+            #       — tag side_type='PROP_FADE_FLIP', 3.5u cap, MIN_ODDS check.
+            #   (c) Market is neutral at our line: BLOCK (model overconfidence).
             try:
                 import statistics as _stats
+                from config import MIN_ODDS as _PROP_MIN_ODDS
                 _PROP_DIV_THR = {
                     'player_points': 3.0,
                     'player_assists': 1.5,
@@ -1154,33 +1157,97 @@ def generate_prop_projections(conn=None):
                     'batter_hits': 0.6,
                     'pitcher_strikeouts': 1.5,
                 }
-                _div_thr = _PROP_DIV_THR.get(stat_type, 1.0)  # conservative default
+                _div_thr = _PROP_DIV_THR.get(stat_type, 1.0)
                 # Median line across OTHER books (collapse alternates per book)
                 _per_book = {}
                 for _e in legal_entries:
                     if _e['book'] == book: continue
                     _per_book.setdefault(_e['book'], []).append(_e['line'])
                 _book_lines = [_stats.median(v) for v in _per_book.values()]
+                _gate_action = None  # 'allow', 'flip', 'block'
+                _flip_side = None
+                _flip_odds = None
+                _market_median = None
+                _proj_gap = None
                 if len(_book_lines) >= 3:
                     _market_median = _stats.median(_book_lines)
                     _proj_gap = abs(_proj_val - _market_median)
                     if _proj_gap > _div_thr:
-                        # Log to shadow for monitoring / backtest
-                        try:
-                            conn.execute("""INSERT INTO shadow_blocked_picks
-                                (created_at, sport, event_id, selection, market_type,
-                                 book, line, odds, edge_pct, units, reason)
-                                VALUES (?, ?, ?, ?, 'PROP', ?, ?, ?, NULL, NULL, ?)""",
-                                (datetime.now(timezone.utc).isoformat(), sport, eid,
-                                 f"{player} {'OVER' if side == 'Over' else 'UNDER'} {line} {stat_type}",
-                                 book, line, odds,
-                                 f"PROP_DIVERGENCE_GATE (proj={_proj_val:.1f} vs market_median={_market_median:.1f}, gap={_proj_gap:.1f} > thr {_div_thr}, books={len(_book_lines)})"))
-                            conn.commit()
-                        except Exception:
-                            pass
-                        continue  # skip this pick
-            except Exception as _e:
-                pass  # never break pick gen on gate errors
+                        # Direction check
+                        _market_agrees = (side == 'Over' and _market_median > line) or \
+                                         (side == 'Under' and _market_median < line)
+                        _market_disagrees = (side == 'Over' and _market_median < line) or \
+                                            (side == 'Under' and _market_median > line)
+                        if _market_disagrees:
+                            # OPTION C FLIP: build opposite-side pick at same book+line
+                            _flip_side = 'Under' if side == 'Over' else 'Over'
+                            # Pull opposite side's odds from grouped[opposite_side]
+                            _flip_entries = grouped.get((eid, player, market, _flip_side), [])
+                            _flip_entry = next(
+                                (e for e in _flip_entries if e['book'] == book and e['line'] == line),
+                                None
+                            )
+                            if _flip_entry:
+                                _flip_odds = _flip_entry.get('odds')
+                            # MIN_ODDS safety
+                            if _flip_odds is not None and _flip_odds > _PROP_MIN_ODDS:
+                                _gate_action = 'flip'
+                            else:
+                                _gate_action = 'block'  # flip price unacceptable
+                        elif _market_agrees:
+                            _gate_action = 'allow'  # market supports our direction
+                        else:
+                            _gate_action = 'block'  # neutral — model overconfidence
+
+                        # Log + act
+                        if _gate_action in ('block', 'flip'):
+                            try:
+                                _reason = (
+                                    f"PROP_{'FADE_FLIP' if _gate_action == 'flip' else 'DIVERGENCE_GATE'} "
+                                    f"(proj={_proj_val:.1f} vs market_median={_market_median:.1f}, "
+                                    f"gap={_proj_gap:.1f} > thr {_div_thr}, books={len(_book_lines)})"
+                                )
+                                conn.execute("""INSERT INTO shadow_blocked_picks
+                                    (created_at, sport, event_id, selection, market_type,
+                                     book, line, odds, edge_pct, units, reason)
+                                    VALUES (?, ?, ?, ?, 'PROP', ?, ?, ?, NULL, NULL, ?)""",
+                                    (datetime.now(timezone.utc).isoformat(), sport, eid,
+                                     f"{player} {'OVER' if side == 'Over' else 'UNDER'} {line} {stat_type}",
+                                     book, line, odds, _reason))
+                                conn.commit()
+                            except Exception:
+                                pass
+                        if _gate_action == 'block':
+                            continue
+                        elif _gate_action == 'flip':
+                            # Build flipped pick (opposite side, same book, same line)
+                            _flip_sel = f"{player} {'OVER' if _flip_side == 'Over' else 'UNDER'} {line} {stat_type}"
+                            _flip_pick = {
+                                'sport': sport, 'event_id': eid, 'commence': commence,
+                                'home': home, 'away': away,
+                                'market_type': 'PROP', 'selection': _flip_sel,
+                                'book': book, 'line': line, 'odds': _flip_odds,
+                                'model_spread': None,
+                                'model_prob': 0, 'implied_prob': round(american_to_implied(_flip_odds) or 0, 4),
+                                'edge_pct': round(max(MIN_EDGE_PCT + 0.5, _proj_gap * 5.0), 1),
+                                'star_rating': 3, 'units': 3.5,
+                                'confidence': 'FADE_FLIP', 'spread_or_ml': 'PROP',
+                                'timing': 'STANDARD',
+                                'notes': f'PROP_FADE_FLIP proj={_proj_val:.1f} mkt={_market_median:.1f}',
+                                'side_type': 'PROP_FADE_FLIP',
+                                '_signals': {
+                                    'projection': _proj_val, 'baseline_avg': proj['baseline_avg'],
+                                    'std': proj['std'], 'edge_pct': _proj_gap,
+                                    'book_count': len(_book_lines),
+                                    'flip_reason': f'market_median {_market_median:.1f} on opposite side of line {line}',
+                                },
+                                '_source': 'OPTION_C_PROP',
+                            }
+                            picks.append(_flip_pick)
+                            continue
+                        # else allow: fall through to normal pick building
+            except Exception:
+                pass
 
             # Hit rate gate: check actual clearing rate vs implied breakeven
             # For OVER: need hit_rate (stat > line) >= implied
