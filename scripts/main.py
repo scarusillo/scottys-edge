@@ -2571,6 +2571,13 @@ def _prop_book_arb_scan(conn, existing_eids=None):
 
         # Find the soft book with the biggest gap vs sharp median, in the favorable
         # direction for THIS side (OVER wants soft < sharp; UNDER wants soft > sharp)
+        # Upper gap cap: gap > 2 × threshold usually = alternate-line pollution
+        # (sharp books didn't post a main line, only high/low alternates, skewing
+        # the median). Backtest 4/4-4/17 showed gap > 2×thr went 1-6 (14% WR, -4.1u)
+        # while gap <= 2×thr went 18-3 (85.7%, +13.4u at -110). Conservative skip.
+        UPPER_CAP_MULT = 2.0
+        upper = threshold * UPPER_CAP_MULT
+
         best_soft = None  # (book, line, odds, gap)
         for sb, sl, so in soft_lines:
             gap = sl - sharp_median
@@ -2579,6 +2586,9 @@ def _prop_book_arb_scan(conn, existing_eids=None):
             favorable = (side == 'Over' and gap < 0) or (side == 'Under' and gap > 0)
             if not favorable: continue
             if abs(gap) < threshold: continue
+            if abs(gap) > upper:
+                # Alternate-line pollution protection — skip this soft book
+                continue
             if best_soft is None or abs(gap) > abs(best_soft[3]):
                 best_soft = (sb, sl, so, gap)
         if not best_soft:
@@ -2610,7 +2620,7 @@ def _prop_book_arb_scan(conn, existing_eids=None):
             'model_spread': None,
             'model_prob': 0, 'implied_prob': 0,
             'edge_pct': round(abs(gap) * 5.0, 1),
-            'star_rating': 3, 'units': 3.5,
+            'star_rating': 3, 'units': 5.0,
             'confidence': 'BOOK_ARB', 'spread_or_ml': 'PROP',
             'timing': 'STANDARD',
             'notes': reason,
