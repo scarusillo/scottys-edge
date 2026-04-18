@@ -1239,7 +1239,7 @@ def generate_prop_projections(conn=None):
                                 'model_spread': None,
                                 'model_prob': 0, 'implied_prob': round(american_to_implied(_flip_odds) or 0, 4),
                                 'edge_pct': round(max(MIN_EDGE_PCT + 0.5, _proj_gap * 5.0), 1),
-                                'star_rating': 3, 'units': 3.5,
+                                'star_rating': 3, 'units': 5.0,
                                 'confidence': 'FADE_FLIP', 'spread_or_ml': 'PROP',
                                 'timing': 'STANDARD',
                                 'context': _flip_ctx,
