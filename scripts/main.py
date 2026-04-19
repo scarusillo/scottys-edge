@@ -2514,17 +2514,19 @@ def _prop_book_arb_scan(conn, existing_eids=None):
     SHARP = {'FanDuel', 'BetRivers'}
     SOFT = {'DraftKings', 'BetMGM', 'Caesars', 'Fanatics', 'ESPN BET'}
     EXCLUDED = {'Bovada', 'BetOnline.ag', 'BetUS', 'MyBookie.ag', 'LowVig.ag'}
+    # v25.34: thresholds tightened per user decision (2026-04-19). First-day
+    # live sim showed 1.5+ pt gap went 2W-1L while 1.0 gap went 1W-4L. Raised
+    # all minimums ~1.5× to eliminate the narrow-gap-loser tier. Revisit after
+    # 2 weeks of live data if wins are getting cut off.
     THRESHOLDS = {
-        # NBA + NHL where books share a consistent "main line" convention
-        'player_points': 1.5, 'player_assists': 1.0, 'player_rebounds': 1.0,
-        'player_threes': 0.5, 'player_blocks': 0.5, 'player_steals': 0.5,
-        'player_shots_on_goal': 0.5,
-        # MLB pitcher — also consistent
-        'pitcher_strikeouts': 1.0,
+        # NBA + NHL (was 1.5 / 1.0 / 0.5 respectively)
+        'player_points': 2.0, 'player_assists': 1.5, 'player_rebounds': 1.5,
+        'player_threes': 1.0, 'player_blocks': 1.0, 'player_steals': 1.0,
+        'player_shots_on_goal': 1.0,
+        # MLB pitcher (was 1.0)
+        'pitcher_strikeouts': 1.5,
         # MLB batter stats (total_bases, hits, runs, rbi) EXCLUDED: sharp and soft
-        # books use different main lines (sharp's balanced alternate is often 1.5
-        # while soft's main is 0.5). Creates phantom gaps. Revisit when we add
-        # main-line-overlap detection logic.
+        # books use different main lines. See notes below.
     }
     STAT_LABEL = {
         'player_points': 'POINTS', 'player_assists': 'ASSISTS', 'player_rebounds': 'REBOUNDS',
@@ -2680,9 +2682,26 @@ def _prop_book_arb_scan(conn, existing_eids=None):
     MAX_PROP_ARB_PER_RUN = 3
     if len(picks_out) > MAX_PROP_ARB_PER_RUN:
         picks_out.sort(key=lambda p: abs(p['_signals']['gap']), reverse=True)
-        _dropped = len(picks_out) - MAX_PROP_ARB_PER_RUN
+        _dropped = picks_out[MAX_PROP_ARB_PER_RUN:]
         picks_out = picks_out[:MAX_PROP_ARB_PER_RUN]
-        print(f"  ⚠ PROP_BOOK_ARB volume cap: kept top {MAX_PROP_ARB_PER_RUN} by gap, dropped {_dropped}")
+        # v25.34: log volume-capped picks to shadow_blocked_picks so the morning
+        # agent can monitor what the cap is filtering. If dropped picks outperform
+        # the kept ones over 2+ weeks, revisit the cap.
+        try:
+            for _dp in _dropped:
+                _gap = _dp['_signals']['gap']
+                conn.execute("""
+                    INSERT INTO shadow_blocked_picks (created_at, sport, event_id,
+                        selection, market_type, book, line, odds, edge_pct, units, reason)
+                    VALUES (?, ?, ?, ?, 'PROP', ?, ?, ?, ?, ?, ?)
+                """, (datetime.now(timezone.utc).isoformat(), _dp['sport'], _dp['event_id'],
+                      _dp['selection'], _dp['book'], _dp['line'], _dp['odds'],
+                      _dp['edge_pct'], _dp['units'],
+                      f"PROP_BOOK_ARB_VOLUME_CAP (gap={_gap:+.1f}, dropped in favor of top {MAX_PROP_ARB_PER_RUN})"))
+            conn.commit()
+        except Exception:
+            pass
+        print(f"  ⚠ PROP_BOOK_ARB volume cap: kept top {MAX_PROP_ARB_PER_RUN} by gap, dropped {len(_dropped)} (logged to shadow)")
     return picks_out
 
 

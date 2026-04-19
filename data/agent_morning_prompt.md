@@ -125,6 +125,33 @@ higher conviction = higher win rate?
 From `d['shadow_blocked_picks']`: total blocked, would-be record, would-be PnL,
 recommendation (raise/lower/keep). If empty, say so and move on.
 
+## 5b. PROP_BOOK_ARB VOLUME-CAP MONITORING (v25.34, tighten-if-needed)
+
+PROP_BOOK_ARB went live 2026-04-19. Scanner caps at 3 picks per run (by gap
+size). Dropped picks are logged to `shadow_blocked_picks` with reason
+`PROP_BOOK_ARB_VOLUME_CAP`. Thresholds were tightened to 2.0/1.5/1.0 on
+2026-04-19 after first-day sim (wider gaps outperformed).
+
+Query yesterday's volume-capped prop arb picks, look up actual outcomes
+(box_scores for NBA/NHL, player_results for MLB), compute would-be W-L and P/L.
+Compare to what fired live:
+
+```sql
+SELECT created_at, sport, event_id, selection, book, line, odds, reason
+FROM shadow_blocked_picks
+WHERE reason LIKE 'PROP_BOOK_ARB_VOLUME_CAP%'
+  AND DATE(created_at) = <yesterday>
+```
+
+Report: `volume-capped: NW-NL, net P/L if we had taken them`. **Flag as a
+tightening/loosening candidate if the dropped picks consistently outperform
+or underperform the fired picks over 5+ samples.**
+
+Also track the **live PROP_BOOK_ARB record** from `graded_bets` where
+`context_factors LIKE '%PROP_BOOK_ARB%'` OR `selection` matches a
+PROP_BOOK_ARB pick. This is a new mechanism with < 30 graded samples —
+watch closely for the first 2 weeks.
+
 ## 6. STEAM SIGNAL TRACKING (ALL SPORTS)
 
 Query `graded_bets` with `context_factors LIKE '%Steam%'` for the last 14 days,
