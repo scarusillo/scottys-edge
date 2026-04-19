@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scotty's Edge | Methodology</title>
+<meta name="description" content="How Scotty's Edge actually works. The mechanisms, the thresholds, what we won't bet, and why.">
+<meta name="theme-color" content="#0d1117">
+<meta property="og:title" content="Scotty's Edge | Methodology">
+<meta property="og:description" content="The mechanisms, the thresholds, what we won't bet, and why. Published publicly because trust has to come first.">
+<meta property="og:type" content="article">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0d1117; --bg-card: #141e2a; --bg-card-alt: #1a2636;
+  --green: #00e676; --green-dim: rgba(0, 230, 118, 0.15);
+  --red: #ff5252; --red-dim: rgba(255, 82, 82, 0.15);
+  --white: #ffffff; --white-80: #cccccc; --white-60: #999999; --white-40: #666666;
+  --radius: 12px;
+}
+html { scroll-behavior: smooth; background: var(--bg); }
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  padding: 0;
+}
+
+/* ── Header nav ── */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(13, 17, 23, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 16px 0;
+}
+.site-header .container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  color: var(--white);
+  text-decoration: none;
+  letter-spacing: 2px;
+}
+.nav-logo span { color: var(--green); }
+.nav-links {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: 0.9rem;
+}
+.nav-links a {
+  color: var(--white-80);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover, .nav-links a.active { color: var(--green); }
+
+/* ── Main content ── */
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 24px 80px;
+}
+
+.eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 12px;
+}
+
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  line-height: 1.05;
+  color: var(--white);
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.intro {
+  font-size: 1.1rem;
+  color: var(--white-80);
+  font-style: italic;
+  padding: 20px 24px;
+  border-left: 3px solid var(--green);
+  margin: 24px 0 40px;
+  background: var(--bg-card);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.intro p + p { margin-top: 12px; }
+
+h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.8rem;
+  color: var(--green);
+  margin: 48px 0 16px;
+  letter-spacing: 1px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+h2:first-of-type { border-top: none; padding-top: 0; }
+
+h3 {
+  font-family: 'Barlow', sans-serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--white);
+  margin: 24px 0 8px;
+}
+
+p {
+  color: var(--white-80);
+  margin-bottom: 16px;
+}
+
+strong { color: var(--white); font-weight: 700; }
+
+ul {
+  margin: 16px 0 24px 24px;
+  color: var(--white-80);
+}
+li { margin-bottom: 10px; }
+li strong { color: var(--green); }
+
+code {
+  font-family: 'Barlow', monospace;
+  background: var(--bg-card);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--green);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+.callout {
+  background: var(--bg-card);
+  border-left: 3px solid var(--green);
+  padding: 16px 20px;
+  margin: 24px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+.callout.warn { border-left-color: var(--red); }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+}
+.stats-grid .stat {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 16px;
+  text-align: center;
+}
+.stats-grid .stat .val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  color: var(--green);
+}
+.stats-grid .stat .lab {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--white-60);
+  margin-top: 4px;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  margin: 48px 0;
+}
+
+.footer-meta {
+  font-size: 0.85rem;
+  color: var(--white-60);
+  font-style: italic;
+  margin-top: 40px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.4rem; }
+  main { padding: 32px 20px 60px; }
+  .intro { font-size: 1rem; padding: 16px 20px; }
+  .nav-links { gap: 14px; font-size: 0.75rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="nav-logo">SCOTTY'S <span>EDGE</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="methodology.html" class="active">Methodology</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+
+<div class="eyebrow">The Methodology</div>
+<h1>How Scotty's Edge Actually Works</h1>
+
+<div class="intro">
+  <p>If you've been in sports betting twitter for more than a week, you've seen the pattern: someone posts three wins, screenshots the receipts, "DM for picks." You never see the losses. The record is a narrative, not a ledger.</p>
+  <p>This page is the opposite of that. Every pick we fire gets logged with a timestamp, odds, and the book we took it at. Every pick gets graded the next morning. Every loss stays on the record. If we make a mistake — a grading error, a bug, a pick we shouldn't have posted — it's documented in the commit history, not scrubbed from the chart.</p>
+  <p>Here's how the model actually works, in plain language.</p>
+</div>
+
+<h2>The Thesis</h2>
+<p>We believe three specific inefficiencies exist in sports betting markets, and that disciplined bettors can exploit them over long samples:</p>
+
+<p><strong>1. Soft books don't update lines as fast as sharp books.</strong> When FanDuel and BetRivers (sharp) both price a game one way and DraftKings or BetMGM (soft) post a weaker number, the soft number is almost always the mispriced one. We take the soft side at the soft book.</p>
+
+<p><strong>2. Models trained on regular-season data misread playoff dynamics.</strong> When our own model's projection diverges sharply from the market consensus — especially in NBA playoffs, playoff NHL, or late-season tournaments — the market is usually right. We sometimes <em>fade our own model</em> on these signals.</p>
+
+<p><strong>3. Rare-event props are chronically mispriced at longshot odds.</strong> Books price props like "player records ≥1 RBI" at +150 because they feel like coin flips. They're not. We refuse to bet player props at odds above +140, and we have data showing why.</p>
+
+<p>These are testable claims. We publish the results.</p>
+
+<h2>How We Find Edge</h2>
+
+<h3>Game lines (spreads, totals, moneylines)</h3>
+<p>Start with power ratings, Elo, and pitcher/goalie quality. Compare the model's projected spread or total to the market's. A 20%+ implied edge at a legal US sportsbook is our minimum to fire. Below that, we watch but don't bet.</p>
+
+<h3>Player props</h3>
+<p>We run two independent prop engines. One builds consensus from fair-line probabilities across 4+ books. The other projects stats from rolling 20-game rates plus season data plus matchup context. A prop must pass both engines' filters to fire.</p>
+
+<h3>Book arbitrage (<code>BOOK_ARB</code>)</h3>
+<p>When sharp books and soft books post different lines on the same market, we take the soft side. Works on game totals, spreads, and player props. This is pure mechanical edge — no model needed, just cross-book price comparison.</p>
+
+<h3>Prop fade-flip (<code>FADE_FLIP</code>)</h3>
+<p>When our model projects a stat significantly different from the market median (gap ≥ 3.0 points on a 4+ book consensus), we fade the model and bet with the market. This is a rule to protect us from the model's own miscalibrations — especially in high-variance playoff contexts.</p>
+
+<h3>Steam detection</h3>
+<p>We track opening lines for every market. When the line moves in our direction between opener and our bet, we log <code>SHARP_CONFIRMS</code>. When it moves against us, <code>SHARP_OPPOSES</code>. The signal isn't used to change bet sizing yet — we need a larger live sample — but it's recorded for every pick.</p>
+
+<h2>What "Edge" Means Here</h2>
+<p>We use implied probability. If a pick is offered at -110 odds, the market implies a 52.4% chance of winning. If our model says the true probability is 65%, that's a 12.6-point edge.</p>
+
+<p>We require <strong>20% implied edge</strong> minimum to fire a pick. That's aggressive — most profitable bettors fire at 3-5% edge — but:</p>
+<ul>
+  <li>Our model has known calibration limits</li>
+  <li>Books price most markets tightly</li>
+  <li>We'd rather fire fewer, higher-conviction picks than churn volume</li>
+</ul>
+
+<p>If the 20% threshold sounds high, that's because it is. It cuts our volume dramatically. It's a deliberate trade: fewer bets, less variance, more defensible signals.</p>
+
+<h2>What We Will Not Bet</h2>
+
+<div class="callout warn">
+  This list matters more than the list of what we <em>do</em> bet.
+</div>
+
+<ul>
+  <li><strong>Moneyline favorites at -300 or shorter.</strong> Risk/reward is terrible. If we like a heavy favorite, we take the spread.</li>
+  <li><strong>Player props at odds &gt; +140.</strong> Longshot props are where our model is least calibrated. Calibration data confirmed this: at +141 to +195, our rate-based projections were 1-6 before we capped it.</li>
+  <li><strong>Soccer spreads.</strong> Backtest was decisively negative (80W-86L, -70u all-time). Only soccer totals fire for us.</li>
+  <li><strong>NCAA basketball totals.</strong> Our model has no real signal on these. We only bet NCAAB spreads.</li>
+  <li><strong>Early NCAA basketball (&gt;1 hour before tip).</strong> Lines aren't settled; early bets underperform.</li>
+  <li><strong>MLB games without confirmed starters.</strong> Our edge depends on pitcher quality data.</li>
+  <li><strong>Games with &lt;3 books pricing them.</strong> Thin markets produce fake edges.</li>
+  <li><strong>Props where sharp and soft books disagree by more than 2× the threshold.</strong> That pattern usually means one book posted an alternate line we're misreading, not real disagreement.</li>
+  <li><strong>Tennis below certain tournament tiers.</strong> Surface-split Elo works for ATP/WTA main draws. Qualifiers and challengers are too noisy.</li>
+  <li><strong>Golf.</strong> Our current data source doesn't cover the matchup markets that would create our edge. We'll add it when we move to a better golf data source.</li>
+</ul>
+
+<p>That list is not exhaustive. It evolves. We add to it when we find patterns that don't work, and we remove things when we find ways to make them work.</p>
+
+<h2>How We Grade Every Pick</h2>
+<p>At 4am every morning, every pick from the previous day runs through a grader that:</p>
+<ul>
+  <li>Pulls final game scores from multiple sources (primary: The Odds API; fallbacks: ESPN, NCAA.com)</li>
+  <li>Computes WIN / LOSS / PUSH based on line and outcome</li>
+  <li>Records the <strong>closing line</strong> from the same book we bet at, pre-game</li>
+  <li>Computes <strong>CLV</strong> — the difference between our bet price and the closing line</li>
+</ul>
+
+<div class="callout">
+  <strong>CLV is the most important number we track.</strong> If we bet an UNDER at 224.5 and the closing line is 222, we got +2.5 points of value. Consistently positive CLV is the strongest predictor of long-term profit, regardless of any single day's results.
+</div>
+
+<p>Every graded bet appears on the <a href="dashboard.html" style="color: var(--green);">public dashboard</a> with its CLV, edge percentage, units risked, and P/L.</p>
+
+<h2>What Happens When We're Wrong</h2>
+
+<h3>Model errors</h3>
+<p>If we fire a pick based on bad data — wrong pitcher listed, doubleheader data mismatch, stale ERA from thin sample — we <strong>SCRUB</strong> the pick. A SCRUB'd pick is marked <code>TAINTED</code> and counts for nothing in the record. We don't get credit for a win that came from a bet we shouldn't have placed.</p>
+
+<h3>Bugs we discover after the fact</h3>
+<p>When we found that <code>PROP_BOOK_ARB</code> had been detecting signals but not firing for two days due to a filter bug, we didn't just ship the fix silently. We <strong>backfilled</strong> the three picks that would have fired, graded them against actual outcomes, and added them to the record. The record now shows what the methodology <em>says</em> should have happened, not what the buggy code allowed.</p>
+
+<h3>When a pattern stops working</h3>
+<p>Every month or so, we audit edge buckets, sport-by-sport performance, and market-tier results. If a cohort is underperforming its backtest, we document the finding, propose a change, and measure whether the change actually helps on fresh data.</p>
+
+<h3>Changelog</h3>
+<p>Every model change has a commit in the public git history. v25.13 lowered MAX_PROP_ODDS from 150 to 140 after calibration data. v25.32 added an NCAA pitcher ERA reliability gate after catching false edges on thin-IP starters. v25.34 unblocked prop book-arb and tightened gap thresholds. You can read every change.</p>
+
+<h2>What the Record Means</h2>
+<p>We have two records we publish.</p>
+
+<div class="stats-grid">
+  <div class="stat"><div class="val">202-158-5</div><div class="lab">All-Time Record</div></div>
+  <div class="stat"><div class="val">+72.1u</div><div class="lab">All-Time P&L</div></div>
+  <div class="stat"><div class="val">56.1%</div><div class="lab">Win Rate</div></div>
+  <div class="stat"><div class="val">+3.9%</div><div class="lab">ROI</div></div>
+</div>
+
+<p><strong>All-time (since March 4, 2026):</strong> 202W-158L-5P, +72.1u, 56.1% win rate, +3.9% ROI.</p>
+
+<p><strong>Post-rebuild (since April 1, 2026):</strong> negative at time of publishing — we're transparent about it.</p>
+
+<p>The rebuild matters. In late March we made significant changes to our model — tightening context adjustments, shadowing several factors that were losing, raising edge floors. Everything before that cutoff is a different model. Everything after is what's live today.</p>
+
+<p>We publish both because honesty requires it. The all-time number is our headline. The post-rebuild number tells you what the current system is actually doing in real time.</p>
+
+<p>Right now, the post-rebuild period is net negative. That's partly variance on an 800+ units-wagered sample, partly specific-cohort drag that we've already fixed in code but hasn't aged out of the window yet. We don't hide from the negative. We explain it.</p>
+
+<h2>Who This Is For</h2>
+<p>This is not for people who want a tipster to tell them what to bet tonight. There are plenty of those people, and most of them lie about their record.</p>
+
+<p>This is for people who want to see whether a disciplined, transparent, process-driven approach to sports betting can sustain profitability in the public. That's the experiment. The model is the method. The record is the evidence. The honesty is the point.</p>
+
+<p>Some days we'll lose. Some weeks the post-rebuild number will look ugly. When that happens, the explanation will be here — in the loss analysis, in the shadow factors documentation, in the commit messages, in the changelog.</p>
+
+<p>You can verify every claim on this page. If you find a discrepancy, let us know. We'll fix it on the record.</p>
+
+<h2>What We're Building Toward</h2>
+<p>Not a tipster service. Not a subscription-gated "premium picks" tier. Not paid-for-followers Instagram growth.</p>
+
+<p>What we're building is a proof — that it's possible to operate a sports betting model publicly, transparently, and over a long enough sample that the numbers speak louder than the marketing.</p>
+
+<p>If that turns into a product someday — a CLV tracker, a book-arb tool, educational content — that's downstream. The trust has to come first. The trust comes from doing the work in public and owning the mistakes.</p>
+
+<p>This is the methodology. It will evolve. Every evolution will be documented here.</p>
+
+<hr>
+
+<div class="footer-meta">
+  Last updated: April 19, 2026 &middot; version 25.34 &middot; <a href="dashboard.html" style="color: var(--green);">See the live record →</a>
+</div>
+
+</main>
+
+</body>
+</html>
