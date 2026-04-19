@@ -1,71 +1,97 @@
 # Scotty's Edge Morning Briefing
-**Date:** Saturday, April 18, 2026 | **Generated:** 06:39 AM ET
-**Game Date Graded:** 2026-04-17
+**Date:** Sunday, April 19, 2026 | **Generated:** 07:01 AM ET
+**Game Date Graded:** 2026-04-18
 
 ---
 ## Yesterday's Results
 
-**4W-4L-0P | +0.3u | GREEN DAY**
+**8W-7L-1P | +1.2u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Elly De La Cruz OVER 0.5 RUNS | baseball_mlb | PROP_OVER | +130 | 5.0 | **W** | +6.5 | 2.8% |
-| De'Anthony Melton OVER 2.5 ASSISTS | basketball_nba | PROP_OVER | +115 | 5.0 | **W** | +5.8 | 0.7% |
-| Jeff McNeil UNDER 0.5 RUNS | baseball_mlb | PROP_UNDER | -109 | 5.0 | **W** | +4.6 | 0.0% |
-| Como@Sassuolo OVER 2.5 | soccer_italy_serie_a | OVER | -143 | 5.0 | **W** | +3.5 | 0.0% |
-| Coby White OVER 2.5 REBOUNDS | basketball_nba | PROP_OVER | -107 | 5.0 | **L** | -5.0 | -1.4% |
-| Ohio State Buckeyes@Purdue Boilermakers UNDER | baseball_ncaa | UNDER | -115 | 5.0 | **L** | -5.0 | -1.0% |
-| Oregon Ducks@Illinois Fighting Illini UNDER 1 | baseball_ncaa | UNDER | -105 | 5.0 | **L** | -5.0 | -0.5% |
-| Vanderbilt Commodores@Kentucky Wildcats OVER  | baseball_ncaa | OVER | -122 | 5.0 | **L** | -5.0 | 0.0% |
+| Noah Cates OVER 1.5 SOG | icehockey_nhl | PROP_OVER | +135 | 5.0 | **W** | +6.8 | 0.0% |
+| Miami Hurricanes@Stanford Cardinal UNDER 13.5 | baseball_ncaa | UNDER | -105 | 5.0 | **W** | +4.8 | 0.0% |
+| Chicago White Sox@Athletics OVER 9.0 | baseball_mlb | OVER | -112 | 5.0 | **W** | +4.5 | 0.0% |
+| Clemson Tigers@Virginia Cavaliers UNDER 13.5 | baseball_ncaa | UNDER | -113 | 5.0 | **W** | +4.4 | -1.0% |
+| Texas State Bobcats@Southern Miss Golden Eagl | baseball_ncaa | UNDER | -115 | 5.0 | **W** | +4.3 | 0.0% |
+| NC State Wolfpack@Wake Forest Demon Deacons O | baseball_ncaa | OVER | -120 | 5.0 | **W** | +4.2 | 1.5% |
+| Ayo Dosunmu OVER 10.5 pts | basketball_nba | PROP_FADE_FLIP | -134 | 5.0 | **W** | +3.7 | 0.0% |
+| Alex Freeland UNDER 0.5 RUNS | baseball_mlb | PROP_UNDER | -141 | 5.0 | **W** | +3.5 | 0.0% |
+| Charlotte 49ers@UTSA Roadrunners OVER 11.0 | baseball_ncaa | OVER | +100 | 5.0 | **P** | +0.0 | 0.0% |
+| Jalen Brunson UNDER 2.5 THREES | basketball_nba | PROP_UNDER | +117 | 5.0 | **L** | -5.0 | 3.9% |
+| Auburn Tigers@Florida Gators UNDER 12.0 | baseball_ncaa | UNDER | -115 | 5.0 | **L** | -5.0 | -0.5% |
+| Alabama Crimson Tide@Texas Longhorns OVER 9.5 | baseball_ncaa | OVER | -113 | 5.0 | **L** | -5.0 | -1.0% |
+| Duke Blue Devils@Boston College Eagles OVER 1 | baseball_ncaa | OVER | -128 | 5.0 | **L** | -5.0 | 0.0% |
+| LeBron James OVER 24.5 pts | basketball_nba | PROP_FADE_FLIP | -120 | 5.0 | **L** | -5.0 | 0.0% |
+| San Diego Padres@Los Angeles Angels OVER 9.0 | baseball_mlb | OVER | -120 | 5.0 | **L** | -5.0 | 0.0% |
+| Toronto Raptors@Cleveland Cavaliers UNDER 224 | basketball_nba | BOOK_ARB | -110 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
 
-### Coby White OVER 2.5 REBOUNDS
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-1.4%) -- borderline call.
-- **Final Score:** Charlotte Hornets 90 @ Orlando Magic 121
+### Jalen Brunson UNDER 2.5 THREES
+- **Category:** VARIANCE
+- **Analysis:** Positive CLV (+3.9%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** Atlanta Hawks 102 @ New York Knicks 113
 
-### Ohio State Buckeyes@Purdue Boilermakers UNDER 15.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-1.0%) -- borderline call.
-- **Context:** Friday game | Purdue Boilermakers allows 4.3 R/friday | Ohio State Buckeyes allows 7.2 R/friday | Pitching edge: Purdue Boilermakers (+0.9 pts) | Steam: sharp opposes (+1.0)
-
-### Oregon Ducks@Illinois Fighting Illini UNDER 14.0
+### Auburn Tigers@Florida Gators UNDER 12.0
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (-0.5%) -- borderline call.
-- **Context:** Friday game | Oregon Ducks SP: Will Sanford (1.90 ERA) | Illinois Fighting Illini allows 4.1 R/friday | Oregon Ducks allows 2.4 R/friday | Pitching edge: Oregon Ducks (-0.5 pts)
+- **Context:** Saturday game | Florida Gators SP: Liam Peterson (3.23 ERA) | Auburn Tigers SP: Alex Petrovic (3.57 ERA) | Florida Gators allows 2.7 R/saturday | Auburn Tigers allows 3.3 R/saturday | Pitching edge: Florida Gators (+0.2 pts)
 
-### Vanderbilt Commodores@Kentucky Wildcats OVER 11.0
+### Alabama Crimson Tide@Texas Longhorns OVER 9.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (-1.0%) -- borderline call.
+- **Context:** Saturday game | Texas Longhorns SP: Luke Harrison (9.00 ERA) | Alabama Crimson Tide SP: Myles Upchurch (3.68 ERA) | Texas Longhorns allows 5.0 R/saturday | Alabama Crimson Tide allows 4.9 R/saturday | Pitching edge: Alabama Crimson Tide (-0.0 pts)
+
+### Duke Blue Devils@Boston College Eagles OVER 11.5
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Friday game | Kentucky Wildcats SP: Jaxon Jelkin (4.39 ERA) | Vanderbilt Commodores SP: Aiden Stillman (27.00 ERA) | Kentucky Wildcats allows 4.6 R/friday | Vanderbilt Commodores allows 15.2 R/friday | Pitching edge: Kentucky Wildcats (+1.0 pts)
+- **Context:** Saturday game | Boston College Eagles allows 5.9 R/saturday | Duke Blue Devils allows 7.9 R/saturday | Pitching edge: Boston College Eagles (+0.6 pts)
+
+### LeBron James OVER 24.5 pts
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Final Score:** Houston Rockets 98 @ Los Angeles Lakers 107
+- **Context:** PROP_FADE_FLIP v25.31 — model proj 20.8 vs market median 25.0 (gap 4.2 > thr 3.0 player_points). Direction: market > line 24.5, favors OVER. Flipped UNDER->OVER at BetMGM -120.
+
+### San Diego Padres@Los Angeles Angels OVER 9.0
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Final Score:** San Diego Padres 4 @ Los Angeles Angels 1
+- **Model Spread:** +0.8 | Actual Margin: -3
+- **Context:** [SHADOW] Home fast-paced (+0.3) | Saturday game | Los Angeles Angels SP: Yusei Kikuchi (8.87 ERA) | San Diego Padres SP: German Marquez (5.87 ERA) | Pitching: Yusei Kikuchi 3.53 vs German Marquez 5.61 (+0.4) | Park: Angel Stadium (+0.2) | Bullpen: Angels 4.96 vs Padres 3.50 (+0.2) | Steam: sharp opposes (-0.5)
+
+### Toronto Raptors@Cleveland Cavaliers UNDER 224.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Context:** BOOK ARB — Sharp FanDuel opened total at 223.5, soft DraftKings opened at 224.5 (opener gap +1.0). Betting UNDER 224.5 at DraftKings: easier number on the side sharp likes. Current gap +1.0. | SCRUB: Per user: only bet on today's games. Raptors/Cavaliers is Monday 4/20 7:10 PM ET (Game 2). Book-arb scanner latched onto Monday opener gap (FD 223.5 vs DK 224.5, gap 1.0) but we don't take 49-hour advance bets. Fixing scanner now to filter commence_time to today only.
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **192W-151L** |
-| Win Rate | 56.0% |
-| P/L | **+62.8u** |
-| ROI | +3.7% |
-| Wagered | 1679.0u |
+| Record | **200W-158L** |
+| Win Rate | 55.9% |
+| P/L | **+63.9u** |
+| ROI | +3.6% |
+| Wagered | 1754.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| icehockey_nhl | 52 | 30 | +41.1u |
-| baseball_ncaa | 60 | 46 | +28.4u |
+| icehockey_nhl | 53 | 30 | +47.8u |
+| baseball_ncaa | 64 | 49 | +31.1u |
 | basketball_ncaab | 17 | 12 | +18.7u |
 | soccer_spain_la_liga | 2 | 0 | +7.8u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
-| baseball_mlb | 27 | 27 | -3.0u |
+| baseball_mlb | 29 | 28 | +0.0u |
 | soccer_italy_serie_a | 2 | 2 | -3.3u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
-| basketball_nba | 28 | 27 | -7.7u |
 | TENNIS | 2 | 4 | -11.8u |
+| basketball_nba | 29 | 30 | -19.0u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -74,11 +100,12 @@
 |--------|--------|-----|
 | Midweek game | 17W-17L | -15.0u |
 | Park: Chase Field | 1W-3L | -10.4u |
-| Steam: sharp opposes | 3W-4L | -8.0u |
 | Pitching edge: Clemson Tigers | 1W-2L | -7.2u |
 | Weather: light rain, 11mph wind | 1W-2L | -5.7u |
 | H2H high-scoring | 1W-2L | -5.3u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
+| Steam: sharp opposes | 5W-5L | -4.2u |
+| Pitching edge: Florida Gators | 2W-2L | -1.7u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
 
@@ -88,7 +115,7 @@
 ---
 ## Shadow Pick Report
 
-Found 26 shadow-tagged picks.
+Found 27 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -107,8 +134,8 @@ Found 26 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 140W-110L (56.0%) | +70.8u | 0.3 |
-| BELOW_CAP | 52W-41L (55.9%) | -8.1u | 0.7 |
+| AT_CAP | 146W-115L (55.9%) | +71.7u | 0.2 |
+| BELOW_CAP | 54W-43L (55.7%) | -7.8u | 0.7 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -135,10 +162,10 @@ Found 26 shadow-tagged picks.
 
 | Sport | Side | W | L | P/L |
 |-------|------|---|---|-----|
-| baseball_mlb | OVER | 11 | 10 | -1.6u |
+| baseball_mlb | OVER | 12 | 11 | -2.1u |
 | baseball_mlb | UNDER | 9 | 7 | +4.7u |
-| baseball_ncaa | OVER | 23 | 16 | +17.1u |
-| baseball_ncaa | UNDER | 27 | 25 | -11.8u |
+| baseball_ncaa | OVER | 24 | 18 | +11.2u |
+| baseball_ncaa | UNDER | 30 | 26 | -3.3u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
@@ -156,7 +183,7 @@ Found 26 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** WIN WIN LOSS LOSS LOSS LOSS WIN WIN WIN LOSS
+- **Last 10:** WIN WIN LOSS WIN WIN WIN LOSS WIN LOSS WIN
 - **Current Streak:** 2 WIN
 
 ---
@@ -167,10 +194,9 @@ Found 26 shadow-tagged picks.
 3. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
 4. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
 5. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-6. Factor 'Steam: sharp opposes' has -8.0u P/L over 7 bets. Consider reducing weight.
-7. Concentration risk detected. Review directional exposure limits.
-8. baseball_ncaa UNDERs: 27W-25L (-11.8u). Review totals model for this sport.
-9. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+6. Concentration risk detected. Review directional exposure limits.
+7. baseball_ncaa UNDERs: 30W-26L (-3.3u). Review totals model for this sport.
+8. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-18 06:39 ET*
+*Generated locally by export_briefing_data.py | 2026-04-19 07:01 ET*
