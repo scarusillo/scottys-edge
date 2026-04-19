@@ -80,9 +80,35 @@ spread vs actual if available in `context_factors`.
 
 ## 2. SHADOW FACTOR TRACKING
 
-Read `shadow_factors.md`. Check yesterday's picks for `[SHADOW]` tags in
-`context_factors`. Report what adjustments WOULD have been applied. Do NOT
-re-recommend anything listed under 'Issues Already Resolved'.
+Read `shadow_factors.md`. It has two sections with DIFFERENT behaviors — do both.
+
+**2a. Disabled factors (active monitoring)** — the `## Disabled Factors` table at
+the top lists context adjustments turned off because they were losing. These
+still appear in `context_factors` with a `[SHADOW]` prefix, but the point
+adjustments are zeroed out. Your job is to make sure each disabled factor is
+STILL losing — if any has flipped positive, we should un-shadow it.
+
+For each disabled factor, query:
+```sql
+SELECT result, pnl_units, created_at FROM graded_bets
+WHERE context_factors LIKE '%[SHADOW] <factor-name>%'
+  AND DATE(created_at) >= '<14 days ago>'
+  AND result IN ('WIN','LOSS') AND units >= 3.5
+```
+Report: `<factor-name>: <W>-<L>, <+/-pnl>u over 14d` for each. If any factor has
+**positive P&L over the last 14 days AND n ≥ 5**, flag it as "candidate for
+reactivation — P&L has reversed" and include the sample size. Otherwise one-line
+confirmation that shadowing is still correct.
+
+**2b. Issues Already Resolved (passive skip + regression watch)** — the
+`### Issues Already Resolved — Do NOT Re-Recommend` section lists historical
+drags fixed in code. Do NOT propose re-fixing these. But each entry describes
+the pattern that would indicate a regression (e.g. "DO flag if a post-Apr-17 DK
+NCAA BB OVER fires", "DO flag if a +140 PROP_OVER appears"). Check yesterday's
+picks against those regression signatures. If any match, flag as **"potential
+regression in <entry name>"** with the offending pick's ID and selection.
+
+One paragraph total for Section 2 — brief, numbers-focused.
 
 ## 3. EDGE CALIBRATION TABLE
 
