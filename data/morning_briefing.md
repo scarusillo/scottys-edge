@@ -1,11 +1,11 @@
 # Scotty's Edge Morning Briefing
-**Date:** Sunday, April 19, 2026 | **Generated:** 07:01 AM ET
+**Date:** Sunday, April 19, 2026 | **Generated:** 07:06 AM ET
 **Game Date Graded:** 2026-04-18
 
 ---
 ## Yesterday's Results
 
-**8W-7L-1P | +1.2u | GREEN DAY**
+**8W-6L-1P | +6.2u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
@@ -24,7 +24,6 @@
 | Duke Blue Devils@Boston College Eagles OVER 1 | baseball_ncaa | OVER | -128 | 5.0 | **L** | -5.0 | 0.0% |
 | LeBron James OVER 24.5 pts | basketball_nba | PROP_FADE_FLIP | -120 | 5.0 | **L** | -5.0 | 0.0% |
 | San Diego Padres@Los Angeles Angels OVER 9.0 | baseball_mlb | OVER | -120 | 5.0 | **L** | -5.0 | 0.0% |
-| Toronto Raptors@Cleveland Cavaliers UNDER 224 | basketball_nba | BOOK_ARB | -110 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
@@ -62,21 +61,16 @@
 - **Model Spread:** +0.8 | Actual Margin: -3
 - **Context:** [SHADOW] Home fast-paced (+0.3) | Saturday game | Los Angeles Angels SP: Yusei Kikuchi (8.87 ERA) | San Diego Padres SP: German Marquez (5.87 ERA) | Pitching: Yusei Kikuchi 3.53 vs German Marquez 5.61 (+0.4) | Park: Angel Stadium (+0.2) | Bullpen: Angels 4.96 vs Padres 3.50 (+0.2) | Steam: sharp opposes (-0.5)
 
-### Toronto Raptors@Cleveland Cavaliers UNDER 224.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** BOOK ARB — Sharp FanDuel opened total at 223.5, soft DraftKings opened at 224.5 (opener gap +1.0). Betting UNDER 224.5 at DraftKings: easier number on the side sharp likes. Current gap +1.0. | SCRUB: Per user: only bet on today's games. Raptors/Cavaliers is Monday 4/20 7:10 PM ET (Game 2). Book-arb scanner latched onto Monday opener gap (FD 223.5 vs DK 224.5, gap 1.0) but we don't take 49-hour advance bets. Fixing scanner now to filter commence_time to today only.
-
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **200W-158L** |
-| Win Rate | 55.9% |
-| P/L | **+63.9u** |
-| ROI | +3.6% |
-| Wagered | 1754.0u |
+| Record | **200W-157L** |
+| Win Rate | 56.0% |
+| P/L | **+68.9u** |
+| ROI | +3.9% |
+| Wagered | 1749.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -91,7 +85,7 @@
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | TENNIS | 2 | 4 | -11.8u |
-| basketball_nba | 29 | 30 | -19.0u |
+| basketball_nba | 29 | 29 | -14.0u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -135,7 +129,7 @@ Found 27 shadow-tagged picks.
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
 | AT_CAP | 146W-115L (55.9%) | +71.7u | 0.2 |
-| BELOW_CAP | 54W-43L (55.7%) | -7.8u | 0.7 |
+| BELOW_CAP | 54W-42L (56.2%) | -2.8u | 0.7 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -183,8 +177,8 @@ Found 27 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** WIN WIN LOSS WIN WIN WIN LOSS WIN LOSS WIN
-- **Current Streak:** 2 WIN
+- **Last 10:** WIN WIN WIN WIN WIN LOSS WIN LOSS WIN WIN
+- **Current Streak:** 5 WIN
 
 ---
 ## Action Items
@@ -199,4 +193,4 @@ Found 27 shadow-tagged picks.
 8. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-19 07:01 ET*
+*Generated locally by export_briefing_data.py | 2026-04-19 07:06 ET*

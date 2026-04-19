@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-19 07:01",
+  "generated_at": "2026-04-19 07:06",
   "game_date": "2026-04-18",
   "yesterday": [
     {
@@ -295,32 +295,14 @@
         "actual_total": 5,
         "actual_margin": -3
       }
-    },
-    {
-      "selection": "Toronto Raptors@Cleveland Cavaliers UNDER 224.5",
-      "sport": "basketball_nba",
-      "market_type": "TOTAL",
-      "side_type": "BOOK_ARB",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 5.0,
-      "odds": -110.0,
-      "units": 5.0,
-      "context_factors": "BOOK ARB \u2014 Sharp FanDuel opened total at 223.5, soft DraftKings opened at 224.5 (opener gap +1.0). Betting UNDER 224.5 at DraftKings: easier number on the side sharp likes. Current gap +1.0. | SCRUB: Per user: only bet on today's games. Raptors/Cavaliers is Monday 4/20 7:10 PM ET (Game 2). Book-arb scanner latched onto Monday opener gap (FD 223.5 vs DK 224.5, gap 1.0) but we don't take 49-hour advance bets. Fixing scanner now to filter commence_time to today only.",
-      "context_confirmed": 1,
-      "model_spread": null,
-      "closing_line": 224.5,
-      "event_id": "273905d6a4ae9217ec0734b66a0eb28b",
-      "dt": "2026-04-18"
     }
   ],
   "season": {
     "result": "LOSS",
     "W": 200,
-    "L": 158,
-    "pnl": 63.9,
-    "wagered": 1754.0
+    "L": 157,
+    "pnl": 68.9,
+    "wagered": 1749.0
   },
   "by_sport": [
     {
@@ -338,8 +320,8 @@
     {
       "sport": "basketball_nba",
       "W": 29,
-      "L": 30,
-      "pnl": -19.0
+      "L": 29,
+      "pnl": -14.0
     },
     {
       "sport": "basketball_ncaab",
@@ -887,13 +869,6 @@
       "pnl": -8.3
     },
     {
-      "day_of_week": "Saturday",
-      "sport": "basketball_nba",
-      "W": 3,
-      "L": 4,
-      "pnl": -7.2
-    },
-    {
       "day_of_week": "Sunday",
       "sport": "tennis_atp_monte_carlo_masters",
       "W": 1,
@@ -913,6 +888,13 @@
       "W": 2,
       "L": 2,
       "pnl": -3.0
+    },
+    {
+      "day_of_week": "Saturday",
+      "sport": "basketball_nba",
+      "W": 3,
+      "L": 3,
+      "pnl": -2.2
     },
     {
       "day_of_week": "Saturday",
@@ -1094,8 +1076,8 @@
     {
       "bucket": "BELOW_CAP",
       "W": 54,
-      "L": 43,
-      "pnl": -7.8,
+      "L": 42,
+      "pnl": -2.8,
       "avg_clv": 0.7
     }
   ],
@@ -1296,16 +1278,16 @@
   "last_10": [
     "WIN",
     "WIN",
-    "LOSS",
     "WIN",
     "WIN",
     "WIN",
     "LOSS",
     "WIN",
     "LOSS",
+    "WIN",
     "WIN"
   ],
-  "streak": 2,
+  "streak": 5,
   "streak_type": "WIN",
   "shadow_blocked_picks": [
     {
@@ -2547,6 +2529,15 @@
       "avg_clv": -0.13
     },
     {
+      "book": "DraftKings",
+      "bets": 102,
+      "wins": 50,
+      "losses": 51,
+      "pnl": -19.3,
+      "wagered": 502.5,
+      "avg_clv": -0.63
+    },
+    {
       "book": "BetMGM",
       "bets": 60,
       "wins": 31,
@@ -2554,15 +2545,6 @@
       "pnl": -24.0,
       "wagered": 291.5,
       "avg_clv": 0.21
-    },
-    {
-      "book": "DraftKings",
-      "bets": 103,
-      "wins": 50,
-      "losses": 52,
-      "pnl": -24.3,
-      "wagered": 507.5,
-      "avg_clv": -0.62
     }
   ]
 }
