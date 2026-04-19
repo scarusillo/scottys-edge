@@ -10,12 +10,12 @@ from box_scores import lookup_player_stat, PROP_TO_STAT
 
 conn = sqlite3.connect(DB_PATH)
 cutoff = (datetime.now() - timedelta(days=45)).strftime('%Y-%m-%d')
-date_rows = conn.execute('SELECT DISTINCT DATE(captured_at) as d FROM prop_snapshots WHERE d >= ? ORDER BY d', (cutoff,)).fetchall()
+date_rows = conn.execute('SELECT DISTINCT DATE(captured_at) as d FROM prop_snapshots_all WHERE d >= ? ORDER BY d', (cutoff,)).fetchall()
 
 all_picks = []
 for (day_str,) in date_rows:
     rows = conn.execute('''SELECT sport, event_id, commence_time, home, away, book, market, player, side, line, odds, implied_prob
-        FROM prop_snapshots WHERE DATE(captured_at) = ? AND sport IN ("basketball_nba","basketball_ncaab","icehockey_nhl")''', (day_str,)).fetchall()
+        FROM prop_snapshots_all WHERE DATE(captured_at) = ? AND sport IN ("basketball_nba","basketball_ncaab","icehockey_nhl")''', (day_str,)).fetchall()
     if not rows: continue
     groups = defaultdict(list)
     game_info = {}

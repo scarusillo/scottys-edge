@@ -40,7 +40,7 @@ def backtest_prop_model(days=45, sport_filter=None, min_edge=None):
     cutoff = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
 
     date_rows = conn.execute("""
-        SELECT DISTINCT DATE(captured_at) as d FROM prop_snapshots
+        SELECT DISTINCT DATE(captured_at) as d FROM prop_snapshots_all
         WHERE d >= ? ORDER BY d
     """, (cutoff,)).fetchall()
 
@@ -62,7 +62,7 @@ def backtest_prop_model(days=45, sport_filter=None, min_edge=None):
         rows = conn.execute(f"""
             SELECT sport, event_id, commence_time, home, away,
                    book, market, player, side, line, odds
-            FROM prop_snapshots
+            FROM prop_snapshots_all
             WHERE DATE(captured_at) = ?
             {sport_clause}
         """, (day_str,)).fetchall()

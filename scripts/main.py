@@ -4277,14 +4277,39 @@ def cmd_grade(args):
         _prune_conn.execute('DELETE FROM odds WHERE snapshot_date < ?', (_cutoff,))
         _props_before = _prune_conn.execute('SELECT COUNT(*) FROM props').fetchone()[0]
         _prune_conn.execute("DELETE FROM props WHERE commence_time < datetime('now', '-7 days')")
+        # v25.34: prop_snapshots archival. Live table stays small for fast
+        # scanner/grader queries; archive preserves full history for backtests.
+        # Backtest scripts UNION ALL across prop_snapshots + prop_snapshots_archive.
+        _prune_conn.executescript('''
+            CREATE TABLE IF NOT EXISTS prop_snapshots_archive (
+                id INTEGER PRIMARY KEY,
+                captured_at TEXT NOT NULL, sport TEXT NOT NULL,
+                event_id TEXT NOT NULL, commence_time TEXT,
+                home TEXT NOT NULL, away TEXT NOT NULL,
+                book TEXT NOT NULL, market TEXT NOT NULL,
+                player TEXT NOT NULL, side TEXT NOT NULL,
+                line REAL, odds REAL, implied_prob REAL
+            );
+            CREATE INDEX IF NOT EXISTS idx_psa_player ON prop_snapshots_archive(player, market, event_id);
+            CREATE INDEX IF NOT EXISTS idx_psa_event ON prop_snapshots_archive(event_id, captured_at);
+            CREATE INDEX IF NOT EXISTS idx_psa_date ON prop_snapshots_archive(captured_at);
+        ''')
+        _ps_before = _prune_conn.execute('SELECT COUNT(*) FROM prop_snapshots').fetchone()[0]
+        _prune_conn.execute("""
+            INSERT INTO prop_snapshots_archive
+            SELECT * FROM prop_snapshots WHERE captured_at < datetime('now', '-7 days')
+        """)
+        _prune_conn.execute("DELETE FROM prop_snapshots WHERE captured_at < datetime('now', '-7 days')")
         _prune_conn.commit()
         _odds_after = _prune_conn.execute('SELECT COUNT(*) FROM odds').fetchone()[0]
         _props_after = _prune_conn.execute('SELECT COUNT(*) FROM props').fetchone()[0]
+        _ps_after = _prune_conn.execute('SELECT COUNT(*) FROM prop_snapshots').fetchone()[0]
         _prune_conn.close()
         _odds_pruned = _odds_before - _odds_after
         _props_pruned = _props_before - _props_after
-        if _odds_pruned > 0 or _props_pruned > 0:
-            print(f"  🗑️ Retention: pruned {_odds_pruned:,} odds + {_props_pruned:,} props (>7 days old)")
+        _ps_pruned = _ps_before - _ps_after
+        if _odds_pruned > 0 or _props_pruned > 0 or _ps_pruned > 0:
+            print(f"  🗑️ Retention: pruned {_odds_pruned:,} odds + {_props_pruned:,} props + {_ps_pruned:,} prop_snapshots→archive (>7 days old)")
     except Exception as e:
         print(f"  Retention pruning: {e}")
 

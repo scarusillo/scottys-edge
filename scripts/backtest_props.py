@@ -52,7 +52,7 @@ def backtest_props(days=45, sport_filter=None):
 
     # Get all distinct dates with snapshots
     date_rows = conn.execute("""
-        SELECT DISTINCT DATE(captured_at) as d FROM prop_snapshots
+        SELECT DISTINCT DATE(captured_at) as d FROM prop_snapshots_all
         WHERE d >= ? ORDER BY d
     """, (cutoff,)).fetchall()
 
@@ -74,7 +74,7 @@ def backtest_props(days=45, sport_filter=None):
         rows = conn.execute(f"""
             SELECT sport, event_id, commence_time, home, away,
                    book, market, player, side, line, odds, implied_prob
-            FROM prop_snapshots
+            FROM prop_snapshots_all
             WHERE DATE(captured_at) = ?
             AND sport IN ('basketball_nba', 'basketball_ncaab', 'icehockey_nhl')
             {sport_clause}
