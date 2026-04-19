@@ -1,11 +1,11 @@
 """Quick prop backtest with all upstream fixes applied."""
 import sqlite3, os, sys
 sys.path.insert(0, os.path.dirname(__file__))
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from collections import defaultdict
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
-from props_engine import (compute_consensus, find_consensus_edges, detect_stale_lines,
+from props_engine import (compute_consensus, find_consensus_edges,
     MIN_BOOKS_FOR_CONSENSUS, MIN_BOOKS_BY_SPORT, PROP_LABEL, EXCLUDED_BOOKS, NY_LEGAL_BOOKS,
     STAT_TYPE_MAP, american_to_implied)
 from scottys_edge import kelly_units, get_star_rating

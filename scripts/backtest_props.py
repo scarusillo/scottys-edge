@@ -24,7 +24,7 @@ from props_engine import (
     american_to_implied, remove_vig, median, MIN_BOOKS_FOR_CONSENSUS,
     PROP_LABEL, EXCLUDED_BOOKS, NY_LEGAL_BOOKS, STAT_TYPE_MAP,
 )
-from scottys_edge import kelly_units, kelly_label, get_star_rating
+from scottys_edge import kelly_units, get_star_rating
 from box_scores import lookup_player_stat, PROP_TO_STAT
 
 # ─── Filters (mirror main.py _merge_and_select) ───

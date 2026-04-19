@@ -21,7 +21,7 @@ Usage:
     python elo_engine.py --analyze      # Show model accuracy analysis
 """
 import sqlite3, math, os, sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from collections import defaultdict
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')

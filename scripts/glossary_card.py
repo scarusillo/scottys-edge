@@ -18,9 +18,9 @@ from PIL import Image, ImageDraw
 # Reuse the card_image visual language so the glossary matches the rest of the feed.
 from card_image import (
     S, IG_W, IG_H, CARD_WIDTH, PADDING, INNER_WIDTH,
-    BG, GREEN, WHITE, WHITE_80, WHITE_60, WHITE_40, WHITE_25, YELLOW, BLUE, ORANGE, RED,
+    BG, GREEN, WHITE, WHITE_80, WHITE_40,
     _load_fonts, _font, _draw_divider, _draw_disclaimer,
-    _get_desktop, _finalize,
+    _get_desktop,
 )
 
 

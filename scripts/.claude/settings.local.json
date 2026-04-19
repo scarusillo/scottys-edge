@@ -21,7 +21,9 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:highlightly.net)",
       "WebFetch(domain:collegebaseball.readthedocs.io)",
-      "WebFetch(domain:site.api.espn.com)"
+      "WebFetch(domain:site.api.espn.com)",
+      "Skill(schedule)",
+      "Skill(schedule:*)"
     ]
   }
 }

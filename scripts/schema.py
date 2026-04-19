@@ -339,7 +339,6 @@ def create_db():
         ('NY_LEGAL_BOOKS', 'DraftKings,FanDuel,BetMGM,Caesars,BetRivers,Bally Bet,ESPN BET,PointsBet,Fanatics'),
         ('EXCLUDED_BOOKS', 'Bovada'),
         ('REPORT_EMAIL', ''),
-        ('DATA_STORE_ID', '1RooPFZE73AoANOKHjxHSxJF_nJq2Wj5nJB0vv9TUSAY'),
         ('NCAAB_LOGISTIC_SCALE', '3.7'),   # Fixed calibration
         ('NBA_LOGISTIC_SCALE', '4.0'),
         ('NHL_LOGISTIC_SCALE', '3.5'),

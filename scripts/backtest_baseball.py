@@ -18,13 +18,13 @@ Usage:
     python backtest_baseball.py --context          # Include context adjustments
     python backtest_baseball.py --verbose          # Show every pick detail
 """
-import sqlite3, math, os, sys
+import sqlite3, os
 from datetime import datetime, timedelta
 from collections import defaultdict
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 
-from elo_engine import ELO_CONFIG, _expected_score, _mov_multiplier, elo_win_probability
+from elo_engine import ELO_CONFIG, _expected_score, _mov_multiplier
 from model_engine import (
     SPORT_CONFIG, TOTAL_STD, LEAGUE_AVG_TOTAL,
     spread_to_win_prob, spread_to_cover_prob,

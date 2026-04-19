@@ -15,7 +15,7 @@ Usage:
     python card_image.py --stats            # Stats card
     python card_image.py --results          # Results cards
 """
-import os, sys, sqlite3
+import os, sqlite3
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont
 

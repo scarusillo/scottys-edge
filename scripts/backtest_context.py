@@ -13,7 +13,17 @@ if sys.stdout.encoding != 'utf-8':
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
-conn = sqlite3.connect(DB_PATH)
+_atexit_conn = None
+
+def _get_conn():
+    global _atexit_conn
+    if _atexit_conn is None:
+        import atexit
+        _atexit_conn = sqlite3.connect(DB_PATH)
+        atexit.register(_atexit_conn.close)
+    return _atexit_conn
+
+conn = _get_conn()
 
 from elo_engine import get_elo_ratings, blended_spread, ELO_CONFIG
 from model_engine import (

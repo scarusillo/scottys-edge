@@ -23,7 +23,7 @@ ESPN endpoints:
   NHL: site.web.api.espn.com/apis/common/v3/sports/hockey/nhl/athletes/{id}/splits?season=0
 """
 
-import sqlite3, os, json, math
+import sqlite3, os, json
 from datetime import datetime, timedelta
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')

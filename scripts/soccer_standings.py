@@ -11,7 +11,7 @@ Usage:
     python soccer_standings.py --sport mls        # MLS only
     python soccer_standings.py --verbose          # Extra logging
 """
-import sqlite3, json, os, sys, time
+import sqlite3, json, os, time
 from datetime import datetime, timedelta
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError

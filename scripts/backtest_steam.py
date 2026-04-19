@@ -1,5 +1,5 @@
 """Walk-forward backtest: What if we used steam signals to filter picks?"""
-import sqlite3, re
+import sqlite3
 from collections import defaultdict
 from steam_engine import get_steam_signal
 

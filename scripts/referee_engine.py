@@ -19,7 +19,7 @@ Usage:
     python referee_engine.py --days 30          # Last 30 days
     python referee_engine.py --today            # Scrape today's assigned officials
 """
-import sqlite3, json, os, sys, time
+import sqlite3, json, os, time
 from datetime import datetime, timedelta
 from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError

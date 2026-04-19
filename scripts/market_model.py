@@ -15,8 +15,6 @@ v25.16: Shadow mode only — tags Model A picks with "Model B agrees/disagrees"
 import sqlite3
 import os
 import statistics
-from datetime import datetime, timezone, timedelta
-from collections import defaultdict
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 

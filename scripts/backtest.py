@@ -14,7 +14,7 @@ Usage:
     python backtest.py --sport nhl         # NHL only
     python backtest.py --min-edge 3        # Only picks with 3%+ edge
 """
-import sqlite3, os, math, sys
+import sqlite3, os
 from datetime import datetime
 from collections import defaultdict
 

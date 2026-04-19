@@ -8,12 +8,20 @@ print("=" * 90)
 print("  ALL BETS THIS WEEK - What Makes Winners Different From Losers")
 print("=" * 90)
 
+import sys as _sys
+from datetime import datetime as _dt, timedelta as _td
+_days = 30
+for i, arg in enumerate(_sys.argv):
+    if arg in ('--days', '-d') and i + 1 < len(_sys.argv):
+        try: _days = int(_sys.argv[i + 1])
+        except ValueError: pass
+_cutoff = (_dt.now() - _td(days=_days)).strftime('%Y-%m-%d')
 all_bets = conn.execute("""
     SELECT g.selection, g.sport, g.market_type, g.line, g.odds, g.edge_pct,
            g.confidence, g.units, g.result, g.pnl_units, g.clv, g.side_type,
            g.context_factors, g.timing, g.created_at, g.model_spread
-    FROM graded_bets g WHERE g.created_at >= '2026-03-21' ORDER BY g.created_at
-""").fetchall()
+    FROM graded_bets g WHERE g.created_at >= ? ORDER BY g.created_at
+""", (_cutoff,)).fetchall()
 
 wins = [b for b in all_bets if b[8] == 'WIN']
 losses = [b for b in all_bets if b[8] == 'LOSS']

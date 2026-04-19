@@ -12,7 +12,6 @@ import sqlite3
 import os
 import sys
 import math
-from datetime import datetime, timedelta
 from collections import defaultdict
 
 DB = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
