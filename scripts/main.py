@@ -574,14 +574,22 @@ def cmd_run(args):
             resolved_sports.extend(_detect_tennis_sports())
         else:
             resolved_sports.append(sp)
+    # v25.34: per-sport timing inside Step 6 so we can see which sport is slow.
+    _step6_breakdown = []
     for sp in resolved_sports:
+        _sp_t0 = _time.time()
         picks = generate_predictions(conn, sport=sp)
+        _sp_dur = _time.time() - _sp_t0
+        _step6_breakdown.append((sp, _sp_dur, len(picks)))
         game_picks.extend(picks)
     _mark('step6_predictions')
 
+    # v25.34: split Step 7 timing into 7a (consensus) and 7b (projection model)
+    # so we can see which engine is the bottleneck.
     # Step 7a: Player Props — Edge Consensus Method
-    print("\n🎯 Step 7: Player Props — Edge Consensus Analysis...")
+    print("\n🎯 Step 7a: Player Props — Edge Consensus Analysis...")
     consensus_props = []
+    _s7a_t0 = _time.time()
     try:
         from props_engine import evaluate_props
         consensus_props = evaluate_props(conn)
@@ -592,10 +600,13 @@ def cmd_run(args):
     except Exception as e:
         print(f"  Props consensus: {e}")
         import traceback; traceback.print_exc()
+    _step7a_dur = _time.time() - _s7a_t0
+    _mark('step7a_consensus')
 
     # Step 7b: Player Props — Projection Model
     print("\n🔮 Step 7b: Player Props — Projection Model...")
     model_props = []
+    _s7b_t0 = _time.time()
     try:
         from player_prop_model import generate_prop_projections
         model_props = generate_prop_projections(conn)
@@ -604,8 +615,8 @@ def cmd_run(args):
     except Exception as e:
         print(f"  Props projection: {e}")
         import traceback; traceback.print_exc()
-
-    _mark('step7_props')
+    _step7b_dur = _time.time() - _s7b_t0
+    _mark('step7b_projection')
 
     # Step 7c: Merge consensus + model props (dedup: keep higher edge)
     prop_picks = _merge_prop_sources(consensus_props, model_props)
@@ -1579,6 +1590,13 @@ def cmd_run(args):
         pct = (_v / _total * 100) if _total > 0 else 0
         print(f"    {_k:30s} {_v:6.1f}s  {pct:5.1f}%")
     print(f"    {'TOTAL (pre-email)':30s} {_total:6.1f}s")
+
+    # Per-sport breakdown of Step 6 (predictions) — reveals which sport is slow
+    if _step6_breakdown:
+        print("\n⏱️  Step 6 per-sport (sorted slowest first):")
+        for _sp, _dur, _n_picks in sorted(_step6_breakdown, key=lambda x: -x[1]):
+            if _dur < 1.0: continue  # skip trivial sports
+            print(f"    {_sp:30s} {_dur:6.1f}s  ({_n_picks} picks)")
 
     if do_email:
         print("\n📧 Step 9: Sending email...")
