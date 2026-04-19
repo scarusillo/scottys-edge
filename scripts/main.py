@@ -2788,6 +2788,18 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         return count
 
     def _passes_filter(p):
+        # v25.34: BOOK_ARB + PROP_BOOK_ARB bypass the model-driven edge/confidence
+        # filter. Their scanners apply their own thresholds (gap >= per-stat
+        # threshold, alternate-line-pollution cap at 2× threshold, MIN_ODDS,
+        # dedup). Game-line BOOK_ARB already bypasses this filter by being
+        # appended to all_picks AFTER _merge_and_select runs (main.py:884, 1168).
+        # PROP_BOOK_ARB was instead being fed THROUGH _merge_and_select via
+        # prop_picks, where edge_pct=|gap|*5.0 (5–15%) and confidence='BOOK_ARB'
+        # failed both the 20% edge floor and the ELITE/HIGH confidence check,
+        # killing every prop arb pick silently. This unblocks prop arb to fire
+        # on the same footing as game-line arb.
+        if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB'):
+            return True
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
         book = p.get('book', '')
