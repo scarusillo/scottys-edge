@@ -422,7 +422,7 @@ def grade_bets(conn, days_back=3):
     # in the bets table but not graded or shown in the record.
     all_bets = conn.execute("""
         SELECT id, sport, event_id, market_type, selection,
-               book, line, odds, edge_pct, confidence, units, created_at
+               book, line, odds, edge_pct, confidence, units, created_at, context_factors
         FROM bets
         WHERE DATE(created_at) >= ?
         AND units >= 3.5
@@ -490,7 +490,7 @@ def grade_bets(conn, days_back=3):
 
     graded = []
     for b in bets:
-        bid, sport, eid, mtype, sel, book, line, odds, edge, conf, units, created = b
+        bid, sport, eid, mtype, sel, book, line, odds, edge, conf, units, created, bet_ctx = b
 
         # v25.18: Guard — skip if already graded by an earlier iteration's
         # duplicate-marking block. Without this, a bet marked DUPLICATE by
@@ -768,6 +768,16 @@ def grade_bets(conn, days_back=3):
                 result = 'PENDING'
         else:
             result = determine_result(sel, mtype, line, grade_h, grade_a, home, away, sport=sport)
+
+        # v25.34: SCRUB safety net. If the bet's context_factors contains a
+        # 'SCRUB:' tag (added by `main.py scrub`), force TAINTED regardless of
+        # what the game result would grade to. Keeps the record honest — a
+        # pick we flagged as "no reliable basis to bet" shouldn't count as a
+        # win just because the outcome happened to land. To remove the tag
+        # and re-grade normally, run `main.py unscrub <bet_id>`.
+        if bet_ctx and 'SCRUB:' in bet_ctx and result in ('WIN', 'LOSS', 'PUSH'):
+            print(f"  🚫 SCRUB override: bet {bid} would be {result} but SCRUB tag forces TAINTED — {sel[:60]}")
+            result = 'TAINTED'
         pnl = calculate_pnl(result, odds, units)
 
         # Compute CLV

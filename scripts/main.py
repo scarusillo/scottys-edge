@@ -4649,6 +4649,65 @@ def cmd_scrub(args):
         conn.close()
 
 
+def cmd_unscrub(args):
+    """Reverse a scrub: strip the SCRUB tag from context_factors, clear result
+    so grader can re-compute, and delete the TAINTED graded_bets row.
+
+    Usage: python main.py unscrub <bet_id>
+
+    Use when a previously-scrubbed bet turns out to be valid after all. The
+    next grade run will re-grade normally. Without this, manual SQL reversals
+    leave the SCRUB tag in context_factors, which (a) misleads future audits
+    and (b) will now force TAINTED at grade time per the v25.34 safety net.
+    """
+    import sqlite3, re as _re
+    from datetime import datetime
+    db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+
+    if not args or args[0].startswith('--'):
+        print("Usage: python main.py unscrub <bet_id>")
+        return
+    try:
+        bid = int(args[0])
+    except ValueError:
+        print(f"bet_id must be an integer, got: {args[0]}"); return
+
+    conn = sqlite3.connect(db)
+    try:
+        bet = conn.execute("SELECT id, selection, context_factors, units FROM bets WHERE id = ?", (bid,)).fetchone()
+        if not bet:
+            print(f"Bet id={bid} not found."); return
+        _, sel, ctx, units = bet
+
+        # Strip SCRUB: ... segment from context (handles both ' | SCRUB:' suffix and standalone)
+        new_ctx = _re.sub(r'\s*\|\s*SCRUB:\s*[^|]*', '', ctx or '').strip(' |')
+        new_ctx = _re.sub(r'^SCRUB:\s*[^|]*\|\s*', '', new_ctx).strip(' |')
+        if new_ctx == (ctx or ''):
+            print(f"No SCRUB tag found in bet {bid}'s context_factors. Nothing to strip.")
+
+        # Clear result on bets so grader re-computes; note units are not restored
+        # here because scrub zeroed them. Caller must pass --units <n> if needed.
+        target_units = units
+        if '--units' in args:
+            try:
+                target_units = float(args[args.index('--units') + 1])
+            except Exception:
+                pass
+
+        conn.execute("UPDATE bets SET result=NULL, units=?, context_factors=? WHERE id=?",
+                     (target_units, new_ctx, bid))
+        # Delete the TAINTED graded_bets row — next grade run will re-insert
+        deleted = conn.execute("DELETE FROM graded_bets WHERE bet_id=? AND result='TAINTED'", (bid,)).rowcount
+        conn.commit()
+        print(f"✓ Unscrubbed bet {bid}: {sel[:60]}")
+        print(f"  Stripped SCRUB tag. Deleted {deleted} TAINTED graded_bets row(s).")
+        print(f"  Next `python main.py grade` will re-grade this bet normally.")
+        if target_units == 0:
+            print(f"  WARNING: units=0. Pass `--units <n>` to restore original stake.")
+    finally:
+        conn.close()
+
+
 def cmd_backtest(args):
     """Backtest model accuracy against historical results."""
     from backtest import run_all_backtests
@@ -4675,7 +4734,7 @@ COMMANDS = {
     'run-soccer': cmd_run_soccer,
     'budget': cmd_budget, 'log': cmd_log, 'setup-scheduler': cmd_setup_scheduler,
     'historical': cmd_historical, 'elo': cmd_elo, 'fix-names': cmd_fix_names,
-    'backtest': cmd_backtest, 'scrub': cmd_scrub,
+    'backtest': cmd_backtest, 'scrub': cmd_scrub, 'unscrub': cmd_unscrub,
 }
 
 def main():
