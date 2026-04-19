@@ -62,6 +62,7 @@ zeroed out so they do not influence picks.
 - **NCAA Baseball UNDER concentration (7-8 per day):** Direction cap (max 4) was added 3/29. Volume is self-regulated by the 20% edge floor + direction cap.
 - **Away bounce-back shadow bug (Islanders 3/31):** Code was correct, stale bytecache from scheduled task. One-time issue.
 - **BELOW_CAP picks (-11.1u drag):** Already fixed by v21 (3/31) which raised all edge floors to 20%. Only 2 below-cap picks since v21, both winners. The -11.1u was all pre-v21 history. No further action needed.
+- **25%+ edge bucket -27.6u post-rebuild (1W-8L straight, 2W-8L incl. FADE_FLIP):** RESOLVED v25.13 (~4/10/2026). All 8 losses were PROP_OVER at odds > +140 from Apr 5–8 (Pages, O'Neil Cruz, Okamoto, Burleson, CJ Abrams ×2, Gorman, Drake Baldwin). `MAX_PROP_ODDS = 140` in `player_prop_model.py:80` now blocks these; **zero +140 PROP_OVERs have fired since Apr 10**. The "25%+" label is misleading — these picks sit at the `edge_pct` display cap of 25.0, not a true computed 25% edge. Cohort ages out of post-rebuild window on May 1. **DO NOT flag the 25%+ bucket as an active red flag.** If a post-Apr-10 +140 PROP_OVER appears, that IS a regression — investigate. Otherwise skip this in red-flag analysis.
 
 ### Active Monitoring — Agent Should Track These Daily
 
