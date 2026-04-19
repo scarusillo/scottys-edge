@@ -1,6 +1,9 @@
 # Database — too large for GitHub, contains local data
 data/*.db
 data/*.db-journal
+data/*.db-shm
+data/*.db-wal
+data/*.db.gz
 scripts/*.db
 scripts/*.db-journal
 
@@ -40,3 +43,32 @@ Desktop.ini
 
 # Batch files (contain local paths)
 scripts/*.bat
+
+# FUSE/OneDrive sync temp files
+.fuse_hidden*
+data/.fuse_hidden*
+
+# Generated card media (regenerated each run)
+data/cards/*.jpg
+data/cards/*.mp4
+data/cards/*.mp3
+data/cards/*.wav
+data/cards/*_backup.txt
+data/cards/_reel_caption.txt
+
+# Runtime state (regenerated)
+data/cowork_comments.json
+data/engagement_log.json
+data/ig_session.json
+data/quick_grade_analysis.txt
+data/PROJECT_BRIEF.md
+
+# Skill files (local only)
+*.skill
+scripts/.claude/
+
+# Spreadsheets / misc local data
+*.xlsx
+
+# Unknown binary temp file seen 2026-04-19
+scripts/ziOBVE8R
