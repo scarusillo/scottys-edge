@@ -386,15 +386,22 @@ def cmd_run(args):
     # Step 3: Fetch fresh odds so predictions use CURRENT market lines.
     # Stale lines produce stale picks (e.g., Lakers +3.5 when market moved to +6.5).
     # The model should always evaluate against what subscribers can actually bet NOW.
-    print("\n📈 Step 3: Fetching current odds...")
+    # v25.34: parallelized across sports. Each fetch_odds creates its own DB
+    # connection so SQLite write serialization handles concurrency; the network
+    # I/O (previously 14 sequential ~2s calls = ~28s) runs concurrent now.
+    print("\n📈 Step 3: Fetching current odds (parallel)...")
     total_odds_fetched = 0
     try:
         from odds_api import fetch_odds
-        for sp in sports:
-            try:
-                fetch_odds(sp, tag='CURRENT')
-            except Exception as e:
-                print(f"  {sp}: {e}")
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        with ThreadPoolExecutor(max_workers=5) as _ex:
+            _futures = {_ex.submit(fetch_odds, sp, tag='CURRENT'): sp for sp in sports}
+            for _future in as_completed(_futures):
+                _sp = _futures[_future]
+                try:
+                    _future.result()
+                except Exception as e:
+                    print(f"  {_sp}: {e}")
     except Exception as e:
         print(f"  Odds fetch: {e}")
 
@@ -432,16 +439,28 @@ def cmd_run(args):
     _log.info(f"Step 3: Odds fetch complete | {total_odds_fetched} rows")
     _mark('step3_odds')
 
-    # Step 5: Player Props
-    print("\n🎯 Step 4: Player props...")
+    # Step 4: Player Props
+    # v25.34: parallelized across sports. fetch_props makes per-event API calls
+    # internally (~8-15 events per sport), so this is the biggest network I/O
+    # sink in the pipeline. Running prop-supported sports concurrently
+    # lets NBA+NHL+MLB+NCAAB fetch in parallel instead of stacked.
+    print("\n🎯 Step 4: Player props (parallel)...")
     try:
         from odds_api import fetch_props
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        _prop_sports = [sp for sp in sports if sp in PROP_SPORTS]
         for sp in sports:
-            if sp in PROP_SPORTS:
-                try: fetch_props(sp)
-                except Exception as e: print(f"  {sp} props error: {e}")
-            else:
+            if sp not in PROP_SPORTS:
                 print(f"  {sp}: props not available")
+        if _prop_sports:
+            with ThreadPoolExecutor(max_workers=4) as _ex:
+                _futures = {_ex.submit(fetch_props, sp): sp for sp in _prop_sports}
+                for _future in as_completed(_futures):
+                    _sp = _futures[_future]
+                    try:
+                        _future.result()
+                    except Exception as e:
+                        print(f"  {_sp} props error: {e}")
     except Exception as e: print(f"  Props: {e}")
     _mark('step4_props')
 
@@ -472,11 +491,14 @@ def cmd_run(args):
     _mark('step4b_pitchers_goalies')
 
     # Step 4c: Referee/official data (FREE — ESPN game summaries)
-    print("\n🏛️ Step 4c: Referee data (FREE)...")
+    # v25.34: parallelized across 3 sports.
+    print("\n🏛️ Step 4c: Referee data (FREE, parallel)...")
     try:
         from referee_engine import scrape_officials
-        for ref_sport in ['basketball_nba', 'basketball_ncaab', 'icehockey_nhl']:
-            scrape_officials(ref_sport, days_back=3, verbose=False)
+        from concurrent.futures import ThreadPoolExecutor
+        _ref_sports = ['basketball_nba', 'basketball_ncaab', 'icehockey_nhl']
+        with ThreadPoolExecutor(max_workers=3) as _ex:
+            list(_ex.map(lambda s: scrape_officials(s, days_back=3, verbose=False), _ref_sports))
         print("  Referee data updated")
     except Exception as e:
         print(f"  Referee engine: {e}")
