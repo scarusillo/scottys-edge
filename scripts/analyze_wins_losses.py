@@ -22,13 +22,13 @@ print(f"\n  {len(wins)}W-{len(losses)}L total\n")
 # Compare characteristics
 print("  -- WHAT SEPARATES WINNERS FROM LOSERS --\n")
 
-avg_edge_w = sum(b[5] for b in wins) / len(wins)
-avg_edge_l = sum(b[5] for b in losses) / len(losses)
+avg_edge_w = sum(b[5] for b in wins) / len(wins) if wins else 0.0
+avg_edge_l = sum(b[5] for b in losses) / len(losses) if losses else 0.0
 higher = "Winners" if avg_edge_w > avg_edge_l else "LOSERS"
 print(f"  Avg Edge:    Wins={avg_edge_w:.1f}%  Losses={avg_edge_l:.1f}%  ({higher} have higher edge)")
 
-avg_units_w = sum(b[7] for b in wins) / len(wins)
-avg_units_l = sum(b[7] for b in losses) / len(losses)
+avg_units_w = sum(b[7] for b in wins) / len(wins) if wins else 0.0
+avg_units_l = sum(b[7] for b in losses) / len(losses) if losses else 0.0
 print(f"  Avg Units:   Wins={avg_units_w:.1f}u  Losses={avg_units_l:.1f}u")
 
 clv_w = [b[10] for b in wins if b[10] is not None]

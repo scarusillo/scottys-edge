@@ -4040,6 +4040,15 @@ def cmd_grade(args):
         ig += f"\n\nFollow for daily picks:\n\U0001f4f1 IG: @scottys_edge\n\U0001f4ac Discord: discord.gg/JQ6rRfuN\n\n{' '.join(_ig_hashtags)}"
         # v25.3: Twitter caption block removed — @Scottys_Edge suspended April 2026.
         results_caption = "INSTAGRAM CAPTION:\n" + "="*40 + "\n" + ig
+        # v25.34: persist caption to disk so Reel posts can read the current
+        # caption without re-querying the DB. Previously _reel_caption.txt
+        # was only written by ad-hoc scripts.
+        try:
+            _rc_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'cards', '_reel_caption.txt')
+            with open(_rc_path, 'w', encoding='utf-8') as _rcf:
+                _rcf.write(ig)
+        except Exception as _rc_e:
+            print(f"  Caption file write: {_rc_e}")
         print("  Captions generated")
     except Exception as e:
         print(f"  Captions: {e}")

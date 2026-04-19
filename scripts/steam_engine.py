@@ -234,7 +234,11 @@ def get_steam_signal(conn, sport, event_id, market_type, side, current_line, cur
 def format_steam_context(signal, info):
     """Format a steam signal as a context factor string."""
     if signal == 'NO_MOVEMENT':
-        return ''
+        # v25.34: log NO_MOVEMENT explicitly so the morning agent can
+        # distinguish "engine ran, line held" from "engine was never called."
+        # Previously returned '' which made both cases look identical in
+        # context_factors.
+        return 'Steam: no movement'
     if 'movement' in info:
         direction = '+' if info['movement'] > 0 else ''
         if signal == 'SHARP_CONFIRMS':
