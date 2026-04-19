@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scotty's Edge | Errors & Corrections</title>
+<meta name="description" content="Every bug, data error, grading mistake, or process failure — documented with the fix. Because transparency has to include the mistakes.">
+<meta name="theme-color" content="#0d1117">
+<meta property="og:title" content="Scotty's Edge | Errors & Corrections">
+<meta property="og:description" content="Every mistake we've made, publicly documented. The record should reflect what actually happened, not what we wish had.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0d1117; --bg-card: #141e2a; --bg-card-alt: #1a2636;
+  --green: #00e676; --red: #ff5252; --amber: #ffa726;
+  --white: #ffffff; --white-80: #cccccc; --white-60: #999999; --white-40: #666666;
+  --radius: 12px;
+}
+html { scroll-behavior: smooth; background: var(--bg); }
+body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+.site-header { position: sticky; top: 0; z-index: 100; background: rgba(13, 17, 23, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 16px 0; }
+.site-header .container { max-width: 900px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+.nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--white); text-decoration: none; letter-spacing: 2px; }
+.nav-logo span { color: var(--green); }
+.nav-links { display: flex; gap: 20px; list-style: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 500; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.85rem; }
+.nav-links a { color: var(--white-80); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: var(--green); }
+main { max-width: 820px; margin: 0 auto; padding: 48px 24px 80px; }
+.eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--amber); margin-bottom: 12px; }
+h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; line-height: 1.05; color: var(--white); margin-bottom: 16px; letter-spacing: 1px; }
+.intro { font-size: 1.05rem; color: var(--white-80); padding: 20px 24px; border-left: 3px solid var(--amber); margin: 24px 0 40px; background: var(--bg-card); border-radius: 0 var(--radius) var(--radius) 0; font-style: italic; }
+.entry { background: var(--bg-card); border-radius: var(--radius); padding: 28px 28px 24px; margin-bottom: 24px; border-left: 4px solid var(--amber); }
+.entry .head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.entry h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; color: var(--white); letter-spacing: 1px; }
+.entry .meta { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 1.5px; color: var(--white-60); text-transform: uppercase; }
+.entry .meta .sev { padding: 3px 10px; border-radius: 999px; margin-left: 8px; }
+.entry .meta .sev.critical { background: rgba(255, 82, 82, 0.18); color: var(--red); }
+.entry .meta .sev.medium { background: rgba(255, 167, 38, 0.18); color: var(--amber); }
+.entry .meta .sev.low { background: rgba(0, 230, 118, 0.14); color: var(--green); }
+.entry h3 { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--white-60); margin: 18px 0 6px; }
+.entry h3:first-of-type { margin-top: 8px; }
+.entry p { color: var(--white-80); margin-bottom: 8px; }
+.entry code { font-family: 'Barlow', monospace; background: var(--bg-card-alt); padding: 2px 8px; border-radius: 4px; color: var(--green); font-size: 0.9em; font-weight: 500; }
+.entry .outcome { background: rgba(0, 230, 118, 0.08); border-left: 3px solid var(--green); padding: 12px 16px; margin-top: 14px; border-radius: 0 8px 8px 0; font-size: 0.95rem; }
+.entry .outcome strong { color: var(--green); }
+hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 40px 0; }
+.footer-meta { font-size: 0.85rem; color: var(--white-60); font-style: italic; margin-top: 40px; text-align: center; }
+.footer-meta a { color: var(--green); text-decoration: none; }
+@media (max-width: 600px) {
+  h1 { font-size: 2.2rem; }
+  .entry h2 { font-size: 1.3rem; }
+  main { padding: 32px 20px 60px; }
+  .nav-links { gap: 12px; font-size: 0.72rem; }
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="nav-logo">SCOTTY'S <span>EDGE</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="methodology.html">Methodology</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="calibration.html">Calibration</a></li>
+      <li><a href="changelog.html">Changelog</a></li>
+      <li><a href="errors.html" class="active">Errors</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+<div class="eyebrow">Errors &amp; Corrections</div>
+<h1>Every Mistake We've Made</h1>
+
+<div class="intro">
+  <p>The methodology page promised this: <em>"when we're wrong, it's documented."</em> This is that documentation. Every bug, data error, grading mistake, or process failure gets logged here with the fix.</p>
+  <p>The point isn't self-flagellation. It's proof that the record hasn't been quietly sanitized to make us look better. If you see something here, it's because we found it, fixed it, and chose to keep the evidence public.</p>
+</div>
+
+<!-- ENTRY 1 -->
+<div class="entry">
+  <div class="head">
+    <h2>PROP_BOOK_ARB scanner detected signals for 2 days without firing any picks</h2>
+    <div class="meta">Discovered Apr 19, 2026 &middot; <span class="sev medium">Medium</span></div>
+  </div>
+
+  <h3>What Happened</h3>
+  <p>The <code>PROP_BOOK_ARB</code> scanner (v25.31, deployed Apr 17) correctly identified 10+ candidate prop-line disagreements between sharp and soft books over Apr 18–19. None of them fired as bets. The scanner was working; the downstream filter was silently killing every candidate.</p>
+
+  <h3>Root Cause</h3>
+  <p>In <code>_merge_and_select</code>, a filter required all prop picks to have edge_pct ≥ 20% AND confidence in (ELITE, HIGH). PROP_BOOK_ARB picks set edge_pct = |gap| × 5.0 (typically 5–15%) and confidence = 'BOOK_ARB'. Every single prop arb pick failed both conditions.</p>
+  <p>Game-line <code>BOOK_ARB</code> (spreads/totals) worked fine because it was appended to picks AFTER the filter ran. Props were fed through the filter because they were inserted earlier in the pipeline.</p>
+
+  <h3>How We Found It</h3>
+  <p>User asked why we hadn't fired a single cross-book prop arb pick even though the mechanism had been live for 2 days. Scanner logs showed candidates being generated every hourly run but never saved to the bets table. Trace led directly to <code>_passes_filter</code>.</p>
+
+  <h3>Fix</h3>
+  <p>v25.34 whitelist in <code>_passes_filter</code>: any pick with side_type in ('BOOK_ARB', 'PROP_BOOK_ARB') bypasses the model-driven edge/confidence floor. Those picks have their own threshold logic at the scanner level (gap size, alternate-line pollution cap, MIN_ODDS) and don't need the model's filter.</p>
+
+  <div class="outcome">
+    <strong>Record adjustment:</strong> We backfilled the 3 picks that WOULD have fired on Apr 18 (Jamal Murray OVER 23.5 pts, Ja'Kobe Walter OVER 6.5 pts, Julius Randle OVER 18.5 pts), graded them against actual results, and added them to the record. Net: 2W-1L, +3.17u. Running record adjusted from 200-157 to 202-158, +68.9u → +72.1u. The record now reflects what the methodology said should happen, not what the buggy code allowed.
+  </div>
+</div>
+
+<!-- ENTRY 2 -->
+<div class="entry">
+  <div class="head">
+    <h2>Toronto Raptors @ Cavaliers UNDER 224.5 graded as loss for wrong game date</h2>
+    <div class="meta">Discovered Apr 19, 2026 &middot; <span class="sev medium">Medium</span></div>
+  </div>
+
+  <h3>What Happened</h3>
+  <p>A Raptors @ Cavaliers UNDER 224.5 pick (Apr 18, book-arb) was graded as a LOSS against the Apr 18 Saturday game. The user had actually bet the Monday, Apr 14 version of the matchup — a different game entirely. The system matched the pick to the wrong game by event_id.</p>
+
+  <h3>Root Cause</h3>
+  <p>The book-arb gate was scanning opener vs current lines across multiple days. When two games between the same teams fell within the window, the gate wasn't checking that the pick's intended game matched the commence_time of the referenced event.</p>
+
+  <h3>How We Found It</h3>
+  <p>Grade report showed the pick as LOSS. User flagged that they had bet a different day's game.</p>
+
+  <h3>Fix</h3>
+  <p>Scrubbed bet via <code>main.py scrub 973</code>, marking it TAINTED so it counts for nothing in the record. Separately deployed v25.33 the same day: all book-arb gates now check that commence_time is TODAY in Eastern time before firing. Prevents the scanner from ever matching against the wrong date.</p>
+
+  <div class="outcome">
+    <strong>Record adjustment:</strong> Bet 973 changed from LOSS to TAINTED. Running record corrected. Future book-arb picks on multi-day matchups will match correctly by commence_time + ET date.
+  </div>
+</div>
+
+<!-- ENTRY 3 -->
+<div class="entry">
+  <div class="head">
+    <h2>SCRUB tag left on Miami/Stanford bet after manual unscrub</h2>
+    <div class="meta">Discovered Apr 19, 2026 &middot; <span class="sev low">Low</span></div>
+  </div>
+
+  <h3>What Happened</h3>
+  <p>Miami Hurricanes @ Stanford Cardinal UNDER 13.5 was originally SCRUB'd for a doubleheader data error (wrong starters pulled for game 2). Later, the user determined the bet was valid after all and manually reversed the scrub via SQL. The SCRUB tag stayed in <code>context_factors</code>, even though result was restored to WIN and the pick counted in the record.</p>
+
+  <h3>Root Cause</h3>
+  <p>There was no <code>cmd_unscrub</code> helper. Manual reversals via SQL restored the result but didn't strip the SCRUB annotation. A pick with a SCRUB tag but a WIN result creates an audit contradiction: the context says "no reliable basis to bet" but the record counts it as a win.</p>
+
+  <h3>How We Found It</h3>
+  <p>User noticed the SCRUB tag still present when reviewing the bet. Raised the question: "how does the unscrub actually work?"</p>
+
+  <h3>Fix</h3>
+  <p>v25.34 added two pieces: (1) <code>cmd_unscrub</code> helper that properly strips the SCRUB tag from context_factors, clears bets.result, and deletes the TAINTED graded_bets row so the next grade re-computes normally; (2) a safety net in the grader — if a bet's context_factors contains 'SCRUB:' at grade time, the bet is forced to TAINTED regardless of the game outcome. This prevents any future pick with a SCRUB tag from silently counting as a win.</p>
+
+  <div class="outcome">
+    <strong>Record adjustment:</strong> Miami/Stanford bet kept as WIN (user confirmed it was a legitimate bet). SCRUB tag stripped from context. Verified no other WIN/LOSS rows in post-rebuild history carry lingering SCRUB tags.
+  </div>
+</div>
+
+<!-- ENTRY 4 -->
+<div class="entry">
+  <div class="head">
+    <h2>v22 NCAA Baseball UNDER filters were blocking ~140u of monthly winners</h2>
+    <div class="meta">Discovered Apr 10, 2026 &middot; <span class="sev critical">Critical</span></div>
+  </div>
+
+  <h3>What Happened</h3>
+  <p>On April 1 (v22) we deployed two filters to block NCAA baseball UNDERs: (1) no UNDERs on Fridays and (2) no UNDERs on lines &gt; 12.0. Both were based on a small-sample backtest showing those cohorts were losing. The filters worked as coded — but the original sample was a mirage.</p>
+
+  <h3>Root Cause</h3>
+  <p>Re-backtested against 14 days of post-rebuild data: Friday UNDERs at <strong>38W-20L, +51.9u</strong>. Line-12+ UNDERs at <strong>79W-57L, +54.4u</strong>. These were the OPPOSITE of what the v22 sample suggested. The gates were cutting off the sport's most profitable subset.</p>
+
+  <h3>How We Found It</h3>
+  <p>Morning briefing flagged an unexpected volume drop on NCAA UNDERs starting April 1. Traced back through shadow_blocked_picks to find the v22 filters systematically removing winners.</p>
+
+  <h3>Fix</h3>
+  <p>v25.4 (April 10) rolled both gates back completely. Added a note to <code>shadow_factors.md</code> flagging these as "Issues Already Resolved — Do Not Re-Recommend" so future audits don't try to re-litigate the decision.</p>
+
+  <div class="outcome">
+    <strong>Cost:</strong> Roughly 9 days of blocked winners. No single bets to adjust — the bets were never placed. Cohort is back to full firing since April 10 and contributing positively post-rebuild.
+  </div>
+</div>
+
+<!-- ENTRY 5 -->
+<div class="entry">
+  <div class="head">
+    <h2>Friday surcharge silently killed every NCAA baseball Friday pick</h2>
+    <div class="meta">Discovered Apr 10, 2026 &middot; <span class="sev medium">Medium</span></div>
+  </div>
+
+  <h3>What Happened</h3>
+  <p>Separate from the v22 Friday UNDER block above, there was a <em>second</em> Friday filter: a +3% edge surcharge added to the minimum threshold on Friday games. Since our edge cap is 20%, the surcharge required 23% — mathematically impossible for picks capped at 20%. Effectively a 100% kill switch on Friday NCAA picks.</p>
+
+  <h3>Root Cause</h3>
+  <p>The surcharge was added in v21 based on the same small-sample mirage as the v22 gate. When v25.4 rolled back the outright Friday block, we didn't realize there was a second filter doing the same job silently at a different layer.</p>
+
+  <h3>How We Found It</h3>
+  <p>On April 10 a Friday with 7 OVERs + 4 UNDERs all at edge 17–20% produced zero picks. Investigation showed the required threshold had been raised to 23%.</p>
+
+  <h3>Fix</h3>
+  <p>v25.6 removed the Friday surcharge entirely. Documented explicitly in <code>_merge_and_select</code> comments so this specific bug pattern (multiple filters at different pipeline layers doing the same job) is visible to any future code auditor.</p>
+
+  <div class="outcome">
+    <strong>Lesson learned:</strong> When rolling back a rule, grep the entire codebase for related logic — not just the first instance. Single-source-of-truth for thresholds has been a priority since.
+  </div>
+</div>
+
+<!-- ENTRY 6 -->
+<div class="entry">
+  <div class="head">
+    <h2>25%+ edge prop bucket ran at 1W-8L, -27.6u</h2>
+    <div class="meta">Discovered Apr 10, 2026 &middot; <span class="sev medium">Medium</span></div>
+  </div>
+
+  <h3>What Happened</h3>
+  <p>Post-rebuild data showed the "25%+ edge" prop bucket at 1W-8L, -27.6u. Every loss was a PROP_OVER at odds &gt; +140 — rare-event player props (RBIs, RUNS, strikeouts, blocks) where the rate-based projection was overconfident.</p>
+
+  <h3>Root Cause</h3>
+  <p>The prop model computed edge by comparing its rate-based probability estimate to the market implied. For rare events (like "player records ≥1 RBI" at +195), small rate errors compound into large apparent edges. At +140+ odds, the model was essentially betting that rare events are less rare than the books price them — which they aren't.</p>
+
+  <h3>How We Found It</h3>
+  <p>Edge bucket calibration audit. The 25%+ bucket was the one consistent loser across sports.</p>
+
+  <h3>Fix</h3>
+  <p>v25.13 lowered <code>MAX_PROP_ODDS</code> from +150 to +140. Any prop with odds above +140 at any book now skips entirely. Zero +140 PROP_OVERs have fired since the cap was applied.</p>
+
+  <div class="outcome">
+    <strong>Record:</strong> Pre-v25.13 losses remain in the all-time record. The "25%+ bucket at -27.6u" entry in historical data refers to picks that can't recur under the current rules. Noted in <code>shadow_factors.md</code> as resolved to prevent the agent from re-flagging it as an active problem.
+  </div>
+</div>
+
+<hr>
+
+<div class="footer-meta">
+  Last updated: April 19, 2026 &middot; <a href="methodology.html">Back to methodology</a> &middot; <a href="dashboard.html">See the live record →</a>
+</div>
+
+</main>
+</body>
+</html>

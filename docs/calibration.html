@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scotty's Edge | Calibration</title>
+<meta name="description" content="Do our 20% edge picks actually win at 20% edge rates? Mathematical honesty layer — predicted vs actual win rates by edge bucket, market type, and sport.">
+<meta name="theme-color" content="#0d1117">
+<meta property="og:title" content="Scotty's Edge | Calibration">
+<meta property="og:description" content="Actual win rate vs market-implied win rate, sliced by edge bucket, market type, and sport. The math check.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0d1117; --bg-card: #141e2a; --bg-card-alt: #1a2636;
+  --green: #00e676; --red: #ff5252; --amber: #ffa726;
+  --white: #ffffff; --white-80: #cccccc; --white-60: #999999; --white-40: #666666;
+  --radius: 12px;
+}
+html { scroll-behavior: smooth; background: var(--bg); }
+body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+.site-header { position: sticky; top: 0; z-index: 100; background: rgba(13, 17, 23, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 16px 0; }
+.site-header .container { max-width: 900px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+.nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--white); text-decoration: none; letter-spacing: 2px; }
+.nav-logo span { color: var(--green); }
+.nav-links { display: flex; gap: 20px; list-style: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 500; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.85rem; }
+.nav-links a { color: var(--white-80); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: var(--green); }
+main { max-width: 900px; margin: 0 auto; padding: 48px 24px 80px; }
+.eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--green); margin-bottom: 12px; }
+h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; line-height: 1.05; color: var(--white); margin-bottom: 16px; letter-spacing: 1px; }
+.intro { font-size: 1.05rem; color: var(--white-80); padding: 20px 24px; border-left: 3px solid var(--green); margin: 24px 0 40px; background: var(--bg-card); border-radius: 0 var(--radius) var(--radius) 0; font-style: italic; }
+h2 { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--green); margin: 48px 0 10px; letter-spacing: 1px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); }
+h2:first-of-type { border-top: none; padding-top: 0; margin-top: 32px; }
+.sub { color: var(--white-60); font-size: 0.9rem; margin-bottom: 20px; }
+table { width: 100%; border-collapse: collapse; margin-bottom: 24px; background: var(--bg-card); border-radius: var(--radius); overflow: hidden; }
+th { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--white-60); text-align: left; padding: 14px 16px; background: var(--bg-card-alt); }
+td { padding: 12px 16px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 0.95rem; }
+td.num { font-family: 'Barlow', monospace; font-weight: 500; text-align: right; }
+td.bucket { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: var(--white); letter-spacing: 1px; }
+.pos { color: var(--green); font-weight: 600; }
+.neg { color: var(--red); font-weight: 600; }
+.neutral { color: var(--amber); }
+.interp { background: var(--bg-card); border-left: 3px solid var(--green); padding: 14px 18px; margin: 14px 0 28px; border-radius: 0 var(--radius) var(--radius) 0; color: var(--white-80); font-size: 0.95rem; }
+.interp strong { color: var(--green); }
+code { font-family: 'Barlow', monospace; background: var(--bg-card-alt); padding: 2px 8px; border-radius: 4px; color: var(--green); font-size: 0.88em; }
+hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 48px 0; }
+.footer-meta { font-size: 0.85rem; color: var(--white-60); font-style: italic; margin-top: 40px; text-align: center; }
+.footer-meta a { color: var(--green); text-decoration: none; }
+.disclaimer { background: rgba(255,167,38,0.08); border-left: 3px solid var(--amber); padding: 14px 18px; margin: 24px 0; border-radius: 0 var(--radius) var(--radius) 0; color: var(--white-80); font-size: 0.9rem; }
+@media (max-width: 600px) {
+  h1 { font-size: 2.2rem; }
+  h2 { font-size: 1.4rem; }
+  main { padding: 32px 20px 60px; }
+  table { font-size: 0.82rem; }
+  th, td { padding: 10px 8px; }
+  .nav-links { gap: 12px; font-size: 0.72rem; }
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="nav-logo">SCOTTY'S <span>EDGE</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="methodology.html">Methodology</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="calibration.html" class="active">Calibration</a></li>
+      <li><a href="changelog.html">Changelog</a></li>
+      <li><a href="errors.html">Errors</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+<div class="eyebrow">The Math Check</div>
+<h1>Calibration</h1>
+
+<div class="intro">
+  <p>"20% edge" is a claim. Calibration is the test. If our 20% edge picks hit at 55% win rate, the edge is real. If they hit at 48%, the edge is a story we're telling ourselves.</p>
+  <p>Every row below is computed from <code>graded_bets</code> — the same table that powers the dashboard. No filtering for cherry-picked windows. The sample is all picks ≥ 3.5u since March 4, 2026 (the start of the post-rebuild period in the methodology sense).</p>
+</div>
+
+<div class="disclaimer">
+  <strong>How to read this:</strong> "Actual WR" is our real win rate. "Implied WR" is what the market odds implied we should win. "Delta" is the difference — positive means we beat the market's implied probability (real edge). We track this because win rate alone doesn't prove anything — you have to compare against what the market priced in.
+</div>
+
+<h2>By edge bucket</h2>
+<p class="sub">The core test: does claimed edge materialize? Sample: all-time since March 4, 2026, picks sized ≥ 3.5u.</p>
+
+<table>
+<thead>
+<tr>
+  <th>Edge bucket</th>
+  <th style="text-align:right">n</th>
+  <th style="text-align:right">Record</th>
+  <th style="text-align:right">Actual WR</th>
+  <th style="text-align:right">Implied WR</th>
+  <th style="text-align:right">Delta</th>
+  <th style="text-align:right">P/L</th>
+</tr>
+</thead>
+<tbody>
+<tr><td class="bucket">8–12%</td><td class="num">4</td><td class="num">2W–2L</td><td class="num neutral">50.0%</td><td class="num">58.9%</td><td class="num neg">-8.9%</td><td class="num neg">-1.8u</td></tr>
+<tr><td class="bucket">12–16%</td><td class="num">25</td><td class="num">15W–10L</td><td class="num pos">60.0%</td><td class="num">56.5%</td><td class="num pos">+3.5%</td><td class="num pos">+4.8u</td></tr>
+<tr><td class="bucket">16–20%</td><td class="num">68</td><td class="num">37W–31L</td><td class="num neutral">54.4%</td><td class="num">55.8%</td><td class="num neg">-1.4%</td><td class="num neg">-11.8u</td></tr>
+<tr><td class="bucket">20–22%</td><td class="num">160</td><td class="num">89W–71L</td><td class="num pos">55.6%</td><td class="num">53.6%</td><td class="num pos">+2.0%</td><td class="num pos">+28.5u</td></tr>
+<tr><td class="bucket">22–25%</td><td class="num">33</td><td class="num">21W–12L</td><td class="num pos">63.6%</td><td class="num">51.4%</td><td class="num pos">+12.2%</td><td class="num pos">+40.4u</td></tr>
+<tr><td class="bucket">25%+</td><td class="num">68</td><td class="num">36W–32L</td><td class="num pos">52.9%</td><td class="num">50.6%</td><td class="num pos">+2.3%</td><td class="num pos">+2.8u</td></tr>
+</tbody>
+</table>
+
+<div class="interp">
+  <strong>Interpretation:</strong> The 20–22%, 22–25%, and 25%+ buckets — the three tiers that cross our firing threshold — all show positive delta between actual and implied win rate. The 22–25% bucket is the sharpest signal (+12.2% delta on n=33). Below our firing threshold, the 8–12% bucket is too small a sample (n=4) to read, but the 16–20% bucket (n=68) is slightly under-calibrated — part of why we require 20% minimum. The 25%+ bucket's lower delta vs 22–25% is the stale-cohort drag documented on the <a href="errors.html" style="color: var(--green);">errors page</a> — pre-v25.13 PROP_OVERs at longshot odds. We don't fire those anymore.
+</div>
+
+<h2>By market type</h2>
+<p class="sub">Which markets are carrying their weight? Sample: post-rebuild (since April 1, 2026), picks ≥ 3.5u.</p>
+
+<table>
+<thead>
+<tr>
+  <th>Market</th>
+  <th style="text-align:right">n</th>
+  <th style="text-align:right">Record</th>
+  <th style="text-align:right">WR</th>
+  <th style="text-align:right">P/L</th>
+</tr>
+</thead>
+<tbody>
+<tr><td class="bucket">Moneyline</td><td class="num">5</td><td class="num">4W–1L</td><td class="num pos">80.0%</td><td class="num pos">+15.7u</td></tr>
+<tr><td class="bucket">Total</td><td class="num">114</td><td class="num">61W–53L</td><td class="num pos">53.5%</td><td class="num neg">-7.9u</td></tr>
+<tr><td class="bucket">Prop</td><td class="num">35</td><td class="num">16W–19L</td><td class="num neg">45.7%</td><td class="num neg">-10.2u</td></tr>
+<tr><td class="bucket">Spread</td><td class="num">6</td><td class="num">2W–4L</td><td class="num neg">33.3%</td><td class="num neg">-11.2u</td></tr>
+</tbody>
+</table>
+
+<div class="interp">
+  <strong>Interpretation:</strong> Totals are the backbone of our volume (n=114). The 53.5% win rate is just above breakeven, with the -7.9u P/L reflecting average juice of about -115. Props at 45.7% is the major concern post-rebuild — but the loss concentration is in pre-v25.13 rare-event OVERs that can't fire anymore. Moneyline sample is too small to read (n=5). Spread is a statistically insignificant sample showing normal variance.
+</div>
+
+<h2>By sport (post-rebuild)</h2>
+<p class="sub">Which sports is the model working on right now? Sample: since April 1, 2026, picks ≥ 3.5u, sports with n ≥ 3.</p>
+
+<table>
+<thead>
+<tr>
+  <th>Sport</th>
+  <th style="text-align:right">n</th>
+  <th style="text-align:right">Record</th>
+  <th style="text-align:right">WR</th>
+  <th style="text-align:right">P/L</th>
+</tr>
+</thead>
+<tbody>
+<tr><td class="bucket">NHL</td><td class="num">34</td><td class="num">21W–13L</td><td class="num pos">61.8%</td><td class="num pos">+23.3u</td></tr>
+<tr><td class="bucket">NCAA Baseball</td><td class="num">44</td><td class="num">23W–21L</td><td class="num pos">52.3%</td><td class="num neg">-4.2u</td></tr>
+<tr><td class="bucket">MLB</td><td class="num">46</td><td class="num">22W–24L</td><td class="num neutral">47.8%</td><td class="num neg">-13.6u</td></tr>
+<tr><td class="bucket">NBA</td><td class="num">24</td><td class="num">10W–14L</td><td class="num neg">41.7%</td><td class="num neg">-21.6u</td></tr>
+<tr><td class="bucket">ATP Tennis (Monte Carlo)</td><td class="num">4</td><td class="num">1W–3L</td><td class="num neg">25.0%</td><td class="num neg">-10.7u</td></tr>
+</tbody>
+</table>
+
+<div class="interp">
+  <strong>Interpretation:</strong> NHL is the current workhorse — +23.3u on 34 picks, 61.8% win rate. This is the model's strongest sport post-rebuild and what's driving any profitability right now. NCAA Baseball is roughly breakeven but trending positive under the new gates (see <a href="changelog.html" style="color: var(--green);">changelog</a>). MLB is slightly under breakeven at 47.8% — expected for a sport with tight pitcher-driven pricing. NBA has been the major drag, largely from the pre-v25.13 rare-event prop cohort that can't recur. Tennis sample is too small to judge; Monte Carlo was a single tournament.
+</div>
+
+<h2>What this tells us</h2>
+
+<p><strong>The edge is real above 20%.</strong> The 20–22% and 22–25% buckets both show meaningful positive delta vs the implied probability. That's the mathematical test of whether "edge" is just a marketing word or an actual measurable quantity. In our data, it's measurable.</p>
+
+<p><strong>The 16–20% bucket confirms the 20% floor.</strong> Actual WR below the firing threshold is slightly worse than implied, which is why we don't fire there. Moving the floor below 20% would likely be P/L-negative on our current data.</p>
+
+<p><strong>NHL is carrying the sport breakdown post-rebuild.</strong> A transparent operator should say when results are concentrated in one sport, and they are. If the NHL signal weakens, the model's profitability could stall until another sport's cohort recovers.</p>
+
+<p><strong>The 25%+ bucket is calibrated but has a visible tail.</strong> +2.3% delta is still positive but tighter than 22–25%. Most of that tail was pre-v25.13 longshot props. Post-v25.13, the 25%+ bucket's future composition will be different from its historical composition.</p>
+
+<p><strong>Sample sizes still matter.</strong> The moneyline numbers (80% WR, +15.7u) are cherry-picked by an n=5 sample. Don't read conviction into anything under n=20.</p>
+
+<h2>What we're watching</h2>
+
+<ul style="color: var(--white-80); margin: 16px 0 16px 24px;">
+  <li style="margin-bottom: 10px;"><strong style="color: var(--green);">Prop calibration after v25.13.</strong> The +140 cap was deployed April 10. We expect the prop win rate to improve as the pre-cap losses age out of the post-rebuild window (which happens by early May). If it doesn't, we need a different fix.</li>
+  <li style="margin-bottom: 10px;"><strong style="color: var(--green);">NBA post-playoffs.</strong> NBA playoffs started this week. The model was built on regular-season samples. We expect the first two weeks to show whether the PROP_FADE_FLIP mechanism (v25.31) helps in playoff contexts.</li>
+  <li style="margin-bottom: 10px;"><strong style="color: var(--green);">PROP_BOOK_ARB live samples.</strong> Unblocked April 19. Will track real-world hit rate vs the scanner's backtest.</li>
+</ul>
+
+<hr>
+
+<div class="footer-meta">
+  Last updated: April 19, 2026 &middot; Sample: 358 graded picks ≥ 3.5u since March 4, 2026 &middot; <a href="dashboard.html">See the live record →</a>
+</div>
+
+</main>
+</body>
+</html>

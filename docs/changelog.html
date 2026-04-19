@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scotty's Edge | Model Changelog</title>
+<meta name="description" content="Every version change to the Scotty's Edge model. What changed, why, and what we expect it to do.">
+<meta name="theme-color" content="#0d1117">
+<meta property="og:title" content="Scotty's Edge | Model Changelog">
+<meta property="og:description" content="Every version, every rule change, every gate added or rolled back. The model's full public evolution.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0d1117; --bg-card: #141e2a; --bg-card-alt: #1a2636;
+  --green: #00e676; --red: #ff5252; --amber: #ffa726; --blue: #5b8fd0;
+  --white: #ffffff; --white-80: #cccccc; --white-60: #999999; --white-40: #666666;
+  --radius: 12px;
+}
+html { scroll-behavior: smooth; background: var(--bg); }
+body { font-family: 'Barlow', sans-serif; background: var(--bg); color: var(--white); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+.site-header { position: sticky; top: 0; z-index: 100; background: rgba(13, 17, 23, 0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 16px 0; }
+.site-header .container { max-width: 900px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+.nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--white); text-decoration: none; letter-spacing: 2px; }
+.nav-logo span { color: var(--green); }
+.nav-links { display: flex; gap: 20px; list-style: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 500; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.85rem; }
+.nav-links a { color: var(--white-80); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover, .nav-links a.active { color: var(--green); }
+main { max-width: 820px; margin: 0 auto; padding: 48px 24px 80px; }
+.eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--blue); margin-bottom: 12px; }
+h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; line-height: 1.05; color: var(--white); margin-bottom: 16px; letter-spacing: 1px; }
+.intro { font-size: 1.05rem; color: var(--white-80); padding: 20px 24px; border-left: 3px solid var(--blue); margin: 24px 0 40px; background: var(--bg-card); border-radius: 0 var(--radius) var(--radius) 0; font-style: italic; }
+.version-group { margin-bottom: 48px; }
+.version-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+.version-header .ver { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--green); letter-spacing: 2px; }
+.version-header .date { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 2px; color: var(--white-60); text-transform: uppercase; }
+.version-header .tag { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; background: rgba(91, 143, 208, 0.18); color: var(--blue); padding: 3px 10px; border-radius: 999px; margin-left: auto; }
+.version-header .tag.rollback { background: rgba(255, 82, 82, 0.18); color: var(--red); }
+.version-header .tag.live { background: rgba(0, 230, 118, 0.14); color: var(--green); }
+.change { background: var(--bg-card); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 12px; border-left: 3px solid var(--blue); }
+.change h3 { font-family: 'Barlow', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--white); margin-bottom: 6px; }
+.change p { color: var(--white-80); font-size: 0.95rem; margin-bottom: 6px; }
+.change .why { color: var(--white-60); font-size: 0.9rem; font-style: italic; }
+.change code { font-family: 'Barlow', monospace; background: var(--bg-card-alt); padding: 2px 6px; border-radius: 4px; color: var(--green); font-size: 0.88em; }
+hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 40px 0; }
+.footer-meta { font-size: 0.85rem; color: var(--white-60); font-style: italic; margin-top: 40px; text-align: center; }
+.footer-meta a { color: var(--green); text-decoration: none; }
+@media (max-width: 600px) {
+  h1 { font-size: 2.2rem; }
+  .version-header { flex-wrap: wrap; gap: 8px; }
+  .version-header .ver { font-size: 1.5rem; }
+  .version-header .tag { margin-left: 0; }
+  main { padding: 32px 20px 60px; }
+  .nav-links { gap: 12px; font-size: 0.72rem; }
+}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="nav-logo">SCOTTY'S <span>EDGE</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="methodology.html">Methodology</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="calibration.html">Calibration</a></li>
+      <li><a href="changelog.html" class="active">Changelog</a></li>
+      <li><a href="errors.html">Errors</a></li>
+    </ul>
+  </div>
+</header>
+
+<main>
+<div class="eyebrow">Model Changelog</div>
+<h1>How the Model Has Evolved</h1>
+
+<div class="intro">
+  <p>Every substantive change to the model, published with its version, date, and rationale. The full git history is publicly readable at <a href="https://github.com/scarusillo/scottys-edge" style="color: var(--green);">github.com/scarusillo/scottys-edge</a> — this page is the curated summary of the changes that mattered.</p>
+  <p>If you see a change that moved numbers against us being honestly documented here, that's the point. If we ever silently changed a rule to make a past loss look better, we'd have to hide that commit. We don't.</p>
+</div>
+
+<!-- v25.34 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v25.34</div>
+    <div class="date">Apr 19, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+
+  <div class="change">
+    <h3>PROP_BOOK_ARB unblocked</h3>
+    <p>Cross-book prop line disagreement scanner was detecting signals for 2 days without firing any picks — the downstream filter required 20% edge + ELITE confidence, which arb picks never meet by design. Whitelisted <code>BOOK_ARB</code> and <code>PROP_BOOK_ARB</code> side types to bypass the filter; they have their own thresholds at the scanner.</p>
+    <p class="why">Why: Backfilled 3 picks from Apr 18 (Murray OVER 23.5, Walter OVER 6.5, Randle OVER 18.5) for honest record accounting — 2W-1L, +3.17u.</p>
+  </div>
+
+  <div class="change">
+    <h3>Prop arb thresholds tightened</h3>
+    <p>Per-stat minimum gaps raised ~1.5×: points 1.5 → 2.0, assists 1.0 → 1.5, rebounds 1.0 → 1.5, threes/blocks/steals/SOG 0.5 → 1.0, pitcher Ks 1.0 → 1.5.</p>
+    <p class="why">Why: First-day sim showed 1.5+ gap went 2W-1L while 1.0 gap went 1W-4L. Tight enough to block the noise, wide enough to keep the real signals.</p>
+  </div>
+
+  <div class="change">
+    <h3>SCRUB safety net in grader</h3>
+    <p>If a bet's context contains a <code>SCRUB:</code> tag at grade time, the result is forced to TAINTED regardless of the game outcome. Added <code>cmd_unscrub</code> helper that properly reverses scrubs (strips the tag, clears result, deletes TAINTED graded row).</p>
+    <p class="why">Why: Miami/Stanford bet had lingering SCRUB tag after manual unscrub and was counted as a WIN. The record should never contradict the context.</p>
+  </div>
+
+  <div class="change">
+    <h3>prop_snapshots archival</h3>
+    <p>Split the 6.1M-row prop_snapshots table into a 696K-row live table (last 7 days) + 5.4M-row archive. Scanner queries 3.3× faster. Full history preserved via a UNION VIEW for backtests.</p>
+    <p class="why">Why: Runs were trending 15-20 min. Database bloat was the biggest factor.</p>
+  </div>
+
+  <div class="change">
+    <h3>Parallel API fetching</h3>
+    <p>Steps 3 (odds), 4 (props), and 4c (referees) now fetch all sports concurrently via ThreadPoolExecutor (max_workers=5). Network I/O overlapped; DB writes serialize.</p>
+    <p class="why">Why: 14 sports × 2s API calls = 28s serial. Parallelized reduces to ~6s for the same work.</p>
+  </div>
+
+  <div class="change">
+    <h3>SCORES step skipped on hourly runs</h3>
+    <p>Step 1 (score fetching) removed from hourly runs — scores are only needed for grading, which cmd_grade runs independently at 4am.</p>
+    <p class="why">Why: Saves ~30-60s per hourly run on 14 redundant API calls.</p>
+  </div>
+</div>
+
+<!-- v25.33 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v25.33</div>
+    <div class="date">Apr 18, 2026</div>
+    <div class="tag">Fix</div>
+  </div>
+  <div class="change">
+    <h3>Book-arb gates restricted to TODAY's games only (ET)</h3>
+    <p>All book-arb scanners (NCAA baseball, NBA totals, NHL/MLB spreads, props) now check that the event's commence_time falls on today's Eastern-time calendar date before firing.</p>
+    <p class="why">Why: A Raptors @ Cavs pick matched against the wrong day's game. The gate was scanning across dates; picks must strictly be on today's slate.</p>
+  </div>
+</div>
+
+<!-- v25.32 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v25.32</div>
+    <div class="date">Apr 18, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+  <div class="change">
+    <h3>NCAA_ERA_RELIABILITY_GATE</h3>
+    <p>For NCAA baseball totals, if either starter has &lt;15 career IP, the pick is blocked. Starter ERA on 1-inning samples is noise, not signal.</p>
+    <p class="why">Why: Vanderbilt's Stillman at 27.00 ERA over 0.2 IP triggered a false "weak pitching, bet OVER" edge. Thin-IP starters are the single most common source of bad prop and total edges.</p>
+  </div>
+  <div class="change">
+    <h3>Doubleheader exclusion</h3>
+    <p>When two games between the same teams fall on the same day (MLB/NCAA doubleheaders), the scraper now matches starters to the correct game explicitly, not by first-match heuristic.</p>
+    <p class="why">Why: Miami/Stanford game 2 was being priced with game 1's starters from a pre-game scrape.</p>
+  </div>
+</div>
+
+<!-- v25.31 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v25.31</div>
+    <div class="date">Apr 17, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+  <div class="change">
+    <h3>PROP_FADE_FLIP mechanism</h3>
+    <p>When our own prop model projects a stat ≥3.0 points different from the market median (on a 4+ book consensus), we flip direction — fade the model, bet with the market. Sized at 5u (max play).</p>
+    <p class="why">Why: Backtest showed wide model-market gaps correlate with market-right outcomes in playoff/late-season NBA contexts. The mechanism protects us from rate-model miscalibrations.</p>
+  </div>
+  <div class="change">
+    <h3>PROP_BOOK_ARB scanner added</h3>
+    <p>New scanner for cross-book prop disagreement: when sharp books (FD, BR) and soft books (DK, BetMGM, Caesars, Fanatics, ESPN BET) post meaningfully different lines on the same player + stat, we bet the soft side at the soft book.</p>
+    <p class="why">Why: Same thesis as game-line book-arb (v25.28) — soft books lag in adjusting prop lines. Scanner was deployed, then sat dormant for 2 days due to the v25.34 filter bug.</p>
+  </div>
+  <div class="change">
+    <h3>PROP_DIVERGENCE_GATE</h3>
+    <p>New gate that blocks prop picks where the model projection diverges from the market median by more than a per-stat threshold.</p>
+    <p class="why">Why: The Kennard pick trigger — model projected a radically different stat than consensus without enough signal to justify it.</p>
+  </div>
+</div>
+
+<!-- v25.28-29 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v25.28–29</div>
+    <div class="date">Apr 17, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+  <div class="change">
+    <h3>Book-arb expanded to NBA totals + NHL/MLB spreads</h3>
+    <p>Added book-arb gates for NBA totals (sharp/soft gap ≥ 1.0), NHL spreads (gap ≥ 1.5), MLB spreads (gap ≥ 1.5). Sized at 5u each.</p>
+    <p class="why">Why: NCAA baseball book-arb (v25.25) validated the mechanism. Multi-sport expansion multiplies the signal.</p>
+  </div>
+  <div class="change">
+    <h3>NHL spread divergence threshold loosened 1.5 → 2.5 (v25.29)</h3>
+    <p>The old 1.5-point threshold was flagging too many normal games. Raised to 2.5. Picks that would have fired at 1.5-2.5 are now tagged <code>DIV_EXPANDED</code> for monitoring but not bet.</p>
+    <p class="why">Why: Calibration showed 1.5-2.5 range was mostly noise. Real divergence signal appears at 2.5+.</p>
+  </div>
+</div>
+
+<!-- v25.22-27 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v25.22–27</div>
+    <div class="date">Apr 17, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+  <div class="change">
+    <h3>NCAA DraftKings gate overhaul</h3>
+    <p>Five new gates targeting a specific DK routing failure on NCAA baseball totals: <code>NCAA_DK_TIGHT_SKIP</code> (skip when all books at same line — market efficient), <code>NCAA_DK_FADE_FLIP</code> (flip to opposite side when DK soft vs sharp opener), <code>NCAA_DK_SHARP_VETO</code>, <code>NCAA_NO_SHARP_SKIP</code> (skip when neither FD nor BR posted opener), <code>NCAA_SHARP_LINE_MOVE</code> (sharp line moved significantly post-opener). Also <code>NCAA_DK_FLIP_BLOCKED</code> (v25.27) prevents flipping when a sharp book agrees with our original model side.</p>
+    <p class="why">Why: Backtest showed DK was routing us into NCAA totals that went 1W-6L. Isolating the bad signatures and either blocking or flipping them recovered +47u on backtest. Live: DK NCAA totals have gone from -25.6u pre-overhaul to 0 bets post-overhaul.</p>
+  </div>
+  <div class="change">
+    <h3>NCAA baseball book-arb (v25.25)</h3>
+    <p>FanDuel vs DraftKings opener gap ≥ 2.0 points triggers a book-arb pick. Sized at 5u.</p>
+  </div>
+</div>
+
+<!-- v25.13 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v25.13</div>
+    <div class="date">Apr 10, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+  <div class="change">
+    <h3>MAX_PROP_ODDS lowered +150 → +140</h3>
+    <p>No player prop will fire at any book if the odds are above +140. Additional guard: if ANY book offering the same prop has odds above +150, the pick is killed across all books.</p>
+    <p class="why">Why: Calibration showed +141 to +150 bucket went 1W-6L — rate-based projections systematically overconfident on rare-event props. See the <a href="errors.html" style="color: var(--green);">errors page</a> for the full post-mortem.</p>
+  </div>
+</div>
+
+<!-- v25.4 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v25.4</div>
+    <div class="date">Apr 10, 2026</div>
+    <div class="tag rollback">Rollback</div>
+  </div>
+  <div class="change">
+    <h3>v22 NCAA baseball UNDER filters removed</h3>
+    <p>Rolled back the v22 "block all Friday NCAA UNDERs" and "block NCAA UNDERs at line &gt; 12.0" gates. These were blocking ~140u/month of winners.</p>
+    <p class="why">Why: 14-day re-backtest showed Friday UNDERs at 38W-20L, +51.9u and line-12+ UNDERs at 79W-57L, +54.4u. The original v22 sample was too small and directionally wrong. Added a permanent note to shadow_factors.md preventing future re-litigation of this decision.</p>
+  </div>
+</div>
+
+<!-- v25 base -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v25</div>
+    <div class="date">Apr 8, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+  <div class="change">
+    <h3>Prop model overhaul</h3>
+    <p>Rebuilt the prop projection engine: moved from Poisson modeling to empirical hit-rate estimation on rolling 20-game + season samples. Added cross-book consensus engine. Capped max prop odds at +150 (later tightened to +140). Added a timing gate: MLB props only fire within a 3-hour pre-game window. Batting order tracking for MLB counting-stat props.</p>
+    <p class="why">Why: Props had been the model's weakest point. The overhaul was the largest single change since the late-March rebuild cutoff.</p>
+  </div>
+</div>
+
+<!-- v24 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v24</div>
+    <div class="date">Apr 6, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+  <div class="change">
+    <h3>Unified 20% edge floor, park/pace gates, arb scanner</h3>
+    <p>22 commits, +38u expected per backtest. Core changes: unified 20% edge floor across all books and market types, new park-effect gate (Coors + Wrigley), pace-context gate, arbitrage-line scanner for first-mover signals, fixed NCAAB tennis surface-Elo bug.</p>
+    <p class="why">Why: v24 was the "consolidation" release — tied together inconsistent thresholds into a single enforceable floor. The post-rebuild period starts within this window.</p>
+  </div>
+</div>
+
+<!-- v23 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v23</div>
+    <div class="date">Apr 3, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+  <div class="change">
+    <h3>Book-tier edges + Kelly scaling</h3>
+    <p>Different edge thresholds for sharp vs soft books (BetMGM 22% floor vs other books 20%). Kelly-fraction stake sizing (1/8 Kelly) replaced flat unit sizing. Goalie and pitcher form adjustments added. 20+ individual improvements shipped together.</p>
+  </div>
+</div>
+
+<!-- Rebuild -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">Rebuild</div>
+    <div class="date">Late March 2026</div>
+    <div class="tag rollback">Reset</div>
+  </div>
+  <div class="change">
+    <h3>v21 — raised edge floors to 20%, shadowed losing context factors</h3>
+    <p>The "post-rebuild" cutoff. All edge floors raised to 20%. Six context factors that were losing (Home fast-paced, Away bounce-back, Altitude, Home hot streak, Away revenge, Away letdown) were turned off (shadowed) while still tracked.</p>
+    <p class="why">Why: The all-time record includes data from a meaningfully different model. Any discussion of current-model performance has to split pre- vs post-rebuild. See methodology page for why this distinction matters.</p>
+  </div>
+</div>
+
+<hr>
+
+<div class="footer-meta">
+  Last updated: April 19, 2026 &middot; Current version: v25.34 &middot; <a href="https://github.com/scarusillo/scottys-edge" style="color: var(--green);">Full git history →</a>
+</div>
+
+</main>
+</body>
+</html>
