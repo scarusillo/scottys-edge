@@ -358,15 +358,22 @@ def cmd_run(args):
     print(f"  Sports: {', '.join(s.split('_')[-1].upper() for s in sports)}")
     print("="*60)
 
-    # Step 1: Scores
-    print("\n📊 Step 1: Fetching scores...")
-    try:
-        from odds_api import fetch_scores
-        for sp in sports:
-            try: fetch_scores(sp, days_back=3)
-            except Exception as e: print(f"  {sp}: {e}")
-    except Exception as e: print(f"  {e}")
-    _log.info("Step 1: Scores fetch complete")
+    # v25.34: per-step timing so we can see where 20-min runs are spending time
+    import time as _time
+    _step_t0 = _time.time()
+    _step_timings = {}
+    def _mark(step):
+        nonlocal _step_t0
+        now = _time.time()
+        _step_timings[step] = now - _step_t0
+        _step_t0 = now
+
+    # Step 1: Scores — SKIPPED on hourly runs (grade handles it at 4am).
+    # Hourly picks don't need game scores — only used for grading. Skipping
+    # saves ~14 API calls + ~30-60s per run. If cmd_grade runs independently
+    # each morning, scores are always up-to-date by the time we need them.
+    print("\n📊 Step 1: Scores SKIPPED (grade job handles this at 4am).")
+    _mark('step1_scores')
 
     # Step 2: Injuries (FREE)
     print("\n🏥 Step 2: Injuries (FREE)...")
@@ -374,6 +381,7 @@ def cmd_run(args):
         from injury_scraper import fetch_and_apply_all
         fetch_and_apply_all()
     except Exception as e: print(f"  {e}")
+    _mark('step2_injuries')
 
     # Step 3: Fetch fresh odds so predictions use CURRENT market lines.
     # Stale lines produce stale picks (e.g., Lakers +3.5 when market moved to +6.5).
@@ -422,6 +430,7 @@ def cmd_run(args):
             print(f"  Alert email failed: {e}")
 
     _log.info(f"Step 3: Odds fetch complete | {total_odds_fetched} rows")
+    _mark('step3_odds')
 
     # Step 5: Player Props
     print("\n🎯 Step 4: Player props...")
@@ -434,6 +443,7 @@ def cmd_run(args):
             else:
                 print(f"  {sp}: props not available")
     except Exception as e: print(f"  Props: {e}")
+    _mark('step4_props')
 
     # Step 4b: Pitcher data (FREE — ESPN box scores + day-of-week quality)
     if any('baseball' in s for s in sports):
@@ -459,6 +469,8 @@ def cmd_run(args):
         except Exception as e:
             print(f"  NHL goalie scraper: {e}")
 
+    _mark('step4b_pitchers_goalies')
+
     # Step 4c: Referee/official data (FREE — ESPN game summaries)
     print("\n🏛️ Step 4c: Referee data (FREE)...")
     try:
@@ -468,11 +480,13 @@ def cmd_run(args):
         print("  Referee data updated")
     except Exception as e:
         print(f"  Referee engine: {e}")
+    _mark('step4c_refs')
 
     # Step 5: Bootstrap missing ratings (FREE)
     print("\n🔧 Step 5: Ratings check...")
     from bootstrap_ratings import bootstrap_all
     bootstrap_all()
+    _mark('step5_ratings')
 
     # Step 5b: Elo ratings from game results (FREE — independent of market)
     print("\n🏆 Step 5b: Elo ratings from results...")
@@ -541,6 +555,7 @@ def cmd_run(args):
     for sp in resolved_sports:
         picks = generate_predictions(conn, sport=sp)
         game_picks.extend(picks)
+    _mark('step6_predictions')
 
     # Step 7a: Player Props — Edge Consensus Method
     print("\n🎯 Step 7: Player Props — Edge Consensus Analysis...")
@@ -567,6 +582,8 @@ def cmd_run(args):
     except Exception as e:
         print(f"  Props projection: {e}")
         import traceback; traceback.print_exc()
+
+    _mark('step7_props')
 
     # Step 7c: Merge consensus + model props (dedup: keep higher edge)
     prop_picks = _merge_prop_sources(consensus_props, model_props)
@@ -1529,6 +1546,17 @@ def cmd_run(args):
                     print(f"    {_w}")
         except Exception as e:
             print(f"  Sanity check: {e}")
+
+    _mark('step8_merge_dedup')
+
+    # v25.34: per-step timing summary — helps identify which step is eating
+    # time in slow runs. Print before email so it's visible in the log.
+    print("\n⏱️  Per-step timing:")
+    _total = sum(_step_timings.values())
+    for _k, _v in _step_timings.items():
+        pct = (_v / _total * 100) if _total > 0 else 0
+        print(f"    {_k:30s} {_v:6.1f}s  {pct:5.1f}%")
+    print(f"    {'TOTAL (pre-email)':30s} {_total:6.1f}s")
 
     if do_email:
         print("\n📧 Step 9: Sending email...")
