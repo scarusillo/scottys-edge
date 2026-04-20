@@ -2509,7 +2509,7 @@ def _validate_picks(picks):
     """
     valid = []
     flagged = 0
-    
+
     for p in picks:
         ms = p.get('model_spread')
         sel = p.get('selection', '')
@@ -2519,7 +2519,16 @@ def _validate_picks(picks):
         sport = p.get('sport', '')
         home = p.get('home', '')
         away = p.get('away', '')
-        
+
+        # v25.39: SPREAD_FADE_FLIP + DATA_SPREAD intentionally bet the side
+        # the Elo model DISAGREES with (that's the whole strategy). The
+        # wrong-direction check below would block them incorrectly. Same for
+        # BOOK_ARB picks which bypass model-side validation by design.
+        if p.get('side_type') in ('SPREAD_FADE_FLIP', 'DATA_SPREAD',
+                                   'BOOK_ARB', 'PROP_BOOK_ARB'):
+            valid.append(p)
+            continue
+
         # CHECK 1: Impossible edge (>50% is almost certainly a calculation error)
         if edge > 50:
             print(f"  ⚠ BLOCKED: {sel} — {edge:.1f}% edge is impossibly high")
