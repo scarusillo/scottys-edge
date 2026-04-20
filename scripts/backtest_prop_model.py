@@ -58,14 +58,15 @@ def backtest_prop_model(days=45, sport_filter=None, min_edge=None):
 
     for (day_str,) in date_rows:
         # Get prop snapshots for this day
-        sport_clause = f"AND sport = '{sport_filter}'" if sport_filter else ""
+        sport_clause = "AND sport = ?" if sport_filter else ""
+        params = (day_str, sport_filter) if sport_filter else (day_str,)
         rows = conn.execute(f"""
             SELECT sport, event_id, commence_time, home, away,
                    book, market, player, side, line, odds
             FROM prop_snapshots_all
             WHERE DATE(captured_at) = ?
             {sport_clause}
-        """, (day_str,)).fetchall()
+        """, params).fetchall()
 
         if not rows:
             continue

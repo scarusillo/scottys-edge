@@ -70,7 +70,8 @@ def backtest_props(days=45, sport_filter=None):
 
     for (day_str,) in date_rows:
         # Get all snapshots for this day
-        sport_clause = f"AND sport = '{sport_filter}'" if sport_filter else ""
+        sport_clause = "AND sport = ?" if sport_filter else ""
+        params = (day_str, sport_filter) if sport_filter else (day_str,)
         rows = conn.execute(f"""
             SELECT sport, event_id, commence_time, home, away,
                    book, market, player, side, line, odds, implied_prob
@@ -78,7 +79,7 @@ def backtest_props(days=45, sport_filter=None):
             WHERE DATE(captured_at) = ?
             AND sport IN ('basketball_nba', 'basketball_ncaab', 'icehockey_nhl')
             {sport_clause}
-        """, (day_str,)).fetchall()
+        """, params).fetchall()
 
         if not rows:
             continue

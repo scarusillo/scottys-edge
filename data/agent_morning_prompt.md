@@ -168,6 +168,43 @@ bucket (SHARP_CONFIRMS / SHARP_OPPOSES / NO_MOVEMENT).
 Do NOT report on MLB steam beyond baseline — MLB morning-bet strategy is set
 (see `project_steam_monitor.md`).
 
+## 6b. SHARP_OPPOSES_BLOCK GATE TRACKING (v25.35, live 2026-04-20)
+
+The SHARP_OPPOSES_BLOCK gate blocks picks where opener→current line moved
+against our side past the sport-specific steam threshold. Currently scoped
+to **icehockey_nhl** and **baseball_ncaa**. Other sports with SHARP_OPPOSES
+still fire — they are monitored to decide promotion to the block list.
+
+### Part A — Blocked picks: did the block save money?
+
+Query `shadow_blocked_picks WHERE reason LIKE 'SHARP_OPPOSES_BLOCK%' AND
+DATE(created_at) = <yesterday>`. For each blocked pick, look up the final
+score of that event (from `results` or ESPN) and determine: would the
+blocked pick have WON, LOST, or PUSHED at the blocked line and odds?
+
+Report:
+- Count of blocks by sport
+- Counterfactual W-L-P record and P/L (with +1u stake units at the blocked odds)
+- Net: **if P/L would have been negative, the block SAVED that amount; if
+  positive, the block COST that amount.**
+
+### Part B — Allowed SHARP_OPPOSES picks: do other sports need joining?
+
+Query `graded_bets WHERE context_factors LIKE '%sharp opposes%' AND sport NOT
+IN ('icehockey_nhl','baseball_ncaa') AND DATE(created_at) >= (yesterday - 14
+days)`. Break down by sport:
+
+- **MLB:** baseline 10 picks, 5-5, -3.94u (at backtest cutoff 2026-04-20)
+- **NBA / Bundesliga / others:** <5 picks each, too small yet
+
+**Promote to block list when:** a sport reaches n≥10 SHARP_OPPOSES picks
+post-Apr-20 AND win rate <48% AND P/L is negative. Flag as recommendation
+in Action Items if thresholds met.
+
+**Demote from block list when:** blocked-pick counterfactual P/L would have
+been NET POSITIVE over 20+ picks. The block is costing money; reassess the
+threshold or remove the sport.
+
 ## 7. ACTION ITEMS
 
 Concrete, numbered. Max 5. NEVER recommend things already resolved in

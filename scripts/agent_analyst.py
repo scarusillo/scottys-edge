@@ -240,6 +240,17 @@ def analyze_gate_health(conn):
     if tight_skips > 0:
         notes.append(f"NCAA_DK_TIGHT_SKIP: {tight_skips} skips (market efficient, should avoid -16u)")
 
+    # v25.35: SHARP_OPPOSES_BLOCK — NHL + NCAA Baseball only, backtest +24.91u
+    so_blocks = conn.execute("""
+        SELECT sport, COUNT(*) FROM shadow_blocked_picks
+        WHERE reason LIKE 'SHARP_OPPOSES_BLOCK%'
+        GROUP BY sport
+    """).fetchall()
+    if so_blocks:
+        parts = [f"{s.split('_',1)[-1].upper()}:{n}" for s, n in so_blocks]
+        total = sum(n for _, n in so_blocks)
+        notes.append(f"SHARP_OPPOSES_BLOCK: {total} blocks ({', '.join(parts)}) — cloud agent grades counterfactual")
+
     return notes
 
 

@@ -3229,8 +3229,54 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             except Exception:
                 pass  # Line movement data unavailable — don't block
 
+        # v25.35: SHARP_OPPOSES_BLOCK — gate picks where opener→current line
+        # moved against our side past the sport-specific steam threshold.
+        # Scoped to NHL + NCAA BB only (backtest post-Apr-1):
+        #   NHL:    17 picks, 8-9, -14.26u — decent sample, below coinflip
+        #   NCAA BB: 5 picks, 1-3-1, -10.65u — small sample but 25% hit rate
+        #                                       plus morning-agent cross-signal
+        # MLB stays monitored (50% hit, juice drag only). NBA/others not
+        # enough data yet. Sport list is the knob to promote/demote sports.
+        # Catches smaller movements that the CLV filter (-1.5 threshold) misses:
+        # NHL threshold is 0.5, NCAA BB is 1.0 — both below CLV cutoff.
+        SHARP_OPPOSES_BLOCK_SPORTS = {'icehockey_nhl', 'baseball_ncaa'}
+        if sport in SHARP_OPPOSES_BLOCK_SPORTS and conn is not None:
+            try:
+                from steam_engine import get_steam_signal
+                _sel = p.get('selection', '')
+                _eid = p.get('event_id', '')
+                _line = p.get('line')
+                if mtype == 'TOTAL':
+                    _steam_side = 'OVER' if 'OVER' in _sel.upper() else 'UNDER'
+                elif mtype == 'SPREAD':
+                    _st = (p.get('side_type') or '').upper()
+                    if _st in ('FAVORITE', 'DOG'):
+                        _steam_side = _st
+                    else:
+                        _steam_side = 'FAVORITE' if (_line is not None and _line < 0) else 'DOG'
+                else:
+                    _steam_side = None
+                if _steam_side and _eid and _line is not None:
+                    _sig, _info = get_steam_signal(conn, sport, _eid, mtype,
+                                                    _steam_side, _line, p.get('odds'))
+                    if _sig == 'SHARP_OPPOSES':
+                        _mv = _info.get('movement', 0)
+                        print(f"  ⚠ SHARP_OPPOSES_BLOCK: {_sel[:55]} — line moved {_mv:+.1f} against us")
+                        conn.execute("""INSERT INTO shadow_blocked_picks
+                            (created_at, sport, event_id, selection, market_type, book,
+                             line, odds, edge_pct, units, reason)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                            (datetime.now().isoformat(), sport, _eid, _sel, mtype,
+                             p.get('book', ''), _line, p.get('odds'),
+                             p.get('edge_pct', 0), p.get('units', 0),
+                             f'SHARP_OPPOSES_BLOCK ({sport}, move={_mv:+.1f})'))
+                        conn.commit()
+                        return False
+            except Exception:
+                pass
+
         return True
-    
+
     game_filtered = [p for p in game_picks if _passes_filter(p)]
     
     # ── Exclude offshore/non-legal books from recommendations ──
