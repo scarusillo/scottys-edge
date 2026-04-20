@@ -1903,15 +1903,82 @@ def generate_predictions(conn, sport=None, date=None):
                                         all_picks.append(pick)
                             elif _away_star_out and a_edge >= _min:
                                 print(f"    ⚠ INJURY GATE: {away} ML blocked — star player out ({a_imp:.1f} pts impact)")
+                # v25.39: CONTEXT MODEL check (NHL + MLS + EPL). Phase 1-5
+                # signals (injuries, form, rest, motivation, playoff HCA,
+                # series momentum, home/away splits, H2H, extended form,
+                # pace, star concentration). When Context Model brings the
+                # adjusted spread WITHIN max_div of market, fire a
+                # DATA_SPREAD pick on Context's preferred side. Takes
+                # precedence over SPREAD_FADE_FLIP on same game.
+                # Multi-sport backtest (14d, 90 blocked spreads):
+                #   NHL: 14 picks, 11-3 (78.6%), +35.00u
+                #   MLS: 5 picks, 5-0 (100%), +22.73u
+                #   EPL: 2 picks, 2-0 (100%), +9.09u
+                CONTEXT_MODEL_SPORTS = {
+                    'icehockey_nhl', 'soccer_usa_mls', 'soccer_epl',
+                }
+                _context_fired = False
+                if (sp in CONTEXT_MODEL_SPORTS
+                        and mkt_hs is not None and mkt_as is not None
+                        and mkt_hs_odds is not None and mkt_as_odds is not None):
+                    try:
+                        from context_model import compute_context_spread, format_context_summary
+                        _commence_date = (commence[:10] if commence else None)
+                        ms_ctx, _ctx_info = compute_context_spread(
+                            conn, sp, home, away, eid, ms, _commence_date)
+                        _ctx_div = abs(ms_ctx - mkt_hs)
+                        if _ctx_div <= max_div:
+                            # Context unblocks — pick Context's preferred side
+                            # ms_ctx < mkt_hs → Context more bullish on home → bet home
+                            if ms_ctx < mkt_hs:
+                                _c_team, _c_line, _c_odds, _c_book = home, mkt_hs, mkt_hs_odds, mkt_hs_book
+                            else:
+                                _c_team, _c_line, _c_odds, _c_book = away, mkt_as, mkt_as_odds, mkt_as_book
+                            from config import MIN_ODDS as _CM_MIN_ODDS
+                            if (_c_odds is not None and _c_odds > _CM_MIN_ODDS
+                                    and _c_odds <= 140 and _c_book):
+                                _ctx_summary = format_context_summary(_ctx_info)
+                                _ctx_ctx = (
+                                    f'DATA_SPREAD v25.39 — {_ctx_summary} | '
+                                    f'Market {mkt_hs:+.1f}, Context {ms_ctx:+.1f} '
+                                    f'(ctx_div={_ctx_div:.1f} ≤ {max_div}). '
+                                    f'Bet {_c_team} {_c_line:+.1f} @ {_c_book} {_c_odds:+.0f}.'
+                                )
+                                _ctx_pick = {
+                                    'sport': sp, 'event_id': eid, 'commence': commence,
+                                    'home': home, 'away': away,
+                                    'market_type': 'SPREAD',
+                                    'selection': f'{_c_team} {_c_line:+.1f}',
+                                    'book': _c_book, 'line': _c_line, 'odds': _c_odds,
+                                    'model_spread': ms,
+                                    'model_prob': 0, 'implied_prob': 0,
+                                    'edge_pct': 0,
+                                    'star_rating': 3, 'units': 5.0,
+                                    'confidence': 'DATA_SPREAD',
+                                    'side_type': 'DATA_SPREAD',
+                                    'spread_or_ml': 'SPREAD',
+                                    'timing': 'STANDARD',
+                                    'context': _ctx_ctx,
+                                    'notes': _ctx_ctx,
+                                }
+                                print(f"  🧠 DATA_SPREAD: {sp.split('_')[-1]} {_c_team} "
+                                      f"{_c_line:+.1f} @ {_c_book} {_c_odds:+.0f} "
+                                      f"(ctx_div {_ctx_div:.1f}, raw {abs(ms-mkt_hs):.1f})")
+                                all_picks.append(_ctx_pick)
+                                _context_fired = True
+                    except Exception as _ce:
+                        print(f"  ⚠ DATA_SPREAD error: {_ce}")
+
                 # v25.36: SPREAD_FADE_FLIP (NBA + NHL only).
+                # Only fires if Context Model did NOT produce a pick for this event.
                 # 14-day backtest on DIVERGENCE_GATE-blocked spread picks:
                 #   NBA: 38-18 (67.9%), +82.73u
                 #   NHL: 17-4 (81.0%), +57.27u
                 # When the model diverges from market by max_div+, the model
                 # is wrong ~70% of the time. Fade it — bet the OPPOSITE side
-                # at the market line. Small stake (3.5u) until live signal
-                # confirms; escalate after 15+ live picks.
-                if (sp in ('basketball_nba', 'icehockey_nhl')
+                # at the market line. 5u stake.
+                if (not _context_fired
+                        and sp in ('basketball_nba', 'icehockey_nhl')
                         and mkt_hs is not None and mkt_as is not None
                         and mkt_hs_odds is not None and mkt_as_odds is not None):
                     try:

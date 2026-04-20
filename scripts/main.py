@@ -2927,7 +2927,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # failed both the 20% edge floor and the ELITE/HIGH confidence check,
         # killing every prop arb pick silently. This unblocks prop arb to fire
         # on the same footing as game-line arb.
-        if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB', 'SPREAD_FADE_FLIP'):
+        if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB', 'SPREAD_FADE_FLIP', 'DATA_SPREAD'):
             return True
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
