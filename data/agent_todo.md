@@ -64,6 +64,62 @@ For each game:
 
 ---
 
+## 🔬 TOMORROW (2026-04-21) — Review today's picks against my concerns
+
+Today I flagged concerns on 4 of 6 live picks. Each concern maps to a
+potential new gate. Tomorrow morning, check which concerns validated
+against actual results — if the feared outcome happened, promote that
+concern to a backtest + potential gate. If picks won despite concerns,
+note that the model was right and I was overcautious.
+
+### Per-pick review checklist
+
+**Bet 986 — ATL @ WSH OVER 8.0 (MLB) | Concern: hot pitcher / blend mismatch**
+- Bryce Elder has 0.77 ERA in 2026 (4 starts, 23 IP); our model blended to 4.53
+- If UNDER hit → add to backlog: `MLB_PITCHER_HOT_BLEND_GATE`
+  - Trigger: block MLB totals when starter's last-5 ERA < 2.0 AND blended ERA > 3.5
+  - Backtest: pull 30 days of similar mismatches
+- If OVER hit → I was overcautious, blend is working
+
+**Bet 987 — Zach Hyman UNDER 2.5 SOG (NHL prop) | Concern: zero context factors**
+- No context factors shown at all on this prop pick
+- If LOSS → add to backlog: `PROP_NO_CONTEXT_WARN`
+  - Trigger: warn/shadow-block NHL props with empty context_factors
+  - Risk: projection-engine props often have no context by design — may over-block
+- If WIN → context absence is not a signal
+
+**Bet 988 — Ayo Dosunmu UNDER 13.5 (PROP_FADE_FLIP) | Confidence: high**
+- Third live PROP_FADE_FLIP; yesterday's pattern was 2-0 on Pritchard+Cunningham
+- If WIN → fade-flip running 3-0 in 2 days — consider stake boost review at 15 picks
+- If LOSS → first blemish; too early to change anything, note for tracking
+
+**Bet 989 — Sam Merrill OVER 8.5 pts (NBA prop) | Concern: low-usage, top-of-range**
+- Merrill is CLE's 3-point specialist; 8.5 is high for his usage
+- If LOSS → add to backlog: `NBA_PROP_USAGE_GATE`
+  - Trigger: NBA prop where player's season usage rate < 18% AND bet line is > player's P75
+  - Backtest: pull 30 days of low-usage-high-line NBA props
+- If WIN → low-usage at top range isn't systematically bad
+
+**Bet 990 — UCSB @ Cal Baptist UNDER 13.5 (BOOK_ARB) | Concern: just-posted line**
+- Lines posted ~3:00 PM, pick fired 3:13 PM — FD may have converged to DK by the time user saw email
+- If LOSS → **escalate BOOK_ARB_LINE_STABILITY_GATE from TODO to this-week build**
+  - Trigger: require 60 min of stable line data before firing BOOK_ARB
+- If WIN → was a valid arb after all; stability gate stays on backlog
+
+**Bet 991 — Minnesota Timberwolves +7.5 (SPREAD_FADE_FLIP) | First live NBA fade-flip**
+- This is our first-ever live SPREAD_FADE_FLIP graded result
+- If WIN → sample=1 toward the 15-pick pull-trigger threshold; confidence builds
+- If LOSS → sample=1 L; note and continue to 15-pick sample before any action
+
+### Additional systematic reviews tomorrow
+
+1. **SPREAD_FADE_FLIP running total** after one full day of live data
+2. **Context Model DATA_SPREAD fires** — did the 4pm+ runs produce any NHL/MLS/EPL DATA_SPREAD picks? What did they do?
+3. **Concentration cap fix verification** — no cross-type blocks since v25.38 deployed
+4. **Direction validator bypass verification** — no `value is on X` BLOCKED messages for fade/Context picks
+
+Check morning_briefing.md + auto_run.log for each.
+
 ## 🟡 OTHER OPEN
 
 ### Minimum line-stability time gate for BOOK_ARB (long-term)
