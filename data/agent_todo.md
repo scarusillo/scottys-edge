@@ -179,6 +179,45 @@ baseball markets; this is a post-v25.25 patch.
 
 Other monitors unchanged from pre-session list.
 
+---
+
+### Instagram Graph API migration (future — required to unlock paid ads)
+
+**Current state:** We post to Instagram via `instagrapi` (unofficial
+library that logs in with username/password and mimics the Android
+mobile app). This triggers Meta's "inauthentic activity" detection,
+which blocks the account from running paid ads via Ads Manager.
+Organic posting continues to work fine.
+
+**Source (researched 2026-04-20):** Meta's Terms prohibit automated
+account use except through "authorized routes" — specifically the
+Instagram Graph API via Meta Business Suite. instagrapi is NOT an
+authorized route. See:
+- https://transparency.meta.com/policies/community-standards/account-integrity/
+- https://transparency.meta.com/policies/ad-standards/
+
+**What restores ad eligibility:** Migrate
+`social_media.py:post_reel_to_instagram()` and the photo/story posters
+to use Meta's **Instagram Graph API** instead of instagrapi:
+- Requires a connected Facebook Page + approved Meta app
+- Must use access tokens (not username/password)
+- Some format restrictions — Stories have limited support via Graph;
+  some Reel formats need specific structures
+- After ~30 days of clean posting via authorized API, reapply for
+  ad eligibility
+
+**Effort:** 1-2 weeks dev time + Meta app review process
+
+**When to revisit:** If/when paid ads become a real growth lever. Current
+organic reach is fine; followers are growing on content quality. Ads
+would accelerate but aren't critical today.
+
+**Trigger:** follower growth plateau for 2+ weeks, OR we commit to paid
+boosting as part of the growth playbook.
+
+**Do NOT revisit before:** finishing NBA spread redesign + fade flip
+maturing to 15+ live picks. Dev bandwidth needed elsewhere.
+
 ## ✅ COMPLETED (2026-04-11)
 
 - [x] **Retasked all 15 hourly `ScottysEdge_XXAM/PM` scheduled tasks to use `auto_run_afternoon.bat` wrapper** — verified via `schtasks /Query`. All 15 tasks (06AM through 08PM) now point at the bat wrapper instead of calling `python.exe` directly. Every future run will capture both stdout and stderr to `auto_run.log`, and combined with v25.9's uncaught exception handler, the pipeline is now completely observable — no more silent failures.
