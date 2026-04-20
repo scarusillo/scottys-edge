@@ -680,7 +680,7 @@ def fetch_props(sport, event_id=None):
     """
     # Sport-specific prop market keys from The Odds API documentation
     PROP_MARKETS_BY_SPORT = {
-        'basketball_nba': 'player_points,player_rebounds,player_assists,player_threes,player_blocks,player_steals',
+        'basketball_nba': 'player_points,player_rebounds,player_assists,player_threes,player_blocks,player_steals,player_points_rebounds_assists',
         'basketball_ncaab': 'player_points,player_rebounds,player_assists,player_threes',
         'icehockey_nhl': 'player_points,player_assists,player_shots_on_goal,player_power_play_points,player_blocked_shots',
         # Soccer: limited props — shots and shots on target from US bookmakers

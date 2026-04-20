@@ -2598,11 +2598,17 @@ def _prop_book_arb_scan(conn, existing_eids=None):
         #   - batter_hits: both BetRivers and DK post main line at 0.5 >98% of
         #     the time; real arb fires ≈ 1 per 14 days (backtest verified).
         #   - batter_total_bases: same pattern + lacks 2B/3B data for grading.
+        # NBA combo — v25.37 SHADOW MODE (2026-04-20). Detect arb candidates,
+        # log to shadow_blocked_picks, DO NOT fire live bets. Revisit after
+        # 2 weeks of snapshot accumulation for a proper backtest.
+        'player_points_rebounds_assists': 2.5,
     }
+    SHADOW_ONLY_MARKETS = {'player_points_rebounds_assists'}
     STAT_LABEL = {
         'player_points': 'POINTS', 'player_assists': 'ASSISTS', 'player_rebounds': 'REBOUNDS',
         'player_threes': 'THREES', 'player_blocks': 'BLOCKS', 'player_steals': 'STEALS',
         'player_shots_on_goal': 'SOG',
+        'player_points_rebounds_assists': 'PRA',
         'batter_runs_scored': 'RUNS', 'batter_rbis': 'RBI', 'batter_total_bases': 'TOTAL BASES',
         'batter_hits': 'HITS', 'pitcher_strikeouts': 'STRIKEOUTS',
     }
@@ -2726,6 +2732,27 @@ def _prop_book_arb_scan(conn, existing_eids=None):
         sel = f"{player} {'OVER' if side == 'Over' else 'UNDER'} {soft_line} {label}"
         reason = (f"PROP_BOOK_ARB — Sharp median {sharp_median:.1f} vs {soft_book} {soft_line} "
                   f"(gap {gap:+.1f}). Betting {side.upper()} at {soft_book} — easier number on sharp's side.")
+
+        # v25.37: SHADOW_ONLY markets log the candidate but do NOT fire a live
+        # pick. Morning agent reads shadow_blocked_picks + grades counterfactual
+        # to decide when to promote from shadow to live.
+        if market in SHADOW_ONLY_MARKETS:
+            _shadow_reason = (f"PROP_BOOK_ARB_SHADOW ({market}, {sel[:40]}, "
+                              f"sharp_med={sharp_median:.1f}, soft={soft_line}, gap={gap:+.1f}, "
+                              f"book={soft_book}, odds={soft_odds:+.0f})")
+            try:
+                conn.execute("""INSERT INTO shadow_blocked_picks
+                    (created_at, sport, event_id, selection, market_type, book,
+                     line, odds, edge_pct, units, reason)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    (datetime.now().isoformat(), sport, eid, sel, 'PROP',
+                     soft_book, soft_line, soft_odds, round(abs(gap) * 5.0, 1),
+                     5.0, _shadow_reason))
+                conn.commit()
+                print(f"  👁 PROP_BOOK_ARB_SHADOW: {sel[:50]} @ {soft_book} {soft_odds:+.0f} | gap={gap:+.1f}")
+            except Exception as _se:
+                print(f"  ⚠ shadow log failed: {_se}")
+            continue  # do NOT add to picks_out
 
         pick = {
             'sport': sport, 'event_id': eid, 'commence': commence,

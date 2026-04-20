@@ -205,6 +205,22 @@ in Action Items if thresholds met.
 been NET POSITIVE over 20+ picks. The block is costing money; reassess the
 threshold or remove the sport.
 
+## 6c. PRA ARB SHADOW TRACKING (v25.37, live 2026-04-20)
+
+NBA combo prop book-arb is in SHADOW MODE — scanner detects
+`player_points_rebounds_assists` arb candidates and logs to
+`shadow_blocked_picks` with reason `PROP_BOOK_ARB_SHADOW`. **No live bets.**
+
+Promote to live when BOTH:
+- n ≥ 15 shadow candidates accumulated
+- Counterfactual W/L ≥ 55% (grade each candidate by looking up the player's
+  actual PRA total and comparing to the bet line + side direction logged in
+  the reason string)
+
+Report weekly progress toward those thresholds. If shadow W/L < 45% after
+15+ candidates, remove PRA from THRESHOLDS in `_prop_book_arb_scan` — the
+signal isn't there.
+
 ## 7. ACTION ITEMS
 
 Concrete, numbered. Max 5. NEVER recommend things already resolved in

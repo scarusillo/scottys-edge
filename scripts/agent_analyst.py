@@ -265,6 +265,17 @@ def analyze_gate_health(conn):
             wr = w/(w+l)*100 if (w+l) else 0
             notes.append(f"SPREAD_FADE_FLIP {sp}: {w}W-{l}L ({wr:.0f}%) {pnl:+.1f}u — pull if <52% after 15+ picks")
 
+    # v25.37: NBA combo prop book-arb — SHADOW MODE (logged only, no live bet).
+    # Count candidates; promote to live when ≥15 shadow candidates + counterfactual
+    # W/L >= 55%.
+    pra_shadow = conn.execute("""
+        SELECT COUNT(*) FROM shadow_blocked_picks
+        WHERE reason LIKE 'PROP_BOOK_ARB_SHADOW (player_points_rebounds_assists%'
+    """).fetchone()[0]
+    if pra_shadow > 0:
+        notes.append(f"PRA_ARB_SHADOW: {pra_shadow} candidates logged (v25.37 shadow mode). "
+                     f"Grade counterfactual outcomes; promote to live at n≥15 + W/L ≥ 55%.")
+
     return notes
 
 
