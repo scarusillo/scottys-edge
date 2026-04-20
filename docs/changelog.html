@@ -83,6 +83,57 @@ hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 40px 0;
 <!-- v25.34 -->
 <div class="version-group">
   <div class="version-header">
+    <div class="ver">v25.39</div>
+    <div class="date">Apr 20, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+
+  <div class="change">
+    <h3>Context Model live (NHL + MLS + EPL spreads)</h3>
+    <p>New module (<code>context_model.py</code>) running alongside the Elo-based model. Layers 13 real-world signals — injuries, last-5 and last-20 form, rest/back-to-back, tanking motivation, playoff home-court bonus, playoff injury amplification (shrunk rotations), series momentum, team-specific home/away splits, H2H regular-season margin, pace/scoring differential, star concentration amplifier — onto the raw Elo spread. When Elo diverges from market but the context-adjusted projection falls back within the divergence threshold, fires a <code>DATA_SPREAD</code> pick on Context's preferred side at the market line, 5u stake, ≤+140 odds.</p>
+    <p class="why">Why: Elo knows team strength but nothing about tonight — who's hurt, who's coasting, how these teams match up. On NHL/MLS/EPL, 13 signals close the gap. 14-day backtest: NHL 11-3 (78.6%, +35.00u), MLS 5-0 (+22.73u), EPL 2-0 (+9.09u). NBA excluded — Elo errors on playoff spreads (10+ pts) are structurally too large for adjustments (1-5 pts) to close.</p>
+  </div>
+
+  <div class="change">
+    <h3>SPREAD_FADE_FLIP (NBA + NHL)</h3>
+    <p>When <code>DIVERGENCE_GATE</code> blocks a spread pick on NBA or NHL, we now bet the OPPOSITE side of what the Elo model wanted — market line, market odds, 5u stake. Backtest on 14 days of blocked picks: NBA 38-18 (67.9%, +82.73u), NHL 17-4 (81.0%, +57.27u). Combined +140u. Context Model takes precedence on NHL when it unblocks; fade flip is the fallback.</p>
+    <p class="why">Why: Our Elo spread model is wrong ~70% of the time on big divergences — especially playoff/injury situations. Fading is contrarian-to-our-own-model and works precisely because the model is broken for that regime. It's a bandage, not a fix; real fix is a better spread model (Context Model is step 1 of that).</p>
+  </div>
+
+  <div class="change">
+    <h3>SHARP_OPPOSES_BLOCK gate (NHL + NCAA Baseball)</h3>
+    <p>Blocks game-line picks on these two sports when the opener-to-current line moved against our side past the steam-engine threshold. Post-Apr-1 backtest: 22 picks saved, +24.91u.</p>
+    <p class="why">Why: NHL 8-9 (-14.26u) and NCAA Baseball 1-3-1 (-10.65u) on SHARP_OPPOSES picks — the market moved against us and we lost. MLB blocked at 50% hit rate (juice drag, not signal) — no structural lever.</p>
+  </div>
+
+  <div class="change">
+    <h3>NBA PRA book-arb — SHADOW mode</h3>
+    <p>Points+Rebounds+Assists prop collection enabled in the API fetch. Arb scanner detects sharp-vs-soft line gaps ≥ 2.5 and logs to <code>shadow_blocked_picks</code> with reason <code>PROP_BOOK_ARB_SHADOW</code> — no live bet. Promote to live betting at n=15 candidates with ≥55% counterfactual W/L.</p>
+    <p class="why">Why: Zero historical PRA snapshots (never requested before). Combo props have different volatility math than singles — threshold 2.5 is an educated guess. Shadow-first protects the bankroll while we accumulate data.</p>
+  </div>
+
+  <div class="change">
+    <h3>Concentration cap bug fix</h3>
+    <p>Today's first SPREAD_FADE_FLIP on DEN/MIN was blocked because a misrouted Ayo Dosunmu prop shared an Odds API event_id with the game. The cap logic was asymmetric — new PROPs were exempt from being capped, but EXISTING props were still populating the event-watchlist that blocks game-line picks. Fixed: props no longer populate the cap list.</p>
+    <p class="why">Why: Caught live by the fade-flip rollout. Props are independent bets from game-line picks; they shouldn't block each other.</p>
+  </div>
+
+  <div class="change">
+    <h3>SQL injection patches + data-model docs</h3>
+    <p>Parameterized <code>sport_filter</code> queries in <code>backtest_prop_model.py</code> and <code>backtest_props.py</code> (was string-interpolated). Added explicit documentation in <code>grader.py</code> + CLAUDE.md that <code>graded_bets</code> is authoritative for performance analysis — TAINTED/DUPLICATE rows in <code>bets</code> are intentionally excluded, and backfilled grades may have <code>bet_id IS NULL</code>.</p>
+    <p class="why">Why: Code audit findings from the morning. No observed exploit, but the patch is cheap and the docs prevent future analysis errors.</p>
+  </div>
+
+  <div class="change">
+    <h3>Opener capture scheduled at 5:30 AM ET</h3>
+    <p>New Windows scheduled task <code>ScottysEdge_Opener_530AM</code> runs <code>main.py opener</code> 30 min before the 6 AM hourly pipeline. Catch-up-on-login enabled — if the PC is off on weekends, the task runs as soon as the PC powers on.</p>
+    <p class="why">Why: Before this, the 6 AM hourly run was the FIRST to see today's lines, so opener = current snapshot. Steam/divergence gates couldn't detect any movement on 6 AM picks. Now we have a 30-min window for real line movement to be visible.</p>
+  </div>
+</div>
+
+<!-- v25.34 -->
+<div class="version-group">
+  <div class="version-header">
     <div class="ver">v25.34</div>
     <div class="date">Apr 19, 2026</div>
     <div class="tag live">Live</div>
