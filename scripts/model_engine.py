@@ -1903,6 +1903,59 @@ def generate_predictions(conn, sport=None, date=None):
                                         all_picks.append(pick)
                             elif _away_star_out and a_edge >= _min:
                                 print(f"    ⚠ INJURY GATE: {away} ML blocked — star player out ({a_imp:.1f} pts impact)")
+                # v25.36: SPREAD_FADE_FLIP (NBA + NHL only).
+                # 14-day backtest on DIVERGENCE_GATE-blocked spread picks:
+                #   NBA: 38-18 (67.9%), +82.73u
+                #   NHL: 17-4 (81.0%), +57.27u
+                # When the model diverges from market by max_div+, the model
+                # is wrong ~70% of the time. Fade it — bet the OPPOSITE side
+                # at the market line. Small stake (3.5u) until live signal
+                # confirms; escalate after 15+ live picks.
+                if (sp in ('basketball_nba', 'icehockey_nhl')
+                        and mkt_hs is not None and mkt_as is not None
+                        and mkt_hs_odds is not None and mkt_as_odds is not None):
+                    try:
+                        # Determine which side the model WANTED:
+                        #   ms < mkt_hs → model more bullish on home than market → fade to AWAY
+                        #   ms > mkt_hs → model less bullish on home → fade to HOME
+                        if ms > mkt_hs:
+                            _f_team, _f_line, _f_odds, _f_book = home, mkt_hs, mkt_hs_odds, mkt_hs_book
+                        else:
+                            _f_team, _f_line, _f_odds, _f_book = away, mkt_as, mkt_as_odds, mkt_as_book
+                        # Respect global odds policy: -150 floor (favorite cap),
+                        # +200 ceiling (sanity, far above typical spread juice).
+                        from config import MIN_ODDS as _FF_MIN_ODDS
+                        if (_f_odds is not None and _f_odds > _FF_MIN_ODDS
+                                and _f_odds <= 200 and _f_book):
+                            _fade_div = abs(ms - mkt_hs)
+                            _fade_ctx = (
+                                f'SPREAD_FADE_FLIP v25.36 — model ms={ms:+.1f} vs market '
+                                f'{mkt_hs:+.1f} (div={_fade_div:.1f}). Fading model → '
+                                f'bet {_f_team} {_f_line:+.1f} at {_f_book} {_f_odds:+.0f}.'
+                            )
+                            _fade_pick = {
+                                'sport': sp, 'event_id': eid, 'commence': commence,
+                                'home': home, 'away': away,
+                                'market_type': 'SPREAD',
+                                'selection': f'{_f_team} {_f_line:+.1f}',
+                                'book': _f_book, 'line': _f_line, 'odds': _f_odds,
+                                'model_spread': ms,
+                                'model_prob': 0, 'implied_prob': 0,
+                                'edge_pct': 0,
+                                'star_rating': 3, 'units': 3.5,
+                                'confidence': 'FADE_FLIP',
+                                'side_type': 'SPREAD_FADE_FLIP',
+                                'spread_or_ml': 'SPREAD',
+                                'timing': 'STANDARD',
+                                'context': _fade_ctx,
+                                'notes': _fade_ctx,
+                            }
+                            print(f"  🔄 SPREAD_FADE_FLIP: {sp.split('_')[-1]} {_f_team} "
+                                  f"{_f_line:+.1f} @ {_f_book} {_f_odds:+.0f} (div {_fade_div:.1f})")
+                            all_picks.append(_fade_pick)
+                    except Exception as _e:
+                        print(f"  ⚠ SPREAD_FADE_FLIP error: {_e}")
+
                 _log_divergence_block(conn, sp, eid, home, away, ms, mkt_hs, 'post_elo_rescue')
                 skip_div += 1; continue
             

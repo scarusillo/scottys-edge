@@ -2593,8 +2593,11 @@ def _prop_book_arb_scan(conn, existing_eids=None):
         'player_shots_on_goal': 1.0,
         # MLB pitcher (was 1.0)
         'pitcher_strikeouts': 1.5,
-        # MLB batter stats (total_bases, hits, runs, rbi) EXCLUDED: sharp and soft
-        # books use different main lines. See notes below.
+        # MLB batter stats EXCLUDED. Per main-line audit 2026-04-20:
+        #   - batter_rbis, batter_runs_scored: no sharp book posts them
+        #   - batter_hits: both BetRivers and DK post main line at 0.5 >98% of
+        #     the time; real arb fires ≈ 1 per 14 days (backtest verified).
+        #   - batter_total_bases: same pattern + lacks 2B/3B data for grading.
     }
     STAT_LABEL = {
         'player_points': 'POINTS', 'player_assists': 'ASSISTS', 'player_rebounds': 'REBOUNDS',
@@ -2704,8 +2707,11 @@ def _prop_book_arb_scan(conn, existing_eids=None):
             continue
         soft_book, soft_line, soft_odds, gap = best_soft
 
-        # MIN_ODDS safety
-        if soft_odds is None or soft_odds <= _PBA_MIN_ODDS:
+        # MIN_ODDS safety (favorite floor) + MAX prop-odds cap (v25.36).
+        # The projection engine uses MAX_PROP_ODDS=140 (player_prop_model.py).
+        # Mirror that here so BOOK_ARB respects the same +140 ceiling — no
+        # plus-money longshots slip through the arb scanner.
+        if soft_odds is None or soft_odds <= _PBA_MIN_ODDS or soft_odds > 140:
             continue
 
         # Dedup: skip if model or Option C already has a pick for this event/player/stat
@@ -2885,7 +2891,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # failed both the 20% edge floor and the ELITE/HIGH confidence check,
         # killing every prop arb pick silently. This unblocks prop arb to fire
         # on the same footing as game-line arb.
-        if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB'):
+        if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB', 'SPREAD_FADE_FLIP'):
             return True
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
