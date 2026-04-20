@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scotty's Edge | Engine Dashboard</title>
+<meta name="theme-color" content="#0d1117">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, Segoe UI, Arial, sans-serif; background:#0d1117; color:#fff; padding:32px 16px; line-height:1.6; max-width:960px; margin:0 auto; }
+h1 { font-size:2rem; margin-bottom:4px; color:#00e676; }
+.ts { color:#999; font-size:0.9rem; margin-bottom:32px; }
+h2 { font-size:1.3rem; margin:28px 0 12px; color:#5b8fd0; border-bottom:1px solid #333; padding-bottom:6px; }
+table { width:100%; border-collapse:collapse; font-size:0.95rem; background:#141e2a; border-radius:8px; overflow:hidden; margin-bottom:16px; }
+th, td { padding:10px 14px; text-align:left; border-bottom:1px solid #222; }
+th { background:#1a2636; color:#999; font-weight:600; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px; }
+tr:last-child td { border-bottom:none; }
+.pos { color:#00e676; font-weight:600; }
+.neg { color:#ff5252; font-weight:600; }
+.note { color:#999; font-size:0.85rem; font-style:italic; margin:8px 0; padding-left:12px; border-left:2px solid #333; }
+.nav { margin-bottom:20px; font-size:0.9rem; }
+.nav a { color:#00e676; text-decoration:none; margin-right:16px; }
+</style></head><body>
+<div class="nav"><a href="index.html">← Home</a><a href="dashboard.html">Dashboard</a><a href="methodology.html">Methodology</a><a href="changelog.html">Changelog</a></div>
+<h1>Engine Dashboard</h1>
+<div class="ts">Generated 2026-04-20 04:45 PM ET · Live performance per pick-engine</div>
+
+<h2>Engines — live W/L + P/L</h2>
+<table><tr><th>Engine</th><th>Sample</th><th>W-L-P</th><th>Win%</th><th>P/L</th></tr>
+<tr><td><strong>SPREAD_FADE_FLIP</strong></td><td>0 graded</td><td>0-0-0</td><td>0.0%</td><td class=''>+0.00u</td></tr>
+<tr><td><strong>DATA_SPREAD (Context Model)</strong></td><td>0 graded</td><td>0-0-0</td><td>0.0%</td><td class=''>+0.00u</td></tr>
+<tr><td><strong>BOOK_ARB (game lines)</strong></td><td>0 graded</td><td>0-0-0</td><td>0.0%</td><td class=''>+0.00u</td></tr>
+<tr><td><strong>PROP_BOOK_ARB</strong></td><td>3 graded</td><td>2-1-0</td><td>66.7%</td><td class='pos'>+3.17u</td></tr>
+<tr><td><strong>PROP_FADE_FLIP</strong></td><td>4 graded</td><td>3-1-0</td><td>75.0%</td><td class='pos'>+5.88u</td></tr>
+</table>
+<p class="note">Pull triggers: SPREAD_FADE_FLIP &lt;52% after 15 picks · DATA_SPREAD &lt;55% after 15 picks · PROP_BOOK_ARB still thin (3 live picks ever)</p>
+
+<h2>Gates — shadow + live block counts</h2>
+<table><tr><th>Gate</th><th>Lifetime blocks</th></tr>
+<tr><td><strong>SHARP_OPPOSES_BLOCK</strong></td><td>0 blocks</td></tr>
+<tr><td><strong>PRA book-arb shadow</strong></td><td>0 blocks</td></tr>
+<tr><td><strong>NCAA_DK_TIGHT_SKIP</strong></td><td>7 blocks</td></tr>
+<tr><td><strong>NCAA_DK_FADE_FLIP</strong></td><td>2 blocks</td></tr>
+</table>
+<p class="note">SHARP_OPPOSES_BLOCK: counterfactual grading runs in the morning briefing. PRA book-arb shadow: promotes to live at n≥15 with ≥55% counterfactual W/L.</p>
+
+<h2>By sport (post-Apr-1)</h2>
+<table><tr><th>Sport</th><th>N</th><th>W-L</th><th>P/L</th></tr>
+<tr><td>icehockey_nhl</td><td>36</td><td>21-15</td><td class='pos'>+13.35u</td></tr>
+<tr><td>soccer_spain_la_liga</td><td>2</td><td>2-0</td><td class='pos'>+7.75u</td></tr>
+<tr><td>soccer_germany_bundesliga</td><td>2</td><td>2-0</td><td class='pos'>+7.02u</td></tr>
+<tr><td>basketball_ncaab</td><td>1</td><td>1-0</td><td class='pos'>+4.95u</td></tr>
+<tr><td>soccer_italy_serie_a</td><td>2</td><td>1-1</td><td class='neg'>-1.50u</td></tr>
+<tr><td>soccer_uefa_champs_league</td><td>1</td><td>0-1</td><td class='neg'>-5.00u</td></tr>
+<tr><td>basketball_nba</td><td>27</td><td>13-14</td><td class='neg'>-8.89u</td></tr>
+<tr><td>tennis_atp_monte_carlo_masters</td><td>4</td><td>1-3</td><td class='neg'>-10.67u</td></tr>
+<tr><td>baseball_ncaa</td><td>51</td><td>25-24</td><td class='neg'>-10.92u</td></tr>
+<tr><td>baseball_mlb</td><td>47</td><td>22-24</td><td class='neg'>-13.62u</td></tr>
+</table>
+
+</body></html>

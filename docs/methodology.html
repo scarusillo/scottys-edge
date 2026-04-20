@@ -263,11 +263,21 @@ hr {
 <h3>Book arbitrage (<code>BOOK_ARB</code>)</h3>
 <p>When sharp books and soft books post different lines on the same market, we take the soft side. Works on game totals, spreads, and player props. This is pure mechanical edge — no model needed, just cross-book price comparison.</p>
 
-<h3>Prop fade-flip (<code>FADE_FLIP</code>)</h3>
+<h3>Prop fade-flip (<code>PROP_FADE_FLIP</code>)</h3>
 <p>When our model projects a stat significantly different from the market median (gap ≥ 3.0 points on a 4+ book consensus), we fade the model and bet with the market. This is a rule to protect us from the model's own miscalibrations — especially in high-variance playoff contexts.</p>
 
+<h3>Spread fade-flip (<code>SPREAD_FADE_FLIP</code>) — added Apr 2026</h3>
+<p>Same philosophy, applied to NBA and NHL game spreads. When our Elo-based spread diverges from the market by more than the sport's divergence threshold (4 pts NBA, 2.5 pts NHL), we bet the OPPOSITE side of what the model wanted, at the market line. Backtested on the last 14 days of would-be blocked picks: NBA 38-18 (68%), NHL 17-4 (81%). The logic is honest — our spread model is wrong often enough on big disagreements that fading it is +EV. It's a bandage while we build a better spread model.</p>
+
+<h3>Context Model (<code>DATA_SPREAD</code>) — added Apr 20, 2026</h3>
+<p>A secondary spread engine that layers real-world context onto the raw Elo baseline: injury point-impact per team, last-5 and last-20 game form deltas, back-to-back and rest days, late-season tanking detection, playoff home-court amplification, playoff injury amplification (shrunk rotations), series momentum from recent meetings, team-specific home/away splits, regular-season H2H margin, pace/scoring differential, and star-concentration amplifier (when a team has only 1-2 scorers averaging 18+ PPG and one is out).</p>
+<p>When the Elo model diverges but Context brings the adjusted projection back within threshold, we fire on Context's preferred side at the market line. Currently live for <strong>NHL, MLS, and EPL</strong>. NBA excluded — Elo errors on playoff spreads exceed what Context adjustments can close.</p>
+
+<h3>Sharp-opposes block (<code>SHARP_OPPOSES_BLOCK</code>) — added Apr 2026</h3>
+<p>For NHL and NCAA Baseball specifically: if the opener-to-current line has moved against our bet direction past the sport's steam threshold, we block the pick. Backtest confirmed fading picks where sharp money moved against us was costing money on these two sports. MLB is monitored but not blocked — the losses there are juice drag, not a real signal.</p>
+
 <h3>Steam detection</h3>
-<p>We track opening lines for every market. When the line moves in our direction between opener and our bet, we log <code>SHARP_CONFIRMS</code>. When it moves against us, <code>SHARP_OPPOSES</code>. The signal isn't used to change bet sizing yet — we need a larger live sample — but it's recorded for every pick.</p>
+<p>We track opening lines for every market. When the line moves in our direction between opener and our bet, we log <code>SHARP_CONFIRMS</code>. When it moves against us, <code>SHARP_OPPOSES</code>. On NHL and NCAA Baseball, SHARP_OPPOSES now blocks picks (see above). On other sports the signal is recorded for future tuning.</p>
 
 <h2>What "Edge" Means Here</h2>
 <p>We use implied probability. If a pick is offered at -110 odds, the market implies a 52.4% chance of winning. If our model says the true probability is 65%, that's a 12.6-point edge.</p>

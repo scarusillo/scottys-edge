@@ -120,6 +120,28 @@ note that the model was right and I was overcautious.
 
 Check morning_briefing.md + auto_run.log for each.
 
+### NBA redesign — Phase A data inventory (1 hour scope job)
+
+Before we start the multi-week NBA market-consensus baseline project,
+verify the data pipeline has what we need:
+
+1. Check `market_consensus` table schema (does it exist, what's stored?)
+2. For last 30 days of NBA games: can we reconstruct sharp-book median
+   spread (FD, BR) at any point in time from the `odds` table?
+3. Identify the 3-4 most important book-fetches per event for a robust
+   consensus (FD + BR minimum; DK + BetMGM for soft-side comparison)
+4. Run one test: compute market_median spread for 10 recent NBA games
+   and compare to actual closing line. Is our consensus close to sharp
+   closing line?
+5. Spec the data-side dependencies before any code changes.
+
+**Why tomorrow:** clears runway for the NBA redesign when fade flip
+matures (~2 weeks). Don't start the 3-4 week build until we know the
+data foundation is solid.
+
+**Effort:** 30-60 min of SQL exploration + a scratch script. No code
+changes, no shipping. Just a scoping exercise.
+
 ## 🟡 OTHER OPEN
 
 ### Minimum line-stability time gate for BOOK_ARB (long-term)
