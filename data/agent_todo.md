@@ -1,11 +1,72 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-11 from Code Auditor + Morning Briefing + Pre-Run Validator + Pipeline Debug Session
+**Last updated:** 2026-04-20 — post v25.35 / v25.36 / v25.37 ship session
 
 ---
 
-## 🔴 OPEN CRITICAL
+## 🔴 OPEN CRITICAL — TOP PRIORITY
 
-None. 🎉
+### 1. Secondary spread model (data-driven) — coexist with Elo model + fade flip
+
+**Concept:** Keep the existing Elo-based spread model AS-IS. It's our "divergence
+detector" — its wrongness feeds `SPREAD_FADE_FLIP` (+140u backtest). Build a
+SECOND spread model alongside it that uses real inputs to find genuine spread
+edges the Elo model misses.
+
+**Why not replace Elo:**
+- Fade flip is actively printing money because Elo is broken in playoffs
+- Replacing Elo would kill that edge for an unproven new model
+- Both can coexist — different games get picked by different engines
+
+**Proposed architecture:**
+```
+For each game:
+    elo_spread      = existing Elo-based projection
+    data_spread     = NEW model (injuries, lineup, rest, motivation, H2H, form)
+    market_spread   = best market line
+
+    Path 1 — FADE_FLIP (keep):
+        IF |elo_spread - market_spread| > max_div:
+            SPREAD_FADE_FLIP fires  (opposite side of Elo)
+
+    Path 2 — DATA-DRIVEN PICKS (new):
+        data_edge = (data_model vs market) at best book
+        IF data_edge >= 20% AND |data_spread - market_spread| < max_div:
+            Fire own-pick at market line  (real edge)
+
+    Path 3 — BOTH models agree AND market disagrees (rare, high conviction):
+        Stake boost (+1u) or fire at lower edge threshold
+```
+
+**Data inputs to build (ranked by impact):**
+| Input | Source | Complexity | Impact |
+|-------|--------|------------|--------|
+| Injury list (starters out) | ESPN injuries API | Medium | 🔥 Biggest single win |
+| Confirmed starting lineup | ESPN boxscore pre-game | Medium | Captures rest decisions |
+| Rest days / back-to-back | Schedule data (have) | Easy | 1-2 pts per B2B |
+| Motivation (seeding/tanking/elim) | Standings + rules | Hard | Big playoff impact |
+| Recent form vs season avg | Existing game_results | Easy | Hot/cold streaks |
+| H2H history | Existing game_results | Easy | Matchup-specific |
+
+**Integration points:**
+- `context_engine.py` already has `spread_adj` infrastructure — add new adjustment types
+- Each input contributes spread_adj delta applied to `ms` (e.g., star out → -5 pts)
+- Keep elo_spread computation untouched (for fade flip continuity)
+- Add `data_spread` as a parallel output used for Path 2 picks
+
+**Scope:** 2-4 weeks of evening work. Most time is API plumbing + player name normalization. Model changes are small.
+
+**When to start:**
+- Wait 3-4 weeks to let SPREAD_FADE_FLIP mature (2026-04-20 → 2026-05-11 minimum)
+- If fade flip win rate drops below 55% before then → start earlier
+- If fade flip holds 60%+ → start 2026-05-11 as planned
+
+**Success metric:** Data-driven picks produce +20u+ over a 2-week backtest on historical spreads where fade flip didn't fire (i.e., games inside `max_div` threshold).
+
+---
+
+## 🟡 OTHER OPEN
+
+None of the other original items are critical — rest are monitors / research.
 
 ## ✅ COMPLETED (2026-04-11)
 
