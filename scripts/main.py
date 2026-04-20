@@ -652,7 +652,16 @@ def cmd_run(args):
             WHERE created_at >= ? AND result IS NULL
         """, (today_str,)).fetchall()
         # v17: Track event_ids already bet today for concentration cap
-        posted_event_ids = set(row[3] for row in already_posted if row[3])
+        # v25.38: exclude PROPs — props are independent of game-line picks on
+        # the same event (a player prop doesn't correlate with spread/total).
+        # Previously, a prop misrouted to a different game's event_id (Odds API
+        # quirk) would block legitimate SPREAD_FADE_FLIP / game-line picks.
+        # Seen 2026-04-20: Ayo Dosunmu UNDER mapped to DEN/MIN event_id,
+        # blocking the SPREAD_FADE_FLIP fade on MIN +7.5.
+        posted_event_ids = set(
+            row[3] for row in already_posted
+            if row[3] and row[1] != 'PROP'
+        )
         posted_keys = set()
         for row in already_posted:
             sport, mtype, sel = row[0], row[1], row[2]
