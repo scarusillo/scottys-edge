@@ -81,6 +81,15 @@ betting_model/
 
 SQLite at `data/betting_model.db`. Key tables:
 
+**⚠️ `graded_bets` is authoritative for performance analysis, not `bets`.**
+TAINTED/DUPLICATE/SCRUB rows in `bets` are intentionally excluded from
+`graded_bets` (~101 such rows as of 2026-04-20). And `graded_bets` may
+contain backfill rows with `bet_id IS NULL` (e.g. ids 1413-1415: v25.31
+PROP_BOOK_ARB picks blocked by pre-v25.34 bug, retroactively graded).
+Performance queries should run directly on `graded_bets`; never JOIN
+`bets` → `graded_bets` unless you specifically want picks that passed
+all gates at save time.
+
 | Table | Purpose |
 |-------|---------|
 | `bets` | All placed bets with full metadata |

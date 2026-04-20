@@ -10,6 +10,20 @@ This grader:
   2. Computes CLV by comparing our bet line to the closing line
   3. Accumulates player_results for the props historical signal
   4. Generates reports by sport, confidence, CLV performance
+
+DATA MODEL NOTE — `graded_bets` is authoritative, not `bets`:
+  - TAINTED/DUPLICATE rows in `bets` are intentionally excluded from
+    `graded_bets` (filters at lines 429, 909, 1149, 1832). Counts:
+    ~101 TAINTED in `bets` have no `graded_bets` row as of 2026-04-20.
+    These are pre-v25.34 scrubs that were never graded — leave them.
+  - `graded_bets` rows with `bet_id IS NULL` are backfills (e.g. ids
+    1413-1415: PROP_BOOK_ARB picks detected by v25.31 scanner but
+    blocked by the pre-v25.34 `_passes_filter` bug, retroactively
+    graded once the bug was fixed). They contribute real P/L but
+    won't JOIN against `bets`.
+  - Performance queries must use `graded_bets` directly; never JOIN
+    `bets` -> `graded_bets` unless you are explicitly filtering to
+    picks that passed all gates at save time.
 """
 import sqlite3, os
 from datetime import datetime, timedelta, timezone
