@@ -1923,10 +1923,10 @@ def generate_predictions(conn, sport=None, date=None):
                         else:
                             _f_team, _f_line, _f_odds, _f_book = away, mkt_as, mkt_as_odds, mkt_as_book
                         # Respect global odds policy: -150 floor (favorite cap),
-                        # +200 ceiling (sanity, far above typical spread juice).
+                        # +140 ceiling (matches prop MAX_PROP_ODDS policy).
                         from config import MIN_ODDS as _FF_MIN_ODDS
                         if (_f_odds is not None and _f_odds > _FF_MIN_ODDS
-                                and _f_odds <= 200 and _f_book):
+                                and _f_odds <= 140 and _f_book):
                             _fade_div = abs(ms - mkt_hs)
                             _fade_ctx = (
                                 f'SPREAD_FADE_FLIP v25.36 — model ms={ms:+.1f} vs market '
@@ -1942,7 +1942,7 @@ def generate_predictions(conn, sport=None, date=None):
                                 'model_spread': ms,
                                 'model_prob': 0, 'implied_prob': 0,
                                 'edge_pct': 0,
-                                'star_rating': 3, 'units': 3.5,
+                                'star_rating': 3, 'units': 5.0,
                                 'confidence': 'FADE_FLIP',
                                 'side_type': 'SPREAD_FADE_FLIP',
                                 'spread_or_ml': 'SPREAD',
