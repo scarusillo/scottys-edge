@@ -66,7 +66,40 @@ For each game:
 
 ## 🟡 OTHER OPEN
 
-None of the other original items are critical — rest are monitors / research.
+### Minimum line-stability time gate for BOOK_ARB (long-term)
+
+Late-posted NCAA baseball lines can produce "opener gap 3.0" signals that
+are actually just books converging on a freshly-posted market, not real
+asymmetric information. Scanner fires on the stale/generous soft line,
+then books converge within 30-60 min and the arb closes before the user
+places the bet.
+
+**Example (2026-04-20):** UC Santa Barbara @ Cal Baptist UNDER 13.5
+fired at 3:13 PM EDT after lines posted at 3:00 PM EDT. FD opened at
+10.5, DK at 13.5, gap 3.0. Within ~30 minutes FD moved to 13.5 — the
+arb had closed by the time the user read the email.
+
+**Proposed fix:** require BOOK_ARB to see at least 60 minutes of
+stable line data before firing. Implementation:
+- Track `first_seen_timestamp` for each book's opener in `openers` table
+- Before firing BOOK_ARB, verify `(now - first_seen) > 60 min`
+- If not, skip and log to shadow_blocked_picks with reason `BOOK_ARB_LINE_UNSETTLED`
+
+**Expected impact:** eliminates the "just-opened market" failure mode.
+Sharper books catch legitimate mid-day arbs; filters freshly-posted
+NCAA baseball where books haven't converged yet.
+
+**Risk:** if we only fire after 60 min stability, we miss the window
+when both books are settled AND the gap still exists (rare but real).
+Could tune to 30 min if 60 is too conservative.
+
+**Start trigger:** after 1-2 more similar close-too-fast BOOK_ARB fires
+are observed. Current v25.25/26/27 logic works for stable mid-day NCAA
+baseball markets; this is a post-v25.25 patch.
+
+---
+
+Other monitors unchanged from pre-session list.
 
 ## ✅ COMPLETED (2026-04-11)
 
