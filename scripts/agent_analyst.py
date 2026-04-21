@@ -681,6 +681,17 @@ def generate_briefing(conn):
         for c in ch_lines:
             lines.append(c)
 
+    # v25.55: Context live-vs-backtest tracker
+    try:
+        from context_tracker import report as context_tracker_report
+        tr_lines = context_tracker_report(conn)
+        if tr_lines:
+            lines.append('')
+            for t in tr_lines:
+                lines.append(t)
+    except Exception as _e:
+        pass
+
     # v25.23 / Option C — CRITICAL fade-flip monitoring
     fade_summary, fade_alerts = analyze_fade_flip_strategy(conn)
     if fade_alerts:
