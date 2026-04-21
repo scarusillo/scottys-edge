@@ -473,100 +473,109 @@ def fetch_scores(sport, days_back=3):
     conn = sqlite3.connect(DB_PATH)
     inserted = 0
 
-    for event in data:
-        if not event.get('completed', False):
-            continue
+    # v25.45: wrap body in try/finally so conn.close() always runs.
+    # Odds API has occasionally returned non-integer score strings (e.g.
+    # "TBD", ""); int() raises ValueError which would skip the commit+close.
+    try:
+        for event in data:
+            if not event.get('completed', False):
+                continue
 
-        event_id = event['id']
-        home = event['home_team']
-        away = event['away_team']
-        commence = event['commence_time']
+            event_id = event['id']
+            home = event['home_team']
+            away = event['away_team']
+            commence = event['commence_time']
 
-        scores = {s['name']: int(s['score']) for s in event.get('scores', []) if s.get('score')}
-        home_score = scores.get(home)
-        away_score = scores.get(away)
+            try:
+                scores = {s['name']: int(s['score']) for s in event.get('scores', []) if s.get('score')}
+            except (TypeError, ValueError) as _se:
+                # Malformed score in this event — log and skip, don't bring down the whole fetch
+                print(f"  Skipping {event_id}: malformed score ({_se})")
+                continue
+            home_score = scores.get(home)
+            away_score = scores.get(away)
 
-        if home_score is None or away_score is None:
-            continue
+            if home_score is None or away_score is None:
+                continue
 
-        winner = home if home_score > away_score else (away if away_score > home_score else 'DRAW')
-        margin = home_score - away_score
-        total = home_score + away_score
+            winner = home if home_score > away_score else (away if away_score > home_score else 'DRAW')
+            margin = home_score - away_score
+            total = home_score + away_score
 
-        # Get closing line (last odds snapshot before game time)
-        closing = conn.execute("""
-            SELECT line, odds FROM odds
-            WHERE event_id = ? AND market = 'spreads' AND selection = ?
-            ORDER BY snapshot_date DESC, snapshot_time DESC LIMIT 1
-        """, (event_id, home)).fetchone()
+            # Get closing line (last odds snapshot before game time)
+            closing = conn.execute("""
+                SELECT line, odds FROM odds
+                WHERE event_id = ? AND market = 'spreads' AND selection = ?
+                ORDER BY snapshot_date DESC, snapshot_time DESC LIMIT 1
+            """, (event_id, home)).fetchone()
 
-        closing_spread = closing[0] if closing else None
+            closing_spread = closing[0] if closing else None
 
-        closing_total_row = conn.execute("""
-            SELECT line FROM odds
-            WHERE event_id = ? AND market = 'totals' AND selection = 'Over'
-            ORDER BY snapshot_date DESC, snapshot_time DESC LIMIT 1
-        """, (event_id,)).fetchone()
-        closing_total = closing_total_row[0] if closing_total_row else None
+            closing_total_row = conn.execute("""
+                SELECT line FROM odds
+                WHERE event_id = ? AND market = 'totals' AND selection = 'Over'
+                ORDER BY snapshot_date DESC, snapshot_time DESC LIMIT 1
+            """, (event_id,)).fetchone()
+            closing_total = closing_total_row[0] if closing_total_row else None
 
-        closing_ml = conn.execute("""
-            SELECT odds FROM odds
-            WHERE event_id = ? AND market = 'h2h' AND selection = ?
-            ORDER BY snapshot_date DESC, snapshot_time DESC LIMIT 1
-        """, (event_id, home)).fetchone()
-        closing_ml_home = closing_ml[0] if closing_ml else None
+            closing_ml = conn.execute("""
+                SELECT odds FROM odds
+                WHERE event_id = ? AND market = 'h2h' AND selection = ?
+                ORDER BY snapshot_date DESC, snapshot_time DESC LIMIT 1
+            """, (event_id, home)).fetchone()
+            closing_ml_home = closing_ml[0] if closing_ml else None
 
-        closing_ml_a = conn.execute("""
-            SELECT odds FROM odds
-            WHERE event_id = ? AND market = 'h2h' AND selection = ?
-            ORDER BY snapshot_date DESC, snapshot_time DESC LIMIT 1
-        """, (event_id, away)).fetchone()
-        closing_ml_away = closing_ml_a[0] if closing_ml_a else None
+            closing_ml_a = conn.execute("""
+                SELECT odds FROM odds
+                WHERE event_id = ? AND market = 'h2h' AND selection = ?
+                ORDER BY snapshot_date DESC, snapshot_time DESC LIMIT 1
+            """, (event_id, away)).fetchone()
+            closing_ml_away = closing_ml_a[0] if closing_ml_a else None
 
-        # ATS result
-        ats_result = None
-        if closing_spread is not None:
-            home_margin_vs_spread = margin + closing_spread  # closing_spread is from home perspective
-            if home_margin_vs_spread > 0:
-                ats_result = 'WIN'
-            elif home_margin_vs_spread < 0:
-                ats_result = 'LOSS'
-            else:
-                ats_result = 'PUSH'
+            # ATS result
+            ats_result = None
+            if closing_spread is not None:
+                home_margin_vs_spread = margin + closing_spread  # closing_spread is from home perspective
+                if home_margin_vs_spread > 0:
+                    ats_result = 'WIN'
+                elif home_margin_vs_spread < 0:
+                    ats_result = 'LOSS'
+                else:
+                    ats_result = 'PUSH'
 
-        ou_result = None
-        if closing_total is not None:
-            if total > closing_total:
-                ou_result = 'OVER'
-            elif total < closing_total:
-                ou_result = 'UNDER'
-            else:
-                ou_result = 'PUSH'
+            ou_result = None
+            if closing_total is not None:
+                if total > closing_total:
+                    ou_result = 'OVER'
+                elif total < closing_total:
+                    ou_result = 'UNDER'
+                else:
+                    ou_result = 'PUSH'
 
-        try:
-            conn.execute("""
-                INSERT OR REPLACE INTO results
-                    (sport, event_id, commence_time, home, away,
-                     home_score, away_score, winner, completed,
-                     closing_spread, closing_total, closing_ml_home, closing_ml_away,
-                     ats_home_result, ou_result, actual_total, actual_margin, fetched_at)
-                VALUES (?,?,?,?,?,?,?,?,1,?,?,?,?,?,?,?,?,?)
-            """, (sport, event_id, commence, home, away,
-                  home_score, away_score, winner,
-                  closing_spread, closing_total, closing_ml_home, closing_ml_away,
-                  ats_result, ou_result, total, margin,
-                  datetime.now().isoformat()))
-            inserted += 1
-        except Exception as e:
-            print(f"  Error inserting result for {event_id}: {e}")
+            try:
+                conn.execute("""
+                    INSERT OR REPLACE INTO results
+                        (sport, event_id, commence_time, home, away,
+                         home_score, away_score, winner, completed,
+                         closing_spread, closing_total, closing_ml_home, closing_ml_away,
+                         ats_home_result, ou_result, actual_total, actual_margin, fetched_at)
+                    VALUES (?,?,?,?,?,?,?,?,1,?,?,?,?,?,?,?,?,?)
+                """, (sport, event_id, commence, home, away,
+                      home_score, away_score, winner,
+                      closing_spread, closing_total, closing_ml_home, closing_ml_away,
+                      ats_result, ou_result, total, margin,
+                      datetime.now().isoformat()))
+                inserted += 1
+            except Exception as e:
+                print(f"  Error inserting result for {event_id}: {e}")
 
-    conn.commit()
-
-    # NOTE: Grading is handled exclusively by grader.py (daily_grade_and_report).
-    # Previously _grade_bets was called here, but this created a dual grading path
-    # where soccer ML draws could be graded as PUSH (old logic) before grader.py
-    # could correctly grade them as LOSS. Single grading path = no conflicts.
-    conn.close()
+        conn.commit()
+    finally:
+        # NOTE: Grading is handled exclusively by grader.py (daily_grade_and_report).
+        # Previously _grade_bets was called here, but this created a dual grading path
+        # where soccer ML draws could be graded as PUSH (old logic) before grader.py
+        # could correctly grade them as LOSS. Single grading path = no conflicts.
+        conn.close()
     print(f"  Stored {inserted} results for {sport}")
     return inserted
 
