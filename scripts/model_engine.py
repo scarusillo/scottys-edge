@@ -2673,20 +2673,32 @@ def generate_predictions(conn, sport=None, date=None):
             under_odds = g[14]
             under_book = g[15]
 
-            # ═══ CONTEXT MODEL TOTALS — v25.47 (2026-04-21) ═══
+            # ═══ CONTEXT MODEL TOTALS — v25.47/v25.48 (2026-04-21) ═══
             # Runs BEFORE the MLS hard-block and BEFORE the edge-based model so
             # Path 2 own-picks fire independently. Scope + thresholds come from
             # Phase A with goalie-form, soccer-standings, and ref-tendency
             # signals layered onto form+H2H+MLB-pitcher:
-            #   NBA   (0.30 pts):  173 picks, 58.7%, +97.4u
-            #   NHL   (1.00 gls):   95 picks, 60.6%, +52.0u
-            #   MLB   (1.50 runs):  68 picks, 56.9%, +20.9u
-            #   MLS   (0.30 gls):   15 picks, 66.7%, +14.7u
+            #   NBA    (0.30 pts): 173 picks, 58.7%, +97.4u
+            #   NHL    (1.00 gls):  95 picks, 60.6%, +52.0u
+            #   MLB    (1.50 run):  68 picks, 56.9%, +20.9u
+            #   MLS    (0.30 gls):  15 picks, 66.7%, +14.7u
+            #   La Liga/Bundesliga/Ligue 1 (0.30 gls): 4-5 picks each,
+            #     75-80% WR, +4-12u (v25.48 — tiny samples, re-eval at n>=20)
             CONTEXT_TOTAL_P2_THRESHOLDS_V47 = {
                 'basketball_nba': 0.30,
                 'icehockey_nhl':  1.00,
                 'baseball_mlb':   1.50,
                 'soccer_usa_mls': 0.30,
+                # v25.48: added other soccer leagues that show positive signal
+                # at 0.30 threshold with the standings + form combination.
+                # Small 30-day samples (4-5 picks each) but directionally strong:
+                #   La Liga:    5 picks,  4-1, 80% WR, +11.6u
+                #   Bundesliga: 4 picks,  3-1, 75% WR, +4.7u
+                #   Ligue 1:    4 picks,  3-1, 75% WR, +5.6u
+                # Accumulate live data; re-evaluate at n>=20 per league.
+                'soccer_spain_la_liga':      0.30,
+                'soccer_germany_bundesliga': 0.30,
+                'soccer_france_ligue_one':   0.30,
             }
             _ct_th = CONTEXT_TOTAL_P2_THRESHOLDS_V47.get(sp)
             if (_ct_th is not None
