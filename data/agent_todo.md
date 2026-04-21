@@ -144,6 +144,30 @@ changes, no shipping. Just a scoping exercise.
 
 ## 🟡 OTHER OPEN
 
+### Tennis — separate Context Model engine (future project)
+
+Tennis is structurally incompatible with the team-sport Context Model. It
+needs its own module (`context_model_tennis.py`?) with tennis-specific
+signals:
+- Surface (clay / hard / grass) + player surface-specific Elo (partially exists)
+- Round (R32 / R16 / QF / SF / F — late rounds differ in fatigue + intensity)
+- Ranking gap + ranking trend
+- Recent form on this specific surface
+- Head-to-head on this surface (different from general H2H)
+- Fatigue (previous-match duration, consecutive days played)
+- Tournament tier (Grand Slam / Masters / 500 / 250)
+- Home country advantage
+
+**Current state:** Tennis runs on edge-based Elo model only. Season record
+is -11.8u — a net drag. Surface-split Elo exists (`tennis_atp_clay` etc.)
+but no Context layer.
+
+**Effort:** 1-2 weeks — separate code path, backtest on 30+ days of
+ATP/WTA data across all surfaces, ship as Path 2 own-picks.
+
+**Trigger to start:** when tennis volume becomes material (Grand Slam
+lead-up weeks) OR fade flip on spreads matures and we have bandwidth.
+
 ### ~~Absorb remaining sports into Context Model~~ — INVESTIGATION COMPLETE 2026-04-21
 
 **Outcome:** Context Model has reached its natural sport scope. Remaining
