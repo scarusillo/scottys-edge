@@ -144,6 +144,35 @@ changes, no shipping. Just a scoping exercise.
 
 ## 🟡 OTHER OPEN
 
+### STAKE_BOOST for Context+Elo hard stack picks (v25.53 candidate)
+
+**Concept:** When both Elo edge AND Context Path 2 fire on the same event in
+the same direction, boost stake above the default 5u. Backtest shows this
+is the highest-EV cohort in the system.
+
+**30-day backtest (Context-scope sports, post-v25.52 world):**
+- **Hard stack** (Elo fires + Context past Path 2 threshold, same direction):
+  28-15, **65.1% WR, +34.4u on 43 picks, ROI +16.0%**
+- Soft agree (Elo fires + Context agrees but below threshold): 21-17, 55.3% WR,
+  +2.5u on 39 picks, ROI +1.3%
+- Disagree (Elo fires + Context disagrees — now blocked by v25.52): 15-20,
+  42.9% WR, -41.2u on 36 picks
+
+**Proposed stake ladder:**
+- Hard stack: 7-8u (boost 40-60%)
+- Soft agree: 5u (unchanged)
+- Context-only Path 2: 5u (unchanged)
+- Elo-only edge picks (Context out of scope): 5u (unchanged)
+
+**Expected incremental: ~+15u/month** on top of current hard-stack contribution.
+
+**Implementation:** Add a post-filter in _merge_and_select (or in model_engine
+when firing) that checks if both Elo edge and Context Path 2 are triggering
+the same event+direction. If yes, set units = HARD_STACK_UNITS (7-8).
+
+**Why parked:** User wants to verify other models are working correctly first
+before introducing stake-variable complexity.
+
 ### Player-prop investigation — continue beyond v25.41 starter-role gate
 
 **Context:** Reid Detmers UNDER 4.5 HITS ALLOWED (bet 994, 4/20) lost 5u.
