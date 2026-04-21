@@ -599,6 +599,12 @@ def compute_context_spread(conn, sport, home, away, event_id, ms_elo,
     info['pace_adj'] = pace_adj
     info['pace_lbl'] = pace_lbl
 
+    # NOTE (2026-04-21): NHL goalie-form signal for SPREADS was tested and
+    # reverted. Backtest showed NHL spread WR drop from 57.2% (+73u) to
+    # 54.5% (+27u) when goalie was added. The spread market already prices
+    # goalie differential; additive goalie signal here double-counts and
+    # degrades signal. Goalie signal stays in TOTALS only (v25.47).
+
     # --- APPLY ALL ---
     ms_context = (ms_elo + injury_adj + form_adj + rest_adj + mot_adj
                    + hca_adj + injury_amp_adj + momentum_adj + split_adj
