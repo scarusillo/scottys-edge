@@ -605,10 +605,37 @@ def compute_context_spread(conn, sport, home, away, event_id, ms_elo,
     # goalie differential; additive goalie signal here double-counts and
     # degrades signal. Goalie signal stays in TOTALS only (v25.47).
 
-    # --- APPLY ALL ---
-    ms_context = (ms_elo + injury_adj + form_adj + rest_adj + mot_adj
+    # --- APPLY ALL with global cap (v25.50) ---
+    # v25.50 (2026-04-21): added combined cap on total spread adjustment to
+    # prevent correlated signals from stacking into nonsense projections.
+    # Bug observed on BOS-PHI Game 2 where h2h (-9.6) + momentum (-8.0) +
+    # form (-2.2) + ext_form (-2.83) + pace (-2.24) all reflected the same
+    # Game-1 blowout, compounding to -47.18 vs market -14.
+    # Sport-specific caps reflect realistic maximum "edge over market":
+    #   NBA:    8 pts (market rarely wrong by more than a star-out)
+    #   NHL:    2 goals (low-scoring, small spread range)
+    #   Soccer: 2 goals
+    #   Others: default 4 pts
+    MAX_CTX_DELTA = {
+        'basketball_nba': 8.0,
+        'basketball_ncaab': 10.0,
+        'icehockey_nhl': 2.0,
+        'soccer_usa_mls': 2.0, 'soccer_epl': 2.0, 'soccer_italy_serie_a': 2.0,
+        'soccer_spain_la_liga': 2.0, 'soccer_germany_bundesliga': 2.0,
+        'soccer_france_ligue_one': 2.0, 'soccer_mexico_ligamx': 2.0,
+        'soccer_uefa_champs_league': 2.0,
+    }
+    total_delta = (injury_adj + form_adj + rest_adj + mot_adj
                    + hca_adj + injury_amp_adj + momentum_adj + split_adj
                    + h2h_adj + ext_adj + pace_adj)
+    cap = MAX_CTX_DELTA.get(sport, 4.0)
+    if abs(total_delta) > cap:
+        # Scale all adjustments proportionally down to cap
+        _scale = cap / abs(total_delta)
+        total_delta *= _scale
+        info['ctx_cap_applied'] = round(_scale, 3)
+        info['ctx_cap_max'] = cap
+    ms_context = ms_elo + total_delta
     info['adjusted_ms'] = ms_context
     return ms_context, info
 
