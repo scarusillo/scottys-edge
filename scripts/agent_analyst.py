@@ -276,20 +276,26 @@ def analyze_gate_health(conn):
         notes.append(f"PRA_ARB_SHADOW: {pra_shadow} candidates logged (v25.37 shadow mode). "
                      f"Grade counterfactual outcomes; promote to live at n≥15 + W/L ≥ 55%.")
 
-    # v25.39: DATA_SPREAD (Context Model) — live for NHL + MLS + EPL
+    # v25.39: DATA_SPREAD (Context Model) — live for NHL + MLS + EPL (Path 1)
     # Backtest: NHL 14 picks 78.6% +35u, MLS 5-0 +22.73u, EPL 2-0 +9.09u
+    # v25.44 adds Path 2 (non-divergent own-picks) for NHL + NBA + Serie A.
+    # Split reporting: Path 1 picks have "v25.39" in context_factors, Path 2
+    # picks have "v25.44 (Path 2)".
     ds_picks = conn.execute("""
         SELECT sport, SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END) w,
                SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END) l,
-               SUM(pnl_units) pnl, COUNT(*) n
+               SUM(pnl_units) pnl, COUNT(*) n,
+               SUM(CASE WHEN context_factors LIKE '%Path 2%' THEN 1 ELSE 0 END) p2_n
         FROM graded_bets
         WHERE side_type='DATA_SPREAD' AND result IN ('WIN','LOSS','PUSH')
         GROUP BY sport
     """).fetchall()
     if ds_picks:
-        for sp, w, l, pnl, n in ds_picks:
+        for sp, w, l, pnl, n, p2_n in ds_picks:
             wr = w/(w+l)*100 if (w+l) else 0
-            notes.append(f"DATA_SPREAD {sp}: {w}W-{l}L ({wr:.0f}%) {pnl:+.1f}u — pull if <55% after 15+ picks")
+            p1_n = n - (p2_n or 0)
+            notes.append(f"DATA_SPREAD {sp}: {w}W-{l}L ({wr:.0f}%) {pnl:+.1f}u "
+                         f"[Path1:{p1_n} Path2:{p2_n or 0}] — pull if <55% after 15+ picks")
 
     # v25.43: NCAA midweek total_adj zeroed from +0.3 to 0.0 on 2026-04-21.
     # Post-rebuild pre-fix record: 13 bets 7W-6L -2.4u (March 5-0 +20u, April

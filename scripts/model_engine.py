@@ -2025,7 +2025,76 @@ def generate_predictions(conn, sport=None, date=None):
 
                 _log_divergence_block(conn, sp, eid, home, away, ms, mkt_hs, 'post_elo_rescue')
                 skip_div += 1; continue
-            
+
+            # ═══ CONTEXT MODEL PATH 2 — v25.44 (2026-04-21) ═══
+            # Non-divergent games (Elo agrees with market within max_div).
+            # Run Context Model and fire an own-pick at market line if Context
+            # disagrees with market by >= sport-specific threshold. This turns
+            # Context from a divergence rescuer (Path 1) into a general second
+            # opinion engine (Path 2). Sport scope limited to where Phase A
+            # 30-day backtest showed positive EV:
+            #   NHL (thresh 0.5): 159 picks, 91-68, 57.2% WR, +73.6u
+            #   NBA (thresh 2.5): 79 picks, 44-35, 55.7% WR, +25.0u
+            #   Serie A (0.5):    12 picks, 6-3, 66.7% WR, +12.3u
+            # MLB excluded — runline (±1.5) incompatible with additive Context
+            # adjustments (49.6% WR, -70u backtest on 271 picks). MLS + other
+            # soccer excluded — 30-day backtest lost at every threshold level.
+            CONTEXT_PATH2_THRESHOLDS = {
+                'icehockey_nhl': 0.5,
+                'basketball_nba': 2.5,
+                'soccer_italy_serie_a': 0.5,
+            }
+            _p2_th = CONTEXT_PATH2_THRESHOLDS.get(sp)
+            if (_p2_th is not None
+                    and mkt_hs is not None and mkt_as is not None
+                    and mkt_hs_odds is not None and mkt_as_odds is not None):
+                try:
+                    from context_model import compute_context_spread, format_context_summary
+                    _p2_commence = (commence[:10] if commence else None)
+                    ms_ctx_p2, _p2_info = compute_context_spread(
+                        conn, sp, home, away, eid, ms, _p2_commence)
+                    _p2_disagreement = abs(ms_ctx_p2 - mkt_hs)
+                    if _p2_disagreement >= _p2_th:
+                        # ms_ctx < mkt_hs → Context more bullish on home → bet home
+                        if ms_ctx_p2 < mkt_hs:
+                            _p2_team, _p2_line, _p2_odds, _p2_book = home, mkt_hs, mkt_hs_odds, mkt_hs_book
+                        else:
+                            _p2_team, _p2_line, _p2_odds, _p2_book = away, mkt_as, mkt_as_odds, mkt_as_book
+                        from config import MIN_ODDS as _P2_MIN_ODDS
+                        if (_p2_odds is not None and _p2_odds > _P2_MIN_ODDS
+                                and _p2_odds <= 140 and _p2_book):
+                            _p2_summary = format_context_summary(_p2_info)
+                            _p2_ctx = (
+                                f'DATA_SPREAD v25.44 (Path 2) — {_p2_summary} | '
+                                f'Market {mkt_hs:+.1f}, Context {ms_ctx_p2:+.1f} '
+                                f'(ctx_disagreement={_p2_disagreement:.1f} ≥ {_p2_th}). '
+                                f'Elo non-divergent (div={abs(ms-mkt_hs):.1f} ≤ {max_div}). '
+                                f'Bet {_p2_team} {_p2_line:+.1f} @ {_p2_book} {_p2_odds:+.0f}.'
+                            )
+                            _p2_pick = {
+                                'sport': sp, 'event_id': eid, 'commence': commence,
+                                'home': home, 'away': away,
+                                'market_type': 'SPREAD',
+                                'selection': f'{_p2_team} {_p2_line:+.1f}',
+                                'book': _p2_book, 'line': _p2_line, 'odds': _p2_odds,
+                                'model_spread': ms,
+                                'model_prob': 0, 'implied_prob': 0,
+                                'edge_pct': 0,
+                                'star_rating': 3, 'units': 5.0,
+                                'confidence': 'DATA_SPREAD',
+                                'side_type': 'DATA_SPREAD',
+                                'spread_or_ml': 'SPREAD',
+                                'timing': 'STANDARD',
+                                'context': _p2_ctx,
+                                'notes': _p2_ctx,
+                            }
+                            print(f"  🧠 DATA_SPREAD Path2: {sp.split('_')[-1]} {_p2_team} "
+                                  f"{_p2_line:+.1f} @ {_p2_book} {_p2_odds:+.0f} "
+                                  f"(ctx_disagreement {_p2_disagreement:.1f}, elo_div {abs(ms-mkt_hs):.1f})")
+                            all_picks.append(_p2_pick)
+                except Exception as _p2e:
+                    print(f"  ⚠ DATA_SPREAD Path2 error: {_p2e}")
+
             # v12 FIX: If no spread line (common in baseball), check divergence via ML
             # Without this, baseball games with ML-only skip divergence entirely
             # and produce phantom 25-30% edges on thin data.
