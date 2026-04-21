@@ -76,7 +76,24 @@ WHERE context_factors LIKE '%Home letdown%' AND DATE(created_at) >= '2026-03-18'
 
 **Away letdown spot** — SHADOWED v24 (4/6/2026). 2nd half hit -16.5u, 6.5u past -10u threshold. Two clay tennis losses on 4/5 (-10u) accelerated collapse.
 
-**Midweek game** — Almost done contributing: +13.9u first half, +1.2u second half. Not urgent but track.
+**Midweek game** — SHADOWED v25.43 (2026-04-21). NCAA midweek `total_adj`
+zeroed from +0.3 to 0.0 in `pitcher_scraper.py:1192` (matches MLB midweek
+shadow). Pre-fix record on 13 post-rebuild NCAA midweek total picks:
+7W-6L, -2.4u. March was 5-0 +20u (hot-end variance on 5 bets); April was
+2-6 -22u (cold-end variance, driven entirely by 8 OVER picks firing at
+the 20% edge cap while actual totals averaged -0.04 runs vs line). The
++0.3 adjustment was pushing marginal picks over the edge threshold in
+the wrong direction.
+
+Active monitoring lives in `agent_analyst.py:analyze_gate_health()` under
+`NCAA_MIDWEEK_SHADOW (v25.43)`. Decision matrix at n >= 25 post-4/21 NCAA
+midweek totals:
+- Clearly positive P/L (>= +5u): consider restoring +0.15 (halfway) and re-monitor.
+- Flat or negative: keep at 0.0 permanently.
+- If sample shows strong UNDER bias post-shadow (reality < line): investigate whether a NEGATIVE adj (pitcher-heavy midweek) is warranted.
+
+Picks fired post-4/21 with the `[SHADOW] Midweek game` tag use the
+neutered 0.0 adjustment; tag is retained for tracking only.
 
 ### Day-of-Week Monitoring (added v24, 4/6/2026)
 

@@ -291,6 +291,32 @@ def analyze_gate_health(conn):
             wr = w/(w+l)*100 if (w+l) else 0
             notes.append(f"DATA_SPREAD {sp}: {w}W-{l}L ({wr:.0f}%) {pnl:+.1f}u — pull if <55% after 15+ picks")
 
+    # v25.43: NCAA midweek total_adj zeroed from +0.3 to 0.0 on 2026-04-21.
+    # Post-rebuild pre-fix record: 13 bets 7W-6L -2.4u (March 5-0 +20u, April
+    # 2-6 -22u). April actual totals averaged -0.04 vs line — +0.3 was pushing
+    # us away from reality. Track picks FIRED AFTER 2026-04-21 to decide if
+    # the shadow holds (keep at 0.0), re-arm (+0.15 halfway), or re-enable
+    # (+0.3 — requires clearly positive P/L at n>=25).
+    mw_picks = conn.execute("""
+        SELECT SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END) w,
+               SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END) l,
+               SUM(pnl_units) pnl, COUNT(*) n,
+               SUM(CASE WHEN UPPER(selection) LIKE '%OVER%' THEN 1 ELSE 0 END) overs,
+               SUM(CASE WHEN UPPER(selection) LIKE '%UNDER%' THEN 1 ELSE 0 END) unders
+        FROM graded_bets
+        WHERE sport='baseball_ncaa' AND market_type='TOTAL'
+        AND DATE(created_at) >= '2026-04-21'
+        AND context_factors LIKE '%Midweek game%'
+        AND result IN ('WIN','LOSS','PUSH')
+    """).fetchone()
+    if mw_picks and mw_picks[3] and mw_picks[3] > 0:
+        w, l, pnl, n, ov, un = mw_picks
+        wr = w/(w+l)*100 if (w+l) else 0
+        decision = ("n<25 — keep monitoring" if n < 25
+                    else ("revisit shadow: +P/L at n>=25" if (pnl or 0) > 5 else "shadow holds"))
+        notes.append(f"NCAA_MIDWEEK_SHADOW (v25.43): {w}W-{l}L ({wr:.0f}%) "
+                     f"{(pnl or 0):+.1f}u, n={n} (OVER:{ov}, UNDER:{un}) — {decision}")
+
     return notes
 
 

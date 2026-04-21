@@ -1189,7 +1189,14 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
             'friday': -0.3,    # Aces → lower scoring (reduced from -0.5; market already prices this)
             'saturday': 0.0,   # #2 starter → average
             'sunday': 0.5,     # #3 starter → higher scoring
-            'midweek': 0.3,    # Bullpen day → slightly higher
+            # v25.43 (2026-04-21): NCAA midweek total_adj zeroed from +0.3 to 0.0.
+            # Post-rebuild record on midweek-tagged NCAA total picks: 13 bets
+            # 7W-6L -2.4u. March was 5-0 +20u (hot-end variance); April 2-6 -22u
+            # (cold-end variance). April actual totals averaged -0.04 vs line —
+            # market called these correctly; our +0.3 was pushing us away. Matches
+            # the MLB midweek treatment (already 0.0 since v25). Monitor via
+            # agent_analyst.py — re-evaluate at n>=25 NCAA midweek picks post 4/21.
+            'midweek': 0.0,
         }
         dow_adj = DOW_TOTAL_ADJ.get(day_type, 0.0)
     result['total_adj'] = round(result['total_adj'] + dow_adj, 2)
@@ -1204,7 +1211,8 @@ def get_pitcher_context(conn, home, away, commence_time=None, sport='baseball_nc
 
     # Build summary
     # v25: Midweek tagged as [SHADOW] for tracking — adjustment is 0.0 (no effect)
-    _day_label = f"[SHADOW] {day_type.title()} game" if sport == 'baseball_mlb' and day_type == 'midweek' else f"{day_type.title()} game"
+    # v25.43: NCAA midweek also shadowed (was +0.3 → 0.0); label both.
+    _day_label = f"[SHADOW] {day_type.title()} game" if day_type == 'midweek' and sport in ('baseball_mlb', 'baseball_ncaa') else f"{day_type.title()} game"
     parts = [_day_label]
     if result['home_starter']:
         era_str = f" ({result['home_starter_era']:.2f} ERA)" if result['home_starter_era'] else ""
