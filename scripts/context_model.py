@@ -693,6 +693,83 @@ def _h2h_total_delta(conn, sport, home, away, before_date):
     return sum(totals) / len(totals) - la, len(totals)
 
 
+def _nhl_goalie_form_delta(conn, home, away, before_date):
+    """NHL starter goalie save% (last 5 starts) vs league avg 0.900.
+    Each 0.010 above league avg = ~0.6 goals suppressed per matchup.
+    """
+    def _team_signal(team):
+        r = conn.execute("""
+            SELECT goalie_name FROM nhl_goalie_stats
+            WHERE team=? AND is_starter=1 AND game_date<?
+            ORDER BY game_date DESC LIMIT 1
+        """, (team, before_date)).fetchone()
+        if not r: return None, None
+        g = r[0]
+        rows = conn.execute("""
+            SELECT save_pct FROM nhl_goalie_stats
+            WHERE goalie_name=? AND team=? AND is_starter=1 AND game_date<?
+              AND save_pct IS NOT NULL AND shots_against >= 15
+            ORDER BY game_date DESC LIMIT 5
+        """, (g, team, before_date)).fetchall()
+        if len(rows) < 3: return g, None
+        return g, sum(r[0] for r in rows) / len(rows)
+
+    h_g, h_sp = _team_signal(home)
+    a_g, a_sp = _team_signal(away)
+    if h_sp is None and a_sp is None:
+        return 0.0, {}
+    LEAGUE_SP = 0.900
+    h_sp = h_sp if h_sp is not None else LEAGUE_SP
+    a_sp = a_sp if a_sp is not None else LEAGUE_SP
+    avg_sp = (h_sp + a_sp) / 2
+    delta = -(avg_sp - LEAGUE_SP) * 60  # see comment above
+    delta = max(-1.5, min(1.5, delta))
+    return delta, {'h_goalie': h_g, 'a_goalie': a_g, 'avg_sp': round(avg_sp, 3), 'delta': round(delta, 2)}
+
+
+def _soccer_standings_delta(conn, sport, home, away, before_date):
+    """Soccer: team scoring+conceding rates per game (from soccer_standings)
+    vs league avg total. Positive = both teams score/concede a lot → push UP.
+    """
+    def _team_row(t):
+        return conn.execute("""
+            SELECT goals_for, goals_against, games_played FROM soccer_standings
+            WHERE sport=? AND team=? ORDER BY updated_at DESC LIMIT 1
+        """, (sport, t)).fetchone()
+    h = _team_row(home); a = _team_row(away)
+    if not h or not a: return 0.0, {}
+    if not h[2] or not a[2] or h[2] < 5 or a[2] < 5: return 0.0, {'reason': 'small_sample'}
+    h_rate = (h[0] + h[1]) / h[2]   # goals per game (scored + conceded) in home's games
+    a_rate = (a[0] + a[1]) / a[2]
+    expected = (h_rate + a_rate) / 2
+    la = _LEAGUE_TOTAL.get(sport, 2.6)
+    delta = (expected - la) * 0.4
+    delta = max(-1.0, min(1.0, delta))
+    return delta, {'h_rate': round(h_rate, 2), 'a_rate': round(a_rate, 2), 'delta': round(delta, 2)}
+
+
+def _ref_total_delta(conn, sport, event_id, before_date):
+    """Referee tendency — avg game total in this ref's past games vs league avg."""
+    ref_row = conn.execute("""
+        SELECT official_name FROM officials
+        WHERE event_id=? AND sport=? AND role IN ('referee','Referee','umpire','Umpire') LIMIT 1
+    """, (event_id, sport)).fetchone()
+    if not ref_row: return 0.0, {}
+    ref = ref_row[0]
+    rows = conn.execute("""
+        SELECT actual_total FROM officials
+        WHERE official_name=? AND sport=? AND actual_total IS NOT NULL
+          AND game_date < ?
+    """, (ref, sport, before_date)).fetchall()
+    if len(rows) < 5: return 0.0, {'ref': ref, 'n': len(rows)}
+    avg = sum(r[0] for r in rows) / len(rows)
+    la = _LEAGUE_TOTAL.get(sport, 0.0)
+    delta = (avg - la) * 0.3
+    cap = {'basketball_nba': 3.0, 'icehockey_nhl': 0.5, 'basketball_ncaab': 2.0}.get(sport, 0.5)
+    delta = max(-cap, min(cap, delta))
+    return delta, {'ref': ref, 'ref_avg': round(avg, 1), 'n': len(rows), 'delta': round(delta, 2)}
+
+
 def _mlb_pitcher_matchup_delta(conn, home, away, before_date):
     """Combined starter ERA vs league avg (4.0). 0.7 runs per ERA point. Cap ±2.5."""
     row = conn.execute("""
@@ -733,7 +810,21 @@ def compute_context_total(conn, sport, home, away, event_id, market_total, comme
     if sport == 'baseball_mlb':
         pitcher_adj, pitcher_info = _mlb_pitcher_matchup_delta(conn, home, away, commence_date)
 
-    total_adj = form_adj + h2h_adj + pitcher_adj
+    # v25.47: goalie + soccer standings + ref tendency
+    goalie_adj = 0.0
+    goalie_info = {}
+    if sport == 'icehockey_nhl':
+        goalie_adj, goalie_info = _nhl_goalie_form_delta(conn, home, away, commence_date)
+    standings_adj = 0.0
+    standings_info = {}
+    if 'soccer' in sport:
+        standings_adj, standings_info = _soccer_standings_delta(conn, sport, home, away, commence_date)
+    ref_adj = 0.0
+    ref_info = {}
+    if sport in ('basketball_nba', 'icehockey_nhl', 'basketball_ncaab'):
+        ref_adj, ref_info = _ref_total_delta(conn, sport, event_id, commence_date)
+
+    total_adj = form_adj + h2h_adj + pitcher_adj + goalie_adj + standings_adj + ref_adj
     cap = _TOTAL_CAP.get(sport, 1.0)
     total_adj = max(-cap, min(cap, total_adj))
 
@@ -742,6 +833,9 @@ def compute_context_total(conn, sport, home, away, event_id, market_total, comme
         'form_n': fh_n + fa_n, 'form_adj': round(form_adj, 2),
         'h2h': round(h2h, 2), 'h2h_n': h2h_n, 'h2h_adj': round(h2h_adj, 2),
         'pitcher_adj': round(pitcher_adj, 2), 'pitcher_info': pitcher_info,
+        'goalie_adj': round(goalie_adj, 2), 'goalie_info': goalie_info,
+        'standings_adj': round(standings_adj, 2), 'standings_info': standings_info,
+        'ref_adj': round(ref_adj, 2), 'ref_info': ref_info,
         'total_adj': round(total_adj, 2),
         'market_total': market_total,
         'context_total': round(market_total + total_adj, 2),
@@ -756,9 +850,17 @@ def format_context_total_summary(info):
     if info.get('h2h_adj', 0) != 0:
         parts.append(f"h2h={info['h2h_adj']:+.1f} (n={info['h2h_n']})")
     if info.get('pitcher_adj', 0) != 0:
-        pi = info.get('pitcher_info', {})
-        avg = pi.get('avg_era', '?')
+        avg = info.get('pitcher_info', {}).get('avg_era', '?')
         parts.append(f"pitcher={info['pitcher_adj']:+.1f} (avg_era={avg})")
+    if info.get('goalie_adj', 0) != 0:
+        gi = info.get('goalie_info', {})
+        parts.append(f"goalie={info['goalie_adj']:+.1f} (avg_sp={gi.get('avg_sp','?')})")
+    if info.get('standings_adj', 0) != 0:
+        si = info.get('standings_info', {})
+        parts.append(f"standings={info['standings_adj']:+.1f} (h:{si.get('h_rate','?')}, a:{si.get('a_rate','?')})")
+    if info.get('ref_adj', 0) != 0:
+        ri = info.get('ref_info', {})
+        parts.append(f"ref={info['ref_adj']:+.1f} ({ri.get('ref','?')}, avg={ri.get('ref_avg','?')})")
     if parts:
         return f"CONTEXT_TOTAL: mkt={info['market_total']} → ctx={info['context_total']} | " + " | ".join(parts)
     return f"CONTEXT_TOTAL: mkt={info['market_total']} (no adj)"

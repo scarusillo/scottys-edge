@@ -62,6 +62,103 @@ def team_form_delta(conn, sport, team, before_date, last_n=10, league_avg=None):
     return avg - league_avg, len(totals)
 
 
+def nhl_goalie_form_delta(conn, home, away, before_date):
+    """NHL goalie save% vs league avg (~0.900). Higher save% = fewer goals.
+
+    Uses last 5 starts for each team's most recent starting goalie. If both
+    are hot, push total DOWN. If both are cold, push UP.
+    Returns (goals_delta, info). Positive = more goals expected.
+    """
+    def team_goalie_signal(team):
+        # Find team's most recent starting goalie (before game date)
+        r = conn.execute("""
+            SELECT goalie_name FROM nhl_goalie_stats
+            WHERE team=? AND is_starter=1 AND game_date<?
+            ORDER BY game_date DESC LIMIT 1
+        """, (team, before_date)).fetchone()
+        if not r: return None, None
+        goalie = r[0]
+        # Last 5 starts
+        rows = conn.execute("""
+            SELECT save_pct, shots_against FROM nhl_goalie_stats
+            WHERE goalie_name=? AND team=? AND is_starter=1 AND game_date<?
+              AND save_pct IS NOT NULL AND shots_against >= 15
+            ORDER BY game_date DESC LIMIT 5
+        """, (goalie, team, before_date)).fetchall()
+        if len(rows) < 3:
+            return goalie, None
+        savepct_avg = sum(r[0] for r in rows) / len(rows)
+        return goalie, savepct_avg
+
+    h_goalie, h_sp = team_goalie_signal(home)
+    a_goalie, a_sp = team_goalie_signal(away)
+    if h_sp is None and a_sp is None:
+        return 0.0, {'reason': 'no_goalie_data'}
+    LEAGUE_SP = 0.900
+    # Fill in league avg if one goalie missing
+    h_sp = h_sp if h_sp is not None else LEAGUE_SP
+    a_sp = a_sp if a_sp is not None else LEAGUE_SP
+    avg_sp = (h_sp + a_sp) / 2
+    # Each 0.010 of save% above league avg = ~1.0 goal suppressed from total
+    # (both goalies each face ~30 shots; 0.010 sp * 30 shots = 0.3 goals; both = 0.6 goals)
+    delta = -(avg_sp - LEAGUE_SP) * 60  # 0.010 * 60 = 0.6 goals per team pair
+    delta = max(-1.5, min(1.5, delta))
+    return delta, {'h_goalie': h_goalie, 'a_goalie': a_goalie, 'avg_sp': round(avg_sp, 3), 'delta': round(delta, 2)}
+
+
+def soccer_standings_delta(conn, sport, home, away, before_date):
+    """Soccer: goals_for/against per game vs league avg. Uses soccer_standings snapshot.
+
+    Positive delta = both teams score a lot and/or concede a lot = push total UP.
+    """
+    h_row = conn.execute("""
+        SELECT goals_for, goals_against, games_played FROM soccer_standings
+        WHERE sport=? AND team=? ORDER BY updated_at DESC LIMIT 1
+    """, (sport, home)).fetchone()
+    a_row = conn.execute("""
+        SELECT goals_for, goals_against, games_played FROM soccer_standings
+        WHERE sport=? AND team=? ORDER BY updated_at DESC LIMIT 1
+    """, (sport, away)).fetchone()
+    if not h_row or not a_row: return 0.0, {'reason': 'no_standings'}
+    h_gf, h_ga, h_gp = h_row
+    a_gf, a_ga, a_gp = a_row
+    if not h_gp or not a_gp or h_gp < 5 or a_gp < 5: return 0.0, {'reason': 'small_sample'}
+    # Expected total = home_gf/gp + away_gf/gp + (h_ga + a_ga)/2/gp proxy
+    # Simpler: sum of per-team scoring + conceding rates, compare to league avg 2x scoring
+    expected_per_team = (h_gf / h_gp + a_gf / a_gp + h_ga / h_gp + a_ga / a_gp) / 2
+    la = LEAGUE_TOTAL.get(sport, 2.6)
+    delta = (expected_per_team - la) * 0.4  # 40% weight — standings is long-run, recent form matters more
+    delta = max(-1.0, min(1.0, delta))
+    return delta, {'h_rate': round(h_gf/h_gp + h_ga/h_gp, 2), 'a_rate': round(a_gf/a_gp + a_ga/a_gp, 2), 'delta': round(delta, 2)}
+
+
+def ref_total_delta(conn, sport, event_id, before_date):
+    """Total-referee tendency: avg actual_total in games where this ref officiated,
+    compared to the league avg. Walk-forward by requiring games before this date.
+    """
+    # Try to find ref for this event first
+    ref_row = conn.execute("""
+        SELECT official_name FROM officials
+        WHERE event_id=? AND sport=? AND role IN ('referee','Referee','umpire','Umpire') LIMIT 1
+    """, (event_id, sport)).fetchone()
+    if not ref_row: return 0.0, {}
+    ref = ref_row[0]
+    # Past games refereed by this ref
+    rows = conn.execute("""
+        SELECT actual_total FROM officials
+        WHERE official_name=? AND sport=? AND actual_total IS NOT NULL
+          AND game_date < ?
+    """, (ref, sport, before_date)).fetchall()
+    if len(rows) < 5: return 0.0, {'ref': ref, 'n': len(rows)}
+    avg = sum(r[0] for r in rows) / len(rows)
+    la = LEAGUE_TOTAL.get(sport, 0.0)
+    delta = (avg - la) * 0.3  # 30% weight
+    # Cap per sport
+    cap = {'basketball_nba': 3.0, 'icehockey_nhl': 0.5, 'basketball_ncaab': 2.0}.get(sport, 0.5)
+    delta = max(-cap, min(cap, delta))
+    return delta, {'ref': ref, 'ref_avg': round(avg, 1), 'n': len(rows), 'delta': round(delta, 2)}
+
+
 def mlb_pitcher_matchup_delta(conn, home, away, before_date):
     """Return (ERA-based total delta, info).
 
@@ -144,7 +241,25 @@ def compute_context_total(conn, sport, home, away, event_id, market_total, comme
     if sport == 'baseball_mlb':
         pitcher_adj, pitcher_info = mlb_pitcher_matchup_delta(conn, home, away, commence_date)
 
-    total_adj = form_adj + h2h_adj + pitcher_adj
+    # NHL goalie form
+    goalie_adj = 0.0
+    goalie_info = {}
+    if sport == 'icehockey_nhl':
+        goalie_adj, goalie_info = nhl_goalie_form_delta(conn, home, away, commence_date)
+
+    # Soccer standings signal
+    standings_adj = 0.0
+    standings_info = {}
+    if 'soccer' in sport:
+        standings_adj, standings_info = soccer_standings_delta(conn, sport, home, away, commence_date)
+
+    # Referee tendency (NBA/NHL/NCAAB)
+    ref_adj = 0.0
+    ref_info = {}
+    if sport in ('basketball_nba', 'icehockey_nhl', 'basketball_ncaab'):
+        ref_adj, ref_info = ref_total_delta(conn, sport, event_id, commence_date)
+
+    total_adj = form_adj + h2h_adj + pitcher_adj + goalie_adj + standings_adj + ref_adj
     # Cap at sport-specific maximum to prevent runaway adjustments
     cap = {
         'icehockey_nhl': 1.0,
