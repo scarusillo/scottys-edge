@@ -1,78 +1,75 @@
 # Scotty's Edge Morning Briefing
-**Date:** Monday, April 20, 2026 | **Generated:** 05:11 AM ET
-**Game Date Graded:** 2026-04-19
+**Date:** Tuesday, April 21, 2026 | **Generated:** 05:15 AM ET
+**Game Date Graded:** 2026-04-20
 
 ---
 ## Yesterday's Results
 
-**5W-5L-0P | -4.0u | RED DAY**
+**4W-5L-0P | -8.0u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Dylan Harper OVER 2.5 REBOUNDS | basketball_nba | PROP_OVER | +111 | 5.0 | **W** | +5.5 | 6.5% |
-| Georgia Tech Yellow Jackets@North Carolina Ta | baseball_ncaa | UNDER | -113 | 5.0 | **W** | +4.4 | 0.0% |
-| Oregon Ducks@Illinois Fighting Illini OVER 15 | baseball_ncaa | OVER | -130 | 5.0 | **W** | +3.9 | 0.0% |
-| Payton Pritchard UNDER 14.5 pts | basketball_nba | PROP_FADE_FLIP | -139 | 5.0 | **W** | +3.6 | -0.5% |
-| Cade Cunningham OVER 25.5 pts | basketball_nba | PROP_FADE_FLIP | -141 | 5.0 | **W** | +3.5 | 2.6% |
-| Montréal Canadiens@Tampa Bay Lightning UNDER  | icehockey_nhl | UNDER | -134 | 5.0 | **L** | -5.0 | 0.0% |
-| Boston Bruins@Buffalo Sabres UNDER 6.5 | icehockey_nhl | UNDER | -135 | 5.0 | **L** | -5.0 | 0.0% |
-| Ohio State Buckeyes@Purdue Boilermakers OVER  | baseball_ncaa | OVER | -128 | 5.0 | **L** | -5.0 | 0.0% |
-| Texas Tech Red Raiders@Utah Utes OVER 15.5 | baseball_ncaa | OVER | -105 | 5.0 | **L** | -5.0 | 0.0% |
-| Miami Hurricanes@Stanford Cardinal UNDER 14.0 | baseball_ncaa | UNDER | -115 | 5.0 | **L** | -5.0 | 0.0% |
+| Atlanta Braves@Washington Nationals OVER 8.0 | baseball_mlb | OVER | -110 | 5.0 | **W** | +4.5 | 0.0% |
+| Minnesota Timberwolves +7.5 | basketball_nba | SPREAD_FADE_FLIP | -110 | 5.0 | **W** | +4.5 | 0.0% |
+| Zach Hyman UNDER 2.5 SOG | icehockey_nhl | PROP_UNDER | -115 | 5.0 | **W** | +4.3 | 0.0% |
+| Ayo Dosunmu UNDER 13.5 pts | basketball_nba | PROP_FADE_FLIP | -139 | 5.0 | **W** | +3.6 | -0.4% |
+| Sam Merrill OVER 8.5 POINTS | basketball_nba | PROP_OVER | -102 | 5.0 | **L** | -5.0 | 1.7% |
+| UC Santa Barbara Gauchos@Cal Baptist Lancers  | baseball_ncaa | BOOK_ARB | -130 | 5.0 | **L** | -5.0 | 0.0% |
+| Utah Tech Trailblazers@BYU Cougars OVER 15.5 | baseball_ncaa | OVER | -112 | 5.0 | **L** | -5.0 | 1.5% |
+| Anaheim Ducks@Edmonton Oilers UNDER 6.5 | icehockey_nhl | UNDER | +115 | 5.0 | **L** | -5.0 | 0.0% |
+| Reid Detmers UNDER 4.5 HITS ALLOWED | baseball_mlb | PROP_UNDER | +106 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
 
-### Montréal Canadiens@Tampa Bay Lightning UNDER 6.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Montréal Canadiens 4 @ Tampa Bay Lightning 3
-- **Model Spread:** -0.0 | Actual Margin: -1
-- **Context:** Division familiarity (-0.3) | Goalies: Andrei Vasilevskiy 1.95 vs Jakub Dobes 2.57 (recent 3.33) (-0.4)
+### Sam Merrill OVER 8.5 POINTS
+- **Category:** VARIANCE
+- **Analysis:** Positive CLV (+1.7%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** Toronto Raptors 105 @ Cleveland Cavaliers 115
 
-### Boston Bruins@Buffalo Sabres UNDER 6.5
+### UC Santa Barbara Gauchos@Cal Baptist Lancers UNDER
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Boston Bruins 3 @ Buffalo Sabres 4
-- **Model Spread:** -0.1 | Actual Margin: +1
-- **Context:** Division familiarity (-0.3) | Goalies: Ukko-Pekka Luukkonen 2.35 vs Jeremy Swayman 2.44 (recent 1.00) (-0.5)
+- **Context:** BOOK_ARB: FD opener 10.5 vs DK opener 13.5 (opener gap 3.0) | current FD 10.5 vs DK 13.5 (gap 3.0) | Steam: sharp opposes (+3.0)
 
-### Ohio State Buckeyes@Purdue Boilermakers OVER 15.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Away fast-paced (+0.3) | Sunday game | Purdue Boilermakers allows 5.9 R/sunday | Ohio State Buckeyes allows 6.8 R/sunday | Pitching edge: Purdue Boilermakers (+0.3 pts) | Steam: no movement
+### Utah Tech Trailblazers@BYU Cougars OVER 15.5
+- **Category:** VARIANCE
+- **Analysis:** Positive CLV (+1.5%) -- the line moved our way. Right side, wrong result.
+- **Context:** Away fast-paced (+0.6) | Midweek game | BYU Cougars allows 3.7 R/midweek | Utah Tech Trailblazers allows 9.8 R/midweek | Pitching edge: BYU Cougars (+1.0 pts) | Steam: no movement
 
-### Texas Tech Red Raiders@Utah Utes OVER 15.5
+### Anaheim Ducks@Edmonton Oilers UNDER 6.5
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** [SHADOW] Home fast-paced (+0.6) | Sunday game | Utah Utes allows 8.5 R/sunday | Texas Tech Red Raiders allows 9.0 R/sunday | Pitching edge: Utah Utes (+0.1 pts) | Steam: sharp opposes (-1.0)
+- **Final Score:** Anaheim Ducks 3 @ Edmonton Oilers 4
+- **Model Spread:** -0.6 | Actual Margin: +1
+- **Context:** Refs push under (Ref: Kyle Rehman (-0.1, 20g), Jon McIsaac (-0.8, 21g), Garrett Rank (+0.1, 19g)) | Division familiarity (-0.3) | Goalies: Connor Ingram 2.33 (recent 1.00) vs Lukas Dostal 3.05 (recent 3.50) (-0.2) | Steam: no movement
 
-### Miami Hurricanes@Stanford Cardinal UNDER 14.0
+### Reid Detmers UNDER 4.5 HITS ALLOWED
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Both teams slow-paced (-0.9) | Sunday game | Stanford Cardinal SP: Nick Dugan (3.86 ERA) | Stanford Cardinal allows 5.4 R/sunday | Miami Hurricanes allows 6.9 R/sunday | Pitching edge: Stanford Cardinal (+0.4 pts) | Steam: no movement
+- **Final Score:** Toronto Blue Jays 5 @ Los Angeles Angels 2
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **207W-163L** |
-| Win Rate | 55.9% |
-| P/L | **+68.1u** |
-| ROI | +3.8% |
-| Wagered | 1814.0u |
+| Record | **211W-168L** |
+| Win Rate | 55.7% |
+| P/L | **+60.1u** |
+| ROI | +3.2% |
+| Wagered | 1859.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| icehockey_nhl | 53 | 32 | +37.8u |
-| baseball_ncaa | 66 | 52 | +24.4u |
+| icehockey_nhl | 54 | 33 | +37.2u |
 | basketball_ncaab | 17 | 12 | +18.7u |
+| baseball_ncaa | 66 | 54 | +14.4u |
 | soccer_spain_la_liga | 2 | 0 | +7.8u |
+| basketball_nba | 36 | 31 | +5.1u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
-| basketball_nba | 34 | 30 | +1.9u |
-| baseball_mlb | 29 | 28 | +0.0u |
+| baseball_mlb | 30 | 29 | -0.4u |
 | soccer_italy_serie_a | 2 | 2 | -3.3u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
@@ -83,15 +80,15 @@
 
 | Factor | Record | P/L |
 |--------|--------|-----|
-| Midweek game | 17W-17L | -15.0u |
+| Midweek game | 17W-18L | -20.0u |
+| Steam: sharp opposes | 5W-7L | -14.2u |
 | Park: Chase Field | 1W-3L | -10.4u |
-| Steam: sharp opposes | 5W-6L | -9.2u |
 | Pitching edge: Clemson Tigers | 1W-2L | -7.2u |
+| Steam: no movement | 3W-4L | -7.2u |
 | Weather: light rain, 11mph wind | 1W-2L | -5.7u |
 | H2H high-scoring | 1W-2L | -5.3u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
 | Pitching edge: Florida Gators | 2W-2L | -1.7u |
-| Steam: no movement | 2W-2L | -1.7u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
 
@@ -101,7 +98,7 @@
 ---
 ## Shadow Pick Report
 
-Found 29 shadow-tagged picks.
+Found 30 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -120,8 +117,8 @@ Found 29 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 151W-120L (55.7%) | +67.7u | 0.3 |
-| BELOW_CAP | 56W-43L (56.6%) | +0.4u | 0.7 |
+| AT_CAP | 154W-123L (55.6%) | +65.2u | 0.3 |
+| BELOW_CAP | 57W-45L (55.9%) | -5.0u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -148,15 +145,15 @@ Found 29 shadow-tagged picks.
 
 | Sport | Side | W | L | P/L |
 |-------|------|---|---|-----|
-| baseball_mlb | OVER | 12 | 11 | -2.1u |
+| baseball_mlb | OVER | 13 | 11 | +2.4u |
 | baseball_mlb | UNDER | 9 | 7 | +4.7u |
-| baseball_ncaa | OVER | 25 | 20 | +5.1u |
+| baseball_ncaa | OVER | 25 | 21 | +0.1u |
 | baseball_ncaa | UNDER | 31 | 27 | -3.8u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
 | icehockey_nhl | OVER | 11 | 8 | +2.3u |
-| icehockey_nhl | UNDER | 19 | 11 | +20.4u |
+| icehockey_nhl | UNDER | 19 | 12 | +15.4u |
 | soccer_germany_bundesliga | OVER | 2 | 0 | +7.0u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | OVER | 1 | 1 | -1.5u |
@@ -169,21 +166,24 @@ Found 29 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS WIN LOSS WIN WIN WIN WIN LOSS LOSS
-- **Current Streak:** 2 LOSS
+- **Last 10:** LOSS LOSS LOSS WIN LOSS LOSS WIN WIN WIN LOSS
+- **Current Streak:** 3 LOSS
 
 ---
 ## Action Items
 
-1. Factor 'Midweek game' has -15.0u P/L over 34 bets. Consider reducing weight.
-2. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
-3. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
-4. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
-5. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-6. Factor 'Steam: sharp opposes' has -9.2u P/L over 11 bets. Consider reducing weight.
-7. Concentration risk detected. Review directional exposure limits.
-8. baseball_ncaa UNDERs: 31W-27L (-3.8u). Review totals model for this sport.
-9. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+1. Big red day (-8.0u). Review if any model errors need parameter changes.
+2. 3-bet losing streak. Stay disciplined -- check if edges are still valid.
+3. Factor 'Midweek game' has -20.0u P/L over 35 bets. Consider reducing weight.
+4. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
+5. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
+6. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
+7. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
+8. Factor 'Steam: sharp opposes' has -14.2u P/L over 12 bets. Consider reducing weight.
+9. Factor 'Steam: no movement' has -7.2u P/L over 7 bets. Consider reducing weight.
+10. Concentration risk detected. Review directional exposure limits.
+11. baseball_ncaa UNDERs: 31W-27L (-3.8u). Review totals model for this sport.
+12. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-20 05:11 ET*
+*Generated locally by export_briefing_data.py | 2026-04-21 05:15 ET*
