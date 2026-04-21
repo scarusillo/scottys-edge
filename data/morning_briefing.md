@@ -1,11 +1,11 @@
 # Scotty's Edge Morning Briefing
-**Date:** Tuesday, April 21, 2026 | **Generated:** 05:15 AM ET
+**Date:** Tuesday, April 21, 2026 | **Generated:** 05:23 AM ET
 **Game Date Graded:** 2026-04-20
 
 ---
 ## Yesterday's Results
 
-**4W-5L-0P | -8.0u | RED DAY**
+**4W-4L-0P | -3.0u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
@@ -17,7 +17,6 @@
 | UC Santa Barbara Gauchos@Cal Baptist Lancers  | baseball_ncaa | BOOK_ARB | -130 | 5.0 | **L** | -5.0 | 0.0% |
 | Utah Tech Trailblazers@BYU Cougars OVER 15.5 | baseball_ncaa | OVER | -112 | 5.0 | **L** | -5.0 | 1.5% |
 | Anaheim Ducks@Edmonton Oilers UNDER 6.5 | icehockey_nhl | UNDER | +115 | 5.0 | **L** | -5.0 | 0.0% |
-| Reid Detmers UNDER 4.5 HITS ALLOWED | baseball_mlb | PROP_UNDER | +106 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
@@ -44,21 +43,16 @@
 - **Model Spread:** -0.6 | Actual Margin: +1
 - **Context:** Refs push under (Ref: Kyle Rehman (-0.1, 20g), Jon McIsaac (-0.8, 21g), Garrett Rank (+0.1, 19g)) | Division familiarity (-0.3) | Goalies: Connor Ingram 2.33 (recent 1.00) vs Lukas Dostal 3.05 (recent 3.50) (-0.2) | Steam: no movement
 
-### Reid Detmers UNDER 4.5 HITS ALLOWED
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Toronto Blue Jays 5 @ Los Angeles Angels 2
-
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **211W-168L** |
-| Win Rate | 55.7% |
-| P/L | **+60.1u** |
-| ROI | +3.2% |
-| Wagered | 1859.0u |
+| Record | **211W-167L** |
+| Win Rate | 55.8% |
+| P/L | **+65.1u** |
+| ROI | +3.5% |
+| Wagered | 1854.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -68,8 +62,8 @@
 | baseball_ncaa | 66 | 54 | +14.4u |
 | soccer_spain_la_liga | 2 | 0 | +7.8u |
 | basketball_nba | 36 | 31 | +5.1u |
+| baseball_mlb | 30 | 28 | +4.6u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
-| baseball_mlb | 30 | 29 | -0.4u |
 | soccer_italy_serie_a | 2 | 2 | -3.3u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
@@ -117,7 +111,7 @@ Found 30 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 154W-123L (55.6%) | +65.2u | 0.3 |
+| AT_CAP | 154W-122L (55.8%) | +70.2u | 0.3 |
 | BELOW_CAP | 57W-45L (55.9%) | -5.0u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
@@ -166,24 +160,22 @@ Found 30 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS LOSS WIN LOSS LOSS WIN WIN WIN LOSS
-- **Current Streak:** 3 LOSS
+- **Last 10:** LOSS LOSS WIN LOSS LOSS WIN WIN WIN LOSS LOSS
+- **Current Streak:** 2 LOSS
 
 ---
 ## Action Items
 
-1. Big red day (-8.0u). Review if any model errors need parameter changes.
-2. 3-bet losing streak. Stay disciplined -- check if edges are still valid.
-3. Factor 'Midweek game' has -20.0u P/L over 35 bets. Consider reducing weight.
-4. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
-5. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
-6. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
-7. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-8. Factor 'Steam: sharp opposes' has -14.2u P/L over 12 bets. Consider reducing weight.
-9. Factor 'Steam: no movement' has -7.2u P/L over 7 bets. Consider reducing weight.
-10. Concentration risk detected. Review directional exposure limits.
-11. baseball_ncaa UNDERs: 31W-27L (-3.8u). Review totals model for this sport.
-12. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+1. Factor 'Midweek game' has -20.0u P/L over 35 bets. Consider reducing weight.
+2. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
+3. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
+4. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
+5. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
+6. Factor 'Steam: sharp opposes' has -14.2u P/L over 12 bets. Consider reducing weight.
+7. Factor 'Steam: no movement' has -7.2u P/L over 7 bets. Consider reducing weight.
+8. Concentration risk detected. Review directional exposure limits.
+9. baseball_ncaa UNDERs: 31W-27L (-3.8u). Review totals model for this sport.
+10. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-21 05:15 ET*
+*Generated locally by export_briefing_data.py | 2026-04-21 05:23 ET*

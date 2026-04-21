@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-21 05:15",
+  "generated_at": "2026-04-21 05:23",
   "game_date": "2026-04-20",
   "yesterday": [
     {
@@ -161,47 +161,21 @@
         "actual_total": 7,
         "actual_margin": 1
       }
-    },
-    {
-      "selection": "Reid Detmers UNDER 4.5 HITS ALLOWED",
-      "sport": "baseball_mlb",
-      "market_type": "PROP",
-      "side_type": "PROP_UNDER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 24.72,
-      "odds": 106.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": 4.5,
-      "event_id": "043dafafb56c1b3ebf5472c9f3fe428f",
-      "dt": "2026-04-20",
-      "actual_score": {
-        "home": "Los Angeles Angels",
-        "away": "Toronto Blue Jays",
-        "home_score": 2,
-        "away_score": 5,
-        "actual_total": 7,
-        "actual_margin": -3
-      }
     }
   ],
   "season": {
     "result": "LOSS",
     "W": 211,
-    "L": 168,
-    "pnl": 60.1,
-    "wagered": 1859.0
+    "L": 167,
+    "pnl": 65.1,
+    "wagered": 1854.0
   },
   "by_sport": [
     {
       "sport": "baseball_mlb",
       "W": 30,
-      "L": 29,
-      "pnl": -0.4
+      "L": 28,
+      "pnl": 4.6
     },
     {
       "sport": "baseball_ncaa",
@@ -732,13 +706,6 @@
       "pnl": -19.9
     },
     {
-      "day_of_week": "Monday",
-      "sport": "baseball_mlb",
-      "W": 3,
-      "L": 6,
-      "pnl": -15.5
-    },
-    {
       "day_of_week": "Saturday",
       "sport": "icehockey_nhl",
       "W": 9,
@@ -765,6 +732,13 @@
       "W": 1,
       "L": 3,
       "pnl": -10.6
+    },
+    {
+      "day_of_week": "Monday",
+      "sport": "baseball_mlb",
+      "W": 3,
+      "L": 5,
+      "pnl": -10.5
     },
     {
       "day_of_week": "Saturday",
@@ -988,8 +962,8 @@
     {
       "bucket": "AT_CAP",
       "W": 154,
-      "L": 123,
-      "pnl": 65.2,
+      "L": 122,
+      "pnl": 70.2,
       "avg_clv": 0.3
     },
     {
@@ -1197,16 +1171,16 @@
   "last_10": [
     "LOSS",
     "LOSS",
-    "LOSS",
     "WIN",
     "LOSS",
     "LOSS",
     "WIN",
     "WIN",
     "WIN",
+    "LOSS",
     "LOSS"
   ],
-  "streak": 3,
+  "streak": 2,
   "streak_type": "LOSS",
   "shadow_blocked_picks": [
     {
@@ -2458,11 +2432,11 @@
     },
     {
       "book": "DraftKings",
-      "bets": 110,
+      "bets": 109,
       "wins": 53,
-      "losses": 56,
-      "pnl": -30.6,
-      "wagered": 542.5,
+      "losses": 55,
+      "pnl": -25.6,
+      "wagered": 537.5,
       "avg_clv": -0.51
     }
   ]
