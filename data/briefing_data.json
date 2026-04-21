@@ -165,10 +165,10 @@
   ],
   "season": {
     "result": "LOSS",
-    "W": 211,
+    "W": 212,
     "L": 167,
-    "pnl": 65.1,
-    "wagered": 1854.0
+    "pnl": 69.69,
+    "wagered": 1859.0
   },
   "by_sport": [
     {
@@ -185,9 +185,9 @@
     },
     {
       "sport": "basketball_nba",
-      "W": 36,
+      "W": 37,
       "L": 31,
-      "pnl": 5.1
+      "pnl": 9.6
     },
     {
       "sport": "basketball_ncaab",
