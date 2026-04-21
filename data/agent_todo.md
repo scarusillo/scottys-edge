@@ -144,6 +144,33 @@ changes, no shipping. Just a scoping exercise.
 
 ## 🟡 OTHER OPEN
 
+### ~~Absorb remaining sports into Context Model~~ — INVESTIGATION COMPLETE 2026-04-21
+
+**Outcome:** Context Model has reached its natural sport scope. Remaining
+sports either cannot absorb cleanly (NCAA baseball, NCAAB) or need a
+separate engine (tennis).
+
+**NCAA baseball — 4 Phase A attempts all lost:**
+- Form + H2H only: 47% WR, -206u @ 0.30 thresh
+- + sparse pitcher_stats (7% coverage): 47% WR, -170u
+- + team_pitching_quality (stale Mar 27 snapshot, 73% coverage): 47% WR, -290u
+- + walk-forward runs-allowed (73% coverage): 48% WR, -220u
+
+**Extending CONTEXT_DIRECTION_VETO to NCAA baseball — also loses:**
+Context AGREES cohort 36-33 -12u / DISAGREES cohort 13-11 +0.47u.
+Veto would strip +0.47u from live P/L. Don't extend.
+
+**Why Context can't absorb NCAA baseball:** the edge-based totals model
+wins (+14.4u season) via integrated team_ratings + pitcher_scraper +
+selective 20% edge threshold. Context's market-anchored formula doesn't
+replicate that integration; porting it would essentially rebuild the
+edge model under a new name.
+
+**Decision:** Accept current Context scope (13 sport×market slices —
+NHL/NBA/Serie A spreads; NBA/NHL/MLB/MLS/La Liga/Bundesliga/Ligue 1
+totals). Remaining sports stay on edge-based model. Tennis parked as
+separate project.
+
 ### STAKE_BOOST for Context+Elo hard stack picks (v25.53 candidate)
 
 **Concept:** When both Elo edge AND Context Path 2 fire on the same event in
