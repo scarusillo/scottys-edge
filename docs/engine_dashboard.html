@@ -4,55 +4,152 @@
 <meta name="theme-color" content="#0d1117">
 <style>
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: -apple-system, Segoe UI, Arial, sans-serif; background:#0d1117; color:#fff; padding:32px 16px; line-height:1.6; max-width:960px; margin:0 auto; }
+body { font-family: -apple-system, Segoe UI, Arial, sans-serif; background:#0d1117; color:#fff; padding:32px 16px; line-height:1.6; max-width:1100px; margin:0 auto; }
 h1 { font-size:2rem; margin-bottom:4px; color:#00e676; }
 .ts { color:#999; font-size:0.9rem; margin-bottom:32px; }
 h2 { font-size:1.3rem; margin:28px 0 12px; color:#5b8fd0; border-bottom:1px solid #333; padding-bottom:6px; }
+h3 { font-size:1.0rem; margin:16px 0 8px; color:#9ac; }
 table { width:100%; border-collapse:collapse; font-size:0.95rem; background:#141e2a; border-radius:8px; overflow:hidden; margin-bottom:16px; }
+table.mini { font-size:0.85rem; }
 th, td { padding:10px 14px; text-align:left; border-bottom:1px solid #222; }
+table.mini th, table.mini td { padding:6px 10px; }
 th { background:#1a2636; color:#999; font-weight:600; text-transform:uppercase; font-size:0.8rem; letter-spacing:1px; }
 tr:last-child td { border-bottom:none; }
 .pos { color:#00e676; font-weight:600; }
 .neg { color:#ff5252; font-weight:600; }
+.taint { color:#f39c12; }
+.pend { color:#9ac; font-size:0.85em; }
+.subtle { color:#888; font-size:0.8em; }
 .note { color:#999; font-size:0.85rem; font-style:italic; margin:8px 0; padding-left:12px; border-left:2px solid #333; }
 .nav { margin-bottom:20px; font-size:0.9rem; }
 .nav a { color:#00e676; text-decoration:none; margin-right:16px; }
+details { background:#141e2a; padding:10px 14px; margin-bottom:8px; border-radius:6px; border:1px solid #222; }
+details summary { cursor:pointer; padding:6px 0; color:#ddd; }
+details[open] summary { margin-bottom:10px; border-bottom:1px solid #222; }
 </style></head><body>
 <div class="nav"><a href="index.html">← Home</a><a href="dashboard.html">Dashboard</a><a href="methodology.html">Methodology</a><a href="changelog.html">Changelog</a></div>
 <h1>Engine Dashboard</h1>
-<div class="ts">Generated 2026-04-20 04:45 PM ET · Live performance per pick-engine</div>
+<div class="ts">Generated 2026-04-21 07:24 PM ET · Per-channel performance + per-pick drill-down</div>
 
-<h2>Engines — live W/L + P/L</h2>
+<h2>Pick Engines — live W/L + P/L</h2>
 <table><tr><th>Engine</th><th>Sample</th><th>W-L-P</th><th>Win%</th><th>P/L</th></tr>
-<tr><td><strong>SPREAD_FADE_FLIP</strong></td><td>0 graded</td><td>0-0-0</td><td>0.0%</td><td class=''>+0.00u</td></tr>
-<tr><td><strong>DATA_SPREAD (Context Model)</strong></td><td>0 graded</td><td>0-0-0</td><td>0.0%</td><td class=''>+0.00u</td></tr>
-<tr><td><strong>BOOK_ARB (game lines)</strong></td><td>0 graded</td><td>0-0-0</td><td>0.0%</td><td class=''>+0.00u</td></tr>
+<tr><td><strong>Elo Edge — SPREAD</strong> <span class='taint'>(36 scrubbed)</span></td><td>76 graded</td><td>44-31-1</td><td>58.7%</td><td class='neg'>-10.13u</td></tr>
+<tr><td><strong>Elo Edge — TOTAL</strong> <span class='pend'>(4 live)</span> <span class='taint'>(14 scrubbed)</span></td><td>227 graded</td><td>122-101-4</td><td>54.7%</td><td class='pos'>+3.84u</td></tr>
+<tr><td><strong>Elo Edge — MONEYLINE</strong> <span class='taint'>(24 scrubbed)</span></td><td>28 graded</td><td>16-12-0</td><td>57.1%</td><td class='neg'>-5.67u</td></tr>
+<tr><td><strong>Context — DATA_SPREAD (P1+P2)</strong> <span class='taint'>(2 scrubbed)</span></td><td>0 graded</td><td>0-0-0</td><td>0.0%</td><td class=''>+0.00u</td></tr>
+<tr><td><strong>Context — DATA_TOTAL</strong></td><td>0 graded</td><td>0-0-0</td><td>0.0%</td><td class=''>+0.00u</td></tr>
+<tr><td><strong>SPREAD_FADE_FLIP</strong> <span class='pend'>(1 live)</span></td><td>1 graded</td><td>1-0-0</td><td>100.0%</td><td class='pos'>+4.55u</td></tr>
+<tr><td><strong>PROP_FADE_FLIP</strong> <span class='pend'>(2 live)</span></td><td>5 graded</td><td>4-1-0</td><td>80.0%</td><td class='pos'>+9.48u</td></tr>
+<tr><td><strong>BOOK_ARB — game lines</strong> <span class='taint'>(2 scrubbed)</span></td><td>2 graded</td><td>1-1-0</td><td>50.0%</td><td class='neg'>-0.45u</td></tr>
 <tr><td><strong>PROP_BOOK_ARB</strong></td><td>3 graded</td><td>2-1-0</td><td>66.7%</td><td class='pos'>+3.17u</td></tr>
-<tr><td><strong>PROP_FADE_FLIP</strong></td><td>4 graded</td><td>3-1-0</td><td>75.0%</td><td class='pos'>+5.88u</td></tr>
+<tr><td><strong>Prop — PROP_OVER (edge)</strong> <span class='taint'>(1 scrubbed)</span></td><td>43 graded</td><td>21-22-0</td><td>48.8%</td><td class='pos'>+1.21u</td></tr>
+<tr><td><strong>Prop — PROP_UNDER (edge)</strong> <span class='pend'>(1 live)</span> <span class='taint'>(2 scrubbed)</span></td><td>7 graded</td><td>5-2-0</td><td>71.4%</td><td class='pos'>+11.19u</td></tr>
+<tr><td><strong>Prop — other (untagged)</strong></td><td>1 graded</td><td>0-1-0</td><td>0.0%</td><td class='neg'>-5.00u</td></tr>
 </table>
-<p class="note">Pull triggers: SPREAD_FADE_FLIP &lt;52% after 15 picks · DATA_SPREAD &lt;55% after 15 picks · PROP_BOOK_ARB still thin (3 live picks ever)</p>
+<p class="note">Monitoring thresholds: Context channels pull at &lt;52-55% after 15-20 picks. Edge-based channels reviewed monthly. Scrubbed counts = TAINTED bets (manually removed).</p>
 
-<h2>Gates — shadow + live block counts</h2>
-<table><tr><th>Gate</th><th>Lifetime blocks</th></tr>
-<tr><td><strong>SHARP_OPPOSES_BLOCK</strong></td><td>0 blocks</td></tr>
-<tr><td><strong>PRA book-arb shadow</strong></td><td>0 blocks</td></tr>
-<tr><td><strong>NCAA_DK_TIGHT_SKIP</strong></td><td>7 blocks</td></tr>
-<tr><td><strong>NCAA_DK_FADE_FLIP</strong></td><td>2 blocks</td></tr>
+<h2>Recent picks per engine</h2>
+<details><summary><strong>Elo Edge — SPREAD</strong> — last 10 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-04-06</td><td>tennis_atp_monte_carlo_masters</td><td>Gabriel Diallo +3.5</td><td>3.5</td><td>115.0</td><td>4.0u</td><td class='neg'>LOSS</td><td class='neg'>-4.00u</td></tr>
+<tr><td>2026-04-05</td><td>icehockey_nhl</td><td>St Louis Blues +1.5</td><td>1.5</td><td>-125.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.00u</td></tr>
+<tr><td>2026-04-05</td><td>tennis_atp_monte_carlo_masters</td><td>Gael Monfils +2.5</td><td>2.5</td><td>-120.0</td><td>4.0u</td><td class='pos'>WIN</td><td class='pos'>+3.33u</td></tr>
+<tr><td>2026-04-05</td><td>tennis_atp_monte_carlo_masters</td><td>Marton Fucsovics +2.5</td><td>2.5</td><td>-115.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-05</td><td>tennis_atp_monte_carlo_masters</td><td>Moise Kouame +4.5</td><td>4.5</td><td>100.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-04</td><td>icehockey_nhl</td><td>Florida Panthers +1.5</td><td>1.5</td><td>-130.0</td><td>4.5u</td><td class='neg'>LOSS</td><td class='neg'>-4.50u</td></tr>
+<tr><td>2026-03-31</td><td>icehockey_nhl</td><td>New York Islanders +1.5</td><td>1.5</td><td>-145.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+3.45u</td></tr>
+<tr><td>2026-03-30</td><td>icehockey_nhl</td><td>Calgary Flames +2.5</td><td>2.5</td><td>-135.0</td><td>4.5u</td><td class='neg'>LOSS</td><td class='neg'>-4.50u</td></tr>
+<tr><td>2026-03-30</td><td>icehockey_nhl</td><td>Toronto Maple Leafs +1.5</td><td>1.5</td><td>-150.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+3.33u</td></tr>
+<tr><td>2026-03-29</td><td>icehockey_nhl</td><td>Boston Bruins +1.5</td><td>1.5</td><td>-180.0</td><td>4.0u</td><td class='pos'>WIN</td><td class='pos'>+2.22u</td></tr></table></details>
+<details><summary><strong>Elo Edge — TOTAL</strong> — last 10 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-04-21</td><td>baseball_ncaa</td><td>Pittsburgh Panthers@West Virginia Mountaineers UNDER 13</td><td>13.5</td><td>-111.0</td><td>0.0u</td><td class='taint'>TAINTED</td><td class='taint'>+0.00u</td></tr>
+<tr><td>2026-04-20</td><td>icehockey_nhl</td><td>Anaheim Ducks@Edmonton Oilers UNDER 6.5</td><td>6.5</td><td>115.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-20</td><td>baseball_ncaa</td><td>Utah Tech Trailblazers@BYU Cougars OVER 15.5</td><td>15.5</td><td>-112.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-20</td><td>baseball_mlb</td><td>Atlanta Braves@Washington Nationals OVER 8.0</td><td>8.0</td><td>-110.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.55u</td></tr>
+<tr><td>2026-04-19</td><td>baseball_ncaa</td><td>Miami Hurricanes@Stanford Cardinal UNDER 14.0</td><td>14.0</td><td>-115.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-19</td><td>baseball_ncaa</td><td>Texas Tech Red Raiders@Utah Utes OVER 15.5</td><td>15.5</td><td>-105.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-19</td><td>baseball_ncaa</td><td>Oregon Ducks@Illinois Fighting Illini OVER 15.0</td><td>15.0</td><td>-130.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+3.85u</td></tr>
+<tr><td>2026-04-19</td><td>baseball_ncaa</td><td>Ohio State Buckeyes@Purdue Boilermakers OVER 15.5</td><td>15.5</td><td>-128.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-19</td><td>baseball_ncaa</td><td>Georgia Tech Yellow Jackets@North Carolina Tar Heels UN</td><td>13.5</td><td>-113.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.42u</td></tr>
+<tr><td>2026-04-19</td><td>icehockey_nhl</td><td>Boston Bruins@Buffalo Sabres UNDER 6.5</td><td>6.5</td><td>-135.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr></table></details>
+<details><summary><strong>Elo Edge — MONEYLINE</strong> — last 10 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-04-09</td><td>baseball_ncaa</td><td>Vanderbilt Commodores ML</td><td></td><td>-125.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.00u</td></tr>
+<tr><td>2026-04-04</td><td>basketball_ncaab</td><td>Oklahoma Sooners ML</td><td></td><td>110.0</td><td>4.5u</td><td class='pos'>WIN</td><td class='pos'>+4.95u</td></tr>
+<tr><td>2026-04-04</td><td>baseball_ncaa</td><td>Michigan Wolverines ML (cross-mkt)</td><td></td><td>150.0</td><td>4.0u</td><td class='pos'>WIN</td><td class='pos'>+6.00u</td></tr>
+<tr><td>2026-04-04</td><td>baseball_ncaa</td><td>Georgia Bulldogs ML (cross-mkt)</td><td></td><td>140.0</td><td>4.0u</td><td class='neg'>LOSS</td><td class='neg'>-4.00u</td></tr>
+<tr><td>2026-04-02</td><td>basketball_nba</td><td>San Antonio Spurs ML</td><td></td><td>105.0</td><td>4.5u</td><td class='pos'>WIN</td><td class='pos'>+4.73u</td></tr>
+<tr><td>2026-03-31</td><td>baseball_ncaa</td><td>Rice Owls ML</td><td></td><td>-115.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.35u</td></tr>
+<tr><td>2026-03-31</td><td>baseball_ncaa</td><td>Northeastern Huskies ML</td><td></td><td>-120.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-03-30</td><td>basketball_nba</td><td>Boston Celtics ML</td><td></td><td>120.0</td><td>3.5u</td><td class='neg'>LOSS</td><td class='neg'>-3.50u</td></tr>
+<tr><td>2026-03-30</td><td>baseball_mlb</td><td>St. Louis Cardinals ML (cross-mkt)</td><td></td><td>130.0</td><td>3.5u</td><td class='neg'>LOSS</td><td class='neg'>-3.50u</td></tr>
+<tr><td>2026-03-29</td><td>baseball_ncaa</td><td>Virginia Tech Hokies ML</td><td></td><td>-115.0</td><td>4.0u</td><td class='neg'>LOSS</td><td class='neg'>-4.00u</td></tr></table></details>
+<details><summary><strong>Context — DATA_SPREAD (P1+P2)</strong> — last 2 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-04-21</td><td>basketball_nba</td><td>San Antonio Spurs -11.5</td><td>-11.5</td><td>-105.0</td><td>0.0u</td><td class='taint'>TAINTED</td><td class='taint'>+0.00u</td></tr>
+<tr><td>2026-04-21</td><td>basketball_nba</td><td>Boston Celtics -14.0</td><td>-14.0</td><td>-114.0</td><td>0.0u</td><td class='taint'>TAINTED</td><td class='taint'>+0.00u</td></tr></table></details>
+<details><summary><strong>SPREAD_FADE_FLIP</strong> — last 1 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-04-20</td><td>basketball_nba</td><td>Minnesota Timberwolves +7.5</td><td>7.5</td><td>-110.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.55u</td></tr></table></details>
+<details><summary><strong>PROP_FADE_FLIP</strong> — last 5 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-04-20</td><td>basketball_nba</td><td>Ayo Dosunmu UNDER 13.5 pts</td><td>13.5</td><td>-139.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+3.60u</td></tr>
+<tr><td>2026-04-19</td><td>basketball_nba</td><td>Payton Pritchard UNDER 14.5 pts</td><td>14.5</td><td>-139.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+3.60u</td></tr>
+<tr><td>2026-04-19</td><td>basketball_nba</td><td>Cade Cunningham OVER 25.5 pts</td><td>25.5</td><td>-141.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+3.55u</td></tr>
+<tr><td>2026-04-18</td><td>basketball_nba</td><td>Ayo Dosunmu OVER 10.5 pts</td><td>10.5</td><td>-134.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+3.73u</td></tr>
+<tr><td>2026-04-18</td><td>basketball_nba</td><td>LeBron James OVER 24.5 pts</td><td>24.5</td><td>-120.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr></table></details>
+<details><summary><strong>BOOK_ARB — game lines</strong> — last 4 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-04-20</td><td>baseball_ncaa</td><td>UC Santa Barbara Gauchos@Cal Baptist Lancers UNDER 13.5</td><td>13.5</td><td>-130.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-18</td><td>basketball_nba</td><td>Toronto Raptors@Cleveland Cavaliers UNDER 224.5</td><td>224.5</td><td>-110.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.55u</td></tr>
+<tr><td>2026-04-18</td><td>baseball_mlb</td><td>Milwaukee Brewers@Miami Marlins Milwaukee Brewers +1.5</td><td>1.5</td><td>-220.0</td><td>0.0u</td><td class='taint'>TAINTED</td><td class='taint'>+0.00u</td></tr>
+<tr><td>2026-04-18</td><td>baseball_mlb</td><td>Toronto Blue Jays@Arizona Diamondbacks Toronto Blue Jay</td><td>1.5</td><td>-205.0</td><td>0.0u</td><td class='taint'>TAINTED</td><td class='taint'>+0.00u</td></tr></table></details>
+<details><summary><strong>PROP_BOOK_ARB</strong> — last 3 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-04-18</td><td>basketball_nba</td><td>Julius Randle OVER 18.5 POINTS</td><td>18.5</td><td>-118.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-18</td><td>basketball_nba</td><td>Ja'Kobe Walter OVER 6.5 POINTS</td><td>6.5</td><td>-125.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.00u</td></tr>
+<tr><td>2026-04-18</td><td>basketball_nba</td><td>Jamal Murray OVER 23.5 POINTS</td><td>23.5</td><td>-120.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.17u</td></tr></table></details>
+<details><summary><strong>Prop — PROP_OVER (edge)</strong> — last 10 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-04-20</td><td>basketball_nba</td><td>Sam Merrill OVER 8.5 POINTS</td><td>8.5</td><td>-102.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-19</td><td>basketball_nba</td><td>Dylan Harper OVER 2.5 REBOUNDS</td><td>2.5</td><td>111.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+5.55u</td></tr>
+<tr><td>2026-04-18</td><td>icehockey_nhl</td><td>Noah Cates OVER 1.5 SOG</td><td>1.5</td><td>135.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+6.75u</td></tr>
+<tr><td>2026-04-18</td><td>basketball_nba</td><td>Sandro Mamukelashvili OVER 4.5 REBOUNDS</td><td>4.5</td><td>125.0</td><td>0.0u</td><td class='taint'>TAINTED</td><td class='taint'>+0.00u</td></tr>
+<tr><td>2026-04-17</td><td>baseball_mlb</td><td>Elly De La Cruz OVER 0.5 RUNS</td><td>0.5</td><td>130.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+6.50u</td></tr>
+<tr><td>2026-04-17</td><td>basketball_nba</td><td>Coby White OVER 2.5 REBOUNDS</td><td>2.5</td><td>-107.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-17</td><td>basketball_nba</td><td>De'Anthony Melton OVER 2.5 ASSISTS</td><td>2.5</td><td>115.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+5.75u</td></tr>
+<tr><td>2026-04-14</td><td>baseball_mlb</td><td>Jesus Sanchez OVER 0.5 HITS</td><td>0.5</td><td>-125.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.00u</td></tr>
+<tr><td>2026-04-14</td><td>basketball_nba</td><td>Oso Ighodaro OVER 4.5 REBOUNDS</td><td>4.5</td><td>122.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-14</td><td>basketball_nba</td><td>Ryan Kalkbrenner OVER 4.5 POINTS</td><td>4.5</td><td>124.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+6.20u</td></tr></table></details>
+<details><summary><strong>Prop — PROP_UNDER (edge)</strong> — last 9 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-04-20</td><td>baseball_mlb</td><td>Reid Detmers UNDER 4.5 HITS ALLOWED</td><td>4.5</td><td>106.0</td><td>0.0u</td><td class='taint'>TAINTED</td><td class='taint'>+0.00u</td></tr>
+<tr><td>2026-04-20</td><td>icehockey_nhl</td><td>Zach Hyman UNDER 2.5 SOG</td><td>2.5</td><td>-115.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.35u</td></tr>
+<tr><td>2026-04-18</td><td>baseball_mlb</td><td>Alex Freeland UNDER 0.5 RUNS</td><td>0.5</td><td>-141.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+3.55u</td></tr>
+<tr><td>2026-04-18</td><td>basketball_nba</td><td>Jalen Brunson UNDER 2.5 THREES</td><td>2.5</td><td>117.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-18</td><td>basketball_nba</td><td>Luke Kennard UNDER 4.5 ASSISTS</td><td>4.5</td><td>120.0</td><td>0.0u</td><td class='taint'>TAINTED</td><td class='taint'>+0.00u</td></tr>
+<tr><td>2026-04-17</td><td>baseball_mlb</td><td>Jeff McNeil UNDER 0.5 RUNS</td><td>0.5</td><td>-109.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.59u</td></tr>
+<tr><td>2026-04-16</td><td>icehockey_nhl</td><td>Brock Nelson UNDER 2.5 SOG</td><td>2.5</td><td>-115.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.35u</td></tr>
+<tr><td>2026-04-16</td><td>baseball_mlb</td><td>Giancarlo Stanton UNDER 0.5 RUNS</td><td>0.5</td><td>104.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr>
+<tr><td>2026-04-16</td><td>icehockey_nhl</td><td>Zach Hyman UNDER 2.5 SOG</td><td>2.5</td><td>-115.0</td><td>5.0u</td><td class='pos'>WIN</td><td class='pos'>+4.35u</td></tr></table></details>
+<details><summary><strong>Prop — other (untagged)</strong> — last 1 picks</summary><table class='mini'><tr><th>Date</th><th>Sport</th><th>Selection</th><th>Line</th><th>Odds</th><th>Units</th><th>Result</th><th>P/L</th></tr><tr><td>2026-03-24</td><td>basketball_nba</td><td>Grayson Allen OVER 3.5 ASSISTS</td><td>3.5</td><td>116.0</td><td>5.0u</td><td class='neg'>LOSS</td><td class='neg'>-5.00u</td></tr></table></details>
+
+<h2>Gates — blocks logged to shadow_blocked_picks</h2>
+<table><tr><th>Gate</th><th>Lifetime</th><th>Active days</th></tr>
+<tr><td><strong>SHARP_OPPOSES_BLOCK (v25.35)</strong><br><span class='subtle'>e.g. Boston Bruins@Buffalo Sabres UNDER 6.5</span></td><td>12 blocks</td><td>1 days</td></tr>
+<tr><td><strong>NCAA_DK_TIGHT_SKIP (v25.22)</strong><br><span class='subtle'>e.g. Pittsburgh Panthers@West Virginia Mounta</span></td><td>9 blocks</td><td>4 days</td></tr>
+<tr><td><strong>NCAA_DK_FADE_FLIP (v25.23)</strong><br><span class='subtle'>e.g. Auburn Tigers@Florida Gators UNDER 9.5</span></td><td>2 blocks</td><td>1 days</td></tr>
+<tr><td><strong>NCAA_NO_SHARP_SKIP (v25.24)</strong><br><span class='subtle'>e.g. Louisiana Ragin' Cajuns@Troy Trojans UND</span></td><td>8 blocks</td><td>3 days</td></tr>
+<tr><td><strong>NCAA_DK_SHARP_VETO</strong><br><span class='subtle'>e.g. Auburn Tigers@Florida Gators UNDER 9.5</span></td><td>2 blocks</td><td>1 days</td></tr>
+<tr><td><strong>NCAA_ERA_RELIABILITY_GATE (v25.32)</strong><br><span class='subtle'>e.g. UAB Blazers@Alabama Crimson Tide</span></td><td>19 blocks</td><td>3 days</td></tr>
+<tr><td><strong>MLB_SIDE_CONVICTION_GATE</strong><br><span class='subtle'>e.g. Los Angeles Dodgers@San Francisco Giants</span></td><td>605 blocks</td><td>6 days</td></tr>
+<tr><td><strong>NHL_PACE_OVER_GATE</strong><br><span class='subtle'>e.g. Philadelphia Flyers@Pittsburgh Penguins </span></td><td>33 blocks</td><td>2 days</td></tr>
+<tr><td><strong>PACE_GATE</strong><br><span class='subtle'>e.g. Toronto Raptors@Cleveland Cavaliers UNDE</span></td><td>196 blocks</td><td>10 days</td></tr>
+<tr><td><strong>PITCHING_GATE</strong><br><span class='subtle'>e.g. Maryland Terrapins@Iowa Hawkeyes OVER 14</span></td><td>33 blocks</td><td>4 days</td></tr>
+<tr><td><strong>PARK_GATE</strong><br><span class='subtle'>e.g. Chicago White Sox@Arizona Diamondbacks U</span></td><td>1329 blocks</td><td>16 days</td></tr>
+<tr><td><strong>PROP_DIVERGENCE_GATE (v25.30)</strong><br><span class='subtle'>e.g. Jack Kochanowicz UNDER 17.5 pitcher_outs</span></td><td>3373 blocks</td><td>4 days</td></tr>
+<tr><td><strong>PROP_BOOK_ARB_SHADOW (v25.37)</strong><br><span class='subtle'>e.g. Victor Wembanyama UNDER 45.5 PRA</span></td><td>7 blocks</td><td>1 days</td></tr>
+<tr><td><strong>BLOWOUT_GATE</strong><br><span class='subtle'>e.g. Brett Sullivan runs</span></td><td>3236 blocks</td><td>10 days</td></tr>
+<tr><td><strong>DIRECTION_CAP</strong><br><span class='subtle'>e.g. Hawai'i Rainbow Warriors@UCLA Bruins UND</span></td><td>70 blocks</td><td>8 days</td></tr>
+<tr><td><strong>GAME_CAP (concentration)</strong><br><span class='subtle'>e.g. Colorado Avalanche -1.5</span></td><td>11 blocks</td><td>2 days</td></tr>
+<tr><td><strong>SHARP_CAP</strong><br><span class='subtle'>e.g. Baltimore Orioles@Pittsburgh Pirates UND</span></td><td>7 blocks</td><td>3 days</td></tr>
+<tr><td><strong>DIVERGENCE_GATE (general)</strong><br><span class='subtle'>e.g. Los Angeles Lakers vs Houston Rockets</span></td><td>1068 blocks</td><td>11 days</td></tr>
 </table>
-<p class="note">SHARP_OPPOSES_BLOCK: counterfactual grading runs in the morning briefing. PRA book-arb shadow: promotes to live at n≥15 with ≥55% counterfactual W/L.</p>
+<p class="note">Blocks = picks the model would have fired but a gate suppressed. Counterfactual grading lives in the morning briefing.</p>
 
 <h2>By sport (post-Apr-1)</h2>
-<table><tr><th>Sport</th><th>N</th><th>W-L</th><th>P/L</th></tr>
-<tr><td>icehockey_nhl</td><td>36</td><td>21-15</td><td class='pos'>+13.35u</td></tr>
-<tr><td>soccer_spain_la_liga</td><td>2</td><td>2-0</td><td class='pos'>+7.75u</td></tr>
-<tr><td>soccer_germany_bundesliga</td><td>2</td><td>2-0</td><td class='pos'>+7.02u</td></tr>
-<tr><td>basketball_ncaab</td><td>1</td><td>1-0</td><td class='pos'>+4.95u</td></tr>
-<tr><td>soccer_italy_serie_a</td><td>2</td><td>1-1</td><td class='neg'>-1.50u</td></tr>
-<tr><td>soccer_uefa_champs_league</td><td>1</td><td>0-1</td><td class='neg'>-5.00u</td></tr>
-<tr><td>basketball_nba</td><td>27</td><td>13-14</td><td class='neg'>-8.89u</td></tr>
-<tr><td>tennis_atp_monte_carlo_masters</td><td>4</td><td>1-3</td><td class='neg'>-10.67u</td></tr>
-<tr><td>baseball_ncaa</td><td>51</td><td>25-24</td><td class='neg'>-10.92u</td></tr>
-<tr><td>baseball_mlb</td><td>47</td><td>22-24</td><td class='neg'>-13.62u</td></tr>
+<table><tr><th>Sport</th><th>N</th><th>W-L-P</th><th>P/L</th></tr>
+<tr><td>icehockey_nhl</td><td>38</td><td>22-16-0</td><td class='pos'>+12.70u</td></tr>
+<tr><td>soccer_spain_la_liga</td><td>2</td><td>2-0-0</td><td class='pos'>+7.75u</td></tr>
+<tr><td>soccer_germany_bundesliga</td><td>2</td><td>2-0-0</td><td class='pos'>+7.02u</td></tr>
+<tr><td>basketball_ncaab</td><td>1</td><td>1-0-0</td><td class='pos'>+4.95u</td></tr>
+<tr><td>basketball_nba</td><td>31</td><td>16-15-0</td><td class='neg'>-1.19u</td></tr>
+<tr><td>soccer_italy_serie_a</td><td>2</td><td>1-1-0</td><td class='neg'>-1.50u</td></tr>
+<tr><td>soccer_uefa_champs_league</td><td>1</td><td>0-1-0</td><td class='neg'>-5.00u</td></tr>
+<tr><td>baseball_mlb</td><td>48</td><td>23-24-1</td><td class='neg'>-9.07u</td></tr>
+<tr><td>tennis_atp_monte_carlo_masters</td><td>4</td><td>1-3-0</td><td class='neg'>-10.67u</td></tr>
+<tr><td>baseball_ncaa</td><td>53</td><td>25-26-2</td><td class='neg'>-20.92u</td></tr>
 </table>
 
 </body></html>

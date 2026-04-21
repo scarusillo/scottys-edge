@@ -342,6 +342,89 @@ def analyze_gate_health(conn):
     return notes
 
 
+def channel_summary(conn):
+    """v25.53: per-channel W/L/P/L summary for the morning briefing.
+
+    Walks every pick engine + every gate and reports status in a structured
+    block so regressions are visible at a glance. Pair with
+    docs/engine_dashboard.html for per-pick drill-down.
+    """
+    lines = []
+
+    # Pick engines (matches generate_engine_dashboard.py)
+    ENGINES = [
+        ('Elo Edge SPREAD',            "market_type='SPREAD' AND (side_type IN ('FAVORITE','DOG','SPREAD') OR side_type IS NULL)"),
+        ('Elo Edge TOTAL',             "market_type='TOTAL' AND side_type IN ('OVER','UNDER')"),
+        ('Elo Edge MONEYLINE',         "market_type IN ('MONEYLINE','ML')"),
+        ('Context DATA_SPREAD',        "side_type='DATA_SPREAD'"),
+        ('Context DATA_TOTAL',         "side_type='DATA_TOTAL'"),
+        ('SPREAD_FADE_FLIP',           "side_type IN ('SPREAD_FADE_FLIP','FADE_FLIP')"),
+        ('PROP_FADE_FLIP',             "side_type='PROP_FADE_FLIP'"),
+        ('BOOK_ARB (game)',            "side_type='BOOK_ARB'"),
+        ('PROP_BOOK_ARB',              "side_type='PROP_BOOK_ARB'"),
+        ('Prop PROP_OVER',             "side_type='PROP_OVER'"),
+        ('Prop PROP_UNDER',            "side_type='PROP_UNDER'"),
+    ]
+
+    lines.append('═' * 64)
+    lines.append('PER-CHANNEL STATUS (post-rebuild 2026-03-04+)')
+    lines.append('═' * 64)
+
+    for name, pred in ENGINES:
+        try:
+            r = conn.execute(f"""
+                SELECT SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END) w,
+                       SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END) l,
+                       SUM(CASE WHEN result='PUSH' THEN 1 ELSE 0 END) p,
+                       ROUND(SUM(pnl_units),2) pnl,
+                       SUM(CASE WHEN result IN ('WIN','LOSS','PUSH') THEN 1 ELSE 0 END) n_graded
+                FROM graded_bets
+                WHERE ({pred}) AND DATE(created_at) >= '2026-03-04'
+            """).fetchone()
+            w, l, p, pnl, n = r
+            w = w or 0; l = l or 0; p = p or 0; pnl = pnl or 0; n = n or 0
+            if n == 0: continue
+            wr = w/(w+l)*100 if (w+l) else 0
+            arrow = '↑' if pnl > 0 else ('↓' if pnl < 0 else '•')
+            lines.append(f"  {arrow} {name:24s} {w:3d}-{l:3d}-{p:2d}  {wr:5.1f}%  {pnl:+7.2f}u  (n={n})")
+        except Exception:
+            continue
+
+    # Gates — only show gates that have blocks
+    GATES = [
+        ('CONTEXT_DIRECTION_VETO',           "reason LIKE 'CONTEXT_DIRECTION_VETO%'"),
+        ('BOOK_ARB_LINE_UNSETTLED',          "reason LIKE 'BOOK_ARB_LINE_UNSETTLED%'"),
+        ('SHARP_OPPOSES_BLOCK',              "reason LIKE 'SHARP_OPPOSES_BLOCK%'"),
+        ('CLV_BLOCK',                         "reason LIKE 'CLV_BLOCK%' OR reason LIKE 'CLV BLOCK%'"),
+        ('NCAA_DK_TIGHT_SKIP',               "reason LIKE 'NCAA_DK_TIGHT_SKIP%'"),
+        ('NCAA_DK_FADE_FLIP',                "reason LIKE 'NCAA_DK_FADE_FLIP%'"),
+        ('NCAA_NO_SHARP_SKIP',               "reason LIKE 'NCAA_NO_SHARP_SKIP%'"),
+        ('NCAA_ERA_RELIABILITY',             "reason LIKE 'NCAA_ERA_RELIABILITY%'"),
+        ('MLB_SIDE_CONVICTION',              "reason LIKE 'MLB_SIDE_CONVICTION_GATE%'"),
+        ('NHL_PACE_OVER_GATE',               "reason LIKE 'NHL_PACE_OVER_GATE%'"),
+        ('PACE_GATE / PITCHING_GATE',        "reason LIKE 'PACE_GATE%' OR reason LIKE 'PITCHING_GATE%'"),
+        ('PARK_GATE',                         "reason LIKE 'PARK_GATE%'"),
+        ('PROP_DIVERGENCE_GATE',             "reason LIKE 'PROP_DIVERGENCE_GATE%'"),
+        ('PROP_BOOK_ARB_SHADOW',             "reason LIKE 'PROP_BOOK_ARB_SHADOW%'"),
+        ('BLOWOUT_GATE',                      "reason LIKE 'BLOWOUT_GATE%'"),
+        ('DIRECTION_CAP',                     "reason LIKE 'DIRECTION_CAP%'"),
+        ('GAME_CAP',                          "reason LIKE 'GAME_CAP%'"),
+    ]
+    lines.append('')
+    lines.append('GATE BLOCKS (lifetime)')
+    lines.append('─' * 64)
+    for name, pred in GATES:
+        try:
+            r = conn.execute(f"SELECT COUNT(*) FROM shadow_blocked_picks WHERE {pred}").fetchone()
+            n = r[0] if r else 0
+            if n == 0: continue
+            lines.append(f"  {name:30s} {n:5d} blocks")
+        except Exception:
+            continue
+    lines.append('═' * 64)
+    return lines
+
+
 def analyze_fade_flip_strategy(conn):
     """CRITICAL: Track Option C fade-flip picks for NCAA DK.
 
@@ -590,6 +673,13 @@ def generate_briefing(conn):
         lines.append(f"\n  GATE MONITORING (v25.18):")
         for g in gate_notes:
             lines.append(f"    > {g}")
+
+    # v25.53 Per-channel summary — every engine + every gate
+    ch_lines = channel_summary(conn)
+    if ch_lines:
+        lines.append('')
+        for c in ch_lines:
+            lines.append(c)
 
     # v25.23 / Option C — CRITICAL fade-flip monitoring
     fade_summary, fade_alerts = analyze_fade_flip_strategy(conn)
