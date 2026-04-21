@@ -47,6 +47,15 @@ MLB_PITCHER_MIN_IP_CURRENT_SEASON = 20.0
 MLB_BATTER_MIN_AB_CURRENT_SEASON = 40
 DECAY_RATE = 0.92  # 0.92^10 = 0.43 → game 10 ago has 43% weight
 
+# v25.41: Starter-role gate for MLB pitcher props.
+# A pitcher converted from reliever to starter (e.g., Detmers 2025 bullpen →
+# 2026 rotation) has a 20-game baseline polluted by 1-inning relief appearances
+# with 0-1 hits allowed. Model projected UNDER 4.5 at 90% hit rate; actual avg
+# as starter is 4.5. Fix: for pitcher counting stats, restrict baseline to
+# games with pitcher_outs >= 12 (≥ 4.0 IP = starter workload).
+STARTER_MIN_OUTS = 12
+MIN_STARTER_GAMES = 6  # Need ≥6 starts before hit-rate math is stable
+
 # Population-level std defaults (used when player has < 8 games)
 DEFAULT_STD = {
     'pts': 6.0, 'reb': 2.5, 'ast': 2.0, 'threes': 1.2,
@@ -155,14 +164,44 @@ def get_player_baseline(conn, player, stat_type, sport, limit=20):
     Compute recency-weighted average and std from box_scores.
     Returns None if insufficient data.
     """
-    rows = conn.execute("""
-        SELECT stat_value, game_date FROM box_scores
-        WHERE player = ? AND stat_type = ? AND sport = ?
-        ORDER BY game_date DESC
-        LIMIT ?
-    """, (player, stat_type, sport, limit)).fetchall()
+    # v25.41: For MLB pitcher counting stats, restrict to starter games
+    # (pitcher_outs >= 12). Without this, a reliever-turned-starter like
+    # Detmers carries 16 one-inning relief outings into a 20-game baseline
+    # and the hit-rate math projects absurdly high UNDER probabilities.
+    if sport == 'baseball_mlb' and stat_type in {
+        'pitcher_k', 'pitcher_outs', 'pitcher_ip', 'pitcher_er',
+        'pitcher_h_allowed', 'pitcher_bb',
+    }:
+        rows = conn.execute("""
+            SELECT b1.stat_value, b1.game_date FROM box_scores b1
+            WHERE b1.player = ? AND b1.stat_type = ? AND b1.sport = ?
+              AND EXISTS (
+                  SELECT 1 FROM box_scores b2
+                  WHERE b2.player = b1.player
+                    AND b2.game_date = b1.game_date
+                    AND b2.stat_type = 'pitcher_outs'
+                    AND b2.sport = b1.sport
+                    AND b2.stat_value >= ?
+              )
+            ORDER BY b1.game_date DESC
+            LIMIT ?
+        """, (player, stat_type, sport, STARTER_MIN_OUTS, limit)).fetchall()
+        if len(rows) < MIN_STARTER_GAMES:
+            return None
+    else:
+        rows = conn.execute("""
+            SELECT stat_value, game_date FROM box_scores
+            WHERE player = ? AND stat_type = ? AND sport = ?
+            ORDER BY game_date DESC
+            LIMIT ?
+        """, (player, stat_type, sport, limit)).fetchall()
 
-    if len(rows) < MIN_PLAYER_GAMES:
+    if len(rows) < MIN_PLAYER_GAMES and not (
+        sport == 'baseball_mlb' and stat_type in {
+            'pitcher_k', 'pitcher_outs', 'pitcher_ip', 'pitcher_er',
+            'pitcher_h_allowed', 'pitcher_bb',
+        }
+    ):
         return None
 
     # v25.16: Recency gate — require at least 1 game within last 45 days.
@@ -615,11 +654,33 @@ def get_full_season_rate(conn, player, stat_type, sport, market_line, min_games=
 
     Returns None if player has < min_games of history (fall back to existing logic).
     """
-    rows = conn.execute("""
-        SELECT stat_value FROM box_scores
-        WHERE player = ? AND stat_type = ? AND sport = ?
-        ORDER BY game_date DESC
-    """, (player, stat_type, sport)).fetchall()
+    # v25.41: Same starter-role filter as get_player_baseline.
+    # Full-season rate must also exclude relief appearances for pitcher stats,
+    # otherwise the 50/50 blend with the 20-game rate re-introduces the
+    # reliever-baseline bug we just fixed.
+    if sport == 'baseball_mlb' and stat_type in {
+        'pitcher_k', 'pitcher_outs', 'pitcher_ip', 'pitcher_er',
+        'pitcher_h_allowed', 'pitcher_bb',
+    }:
+        rows = conn.execute("""
+            SELECT b1.stat_value FROM box_scores b1
+            WHERE b1.player = ? AND b1.stat_type = ? AND b1.sport = ?
+              AND EXISTS (
+                  SELECT 1 FROM box_scores b2
+                  WHERE b2.player = b1.player
+                    AND b2.game_date = b1.game_date
+                    AND b2.stat_type = 'pitcher_outs'
+                    AND b2.sport = b1.sport
+                    AND b2.stat_value >= ?
+              )
+            ORDER BY b1.game_date DESC
+        """, (player, stat_type, sport, STARTER_MIN_OUTS)).fetchall()
+    else:
+        rows = conn.execute("""
+            SELECT stat_value FROM box_scores
+            WHERE player = ? AND stat_type = ? AND sport = ?
+            ORDER BY game_date DESC
+        """, (player, stat_type, sport)).fetchall()
     if len(rows) < min_games:
         return None
     hits = sum(1 for r in rows if r[0] > market_line)
