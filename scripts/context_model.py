@@ -693,6 +693,31 @@ def _h2h_total_delta(conn, sport, home, away, before_date):
     return sum(totals) / len(totals) - la, len(totals)
 
 
+def _mlb_park_factor_delta(conn, home, before_date, min_games=30, market_divisor=3, cap=1.0):
+    """MLB park factor: avg total at home team's park vs MLB league avg.
+
+    Divided by market_divisor to extract only residual edge market hasn't
+    already priced (parks like Coors are well-known). Capped at ±1.0 runs.
+    Walk-forward safe: uses completed games before this date.
+    """
+    park = conn.execute("""
+        SELECT COUNT(*), AVG(actual_total) FROM results
+        WHERE sport='baseball_mlb' AND home=? AND actual_total IS NOT NULL
+          AND DATE(commence_time) < ?
+    """, (home, before_date)).fetchone()
+    if not park or (park[0] or 0) < min_games: return 0.0, {}
+    lg = conn.execute("""
+        SELECT AVG(actual_total) FROM results
+        WHERE sport='baseball_mlb' AND actual_total IS NOT NULL
+          AND DATE(commence_time) < ?
+    """, (before_date,)).fetchone()
+    if not lg or lg[0] is None: return 0.0, {}
+    raw = park[1] - lg[0]
+    delta = max(-cap, min(cap, raw / market_divisor))
+    return round(delta, 2), {'park_avg': round(park[1], 2), 'league_avg': round(lg[0], 2),
+                             'raw_dev': round(raw, 2), 'delta': round(delta, 2), 'n': park[0]}
+
+
 def _nhl_goalie_form_delta(conn, home, away, before_date):
     """NHL starter goalie save% (last 5 starts) vs league avg 0.900.
     Each 0.010 above league avg = ~0.6 goals suppressed per matchup.
@@ -807,8 +832,11 @@ def compute_context_total(conn, sport, home, away, event_id, market_total, comme
 
     pitcher_adj = 0.0
     pitcher_info = {}
+    park_adj = 0.0
+    park_info = {}
     if sport == 'baseball_mlb':
         pitcher_adj, pitcher_info = _mlb_pitcher_matchup_delta(conn, home, away, commence_date)
+        park_adj, park_info = _mlb_park_factor_delta(conn, home, commence_date)
 
     # v25.47: goalie + soccer standings + ref tendency
     goalie_adj = 0.0
@@ -824,7 +852,7 @@ def compute_context_total(conn, sport, home, away, event_id, market_total, comme
     if sport in ('basketball_nba', 'icehockey_nhl', 'basketball_ncaab'):
         ref_adj, ref_info = _ref_total_delta(conn, sport, event_id, commence_date)
 
-    total_adj = form_adj + h2h_adj + pitcher_adj + goalie_adj + standings_adj + ref_adj
+    total_adj = form_adj + h2h_adj + pitcher_adj + park_adj + goalie_adj + standings_adj + ref_adj
     cap = _TOTAL_CAP.get(sport, 1.0)
     total_adj = max(-cap, min(cap, total_adj))
 
@@ -833,6 +861,7 @@ def compute_context_total(conn, sport, home, away, event_id, market_total, comme
         'form_n': fh_n + fa_n, 'form_adj': round(form_adj, 2),
         'h2h': round(h2h, 2), 'h2h_n': h2h_n, 'h2h_adj': round(h2h_adj, 2),
         'pitcher_adj': round(pitcher_adj, 2), 'pitcher_info': pitcher_info,
+        'park_adj': round(park_adj, 2), 'park_info': park_info,
         'goalie_adj': round(goalie_adj, 2), 'goalie_info': goalie_info,
         'standings_adj': round(standings_adj, 2), 'standings_info': standings_info,
         'ref_adj': round(ref_adj, 2), 'ref_info': ref_info,

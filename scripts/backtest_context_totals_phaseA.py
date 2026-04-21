@@ -235,11 +235,26 @@ def compute_context_total(conn, sport, home, away, event_id, market_total, comme
     h2h, h2h_n = h2h_total_delta(conn, sport, home, away, commence_date, league_avg=la)
     h2h_adj = h2h * 0.2  # 20% weight — small sample, heavy regression
 
-    # MLB pitcher matchup
+    # MLB pitcher matchup + park factor
     pitcher_adj = 0.0
     pitcher_info = {}
+    park_adj = 0.0
     if sport == 'baseball_mlb':
         pitcher_adj, pitcher_info = mlb_pitcher_matchup_delta(conn, home, away, commence_date)
+        # Park factor (walk-forward, same math as production)
+        park_row = conn.execute("""
+            SELECT COUNT(*), AVG(actual_total) FROM results
+            WHERE sport='baseball_mlb' AND home=? AND actual_total IS NOT NULL
+              AND DATE(commence_time) < ?
+        """, (home, commence_date)).fetchone()
+        if park_row and (park_row[0] or 0) >= 30:
+            lg_row = conn.execute("""
+                SELECT AVG(actual_total) FROM results
+                WHERE sport='baseball_mlb' AND actual_total IS NOT NULL
+                  AND DATE(commence_time) < ?
+            """, (commence_date,)).fetchone()
+            if lg_row and lg_row[0]:
+                park_adj = max(-1.0, min(1.0, (park_row[1] - lg_row[0]) / 3))
 
     # NHL goalie form
     goalie_adj = 0.0
@@ -259,7 +274,7 @@ def compute_context_total(conn, sport, home, away, event_id, market_total, comme
     if sport in ('basketball_nba', 'icehockey_nhl', 'basketball_ncaab'):
         ref_adj, ref_info = ref_total_delta(conn, sport, event_id, commence_date)
 
-    total_adj = form_adj + h2h_adj + pitcher_adj + goalie_adj + standings_adj + ref_adj
+    total_adj = form_adj + h2h_adj + pitcher_adj + park_adj + goalie_adj + standings_adj + ref_adj
     # Cap at sport-specific maximum to prevent runaway adjustments
     cap = {
         'icehockey_nhl': 1.0,
