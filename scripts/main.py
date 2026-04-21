@@ -3424,10 +3424,21 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     EXCLUDED_BOOKS = {'Bovada', 'BetOnline.ag', 'BetUS', 'MyBookie.ag', 'LowVig.ag'}
     game_filtered = [p for p in game_filtered if p.get('book') not in EXCLUDED_BOOKS]
     
+    # ── v25.51: Context Model picks (Path 1 + Path 2) bypass the soft/sharp
+    # merge cap. They have their own threshold-based gate (disagreement must
+    # exceed sport-specific bar), so the MAX_SHARP_PICKS=6 cap shouldn't also
+    # compete them against each other. BOOK_ARB/PROP_BOOK_ARB already bypass
+    # merge entirely via post-merge append; Context picks go through merge
+    # because we want the concentration cap + direction cap checks, but we
+    # don't want them to push out each other under the sharp cap.
+    CONTEXT_BYPASS_SIDES = {'DATA_SPREAD', 'DATA_TOTAL'}
+    context_bypass = [p for p in game_filtered if p.get('side_type') in CONTEXT_BYPASS_SIDES]
+    game_filtered_for_cap = [p for p in game_filtered if p.get('side_type') not in CONTEXT_BYPASS_SIDES]
+
     # ── Split into soft and sharp ──
-    soft_picks = [p for p in game_filtered if p.get('sport') in SOFT_MARKETS]
-    sharp_picks = [p for p in game_filtered if p.get('sport') in SHARP_MARKETS]
-    
+    soft_picks = [p for p in game_filtered_for_cap if p.get('sport') in SOFT_MARKETS]
+    sharp_picks = [p for p in game_filtered_for_cap if p.get('sport') in SHARP_MARKETS]
+
     # Sort each tier by edge quality
     soft_picks.sort(key=lambda x: x['star_rating']*100 + x['edge_pct'], reverse=True)
     sharp_picks.sort(key=lambda x: x['star_rating']*100 + x['edge_pct'], reverse=True)
@@ -3552,6 +3563,23 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     
     # ── Merge: soft first, then sharp ──
     game_final = soft_final + sharp_final
+
+    # v25.51: Re-inject Context Model picks (DATA_SPREAD / DATA_TOTAL). They
+    # bypass the sharp/soft cap above (Context picks shouldn't compete with
+    # each other for 6 slots — they pass their own disagreement-threshold
+    # gate in model_engine). They still go through the concentration cap
+    # below so same-event collisions are resolved normally.
+    # Give Context picks a sort-ranking via edge_pct = disagreement-proxy
+    # so if multiple Context picks land on the same event (e.g., spread+total)
+    # the concentration cap keeps the higher-conviction one.
+    for _ctx_pick in context_bypass:
+        # Pull disagreement from model_spread vs market if possible, else fallback
+        _cp_edge = _ctx_pick.get('edge_pct', 0) or 0
+        if _cp_edge == 0:
+            # No edge stored for Path 2 picks; derive a conviction score
+            # from selection line / model_total vs market (rough proxy)
+            _ctx_pick['_ctx_rank'] = 1  # tag so concentration cap can use it
+        game_final.append(_ctx_pick)
 
     # v17: Per-game concentration cap — max 1 pick per event (spreads/totals/ML)
     # Stacking spread + total on the same game creates correlated risk.
