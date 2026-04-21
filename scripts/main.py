@@ -3414,6 +3414,86 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             except Exception:
                 pass
 
+        # v25.52: CONTEXT_DIRECTION_VETO — when Context Model's directional
+        # view disagrees with the pick's direction, veto the pick. Context is
+        # our primary brain; edge-based picks should defer on direction when
+        # the two conflict. Fade-flip / Context / arb picks are exempt (they
+        # have their own theses that intentionally bet against the model).
+        #
+        # 30-day backtest on 116 eligible TOTAL/SPREAD picks:
+        #   Context AGREES (81 picks): 49-32 (60%) +36.92u
+        #   Context DISAGREES (35 picks, would be vetoed): 15-20 (43%) -41.24u
+        # Expected save: +41u per 30 days.
+        _ctx_veto_sports_total = {'basketball_nba','icehockey_nhl','baseball_mlb',
+                                   'soccer_usa_mls','soccer_spain_la_liga',
+                                   'soccer_germany_bundesliga','soccer_france_ligue_one'}
+        _ctx_veto_sports_spread = {'icehockey_nhl','basketball_nba','soccer_italy_serie_a'}
+        _veto_exempt_side_types = {'SPREAD_FADE_FLIP','PROP_FADE_FLIP','DATA_SPREAD',
+                                    'DATA_TOTAL','BOOK_ARB','PROP_BOOK_ARB','FADE_FLIP'}
+        _st_norm = p.get('side_type') or ''
+        if conn is not None and _st_norm not in _veto_exempt_side_types:
+            try:
+                _eid = p.get('event_id', '')
+                _sel = p.get('selection', '') or ''
+                _line = p.get('line')
+                _mt = p.get('market_type', '')
+                # Fetch game info + market baselines
+                _mc = conn.execute("""
+                    SELECT home, away, commence_time, model_spread, best_home_spread, best_over_total
+                    FROM market_consensus WHERE event_id=? AND tag='CURRENT' LIMIT 1
+                """, (_eid,)).fetchone()
+                if _mc and _mc[0] and _mc[1] and _mc[2]:
+                    _home, _away, _commence, _ms, _mkt_sp, _mkt_tot = _mc
+                    _commence_date = _commence[:10]
+                    _ctx_direction_disagrees = False
+                    _ctx_reason = ''
+                    if _mt == 'TOTAL' and sport in _ctx_veto_sports_total and _mkt_tot is not None:
+                        from context_model import compute_context_total
+                        _ctx_tot, _ = compute_context_total(conn, sport, _home, _away,
+                                                            _eid, _mkt_tot, _commence_date)
+                        _pick_side = 'OVER' if 'OVER' in _sel.upper() else 'UNDER'
+                        _ctx_side = 'OVER' if _ctx_tot > _mkt_tot else ('UNDER' if _ctx_tot < _mkt_tot else _pick_side)
+                        if _pick_side != _ctx_side:
+                            _ctx_direction_disagrees = True
+                            _ctx_reason = (f'CONTEXT_DIRECTION_VETO (totals: pick {_pick_side}, '
+                                           f'Context {_ctx_side} — ctx_tot={_ctx_tot:.2f} vs mkt={_mkt_tot})')
+                    elif _mt == 'SPREAD' and sport in _ctx_veto_sports_spread and _ms is not None and _mkt_sp is not None:
+                        from context_model import compute_context_spread
+                        _ms_ctx, _ = compute_context_spread(conn, sport, _home, _away,
+                                                             _eid, _ms, _commence_date)
+                        _ctx_fav_home = (_ms_ctx < _mkt_sp)
+                        # Infer pick side: side_type FAVORITE or DOG, fallback team-match
+                        _pick_on_home = None
+                        if _st_norm == 'FAVORITE':
+                            _pick_on_home = (_mkt_sp < 0)
+                        elif _st_norm == 'DOG':
+                            _pick_on_home = (_mkt_sp > 0)
+                        else:
+                            _pick_on_home = (_home and _home.split()[0] in _sel.split()[0])
+                        if _pick_on_home is not None and _ctx_fav_home != _pick_on_home:
+                            _ctx_direction_disagrees = True
+                            _ctx_reason = (f'CONTEXT_DIRECTION_VETO (spread: pick on '
+                                           f'{"home" if _pick_on_home else "away"}, Context favors '
+                                           f'{"home" if _ctx_fav_home else "away"} — '
+                                           f'ms_ctx={_ms_ctx:+.1f} vs mkt_sp={_mkt_sp:+.1f})')
+                    if _ctx_direction_disagrees:
+                        print(f"    🧠 CONTEXT_DIRECTION_VETO: {_sel[:60]} — {_ctx_reason}")
+                        try:
+                            conn.execute("""INSERT INTO shadow_blocked_picks
+                                (created_at, sport, event_id, selection, market_type, book,
+                                 line, odds, edge_pct, units, reason)
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                                (datetime.now().isoformat(), p.get('sport',''), p.get('event_id',''),
+                                 p.get('selection',''), p.get('market_type',''), p.get('book',''),
+                                 p.get('line'), p.get('odds'), p.get('edge_pct', 0),
+                                 p.get('units', 0), _ctx_reason))
+                            conn.commit()
+                        except Exception:
+                            pass
+                        return False
+            except Exception:
+                pass  # Context check failures fail-open — pick still fires
+
         return True
 
     game_filtered = [p for p in game_picks if _passes_filter(p)]
