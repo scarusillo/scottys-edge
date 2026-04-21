@@ -144,36 +144,75 @@ changes, no shipping. Just a scoping exercise.
 
 ## 🟡 OTHER OPEN
 
-### Minimum line-stability time gate for BOOK_ARB (long-term)
+### Player-prop investigation — continue beyond v25.41 starter-role gate
 
-Late-posted NCAA baseball lines can produce "opener gap 3.0" signals that
-are actually just books converging on a freshly-posted market, not real
-asymmetric information. Scanner fires on the stale/generous soft line,
-then books converge within 30-60 min and the arb closes before the user
-places the bet.
+**Context:** Reid Detmers UNDER 4.5 HITS ALLOWED (bet 994, 4/20) lost 5u.
+Investigation surfaced that pitcher props fire rarely (4 total live picks
+ever) and UNDER pitcher props were enabled 4/14 with **no walk-forward
+backtest** (`walk_forward_props.py` and `prop_backtest.py` both filter
+`side='Over'`). Root cause for Detmers specifically: reliever→starter
+role change — 20-game baseline was polluted with 2025 bullpen appearances
+(0-1 hits/appearance), making UNDER 4.5 look like a 90% hit rate when
+he's actually 2-for-4 as a starter.
 
-**Example (2026-04-20):** UC Santa Barbara @ Cal Baptist UNDER 13.5
-fired at 3:13 PM EDT after lines posted at 3:00 PM EDT. FD opened at
-10.5, DK at 13.5, gap 3.0. Within ~30 minutes FD moved to 13.5 — the
-arb had closed by the time the user read the email.
+**Shipped 4/21:** v25.41 starter-role gate in `player_prop_model.py` —
+`get_player_baseline` and `get_full_season_rate` now filter pitcher
+baselines to games with `pitcher_outs >= 12` (≥ 4.0 IP); require
+`MIN_STARTER_GAMES = 6`. Apr 14-20 walk-forward: UNDER pitcher props
+flip from -0.3u (13 picks, 31% hit) to +10u (31 picks, 61% hit);
+Detmers correctly blocked.
 
-**Proposed fix:** require BOOK_ARB to see at least 60 minutes of
-stable line data before firing. Implementation:
-- Track `first_seen_timestamp` for each book's opener in `openers` table
-- Before firing BOOK_ARB, verify `(now - first_seen) > 60 min`
-- If not, skip and log to shadow_blocked_picks with reason `BOOK_ARB_LINE_UNSETTLED`
+**Still open — follow-ups user wants investigated:**
+1. **UNDER props walk-forward backtest.** `walk_forward_props.py`
+   hard-codes `side = 'Over'`. Extend to include UNDER and run against
+   all available prop_snapshots + box_scores history. Until we have this
+   we are running UNDER pitcher props with ~7 days of live data.
+2. **Pitcher-prop volume diagnosis.** Only 4 pitcher props have ever
+   fired live (Okamoto K, Goodman K, Lorenzen H-allowed W, Detmers
+   H-allowed TAINTED). Dig into why — MLB_PITCHER_MIN_IP_CURRENT_SEASON,
+   MLB_PROP_WINDOW_HOURS=3, BLOWOUT_GATE, MIN_PROP_ODDS=-150,
+   MIN_EDGE_PCT=10, MAX_PROP_PICKS=3 cap. Are we blocking good picks?
+3. **Rookie volatility.** Misiorowski (rookie starter) showed up as
+   multi-time false-positive in the walk-forward (86% UNDER conviction,
+   LOST). Consider a `games_as_starter < 12` penalty or separate
+   rookie treatment.
+4. **UNDER shadow mode consideration.** Even with v25.41 the UNDER
+   sample is 31 picks over 7 days. User originally offered to
+   shadow-mode UNDER pitcher props entirely; current choice is to keep
+   them live with the starter gate. Revisit after 30 days of data.
+5. **Role-change detection for batter-facing metrics.** Same pattern
+   could exist for batters (pinch hitters, spot starters, position
+   changes affecting batting order). Not an issue today but worth
+   auditing once pitcher side is settled.
 
-**Expected impact:** eliminates the "just-opened market" failure mode.
-Sharper books catch legitimate mid-day arbs; filters freshly-posted
-NCAA baseball where books haven't converged yet.
+**Why this is parked here:** user is not done with player props but is
+moving to the daily to-do list from this morning's agent outputs.
+Return to items 1-5 after daily work is triaged.
 
-**Risk:** if we only fire after 60 min stability, we miss the window
-when both books are settled AND the gap still exists (rare but real).
-Could tune to 30 min if 60 is too conservative.
+### ~~Minimum line-stability time gate for BOOK_ARB~~ — SHIPPED v25.42 (2026-04-21)
 
-**Start trigger:** after 1-2 more similar close-too-fast BOOK_ARB fires
-are observed. Current v25.25/26/27 logic works for stable mid-day NCAA
-baseball markets; this is a post-v25.25 patch.
+Shipped BOOK_ARB_LINE_UNSETTLED gate. Requires each book's opener to
+have been in our `openers` table for ≥ 60 min before a BOOK_ARB fires.
+Implemented via a shared helper `_arb_lines_stable()` used by all three
+BOOK_ARB assembly sites in `main.py` (NCAA baseball v25.25, multi-sport
+v25.28 totals + spreads).
+
+**Backtest on all 4 historical fires:**
+- id=958 MLB TOR (TAINTED)  — Caesars 132 min old → ✓ fire
+- id=959 MLB MIL (TAINTED)  — Caesars 132 min old → ✓ fire
+- id=973 NBA TOR@CLE U (TAINTED -5u) — 11 min → 🚫 BLOCKED
+- id=990 NCAA UCSB U (LOSS -5u) — 14 min → 🚫 BLOCKED
+
+Both fresh-line trap losses (the UCSB case from the post-mortem and an
+earlier NBA case) would have been blocked; the 2 mature-opener MLB arbs
+still fire. Surgical.
+
+**Knobs:** `BOOK_ARB_MIN_OPENER_AGE_MIN = 60` (inline constant, adjust
+at the helper site).
+
+**Monitoring:** watch `shadow_blocked_picks` for `BOOK_ARB_LINE_UNSETTLED`
+reasons. If the gate blocks too aggressively over 2-3 weeks, consider
+dropping to 30 min.
 
 ---
 

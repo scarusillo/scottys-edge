@@ -824,6 +824,38 @@ def cmd_run(args):
         except Exception as e:
             print(f"  Concentration check: {e}")
 
+        # ═══ BOOK_ARB LINE-STABILITY GATE (v25.42) ═══
+        # Require each book's opener to have been in our database for at least
+        # 60 minutes before trusting an opener-gap arb signal. UCSB@Cal Baptist
+        # UNDER 13.5 (bet 990, 2026-04-20) fired 13 minutes after both FD and
+        # DK posted openers — FD opened at 10.5 while DK opened at 13.5, and
+        # within 30 min FD caught up to 13.5. The "arb" was a just-posted
+        # stale soft line, not asymmetric sharp information. Post-mortem
+        # parked the gate in agent_todo.md; shipping now.
+        BOOK_ARB_MIN_OPENER_AGE_MIN = 60
+        def _arb_lines_stable(sport, event_id, market, books):
+            """Return True if every named book's opener has aged >= threshold.
+
+            Uses openers.timestamp as first_seen. If a row lacks a timestamp,
+            treat it as stable (can't prove instability on missing data)."""
+            try:
+                from datetime import timezone
+                _now = datetime.now(timezone.utc)
+                for bk in books:
+                    _ts = conn.execute("""
+                        SELECT MIN(timestamp) FROM openers
+                        WHERE sport=? AND event_id=? AND market=? AND book=?
+                    """, (sport, event_id, market, bk)).fetchone()
+                    if not _ts or not _ts[0]:
+                        continue
+                    _fs = datetime.fromisoformat(_ts[0].replace('Z', '+00:00'))
+                    _age_min = (_now - _fs).total_seconds() / 60.0
+                    if _age_min < BOOK_ARB_MIN_OPENER_AGE_MIN:
+                        return False, bk, round(_age_min, 1)
+                return True, None, None
+            except Exception:
+                return True, None, None  # fail-open on transient errors
+
         # ═══ NCAA BASEBALL BOOK-ARB (v25.25) ═══
         # FD vs DK opener disagreement ≥ 2.0 runs = soft-vs-sharp inefficiency.
         # Fire the soft side of DK regardless of model: OVER at DK when DK<FD,
@@ -923,6 +955,24 @@ def cmd_run(args):
                 _eff_odds = _dk_odds if _dk_odds is not None else -110
                 if _eff_odds <= _NBA_MIN_ODDS:
                     print(f"  ⚠ NCAA_BOOK_ARB skipped: DK {_side} {_eff_odds:+.0f} worse than MIN_ODDS {_NBA_MIN_ODDS}")
+                    continue
+                # v25.42 line-stability gate — both books' openers must be >= 60 min old
+                _stable, _young_book, _age = _arb_lines_stable(
+                    'baseball_ncaa', _eid, 'totals', ['FanDuel', 'DraftKings'])
+                if not _stable:
+                    print(f"  ⚠ NCAA_BOOK_ARB_LINE_UNSETTLED: {_young_book} opener only {_age} min old (need {BOOK_ARB_MIN_OPENER_AGE_MIN})")
+                    try:
+                        _sel_for_log = f"{_away}@{_home} {_side} {_dk_line}"
+                        conn.execute("""INSERT INTO shadow_blocked_picks
+                            (created_at, sport, event_id, selection, market_type, book,
+                             line, odds, edge_pct, units, reason)
+                            VALUES (?, ?, ?, ?, 'TOTAL', 'DraftKings', ?, ?, ?, ?, ?)""",
+                            (datetime.now().isoformat(), 'baseball_ncaa', _eid, _sel_for_log,
+                             _dk_line, _dk_odds, round(_opener_gap * 5.0, 1), 5.0,
+                             f'BOOK_ARB_LINE_UNSETTLED ({_young_book} {_age} min)'))
+                        conn.commit()
+                    except Exception:
+                        pass
                     continue
                 _sel = f"{_away}@{_home} {_side} {_dk_line}"
                 _pick = {
@@ -1115,6 +1165,25 @@ def cmd_run(args):
                         if _eff_odds <= _BA_MIN_ODDS:
                             print(f"  ⚠ {sport_}_BOOK_ARB_TOTAL skipped: {side} at {soft} {_eff_odds:+.0f} worse than MIN_ODDS {_BA_MIN_ODDS}")
                             continue
+                        # v25.42 line-stability gate — both chosen books must be >= 60 min old
+                        _stable, _young_book, _age = _arb_lines_stable(
+                            sport_, eid, market_, [soft, sharp])
+                        if not _stable:
+                            print(f"  ⚠ {sport_}_BOOK_ARB_TOTAL_LINE_UNSETTLED: {_young_book} opener only {_age} min old (need {BOOK_ARB_MIN_OPENER_AGE_MIN})")
+                            try:
+                                conn.execute("""INSERT INTO shadow_blocked_picks
+                                    (created_at, sport, event_id, selection, market_type, book,
+                                     line, odds, edge_pct, units, reason)
+                                    VALUES (?, ?, ?, ?, 'TOTAL', ?, ?, ?, ?, ?, ?)""",
+                                    (datetime.now().isoformat(), sport_, eid,
+                                     f"{_away}@{_home} {side} {cur_soft_ln}", soft,
+                                     cur_soft_ln, cur_soft_odds,
+                                     round(abs(gap) * 5.0, 1), 5.0,
+                                     f'BOOK_ARB_LINE_UNSETTLED ({_young_book} {_age} min)'))
+                                conn.commit()
+                            except Exception:
+                                pass
+                            continue
                         _sel = f"{_away}@{_home} {side} {cur_soft_ln}"
                         _reason = (
                             f'BOOK ARB — Sharp {sharp} opened total at {sharp_open}, '
@@ -1193,6 +1262,25 @@ def cmd_run(args):
                         _eff_odds = cur_odds if cur_odds is not None else -110
                         if _eff_odds <= _BA_MIN_ODDS:
                             print(f"  ⚠ {sport_}_BOOK_ARB_SPREAD skipped: {bet_team} at {soft} {_eff_odds:+.0f} worse than MIN_ODDS {_BA_MIN_ODDS}")
+                            continue
+                        # v25.42 line-stability gate — both chosen books must be >= 60 min old
+                        _stable, _young_book, _age = _arb_lines_stable(
+                            sport_, eid, market_, [soft, sharp])
+                        if not _stable:
+                            print(f"  ⚠ {sport_}_BOOK_ARB_SPREAD_LINE_UNSETTLED: {_young_book} opener only {_age} min old (need {BOOK_ARB_MIN_OPENER_AGE_MIN})")
+                            try:
+                                conn.execute("""INSERT INTO shadow_blocked_picks
+                                    (created_at, sport, event_id, selection, market_type, book,
+                                     line, odds, edge_pct, units, reason)
+                                    VALUES (?, ?, ?, ?, 'SPREAD', ?, ?, ?, ?, ?, ?)""",
+                                    (datetime.now().isoformat(), sport_, eid,
+                                     f"{_away}@{_home} {bet_team} {cur_line:+g}", soft,
+                                     cur_line, cur_odds,
+                                     round(abs(gap) * 4.0, 1), 5.0,
+                                     f'BOOK_ARB_LINE_UNSETTLED ({_young_book} {_age} min)'))
+                                conn.commit()
+                            except Exception:
+                                pass
                             continue
                         _sel = f"{_away}@{_home} {bet_team} {cur_line:+g}"
                         _sharp_h = home_by_book[sharp][0]
