@@ -635,3 +635,130 @@ def format_context_summary(info):
     if parts:
         return f"CONTEXT: raw={info['raw_ms']:+.1f} → adj={info['adjusted_ms']:+.1f} | " + " | ".join(parts)
     return f"CONTEXT: raw={info['raw_ms']:+.1f} (no adjustments)"
+
+
+# ═══════════════════════════════════════════════════════════════════
+# v25.46 — CONTEXT TOTAL (Path 2 for totals)
+# ═══════════════════════════════════════════════════════════════════
+# Anchored on market_total (no Elo-totals baseline exists in market_consensus).
+# Adds walk-forward-safe signals: team scoring form, H2H recent totals,
+# and MLB pitcher matchup. Path 2 fires OVER/UNDER own-picks when the
+# context-adjusted total disagrees with market by a sport-specific run/point
+# threshold. 30-day Phase A backtest:
+#   NBA: 173 picks, 101-71, 58.7% WR, +97.4u @ threshold 0.30 pts
+#   MLB:  68 picks,  37-28, 56.9% WR, +20.9u @ threshold 1.50 runs
+# Other sports (NHL, NCAAB, soccer) too thin or losing on this signal set;
+# they need goalie-form / weather / additional signals in a follow-up.
+
+_LEAGUE_TOTAL = {
+    'icehockey_nhl': 6.2, 'basketball_nba': 228.0, 'basketball_ncaab': 150.0,
+    'baseball_mlb': 8.8, 'baseball_ncaa': 11.5,
+}
+
+_TOTAL_CAP = {
+    'icehockey_nhl': 1.0, 'basketball_nba': 15.0, 'basketball_ncaab': 10.0,
+    'baseball_mlb': 3.5, 'baseball_ncaa': 2.5,
+}
+
+
+def _team_form_total_delta(conn, sport, team, before_date, last_n=10):
+    """Team's avg full-game total in last N games minus league avg. Walk-forward safe."""
+    rows = conn.execute("""
+        SELECT home_score, away_score FROM results
+        WHERE sport=? AND (home=? OR away=?) AND home_score IS NOT NULL
+          AND DATE(commence_time) < ?
+        ORDER BY commence_time DESC LIMIT ?
+    """, (sport, team, team, before_date, last_n)).fetchall()
+    if len(rows) < 3:
+        return 0.0, len(rows)
+    totals = [hs + as_ for hs, as_ in rows]
+    la = _LEAGUE_TOTAL.get(sport, 0.0)
+    return sum(totals) / len(totals) - la, len(totals)
+
+
+def _h2h_total_delta(conn, sport, home, away, before_date):
+    """Recent H2H meetings' avg total minus league avg."""
+    rows = conn.execute("""
+        SELECT home_score, away_score FROM results
+        WHERE sport=? AND home_score IS NOT NULL
+          AND ((home=? AND away=?) OR (home=? AND away=?))
+          AND DATE(commence_time) < ?
+          AND DATE(commence_time) >= DATE(?, '-300 days')
+        ORDER BY commence_time DESC LIMIT 5
+    """, (sport, home, away, away, home, before_date, before_date)).fetchall()
+    if len(rows) < 2:
+        return 0.0, len(rows)
+    totals = [hs + as_ for hs, as_ in rows]
+    la = _LEAGUE_TOTAL.get(sport, 0.0)
+    return sum(totals) / len(totals) - la, len(totals)
+
+
+def _mlb_pitcher_matchup_delta(conn, home, away, before_date):
+    """Combined starter ERA vs league avg (4.0). 0.7 runs per ERA point. Cap ±2.5."""
+    row = conn.execute("""
+        SELECT home_pitcher_season_era, away_pitcher_season_era,
+               home_pitcher_season_ip, away_pitcher_season_ip
+        FROM mlb_probable_pitchers
+        WHERE game_date = ? AND home = ? AND away = ?
+        ORDER BY fetched_at DESC LIMIT 1
+    """, (before_date, home, away)).fetchone()
+    if not row:
+        return 0.0, {}
+    h_era, a_era, h_ip, a_ip = row
+    if h_era is None or a_era is None:
+        return 0.0, {}
+    if (h_ip or 0) < 10 or (a_ip or 0) < 10:
+        return 0.0, {'reason': 'low_ip'}
+    avg_era = (h_era + a_era) / 2
+    delta = max(-2.5, min(2.5, (avg_era - 4.0) * 0.7))
+    return delta, {'h_era': h_era, 'a_era': a_era, 'avg_era': round(avg_era, 2)}
+
+
+def compute_context_total(conn, sport, home, away, event_id, market_total, commence_date):
+    """Context total anchored on market_total with walk-forward adjustments.
+
+    Returns (context_total, info_dict). Context disagrees with market when
+    |context_total - market_total| > sport-specific threshold.
+    """
+    fh, fh_n = _team_form_total_delta(conn, sport, home, commence_date)
+    fa, fa_n = _team_form_total_delta(conn, sport, away, commence_date)
+    form_signal = (fh + fa) / 2  # average of two independent estimates
+    form_adj = form_signal * 0.3
+
+    h2h, h2h_n = _h2h_total_delta(conn, sport, home, away, commence_date)
+    h2h_adj = h2h * 0.2
+
+    pitcher_adj = 0.0
+    pitcher_info = {}
+    if sport == 'baseball_mlb':
+        pitcher_adj, pitcher_info = _mlb_pitcher_matchup_delta(conn, home, away, commence_date)
+
+    total_adj = form_adj + h2h_adj + pitcher_adj
+    cap = _TOTAL_CAP.get(sport, 1.0)
+    total_adj = max(-cap, min(cap, total_adj))
+
+    info = {
+        'form_h': round(fh, 2), 'form_a': round(fa, 2),
+        'form_n': fh_n + fa_n, 'form_adj': round(form_adj, 2),
+        'h2h': round(h2h, 2), 'h2h_n': h2h_n, 'h2h_adj': round(h2h_adj, 2),
+        'pitcher_adj': round(pitcher_adj, 2), 'pitcher_info': pitcher_info,
+        'total_adj': round(total_adj, 2),
+        'market_total': market_total,
+        'context_total': round(market_total + total_adj, 2),
+    }
+    return market_total + total_adj, info
+
+
+def format_context_total_summary(info):
+    parts = []
+    if info.get('form_adj', 0) != 0:
+        parts.append(f"form={info['form_adj']:+.1f} (h:{info['form_h']:+.1f}, a:{info['form_a']:+.1f})")
+    if info.get('h2h_adj', 0) != 0:
+        parts.append(f"h2h={info['h2h_adj']:+.1f} (n={info['h2h_n']})")
+    if info.get('pitcher_adj', 0) != 0:
+        pi = info.get('pitcher_info', {})
+        avg = pi.get('avg_era', '?')
+        parts.append(f"pitcher={info['pitcher_adj']:+.1f} (avg_era={avg})")
+    if parts:
+        return f"CONTEXT_TOTAL: mkt={info['market_total']} → ctx={info['context_total']} | " + " | ".join(parts)
+    return f"CONTEXT_TOTAL: mkt={info['market_total']} (no adj)"

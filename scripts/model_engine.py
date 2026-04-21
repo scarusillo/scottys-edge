@@ -2706,6 +2706,76 @@ def generate_predictions(conn, sport=None, date=None):
                             if ctx_total['total_adj'] != 0:
                                 model_total += ctx_total['total_adj']
 
+                        # ═══ CONTEXT MODEL TOTALS — v25.46 (2026-04-21) ═══
+                        # Path 2 for totals: run compute_context_total (form + H2H
+                        # + MLB pitcher matchup) and fire an own-pick at market
+                        # line when Context disagrees with market by a sport-
+                        # specific threshold. Scope from Phase A 30-day backtest:
+                        #   NBA (thresh 0.30 pts): 173 picks, 58.7% WR, +97.4u
+                        #   MLB (thresh 1.50 runs): 68 picks, 56.9% WR, +20.9u
+                        # Other sports need goalie/weather/other signals we don't
+                        # have yet — parked as follow-up. Fires independently of
+                        # edge-based totals picks; concentration cap handles any
+                        # event-level conflict.
+                        CONTEXT_TOTAL_P2_THRESHOLDS = {
+                            'basketball_nba': 0.30,
+                            'baseball_mlb':   1.50,
+                        }
+                        _ct_th = CONTEXT_TOTAL_P2_THRESHOLDS.get(sp)
+                        if (_ct_th is not None
+                                and over_total is not None
+                                and over_odds is not None
+                                and under_total is not None
+                                and under_odds is not None):
+                            try:
+                                from context_model import (
+                                    compute_context_total, format_context_total_summary,
+                                )
+                                _ct_commence = (commence[:10] if commence else None)
+                                _market_total = over_total
+                                ctx_tot, ct_info = compute_context_total(
+                                    conn, sp, home, away, eid, _market_total, _ct_commence)
+                                _ct_disagreement = ctx_tot - _market_total
+                                if abs(_ct_disagreement) >= _ct_th:
+                                    # ctx > market → bet OVER; ctx < market → bet UNDER
+                                    if _ct_disagreement > 0:
+                                        _ct_side, _ct_line, _ct_odds, _ct_book = 'OVER', over_total, over_odds, over_book
+                                    else:
+                                        _ct_side, _ct_line, _ct_odds, _ct_book = 'UNDER', under_total, under_odds, under_book
+                                    from config import MIN_ODDS as _CT_MIN_ODDS
+                                    if (_ct_odds is not None and _ct_odds > _CT_MIN_ODDS
+                                            and _ct_odds <= 140 and _ct_book):
+                                        _ct_summary = format_context_total_summary(ct_info)
+                                        _ct_ctx = (
+                                            f'DATA_TOTAL v25.46 (Path 2) — {_ct_summary} | '
+                                            f'Market {_market_total}, Context {ctx_tot} '
+                                            f'(disagreement={_ct_disagreement:+.2f} ≥ {_ct_th}). '
+                                            f'Bet {_ct_side} {_ct_line} @ {_ct_book} {_ct_odds:+.0f}.'
+                                        )
+                                        _ct_pick = {
+                                            'sport': sp, 'event_id': eid, 'commence': commence,
+                                            'home': home, 'away': away,
+                                            'market_type': 'TOTAL',
+                                            'selection': f"{away}@{home} {_ct_side} {_ct_line}",
+                                            'book': _ct_book, 'line': _ct_line, 'odds': _ct_odds,
+                                            'model_spread': None, 'model_total': ctx_tot,
+                                            'model_prob': 0, 'implied_prob': 0,
+                                            'edge_pct': 0,
+                                            'star_rating': 3, 'units': 5.0,
+                                            'confidence': 'DATA_TOTAL',
+                                            'side_type': 'DATA_TOTAL',
+                                            'spread_or_ml': 'TOTAL',
+                                            'timing': 'STANDARD',
+                                            'context': _ct_ctx,
+                                            'notes': _ct_ctx,
+                                        }
+                                        print(f"  🧠 DATA_TOTAL Path2: {sp.split('_')[-1]} {_ct_side} "
+                                              f"{_ct_line} @ {_ct_book} {_ct_odds:+.0f} "
+                                              f"(disagreement {_ct_disagreement:+.2f})")
+                                        all_picks.append(_ct_pick)
+                            except Exception as _cte:
+                                print(f"  ⚠ DATA_TOTAL Path2 error: {_cte}")
+
                         # Apply pitcher context for baseball (day-of-week quality + named starters)
                         pitcher_ctx = None
                         if HAS_PITCHER and 'baseball' in sp:

@@ -297,6 +297,22 @@ def analyze_gate_health(conn):
             notes.append(f"DATA_SPREAD {sp}: {w}W-{l}L ({wr:.0f}%) {pnl:+.1f}u "
                          f"[Path1:{p1_n} Path2:{p2_n or 0}] — pull if <55% after 15+ picks")
 
+    # v25.46: DATA_TOTAL — Context Model for totals, live for NBA (thresh 0.30)
+    # + MLB (thresh 1.50). Phase A 30-day backtest: NBA 58.7% +97u / MLB 56.9% +21u.
+    dt_picks = conn.execute("""
+        SELECT sport, SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END) w,
+               SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END) l,
+               SUM(pnl_units) pnl, COUNT(*) n
+        FROM graded_bets
+        WHERE side_type='DATA_TOTAL' AND result IN ('WIN','LOSS','PUSH')
+        GROUP BY sport
+    """).fetchall()
+    if dt_picks:
+        for sp, w, l, pnl, n in dt_picks:
+            wr = w/(w+l)*100 if (w+l) else 0
+            notes.append(f"DATA_TOTAL {sp}: {w}W-{l}L ({wr:.0f}%) {pnl:+.1f}u — "
+                         f"pull if <53% after 20+ picks")
+
     # v25.43: NCAA midweek total_adj zeroed from +0.3 to 0.0 on 2026-04-21.
     # Post-rebuild pre-fix record: 13 bets 7W-6L -2.4u (March 5-0 +20u, April
     # 2-6 -22u). April actual totals averaged -0.04 vs line — +0.3 was pushing
