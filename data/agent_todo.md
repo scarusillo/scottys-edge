@@ -144,6 +144,49 @@ changes, no shipping. Just a scoping exercise.
 
 ## 🟡 OTHER OPEN
 
+### NCAA baseball — sport-specific Context Model extension (future project)
+
+Context Model currently runs `compute_context_total()` on NCAA baseball
+but doesn't trust its output — Phase A backtest (2026-04-21, four attempts
+covering form, H2H, sparse pitcher_stats, team_pitching_quality, walk-
+forward runs-allowed) all lost at every threshold. Context's directional
+signal on NCAA baseball is essentially random (DISAGREE cohort +0.47u —
+vetoing would hurt).
+
+**What would be needed to make NCAA baseball Context-viable:**
+
+1. **NCAA pitcher matchup signal (clean version)** — port edge-model's
+   `pitcher_scraper.get_pitcher_context()` into Context. Uses
+   `team_pitching_quality` day-of-week aggregation + confirmed starter
+   ERA. Current sparse pitcher_stats fallback (7% coverage) doesn't cut
+   it; team_pitching_quality (73% coverage but stale Mar 27) is closer
+   but needs walk-forward updates.
+
+2. **Conference-tier baseline** — NCAA baseball has huge scoring variance
+   between SEC/ACC (high-scoring) and Ivy/WCC (low-scoring). A flat
+   league_avg=11.5 doesn't work. Need conference-specific baselines.
+
+3. **NCAA park factor catalog** — 250+ venues. Either scrape ESPN venue
+   data or manually curate top-50 by volume. Context's MLB park signal
+   (`_mlb_park_factor_delta`) doesn't exist for NCAA yet.
+
+4. **Day-of-week ace rotation integration** — Friday = ace, Sat = #2,
+   Sun = #3, Midweek = bullpen. Context's `_team_form_total_delta` is
+   pace-agnostic; NCAA needs DOW-awareness in the baseline.
+
+5. **Home/road scoring splits** — college teams show bigger home-field
+   effects than MLB. Travel in mid-majors is harsh.
+
+**Effort:** 3-5 days of signal engineering + backtest validation.
+
+**Decision criteria:** If Phase A post-extension shows ≥55% WR +15u+/30d
+on NCAA baseball with the expanded signal set, ship. Otherwise keep
+NCAA baseball on the edge-based model (which IS profitable +14.4u season).
+
+**Trigger to start:** when we have bandwidth after tennis Context or
+when NCAA baseball regresses below +5u/season. Current DK UNDER veto
+(v25.56) + existing DK gates already capture the biggest loss cohort.
+
 ### Tennis — separate Context Model engine (future project)
 
 Tennis is structurally incompatible with the team-sport Context Model. It
