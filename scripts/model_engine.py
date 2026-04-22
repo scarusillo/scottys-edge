@@ -2111,12 +2111,38 @@ def generate_predictions(conn, sport=None, date=None):
                         if (_p2_odds is not None and _p2_odds > _P2_MIN_ODDS
                                 and _p2_odds <= 140 and _p2_book):
                             _p2_summary = format_context_summary(_p2_info)
+
+                            # v25.69: tag the dominant signal driving this fire.
+                            # Live DATA_SPREAD sample is 0, so we don't know which
+                            # sub-signals (form / momentum / injuries) produce the
+                            # edge. Tag every fire with its dominant component so
+                            # when n>=20 we can backtest per-dominance-bucket and
+                            # decide which archetypes to keep vs throttle.
+                            _dom_candidates = {
+                                'form': abs(_p2_info.get('form_adj', 0) or 0),
+                                'momentum': abs(_p2_info.get('momentum_adj', 0) or 0),
+                                'injury': abs(_p2_info.get('injury_adj', 0) or 0),
+                                'hca': abs(_p2_info.get('hca_adj', 0) or 0),
+                                'injury_amp': abs(_p2_info.get('injury_amp_adj', 0) or 0),
+                                'h2h': abs(_p2_info.get('h2h_adj', 0) or 0),
+                                'rest': abs(_p2_info.get('rest_adj', 0) or 0),
+                                'motivation': abs(_p2_info.get('mot_adj', 0) or 0),
+                            }
+                            _p2_dominance = max(_dom_candidates, key=_dom_candidates.get) \
+                                if any(v > 0 for v in _dom_candidates.values()) else 'other'
+                            _p2_dominance_val = _dom_candidates.get(_p2_dominance, 0)
+                            _p2_dominance_share = (
+                                _p2_dominance_val / sum(_dom_candidates.values())
+                                if sum(_dom_candidates.values()) > 0 else 0
+                            )
+
                             _p2_ctx = (
                                 f'DATA_SPREAD v25.44 (Path 2) — {_p2_summary} | '
                                 f'Market {mkt_hs:+.1f}, Context {ms_ctx_p2:+.1f} '
                                 f'(ctx_disagreement={_p2_disagreement:.1f} ≥ {_p2_th}). '
                                 f'Elo non-divergent (div={abs(ms-mkt_hs):.1f} ≤ {max_div}). '
-                                f'Bet {_p2_team} {_p2_line:+.1f} @ {_p2_book} {_p2_odds:+.0f}.'
+                                f'Bet {_p2_team} {_p2_line:+.1f} @ {_p2_book} {_p2_odds:+.0f}. '
+                                f'DOMINANCE:{_p2_dominance}({_p2_dominance_val:.1f}/{_p2_dominance_share*100:.0f}%)'
                             )
                             _p2_pick = {
                                 'sport': sp, 'event_id': eid, 'commence': commence,
