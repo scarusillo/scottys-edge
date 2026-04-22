@@ -144,6 +144,42 @@ changes, no shipping. Just a scoping exercise.
 
 ## 🟡 OTHER OPEN
 
+### ⚠️ Backtest accounting nuance — don't overstate Context Model edge
+
+**Problem identified 2026-04-21:** the Phase A backtest for Context Model
+Path 2 (v25.44 spreads +110u, v25.46-49 totals +206u, combined +360u/30d)
+measured hypothetical Context picks in isolation. It did NOT subtract
+overlap with the existing Elo edge model, which also fires on many of
+the same games.
+
+**The three cases (per-pick):**
+1. **Duplicate (~60-70% of Context picks):** Elo edge also fires same
+   direction. Concentration cap keeps the higher-edge pick (edge model's
+   non-zero edge_pct beats Context's edge_pct=0). Context's P/L in this
+   case is phantom — the edge model would have captured the same P/L.
+2. **Replacement (~10-15%):** Elo fires opposite direction, Context
+   disagrees. v25.52 veto blocks edge, Context fires own. Real swap.
+3. **Net-new (~20-25%):** Elo doesn't fire at all (<20% edge), Context
+   fires its own. Truly additive.
+
+**Realistic net incremental edge from today's Context buildout:**
+- Spread Path 2 backtest +110u → ~+30-50u actually new
+- Total Path 2 backtest +206u → ~+60-80u actually new
+- Plus v25.52 direction veto: +41u (clearly additive)
+- Plus one-off gates (v25.42, v25.56, v25.41, bet 973): +50-80u
+- **Total realistic: ~+150-200u/month of NET NEW edge**
+
+**How to validate honestly:**
+The v25.55 context_tracker compares live per-channel P/L vs backtest.
+After 2 weeks of live data:
+- If live P/L ≈ backtest → duplicates weren't a big issue (my estimate was pessimistic)
+- If live P/L ~30-40% of backtest → duplicates dominated (my estimate was right)
+- If live P/L ~zero → Context is almost entirely duplicating Elo
+
+**Lesson for future backtests:** always estimate overlap with existing
+channels before claiming "new" edge. A +X/30d backtest for a parallel
+engine needs the duplicate subtraction, not just a raw P/L sum.
+
 ### NCAA baseball — sport-specific Context Model extension (future project)
 
 Context Model currently runs `compute_context_total()` on NCAA baseball
