@@ -180,6 +180,34 @@ After 2 weeks of live data:
 channels before claiming "new" edge. A +X/30d backtest for a parallel
 engine needs the duplicate subtraction, not just a raw P/L sum.
 
+### Prop Context Model overhaul — Phase A complete (2026-04-21), parked
+
+**Phase A audit finding:** Prop system is NOT broken. No big overhaul needed now.
+
+- Post-v25.13 prop record: **17-10 (63% WR), +28.6u on 27 picks**
+- No book × stat cohort shows structural loss (unlike DK NCAA UNDERs -61u)
+- BLOWOUT_GATE + PROP_DIVERGENCE_GATE already catching failure modes (3K+ blocks each)
+- All 4 channels profitable (PROP_OVER +1u, PROP_UNDER +11u, PROP_FADE_FLIP +9.5u, PROP_BOOK_ARB +3.2u)
+- Biggest arguable issue: 15-20% edge bucket 3-5 -8u (small sample, possibly variance)
+
+**Realistic overhaul ROI** (applying overlap-accounting lesson):
+- 2-3 weeks of work
+- **+15-30u/month net-new edge** (not the +50-80u earlier estimate)
+- Worst ROI ratio of anything on the board vs tennis Context (-11.8u bleeding) or NCAA baseball extension
+
+**Revisit triggers:**
+- Overall prop WR drops below 50% on 30+ picks
+- Specific book × stat / sport × stat cohort drops below 40% WR at n≥15
+- v25.55 tracker shows specific channels regressing
+
+**If/when we revisit:**
+- Phase B: build context_prop_model.py with minutes projection, usage-shift, defender matchup
+- Phase C: PROP_DIRECTION_VETO analog to v25.52
+- Phase D: shadow-mode NBA first, then NHL/MLB
+
+**Data gaps:** pre-game ESPN boxscore scrape for minutes, historical injury
+snapshots (inferable from box_scores absence), defender matchup (needs lineup data).
+
 ### NCAA baseball — sport-specific Context Model extension (future project)
 
 Context Model currently runs `compute_context_total()` on NCAA baseball

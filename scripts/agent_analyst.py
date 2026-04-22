@@ -681,6 +681,50 @@ def generate_briefing(conn):
         for c in ch_lines:
             lines.append(c)
 
+    # v25.58: Daily TODO surfacing — parse data/agent_todo.md and print
+    # open-project section headers in the briefing so the parked work stays
+    # visible every morning. Full detail stays in the file; this is just
+    # the reminder.
+    try:
+        import re as _re_todo
+        todo_path = os.path.join(os.path.dirname(DB_PATH), 'agent_todo.md')
+        if os.path.exists(todo_path):
+            with open(todo_path, 'r', encoding='utf-8') as _tf:
+                todo_text = _tf.read()
+            # Extract sections by H2, then ### headers within each
+            sections = _re_todo.split(r'\n## ', todo_text)
+            todo_lines = []
+            for sec in sections:
+                if not sec.strip(): continue
+                # First line of section is the H2 title
+                title = sec.split('\n', 1)[0].strip()
+                if title.startswith('#'): title = title.lstrip('# ').strip()
+                if not any(k in title for k in ['OPEN', 'CRITICAL', 'TOMORROW', 'Monitor']):
+                    continue
+                # Find all ### subsections
+                sub_headers = _re_todo.findall(r'\n### (.+)', sec)
+                if sub_headers:
+                    todo_lines.append(f'  {title}')
+                    for h in sub_headers[:6]:  # cap at 6 per section to keep readable
+                        # Skip strikethrough'd / completed items
+                        if '~~' in h or 'SHIPPED' in h or 'COMPLETE' in h:
+                            h_disp = f'✅ {h}'
+                        else:
+                            h_disp = f'• {h}'
+                        todo_lines.append(f'    {h_disp[:90]}')
+                    if len(sub_headers) > 6:
+                        todo_lines.append(f'    ... and {len(sub_headers) - 6} more (see data/agent_todo.md)')
+                    todo_lines.append('')
+            if todo_lines:
+                lines.append('')
+                lines.append('═' * 64)
+                lines.append('OPEN PROJECTS — from data/agent_todo.md')
+                lines.append('═' * 64)
+                for t in todo_lines:
+                    lines.append(t)
+    except Exception:
+        pass
+
     # v25.55: Context live-vs-backtest tracker
     try:
         from context_tracker import report as context_tracker_report
@@ -690,6 +734,43 @@ def generate_briefing(conn):
             for t in tr_lines:
                 lines.append(t)
     except Exception as _e:
+        pass
+
+    # v25.58: Prop edge-bucket monitor (from Phase A audit 2026-04-21).
+    # Tracks prop picks by actual edge_pct bucket. 15-20% bucket flagged as
+    # watch — Phase A showed 3-5 -8u on 8 picks, small sample but negative.
+    # Gate triggers if that bucket drops below 40% WR at n >= 15.
+    try:
+        prop_buckets = conn.execute("""
+            SELECT
+              CASE
+                WHEN edge_pct < 10 THEN '< 10%'
+                WHEN edge_pct < 15 THEN '10-15%'
+                WHEN edge_pct < 20 THEN '15-20%'
+                WHEN edge_pct < 25 THEN '20-25%'
+                ELSE '25%+' END bucket,
+              COUNT(*), SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END),
+              SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END),
+              ROUND(SUM(pnl_units),2)
+            FROM graded_bets
+            WHERE market_type='PROP' AND DATE(created_at) >= '2026-04-10'
+              AND result IN ('WIN','LOSS','PUSH') AND units >= 3.5
+            GROUP BY bucket
+        """).fetchall()
+        if prop_buckets:
+            lines.append('')
+            lines.append('  PROP EDGE-BUCKET MONITOR (post-v25.13, by edge_pct):')
+            lines.append(f'  {"bucket":<10s}  {"n":>3s}  {"W-L":>7s}  {"WR":>5s}  {"P/L":>7s}  flag?')
+            for bucket, n, w, l, pnl in prop_buckets:
+                wl = (w or 0) + (l or 0)
+                wr = (w or 0) / wl * 100 if wl else 0
+                flag = ''
+                if bucket == '15-20%' and wl >= 15 and wr < 40:
+                    flag = '⚠ REVIEW'
+                elif wl >= 15 and wr < 40:
+                    flag = '⚠ watch'
+                lines.append(f'    {bucket:<10s}  {n:>3d}  {(w or 0):>3d}-{(l or 0):<3d}  {wr:>4.0f}%  {(pnl or 0):>+6.2f}u  {flag}')
+    except Exception:
         pass
 
     # v25.57: Opener-age performance monitor — tracks picks by how long
