@@ -89,6 +89,38 @@ MIN_PROP_ODDS = -150  # v25.16: Floor — heavier favorites have thin margins ev
 MAX_PROP_ODDS = 140  # v25.13: Lowered from +150. Season calibration showed +141..+150 was 0-2
                     # and +151..+199 was 1-5 (6 of 10 losing picks were in this zone).
                     # Below +140 is the only consistently profitable plus-money prop zone.
+
+# v25.66 (2026-04-22) — Surgical odds-bucket blocks. Inverse backtest
+# (scripts/prop_inverse_backtest.py, n=61 post-rebuild) found the prop odds
+# distribution is BIMODAL profitable with three losing pockets in the middle:
+#
+#   Profitable buckets (kept):
+#     -151 or tighter    6 picks   4-2    +1.78u
+#     -150 to -121      10 picks  10-0   +37.96u  (100% WR — sweet spot)
+#     -115 exactly       3 picks   3-0   +13.05u
+#     +121 to +150      14 picks   8-6   +21.10u
+#
+#   Losing buckets (BLOCKED by this gate):
+#     -120 to -116       3 picks  1-2    -5.83u
+#     -109 to -101       4 picks  1-3   -10.41u
+#     +100 to +120      15 picks  5-10  -22.20u  (biggest drag)
+#     +151 to +200      already blocked by MAX_PROP_ODDS=140 cap
+#
+# Counter-intuitively, MIDDLE plus-odds (+121 to +150) is the profitable
+# plus-money zone. The low-plus-odds "safe long-shot" cohort (+100 to +120)
+# is consistently shaded by books and losing 33% WR. Don't confuse "low
+# plus-odds" with "good value" — the data says the opposite.
+def _prop_odds_in_losing_bucket(odds):
+    """Return True if prop odds falls in a backtested losing-cohort window."""
+    if odds is None:
+        return False
+    if -120 <= odds <= -116:
+        return True
+    if -109 <= odds <= -101:
+        return True
+    if 100 <= odds <= 120:
+        return True
+    return False
 MAX_PROP_EDGE = 25.0  # Cap edge like game lines — extreme edges are overestimates
 # v25.18: Projection-line separation gate. Require the model's projection to
 # meaningfully disagree with the market before firing. Without this, hit-rate
@@ -1171,6 +1203,13 @@ def generate_prop_projections(conn=None):
 
             # Skip props outside odds range — only -150 to +140
             if odds > MAX_PROP_ODDS or odds < MIN_PROP_ODDS:
+                continue
+
+            # v25.66: Skip losing odds-bucket cohorts (see comment on
+            # _prop_odds_in_losing_bucket above). Preserves profitable
+            # -150-to-121, -115, -151+, +121-+150 buckets; blocks the
+            # three consistently losing windows.
+            if _prop_odds_in_losing_bucket(odds):
                 continue
 
             # v25: Cross-book +200 hard cap — applies to ALL books, not just soft.
