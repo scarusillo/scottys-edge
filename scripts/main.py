@@ -3414,6 +3414,37 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             except Exception:
                 pass
 
+        # v25.56: HARD_VETO_DK_NCAA_BB_UNDERS — surgical veto on the specific
+        # broken cohort. Post-rebuild DraftKings × NCAA Baseball UNDERs:
+        #   9W-18L, -51.0u, 33% WR on 27 picks
+        # Meanwhile DK NCAA OVERs (not vetoed) are 7-8, -10u — marginal
+        # juice bleed but not structurally broken.
+        #
+        # Why UNDERs specifically: even with positive CLV, DK NCAA UNDERs
+        # still lost (0-3 on CLV > 1). Line can close in our favor and
+        # games still go OVER → structural miscalibration, not pricing gap.
+        # Existing v25.22-24 DK-specific gates didn't narrow this cohort
+        # enough (post-gate record still 1-5 at -21u).
+        _sel_upper = (p.get('selection') or '').upper()
+        if (sport == 'baseball_ncaa'
+                and (p.get('book') or '') == 'DraftKings'
+                and (p.get('market_type') or '') == 'TOTAL'
+                and 'UNDER' in _sel_upper):
+            try:
+                conn.execute("""INSERT INTO shadow_blocked_picks
+                    (created_at, sport, event_id, selection, market_type, book,
+                     line, odds, edge_pct, units, reason)
+                    VALUES (?, ?, ?, ?, 'TOTAL', 'DraftKings', ?, ?, ?, ?, ?)""",
+                    (datetime.now().isoformat(), sport, p.get('event_id',''),
+                     p.get('selection',''), p.get('line'), p.get('odds'),
+                     p.get('edge_pct', 0), p.get('units', 0),
+                     'HARD_VETO_DK_NCAA_BB_UNDERS (v25.56 — 9-18 -51u post-rebuild)'))
+                conn.commit()
+            except Exception:
+                pass
+            print(f"    🚫 HARD_VETO_DK_NCAA_BB_UNDERS: {p.get('selection','')[:55]} — DK NCAA UNDERs 9-18 -51u post-rebuild")
+            return False
+
         # v25.52: CONTEXT_DIRECTION_VETO — when Context Model's directional
         # view disagrees with the pick's direction, veto the pick. Context is
         # our primary brain; edge-based picks should defer on direction when
