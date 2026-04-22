@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-22 05:10",
+  "generated_at": "2026-04-22 05:25",
   "game_date": "2026-04-21",
   "yesterday": [
     {
@@ -36,7 +36,7 @@
       "model_spread": null,
       "closing_line": 224.5,
       "event_id": "273905d6a4ae9217ec0734b66a0eb28b",
-      "dt": "2026-04-18"
+      "dt": "2026-04-21"
     },
     {
       "selection": "Tyrese Maxey OVER 25.5 pts",
@@ -1152,19 +1152,19 @@
   ],
   "ungraded": [],
   "last_10": [
-    "LOSS",
     "WIN",
     "LOSS",
     "WIN",
+    "LOSS",
+    "WIN",
     "WIN",
     "WIN",
     "LOSS",
     "LOSS",
-    "WIN",
-    "LOSS"
+    "WIN"
   ],
   "streak": 1,
-  "streak_type": "LOSS",
+  "streak_type": "WIN",
   "shadow_blocked_picks": [
     {
       "created_at": "2026-04-22T00:12:46.919875+00:00",
