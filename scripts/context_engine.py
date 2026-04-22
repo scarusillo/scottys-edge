@@ -2134,13 +2134,19 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
                     spread_summaries.append("Rubber match — tight game expected")
 
     # 7. Pace of Play (affects TOTAL only)
-    # SHADOW: Home fast-paced (3W-7L, -22.4u) — home_pace > 0 is shadowed.
-    # Home slow-paced and all away pace remain active.
+    # SHADOW 1: Home fast-paced (3W-7L, -22.4u) — home_pace > 0 is shadowed globally.
+    # SHADOW 2 (v25.62, 2026-04-22): NHL Away fast-paced. Post-rebuild split by sport:
+    #   NCAA BB +10.24u (7-4), MLB +3.81u (2-1) — KEEP active.
+    #   NHL -6.52u (6-6) season, -20.61u (1-5) last 14 days — playoff bleed.
+    #   NBA small sample. Surgical NHL-only shadow; other sports unaffected.
     pace_adj, pace_info = pace_of_play_adjustment(conn, home, away, sport)
     if pace_adj != 0 or pace_info:
         home_pace_val = pace_info.get('home_pace', 0)
+        away_pace_val = pace_info.get('away_pace', 0)
         home_fast_shadow = home_pace_val > 0  # Only shadow when home is FAST
-        shadow_amt = home_pace_val if home_fast_shadow else 0
+        nhl_away_fast_shadow = (sport == 'icehockey_nhl' and away_pace_val > 0)
+        shadow_amt = (home_pace_val if home_fast_shadow else 0) \
+                   + (away_pace_val if nhl_away_fast_shadow else 0)
         active_pace_adj = pace_adj - shadow_amt
         if active_pace_adj != 0:
             total_total_adj += active_pace_adj
@@ -2151,7 +2157,13 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
                 total_summaries.append(f"[SHADOW] Home fast-paced ({home_pace_val:+.1f})")
                 away_val = pace_info['away_pace']
                 desc = 'fast' if away_val > 0 else 'slow'
-                total_summaries.append(f"Away {desc}-paced ({away_val:+.1f})")
+                a_prefix = "[SHADOW-NHL] " if nhl_away_fast_shadow else ""
+                total_summaries.append(f"{a_prefix}Away {desc}-paced ({away_val:+.1f})")
+            elif nhl_away_fast_shadow:
+                # Home active (slow), Away NHL-fast shadowed — show both
+                home_desc = 'fast' if home_pace_val > 0 else 'slow'
+                total_summaries.append(f"Home {home_desc}-paced ({home_pace_val:+.1f})")
+                total_summaries.append(f"[SHADOW-NHL] Away fast-paced ({away_pace_val:+.1f})")
             else:
                 desc = 'fast' if pace_adj > 0 else 'slow'
                 total_summaries.append(f"Both teams {desc}-paced ({pace_adj:+.1f})")
@@ -2160,8 +2172,9 @@ def get_context_adjustments(conn, sport, home, away, event_id, commence,
             prefix = "[SHADOW] " if home_fast_shadow else ""
             total_summaries.append(f"{prefix}Home {desc}-paced ({home_pace_val:+.1f})")
         elif pace_info.get('away_pace'):
-            desc = 'fast' if pace_info['away_pace'] > 0 else 'slow'
-            total_summaries.append(f"Away {desc}-paced ({pace_info['away_pace']:+.1f})")
+            desc = 'fast' if away_pace_val > 0 else 'slow'
+            prefix = "[SHADOW-NHL] " if nhl_away_fast_shadow else ""
+            total_summaries.append(f"{prefix}Away {desc}-paced ({away_pace_val:+.1f})")
     
     # 8. Head-to-Head History (can affect both SPREAD and TOTAL)
     h2h_spread, h2h_total, h2h_info = head_to_head_adjustment(conn, home, away, sport)

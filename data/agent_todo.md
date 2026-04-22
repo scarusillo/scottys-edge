@@ -13,14 +13,14 @@
 - ✅ `scripts/upload_db.py` — compress SLIM DB instead of 3.2 GB full DB (slim is ~30 MB vs 279 MB); switch to `upload --clobber` to preserve release + tag if upload fails. Root cause of `db-latest` 404: 279 MB upload was timing out, leaving release in draft with 0 assets.
 - ✅ IG card re-posted: bet 973 (TOR UNDER 224.5, +4.55u) added to 4/21 results card by bumping `created_at` from 4/18 to 4/21 (card filters on `MAX(DATE(created_at))`). `graded_at` untouched.
 
-**Next-session investigations (need live DB):**
-- 🔎 DraftKings post-Apr-17 isolated CLV (full-season avg_clv -0.50 on 112 bets; v25.22–25.25 fixes should have helped — confirm at n ≥ 30 post-fix picks)
-- 🔎 BetMGM sport/market breakdown — 61 bets, -29u, CLV +0.21; upgrade from "monitor" to WATCH. Shadow BetMGM routing if CLV goes negative.
-- 🔎 MLB Wednesday 3W-7L, -19.9u root-cause (home/away, pitcher type, line size). Sample=10; track only, do not block.
-- 🔎 NCAA Baseball Friday 9W-14L, -31.4u → split OVER vs UNDER. Do NOT re-flag the Friday UNDER rollback (shadow_factors.md). If OVERs are the drag, build a surgical OVER-specific gate.
-- 🔎 Pitcher_outs market: model runs 1.5–2.5 outs below market on 6+ starters today → investigate projection calibration vs the market's implied IP distribution.
-- 🔎 Away fast-paced factor: +4.7u overall but -21.3u 2nd half. Set an explicit shadow threshold (pattern mirrors Away letdown before it was shadowed).
-- 🔎 Steam: sharp opposes — 5W-7L, -14.2u; 2nd-half -11.2u. Shadow at -20u 2nd-half cumulative.
+**Next-session investigations — CLOSED SAME DAY (2026-04-22 afternoon):**
+- ✅ DraftKings post-Apr-17 CLV: full-season +0.2% (agent's -0.50 was pre-rebuild contamination). Post-fix (≥4/17) DK is +5.15u / 11-10 / +0.4% CLV. Remaining bleed was NCAA BB UNDERs; v25.56 HARD_VETO_DK_NCAA_BB_UNDERS already handles it. No new action.
+- ✅ BetMGM: 63 bets, 33-30, -20.85u, CLV +0.23% (better than agent's -29u). Losses diffuse across sports/markets; no cohort n≥5 structural. Keep on WATCH with trip-wire: CLV < 0 on next 20 picks.
+- ✅ MLB Wednesday: n=10 variance-scale; CLV positive; revisit at n≥25.
+- ✅ NCAA Baseball Friday: UNDER drag was DK-concentrated (5-5-1 on non-DK books = neutral). v25.56 already handles. OVERs are -2.55u juice bleed, not structural.
+- ✅ Pitcher_outs: 0 picks fired (gates catch all). Actual vs projected is 3-2 model-closer on 5 test pitchers; gaps small. Need real fires to evaluate.
+- ✅ Away fast-paced: SPLIT BY SPORT. NCAA BB +10.24u, MLB +3.81u (keep active). NHL -6.5u season / -20.6u last 14d (playoff bleed). **Shipped v25.62 NHL-only shadow** (2026-04-22).
+- ✅ Steam: sharp opposes: v25.35 already covers NHL + NCAA BB (shipped 2026-04-20 08:59). Remaining MLB cohort is 2-1 +3.56u — do NOT extend gate. NBA has no data. Documented in shadow_factors.md monitoring section.
 
 **In-day watch items (today):**
 - 👁 v25.43 NCAA midweek shadow — first full live day. Confirm midweek totals that previously fired at ~20% edge no longer do.

@@ -14,6 +14,7 @@ zeroed out so they do not influence picks.
 | 4 | Home hot streak | 1W-2L | -5.4u | Section 11 (_recent_form_adjustment) — entire form factor is shadow-only |
 | 5 | Away revenge game | 5W-5L | -4.4u | Section 6 (motivation_adjustment) — away_revenge key |
 | 6 | Away letdown spot | 13W-10L | +4.1u (1st half +20.6u, 2nd half -16.5u) | Section 6 (motivation_adjustment) — away_letdown key. Shadowed v24 (4/6/2026). Threshold was -10u 2nd half; hit -16.5u. Clay tennis losses (-10u on 4/5) accelerated collapse. |
+| 7 | NHL Away fast-paced | 6W-6L season / 1W-5L last 14d | -6.5u season, -20.6u last 14 days | Section 7 (pace_of_play_adjustment) — SPORT-GATED: only `sport == 'icehockey_nhl'` with `away_pace > 0` is shadowed. Shadowed v25.62 (2026-04-22). Baseball Away fast-paced (NCAA +10.2u, MLB +3.8u) KEPT active — surgical NHL-only shadow. Playoff pace dynamics drove the bleed. |
 
 ## What Remains Active
 
@@ -21,8 +22,16 @@ zeroed out so they do not influence picks.
 - **Home revenge** — still applied (separate from away revenge)
 - **Home letdown spot** — still applied (2nd half -7.8u, threshold -15u, 7.2u cushion)
 - **Home slow-paced** — still applied (only home fast is shadowed)
-- **Away pace (fast or slow)** — still applied
+- **Away fast-paced for NCAA BB, MLB, NBA, soccer** — still applied (NHL-only shadow in v25.62)
+- **Away slow-paced (all sports)** — still applied
 - **All other context factors** (travel, refs, H2H, familiarity, weather, etc.)
+
+## Monitoring (documented thresholds, not yet shadowed)
+
+| Factor | Current 2nd-half P/L | Shadow trigger | Cushion |
+|---|---|---|---|
+| Steam: sharp opposes (MLB/NBA — outside v25.35 scope) | MLB: +3.56u (3 picks, 2-1) | Only extend to MLB/NBA if CLV turns negative AND n≥15 with P/L ≤ -10u. MLB currently profitable — do NOT block. | — |
+| Home letdown spot | -7.8u (active) | -15u 2nd half | 7.2u |
 
 ## Model Changes Log (for agent reference)
 
