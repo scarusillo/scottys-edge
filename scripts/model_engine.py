@@ -2086,10 +2086,29 @@ def generate_predictions(conn, sport=None, date=None):
             # MLB excluded — runline (±1.5) incompatible with additive Context
             # adjustments (49.6% WR, -70u backtest on 271 picks). MLS + other
             # soccer excluded — 30-day backtest lost at every threshold level.
+            # v25.70 (2026-04-22): Path 2 SPREADS disabled (DATA_SPREAD channel killed).
+            # Keeping DATA_TOTAL Path 2 live (different dict, different code path)
+            # because totals backtest held up (+101u FOLLOW on n=133, positive in
+            # every sport × direction except MLS/EPL UNDER which are blocked).
+            #
+            # Why DATA_SPREAD died:
+            #   90d backtest: NBA -5.65u, NHL -7.43u, Serie A +5.12u (n=61 total)
+            #   Context absolute error is worse than market on every slice (5.64 vs 4.49 pts)
+            #   Optimal Context scaling factor: 0% (any Context weight hurts)
+            #   Path 1 backtest: fade flip loses -3.89u vs just firing edge picks
+            #   70% of the time Context pushes AWAY from actual outcome, not toward
+            #
+            # Path 1 (SPREAD_FADE_FLIP + Context-as-safety-veto) REMAINS ACTIVE.
+            # Only Path 2 standalone DATA_SPREAD own-picks are dropped.
+            # Edge-based spread picks (OVER/UNDER/DOG/FAVORITE) continue normally.
+            #
+            # Dict emptied rather than deleted so future investigation can re-enable
+            # specific sports if new methodology (ML model, pattern matching, etc.)
+            # proves out.
             CONTEXT_PATH2_THRESHOLDS = {
-                'icehockey_nhl': 0.5,
-                'basketball_nba': 2.5,
-                'soccer_italy_serie_a': 0.5,
+                # 'icehockey_nhl': 0.5,            # DISABLED v25.70 — backtest -7.43u
+                # 'basketball_nba': 2.5,           # DISABLED v25.70 — backtest -5.65u
+                # 'soccer_italy_serie_a': 0.5,     # DISABLED v25.70 — small sample (+5u)
             }
             _p2_th = CONTEXT_PATH2_THRESHOLDS.get(sp)
             if (_p2_th is not None
