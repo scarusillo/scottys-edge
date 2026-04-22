@@ -1,9 +1,74 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-22 — post-agent sweep + small code fixes + v25.62/v25.63
+**Last updated:** 2026-04-22 end-of-day — 9 ships (v25.61→v25.68) + tennis scheduler + docs
 
 ---
 
-## 🟡 ACTIVE — Soccer Context Path 2 calibration (v25.65 re-enabled with refined rules)
+## 🟢 TOMORROW MORNING — grade + decide
+
+1. **Grade 9 scrubbed soccer OVER picks** → pull actual totals for bets 1008-1014, 1021, 1022. If 6+/9 hit OVER, consider promoting soccer OVER cohorts from SHADOW to FOLLOW. If <=4 hit, shadow rule was right.
+
+2. **Check 5am tennis run output.** Did `BettingModel_Tennis_Morning` fire? What edges? Confirm the scheduled task actually executed (PC was on). Tennis Elo green-lit via 3,376-match backtest (70-73% WR across all slices).
+
+3. **Normal agent flow** — morning briefing + pre-run validator + code auditor should all work tomorrow now that `db-latest` release is fixed (v25.61). Check for fresh action items.
+
+---
+
+## 🔎 NEXT-SESSION INVESTIGATIONS — code needed
+
+**Context Model completeness:**
+- **Soccer Path 2 shadow data review** at n≥15 per sport × direction — promote OVER cohorts if backtest supports
+- **Re-validate fade cohorts** (MLS UNDER, EPL UNDER) at n≥15 — consider explicit FADE logic vs BLOCK
+- **Root-cause Phase A discrepancy** — v25.47 code comments cite MLS 15@66.7%, Serie A 12@66.7%; my 90d backtest found 8 and 10 respectively. Odds-table 7-day retention is partial answer; need to reproduce Phase A methodology precisely.
+
+**Model channels never inverse-backtested:**
+- **Primary Elo edge model** — our workhorse (385+ graded picks, +76u, 56% WR). Run per-sport × market_type inverse backtest.
+- **SPREAD_FADE_FLIP** — backtest +140u at launch, never re-validated. 1 live fire.
+- **BOOK_ARB** channels — multiple versions (v25.25-28), never re-validated.
+- **DATA_SPREAD Path 2** — 90d backtest looked bad (-5u NBA, -7u NHL) but left live pending 30 days real fires (per user call — user correctly pushed back on overconfident halt recommendation from thin sample).
+
+**Tennis Phase 2+ (after live sample from 5am task):**
+- Trace why ATP 16-21% edges aren't firing in recent pipelines (suspect Elo confidence filter or tennis-specific edge threshold). Phase 1 diagnosis stopped halfway today.
+- Add head-to-head tracker (tennis context model has H2H but may be under-weighted)
+- Retirement/withdrawal risk flag
+- Set-score distribution model for spread bets
+- Inverse backtest at n≥15 live picks from new 5am schedule
+
+**Support systems needing audit:**
+- Referee engine (`referee_engine.py`) — low-scrutiny zone
+- Weather engine — low-scrutiny zone
+- Goalie form NHL — v25.50 was tested + reverted, worth revisiting
+
+---
+
+## 📊 PASSIVE MONITORING — no code, just watch
+
+- **BetMGM CLV trip-wire** — alert if next 20 picks drop below 0 avg CLV
+- **Steam sharp opposes** — shadow at -20u 2nd-half cumulative (currently -14u, 6u buffer)
+- **Away fast-paced baseball** — shadow not applied (baseball factor profitable +14u); if baseball drops below +5u, revisit
+- **Home letdown spot** — shadow at -15u 2nd-half (currently -8u, 7u buffer)
+- **v25.43 NCAA midweek shadow** — decision at n=25 (currently 3)
+- **MLB Wednesday** — revisit at n=25 (currently 10, -19u)
+
+---
+
+## 🟡 LONGER-HORIZON (from earlier sessions, not today)
+
+- **Secondary data-driven spread model** — coexist with Elo, starts ~2026-05-11
+- **NBA market-consensus baseline redesign** — swap Elo for market-consensus on NBA spreads (next big project per memory)
+- **Context Model live-vs-backtest reconciliation** — v25.55 tracker comparing live P/L to Phase A backtest, evaluate at n≥100 live fires
+
+---
+
+## 📖 REFERENCE FILES (saved in repo)
+
+- `data/CHANNELS.md` — every pick-generating channel (what it does, edge source, interactions, gates, live record)
+- `data/MODEL_GLOSSARY.md` — broader glossary + version history
+- `data/shadow_factors.md` — disabled context adjustments
+- `scripts/*_backtest.py` — 6 inverse-backtest scripts saved for future recalibration
+
+---
+
+## 🟡 Soccer Context Path 2 calibration (v25.65 re-enabled with refined rules)
 
 **Status:** v25.63 full halt **reversed** on 2026-04-22. v25.65 re-enables soccer Path 2 with per-sport × direction rules. Two validated UNDER cohorts fire live; everything else shadows or blocks.
 
