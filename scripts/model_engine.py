@@ -2187,6 +2187,82 @@ def generate_predictions(conn, sport=None, date=None):
                 except Exception as _p2e:
                     print(f"  ⚠ DATA_SPREAD Path2 error: {_p2e}")
 
+            # ═══ STEAM_CHASE — v25.72 (2026-04-22) ═══
+            # Pattern-recognition channel: follow sharp-book spread movement.
+            # No model input required. When sharp book (FanDuel proxy) moved
+            # the home spread by >= threshold since opener, fire on the direction
+            # of movement at the best available line from any NY-legal book.
+            #
+            # Backtest (120d, scripts/steam_chase_backtest.py):
+            #   SPREADS combined: 17 picks 14-3 (82% WR) +9.73u at >= 0.5 move
+            #   TOTALS: LOSING signal (42% WR) — totals excluded.
+            # Sample is small; cap stake at 3.5u until live validation.
+            STEAM_CHASE_MIN_MOVE = {
+                'basketball_nba': 0.5,
+                'icehockey_nhl': 0.5,
+                'baseball_mlb': 0.5,
+                'baseball_ncaa': 0.5,
+                'basketball_ncaab': 0.5,
+            }
+            _sc_threshold = STEAM_CHASE_MIN_MOVE.get(sp)
+            if _sc_threshold is not None and mkt_hs is not None:
+                try:
+                    # FanDuel (sharp proxy) opener + current
+                    _sc_open_row = conn.execute("""
+                        SELECT line FROM openers
+                        WHERE event_id = ? AND book = 'FanDuel' AND market = 'spreads'
+                          AND selection LIKE ? AND line IS NOT NULL LIMIT 1
+                    """, (eid, f'%{home}%')).fetchone()
+                    _sc_cur_row = conn.execute("""
+                        SELECT AVG(line) FROM odds
+                        WHERE event_id = ? AND book = 'FanDuel' AND market = 'spreads'
+                          AND tag = 'CURRENT' AND selection LIKE ? AND line IS NOT NULL
+                    """, (eid, f'%{home}%')).fetchone()
+                    if (_sc_open_row and _sc_cur_row
+                            and _sc_open_row[0] is not None and _sc_cur_row[0] is not None):
+                        _sc_open = _sc_open_row[0]
+                        _sc_cur = _sc_cur_row[0]
+                        # Positive move = home spread got more negative = sharp on HOME
+                        _sc_move = _sc_open - _sc_cur
+                        if abs(_sc_move) >= _sc_threshold:
+                            _sc_side = 'HOME' if _sc_move > 0 else 'AWAY'
+                            if _sc_side == 'HOME':
+                                _sc_team, _sc_line, _sc_odds, _sc_book = home, mkt_hs, mkt_hs_odds, mkt_hs_book
+                            else:
+                                _sc_team, _sc_line, _sc_odds, _sc_book = away, mkt_as, mkt_as_odds, mkt_as_book
+                            from config import MIN_ODDS as _SC_MIN_ODDS
+                            if (_sc_odds is not None and _sc_odds > _SC_MIN_ODDS
+                                    and _sc_odds <= 140 and _sc_book):
+                                _sc_ctx = (
+                                    f'STEAM_CHASE v25.72 — FanDuel opener={_sc_open:+.1f}, '
+                                    f'current={_sc_cur:+.1f} (move={_sc_move:+.1f} ≥ {_sc_threshold}). '
+                                    f'Sharp on {_sc_side}. Bet {_sc_team} {_sc_line:+.1f} @ {_sc_book} {_sc_odds:+.0f}. '
+                                    f'Best available line across NY-legal books.'
+                                )
+                                _sc_pick = {
+                                    'sport': sp, 'event_id': eid, 'commence': commence,
+                                    'home': home, 'away': away,
+                                    'market_type': 'SPREAD',
+                                    'selection': f'{_sc_team} {_sc_line:+.1f}',
+                                    'book': _sc_book, 'line': _sc_line, 'odds': _sc_odds,
+                                    'model_spread': None,
+                                    'model_prob': 0, 'implied_prob': 0,
+                                    'edge_pct': 0,
+                                    'star_rating': 3, 'units': 3.5,  # capped until live validation
+                                    'confidence': 'STEAM_CHASE',
+                                    'side_type': 'STEAM_CHASE',
+                                    'spread_or_ml': 'SPREAD',
+                                    'timing': 'STANDARD',
+                                    'context': _sc_ctx,
+                                    'notes': _sc_ctx,
+                                }
+                                print(f"  ⚡ STEAM_CHASE: {sp.split('_')[-1]} {_sc_team} "
+                                      f"{_sc_line:+.1f} @ {_sc_book} {_sc_odds:+.0f} "
+                                      f"(sharp moved {_sc_move:+.1f})")
+                                all_picks.append(_sc_pick)
+                except Exception as _sce:
+                    print(f"  ⚠ STEAM_CHASE error: {_sce}")
+
             # v12 FIX: If no spread line (common in baseball), check divergence via ML
             # Without this, baseball games with ML-only skip divergence entirely
             # and produce phantom 25-30% edges on thin data.
