@@ -4044,8 +4044,19 @@ def cmd_predict(args):
     from model_engine import generate_predictions, print_picks
     db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
     conn = sqlite3.connect(db)
+    sports = get_sports(args)
+    # v25.68: auto-detect active tennis tournaments (mirrors cmd_run logic).
+    # Without this, predict silently skipped tennis even when Madrid/Monte Carlo
+    # etc were live — making dry-run diagnosis of tennis picks impossible.
+    if not any(s.startswith('tennis_') for s in sports):
+        try:
+            active_tennis = _detect_tennis_sports()
+            if active_tennis:
+                sports = list(sports) + list(active_tennis)
+        except Exception:
+            pass
     all_picks = []
-    for sp in get_sports(args):
+    for sp in sports:
         picks = generate_predictions(conn, sport=sp)
         all_picks.extend(picks)
     all_picks.sort(key=lambda x: x['star_rating']*100 + x['edge_pct'], reverse=True)
