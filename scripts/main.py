@@ -3689,16 +3689,61 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     # each other for 6 slots — they pass their own disagreement-threshold
     # gate in model_engine). They still go through the concentration cap
     # below so same-event collisions are resolved normally.
-    # Give Context picks a sort-ranking via edge_pct = disagreement-proxy
-    # so if multiple Context picks land on the same event (e.g., spread+total)
-    # the concentration cap keeps the higher-conviction one.
+    #
+    # v25.67 (2026-04-22): Per-sport daily cap on Context Path 2 picks.
+    # This morning's pipeline fired 9 MLS Context OVERs in a single run —
+    # v25.65 direction-rules handle most of that via BLOCK/SHADOW, but a
+    # busy slate in a profitable direction (e.g. Serie A UNDER) could still
+    # pile up picks with heavy correlation risk. Cap keeps exposure bounded.
+    MAX_CONTEXT_PER_SPORT_DAILY = 5
+
+    # Count today's already-placed Context picks per sport (from prior
+    # runs in the same day — main.py dedup fires multiple times per day).
+    _existing_ctx_by_sport = {}
+    try:
+        _today = datetime.now().strftime('%Y-%m-%d')
+        for _sp_row in conn.execute("""
+            SELECT sport, COUNT(*) FROM bets
+            WHERE DATE(created_at) = ?
+              AND side_type IN ('DATA_SPREAD','DATA_TOTAL')
+              AND units >= 3.5
+            GROUP BY sport
+        """, (_today,)).fetchall():
+            _existing_ctx_by_sport[_sp_row[0]] = _sp_row[1]
+    except Exception:
+        pass
+
+    # Sort context_bypass by disagreement magnitude so the cap keeps the
+    # highest-conviction picks when capped. Context picks tag disagreement
+    # in the context/notes string — extract a rough conviction score.
+    import re as _re_ctx
+    def _ctx_conviction(p):
+        _ctx_str = p.get('context') or p.get('notes') or ''
+        m = _re_ctx.search(r'disagreement=?\s*([+-]?\d+\.?\d*)', _ctx_str)
+        if m:
+            try:
+                return abs(float(m.group(1)))
+            except Exception:
+                pass
+        m = _re_ctx.search(r'gap=?\s*([+-]?\d+\.?\d*)', _ctx_str)
+        if m:
+            try:
+                return abs(float(m.group(1)))
+            except Exception:
+                pass
+        return 0
+    context_bypass.sort(key=_ctx_conviction, reverse=True)
+
+    _ctx_counts = dict(_existing_ctx_by_sport)
     for _ctx_pick in context_bypass:
-        # Pull disagreement from model_spread vs market if possible, else fallback
+        _sp_ctx = _ctx_pick.get('sport', '')
+        if _ctx_counts.get(_sp_ctx, 0) >= MAX_CONTEXT_PER_SPORT_DAILY:
+            _shadow_blocked.append((_ctx_pick, 'CONTEXT_DAILY_SPORT_CAP'))
+            continue
         _cp_edge = _ctx_pick.get('edge_pct', 0) or 0
         if _cp_edge == 0:
-            # No edge stored for Path 2 picks; derive a conviction score
-            # from selection line / model_total vs market (rough proxy)
-            _ctx_pick['_ctx_rank'] = 1  # tag so concentration cap can use it
+            _ctx_pick['_ctx_rank'] = 1
+        _ctx_counts[_sp_ctx] = _ctx_counts.get(_sp_ctx, 0) + 1
         game_final.append(_ctx_pick)
 
     # v17: Per-game concentration cap — max 1 pick per event (spreads/totals/ML)
