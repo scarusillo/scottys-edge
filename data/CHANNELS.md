@@ -140,9 +140,15 @@ v25.66 odds gate should improve going forward.
 
 ---
 
-## Channel 7 — DATA_SPREAD (Context Model Path 2 spreads, v25.44)
+## Channel 7 — DATA_SPREAD (Context Model Path 2 spreads) — **DISABLED v25.70**
 
-**What it does:** When Elo and market AGREE on the spread, but Context Model
+**Status (2026-04-22):** Channel killed via v25.70. `CONTEXT_PATH2_THRESHOLDS` dict in model_engine.py is empty; no sports fire DATA_SPREAD picks. Code preserved for future re-enable if new methodology proves out.
+
+**Why killed:** 90d backtest showed Context absolute error worse than market on every slice. Optimal scaling factor = 0%. NBA -5.65u, NHL -7.43u, Serie A +5.12u on n=61. Loss dive found Context pulls projections away from actual 70% of the time.
+
+**What it did (historical record):**
+
+When Elo and market AGREE on the spread, but Context Model
 disagrees by more than a per-sport threshold, fire an OWN pick at market
 line betting Context's direction.
 

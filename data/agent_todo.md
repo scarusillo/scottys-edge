@@ -3,6 +3,31 @@
 
 ---
 
+## 🔍 ELO SPREAD CHANNEL DIAGNOSIS (2026-04-22, findings)
+
+**Fact:** Zero edge-based SPREAD picks fired since 2026-04-06 (16 days).
+
+**Diagnosis (not a model bug, not a gate bug):**
+
+1. **NCAAB season ended April 6** — 20 of our 60 DOG winners were NCAAB. Channel dead until Nov.
+2. **NBA + NHL in playoffs** — top teams converge in Elo, small differentials, rare 20% edges.
+3. **MLB + NCAA Baseball active** but ±1.5 runlines are mathematically hard to hit 20% edge on.
+   Today's predict: MLB 20 games → 30 spread picks "below threshold" (all filtered out).
+
+**Current edge threshold ~15-20% is correct for basketball/college-season sports but may be too high for baseball runlines.**
+
+**Possible actions (not urgent, verify first):**
+- Backtest MLB spread at 10-12% edge threshold — if historically profitable, unlocks a big channel
+- Accept seasonal volume dip (wait for November NCAAB return)
+- Invest volume elsewhere (tennis 5am scheduler, totals, props)
+
+**Do NOT:**
+- Lower thresholds without a backtest
+- Rewrite the Elo model (not broken)
+- Add gates (more gates = even fewer fires)
+
+---
+
 ## 🟢 TOMORROW MORNING — grade + decide
 
 1. **Grade 9 scrubbed soccer OVER picks** → pull actual totals for bets 1008-1014, 1021, 1022. If 6+/9 hit OVER, consider promoting soccer OVER cohorts from SHADOW to FOLLOW. If <=4 hit, shadow rule was right.

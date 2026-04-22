@@ -326,8 +326,17 @@ Currently shadowed:
 - **v25.65** — Soccer Context Path 2 re-enabled with direction rules
 - **v25.66** — PROP odds-bucket gate (bimodal odds calibration)
 - **v25.67** — Context Path 2 daily per-sport cap (max 5)
-- **v25.68 (pending)** — DATA_SPREAD Path 2 halt (backtest failed)
+- **v25.68** — cmd_predict auto-detects tennis + tennis 5am scheduler
+- **v25.69** — DATA_SPREAD dominance tagging (observability)
+- **v25.70** — DATA_SPREAD Path 2 killed; DATA_TOTAL Path 2 retained; Path 1 intact
+
+## 8. Key decisions made 2026-04-22
+
+- **Kill DATA_SPREAD Path 2** — 90d backtest showed Context absolute error worse than market, optimal scaling 0%, cannot find threshold tuning or gate addition that restores profitability. Preserving code scaffolding for future re-enable.
+- **Keep DATA_TOTAL Path 2** — totals backtest +101u FOLLOW on n=133 holds up across 7 sports; architectural asymmetry (totals additive, markets less efficient than spreads).
+- **Keep Path 1 (SPREAD_FADE_FLIP + Context veto on edge picks)** — v25.60 veto saved +20u in Case B (both models agree); Case A (fade flip) mixed but user preference to retain pending more live data.
+- **Tennis Elo validated** — 3,376 matches / 70-73% winner-pick accuracy across tour/surface; green-lit via 5am dedicated schedule.
 
 ---
 
-**Last updated:** 2026-04-22
+**Last updated:** 2026-04-22 end-of-day
