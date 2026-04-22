@@ -3,34 +3,41 @@
 
 ---
 
-## 🔴 ACTIVE WORK — Soccer Context Path 2 recalibration (v25.63 halted)
+## 🟡 ACTIVE — Soccer Context Path 2 calibration (v25.65 re-enabled with refined rules)
 
-**Status:** Temporarily halted. Soccer leagues removed from `CONTEXT_TOTAL_P2_THRESHOLDS_V47` in `model_engine.py` on 2026-04-22. Existing edge-based engine still fires soccer TOTAL picks (11 picks, 6-5, -3u post-rebuild).
+**Status:** v25.63 full halt **reversed** on 2026-04-22. v25.65 re-enables soccer Path 2 with per-sport × direction rules. Two validated UNDER cohorts fire live; everything else shadows or blocks.
 
-**Why halted:**
-- v25.59 unblocked DATA_TOTAL firing same day v25.48 had expanded scope
-- First live day = 9 soccer OVERs (more than 90 days of historical volume in one run)
-- Phase A backtest numbers didn't reproduce in independent re-backtest
-- Soccer OVER direction has ~0 historical samples per league
+**What inverse backtest revealed:**
+- FADE loses everywhere at scale (-5.34u vs +101u FOLLOW on n=133 across all sports)
+- Soccer FOLLOW is the MOST profitable Context sport: +55u on 37 picks (64.9% WR, +1.51u/pick)
+- Two specific cohorts invert: EPL UNDER (fade +5.30u on 9), MLS UNDER (fade +2.80u on 5)
+- Context projects UNDER ~90% historically — today's 9-OVER spike was the anomaly, not the norm
+- Today's all-OVER slate reflects late-April scoring environment rising above market lines
 
-**What needs to happen before re-enabling:**
+**v25.65 rules (in `CONTEXT_TOTAL_P2_SOCCER_RULES`):**
+| League | OVER rule | UNDER rule | Why |
+|---|---|---|---|
+| Serie A | shadow | 0.30 | +18.95u backtest (7-1), new to scope |
+| Ligue 1 | shadow | 0.50 | +30.37u at 0.50+ (3-0) |
+| Bundesliga | shadow | shadow | n=1 each direction |
+| MLS | shadow | **block** | UNDER fade cohort (5 picks, 40% WR) |
+| EPL | shadow | **block** | UNDER fade cohort (9 picks, 37.5% WR) |
+| La Liga | shadow | shadow | n=1 each direction |
+| UCL | shadow | shadow | n=1 each direction |
 
-1. **Shadow-log** soccer Path 2 candidates (don't fire, just record projected gap + direction + outcome). Accumulate ~4-6 weeks of samples per league × direction.
+**Remaining work:**
 
-2. **Expand scope to Serie A** (not in v25.47 originally but backtest shows 85.7% WR, +18.95u on UNDER at 0.30 threshold, n=7). Could be best soccer signal.
+1. **Build OVER-direction sample.** All OVER-side picks currently shadow-log to `shadow_blocked_picks` with reason `CONTEXT_TOTAL_P2_SHADOW_INSUFFICIENT_SAMPLE`. Re-evaluate at n≥15 per league × OVER direction. Compare shadow-logged projections to actual outcomes.
 
-3. **Direction-specific thresholds:**
-   - Ligue 1 UNDER only at 0.50+ (backtest 3-0, +30u)
-   - Serie A UNDER only at 0.30+ (backtest 6-1, +18.95u)
-   - Block MLS UNDER (losing at 0.30, n=5)
-   - Block EPL UNDER (losing at 0.30, n=8)
-   - OVER direction: require n≥10 per league before live firing
+2. **Re-validate MLS / EPL UNDER at n>=15.** Current blocks are based on small samples (5 and 9). If the fade signal is real, we should see it in larger samples — then consider adding actual FADE logic (bet opposite direction) rather than just block.
 
-4. **Root-cause the Phase A discrepancy:** why did the code comments say MLS was 15 picks 66.7% WR when the independent backtest can only find 3 MLS OVER picks in 90 days? Odds table retention (7 days) may be masking historical samples, OR Phase A used a different data window.
+3. **Validate Bundesliga and La Liga** UNDER at n>=10 before promoting from shadow to live.
 
-5. **Validate that NBA/NHL/MLB Context Totals are holding up** (they weren't halted). Re-run per-sport × direction backtest monthly.
+4. **Add daily-per-sport cap on Context Path 2 picks** (target: max 5/sport/day) to prevent correlation pileup like today's 9-MLS-OVER scenario. Separate from direction rules.
 
-**Do NOT simply flip the soccer thresholds back on.** The existing code as-shipped will flood 8+ picks/day. Every re-enable needs a matching min-sample gate or direction filter.
+5. **Monthly monitoring** of NBA/NHL/MLB Context Totals to make sure they stay calibrated.
+
+6. **Root-cause the Phase A discrepancy** — v25.47 code comments said MLS was 15 picks at 66.7% WR but independent 90d backtest found only 8 MLS samples total. Odds-table 7-day retention is a partial answer but the Phase A 15-pick figure should be reproducible from somewhere.
 
 ---
 

@@ -2731,40 +2731,59 @@ def generate_predictions(conn, sport=None, date=None):
             #   MLS    (0.30 gls):  15 picks, 66.7%, +14.7u
             #   La Liga/Bundesliga/Ligue 1 (0.30 gls): 4-5 picks each,
             #     75-80% WR, +4-12u (v25.48 — tiny samples, re-eval at n>=20)
+            # Non-soccer sports: single threshold regardless of direction
             CONTEXT_TOTAL_P2_THRESHOLDS_V47 = {
                 'basketball_nba': 0.30,
                 'icehockey_nhl':  1.00,
                 'baseball_mlb':   1.50,
-                # v25.63 (2026-04-22) — SOCCER PATH 2 TEMPORARILY HALTED.
-                # Why halted:
-                #   - v25.59 (same day) unblocked DATA_TOTAL firing.
-                #   - First live day fired 9 soccer Context picks (5 MLS + 2 LaLiga
-                #     + 1 Ligue 1 + 1 additional MLS from 9am run). All OVER direction.
-                #   - Agent 90d backtest: soccer OVER n=8 across ALL 7 leagues combined
-                #     (MLS=3, LaLiga=1, Bundesliga=1, Ligue 1=1, EPL=0, Serie A=1, UCL=1).
-                #     Today's run alone = 9 OVER picks → 90-day+ worth of volume in one day.
-                #   - Phase A backtest (MLS 15@66.7%, LaLiga 5@80%, etc.) did NOT
-                #     reproduce in independent 90d re-backtest. MLS UNDER actually
-                #     losing at 0.30 (n=5, 40% WR). EPL UNDER losing (n=8, 37.5%).
-                #   - Ligue 1 UNDER (83% WR, +30u on n=6) and Serie A UNDER (85.7%,
-                #     +19u on n=7) are the ONLY profitable soccer slices but n<10.
-                #   - Existing edge-based engine still fires soccer TOTAL picks
-                #     via 20% edge threshold — 11 picks post-rebuild, 6-5, ~breakeven.
-                # TODO (see data/agent_todo.md): properly re-calibrate soccer Context
-                # Path 2. Paths forward:
-                #   (a) Add DIRECTION-specific thresholds (UNDER only for Ligue 1/Serie A
-                #       at 0.50+, block OVER entirely until n>=10 OVER samples collected)
-                #   (b) Expand scope to Serie A (+18.95u backtest on UNDER) which wasn't
-                #       in original v25.47 scope
-                #   (c) Add shadow-logging of soccer Path 2 candidates so we accumulate
-                #       the live OVER sample we need for real calibration
-                # 'soccer_usa_mls':            0.30,   # BLOCKED v25.63
-                # 'soccer_spain_la_liga':      0.30,   # BLOCKED v25.63
-                # 'soccer_germany_bundesliga': 0.30,   # BLOCKED v25.63
-                # 'soccer_france_ligue_one':   0.30,   # BLOCKED v25.63
             }
-            _ct_th = CONTEXT_TOTAL_P2_THRESHOLDS_V47.get(sp)
-            if (_ct_th is not None
+            # v25.65 (2026-04-22) — Soccer rules are per-sport × direction.
+            # Inverse backtest (90d, n=133) confirmed Context FOLLOW wins overall
+            # (+101u vs fade -5u). Soccer FOLLOW was actually the STRONGEST slice
+            # at +55u / 37 picks / 64.9% WR. But 2 specific cohorts invert:
+            #   EPL UNDER  (n=9, 37.5% WR, fade wins +5.30u)
+            #   MLS UNDER  (n=5, 40% WR,   fade wins +2.80u)
+            # Soccer OVER direction has only n=5 historical samples across all
+            # 7 leagues combined — insufficient for live firing. Today's 9-OVER
+            # spike that triggered the v25.63 halt was exactly this thin
+            # direction firing all at once.
+            # Rule values:
+            #   number  → FOLLOW at that threshold (fire if |gap| >= value)
+            #   'shadow' → log to shadow_blocked_picks; don't fire. Used for
+            #              directions where we have no historical validation.
+            #   'block'  → skip entirely (cohort known to be losing on follow).
+            # Missing sport-key → skip (out of scope entirely).
+            CONTEXT_TOTAL_P2_SOCCER_RULES = {
+                'soccer_italy_serie_a':      {'UNDER': 0.30, 'OVER': 'shadow'},  # 7-1 +18.95u
+                'soccer_france_ligue_one':   {'UNDER': 0.50, 'OVER': 'shadow'},  # 3-0 +30.37u at >=0.50
+                'soccer_germany_bundesliga': {'UNDER': 'shadow', 'OVER': 'shadow'},  # n<=1
+                'soccer_usa_mls':            {'UNDER': 'block', 'OVER': 'shadow'},  # UNDER fade cohort
+                'soccer_epl':                {'UNDER': 'block', 'OVER': 'shadow'},  # UNDER fade cohort
+                'soccer_spain_la_liga':      {'UNDER': 'shadow', 'OVER': 'shadow'},  # n<=1
+                'soccer_uefa_champs_league': {'UNDER': 'shadow', 'OVER': 'shadow'},  # n<=1
+            }
+
+            def _log_context_shadow(sport_, eid_, sel_, line_, direction_, gap_, reason_tag):
+                """Log Context Path 2 candidate to shadow_blocked_picks so
+                we accumulate calibration data without firing live."""
+                try:
+                    from datetime import datetime as _dt
+                    conn.execute("""INSERT INTO shadow_blocked_picks
+                        (created_at, sport, event_id, selection, market_type, book,
+                         line, odds, edge_pct, units, reason)
+                        VALUES (?, ?, ?, ?, 'TOTAL', '', ?, ?, 0, 0, ?)""",
+                        (_dt.now().isoformat(), sport_, eid_, sel_, line_, 0,
+                         f'CONTEXT_TOTAL_P2_{reason_tag} (v25.65 — direction={direction_}, gap={gap_:+.2f})'))
+                    conn.commit()
+                except Exception:
+                    pass
+
+            # Resolve threshold & rule for this sport
+            _ct_th = None
+            _soccer_rules = CONTEXT_TOTAL_P2_SOCCER_RULES.get(sp)
+            if _soccer_rules is None:
+                _ct_th = CONTEXT_TOTAL_P2_THRESHOLDS_V47.get(sp)
+            if ((_ct_th is not None or _soccer_rules is not None)
                     and over_total is not None and over_odds is not None
                     and under_total is not None and under_odds is not None):
                 try:
@@ -2776,7 +2795,28 @@ def generate_predictions(conn, sport=None, date=None):
                     ctx_tot, ct_info = compute_context_total(
                         conn, sp, home, away, eid, _market_total, _ct_commence)
                     _ct_disagreement = ctx_tot - _market_total
-                    if abs(_ct_disagreement) >= _ct_th:
+                    _ct_side = 'OVER' if _ct_disagreement > 0 else 'UNDER'
+
+                    # v25.65: per-direction rules for soccer
+                    if _soccer_rules is not None:
+                        _rule = _soccer_rules.get(_ct_side)
+                        _sel_label = f'{away}@{home} {_ct_side} {over_total if _ct_side == "OVER" else under_total}'
+                        if _rule == 'block':
+                            _log_context_shadow(sp, eid, _sel_label,
+                                over_total if _ct_side == 'OVER' else under_total,
+                                _ct_side, _ct_disagreement, 'BLOCKED_FADE_COHORT')
+                            _ct_th = None  # signal: do not fire
+                        elif _rule == 'shadow':
+                            _log_context_shadow(sp, eid, _sel_label,
+                                over_total if _ct_side == 'OVER' else under_total,
+                                _ct_side, _ct_disagreement, 'SHADOW_INSUFFICIENT_SAMPLE')
+                            _ct_th = None
+                        elif isinstance(_rule, (int, float)):
+                            _ct_th = _rule
+                        else:
+                            _ct_th = None
+
+                    if _ct_th is not None and abs(_ct_disagreement) >= _ct_th:
                         if _ct_disagreement > 0:
                             _ct_side, _ct_line, _ct_odds, _ct_book = 'OVER', over_total, over_odds, over_book
                         else:
