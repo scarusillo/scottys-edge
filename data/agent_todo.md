@@ -1,5 +1,38 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-22 — post-agent sweep + small code fixes
+**Last updated:** 2026-04-22 — post-agent sweep + small code fixes + v25.62/v25.63
+
+---
+
+## 🔴 ACTIVE WORK — Soccer Context Path 2 recalibration (v25.63 halted)
+
+**Status:** Temporarily halted. Soccer leagues removed from `CONTEXT_TOTAL_P2_THRESHOLDS_V47` in `model_engine.py` on 2026-04-22. Existing edge-based engine still fires soccer TOTAL picks (11 picks, 6-5, -3u post-rebuild).
+
+**Why halted:**
+- v25.59 unblocked DATA_TOTAL firing same day v25.48 had expanded scope
+- First live day = 9 soccer OVERs (more than 90 days of historical volume in one run)
+- Phase A backtest numbers didn't reproduce in independent re-backtest
+- Soccer OVER direction has ~0 historical samples per league
+
+**What needs to happen before re-enabling:**
+
+1. **Shadow-log** soccer Path 2 candidates (don't fire, just record projected gap + direction + outcome). Accumulate ~4-6 weeks of samples per league × direction.
+
+2. **Expand scope to Serie A** (not in v25.47 originally but backtest shows 85.7% WR, +18.95u on UNDER at 0.30 threshold, n=7). Could be best soccer signal.
+
+3. **Direction-specific thresholds:**
+   - Ligue 1 UNDER only at 0.50+ (backtest 3-0, +30u)
+   - Serie A UNDER only at 0.30+ (backtest 6-1, +18.95u)
+   - Block MLS UNDER (losing at 0.30, n=5)
+   - Block EPL UNDER (losing at 0.30, n=8)
+   - OVER direction: require n≥10 per league before live firing
+
+4. **Root-cause the Phase A discrepancy:** why did the code comments say MLS was 15 picks 66.7% WR when the independent backtest can only find 3 MLS OVER picks in 90 days? Odds table retention (7 days) may be masking historical samples, OR Phase A used a different data window.
+
+5. **Validate that NBA/NHL/MLB Context Totals are holding up** (they weren't halted). Re-run per-sport × direction backtest monthly.
+
+**Do NOT simply flip the soccer thresholds back on.** The existing code as-shipped will flood 8+ picks/day. Every re-enable needs a matching min-sample gate or direction filter.
+
+---
 
 ---
 

@@ -2735,17 +2735,33 @@ def generate_predictions(conn, sport=None, date=None):
                 'basketball_nba': 0.30,
                 'icehockey_nhl':  1.00,
                 'baseball_mlb':   1.50,
-                'soccer_usa_mls': 0.30,
-                # v25.48: added other soccer leagues that show positive signal
-                # at 0.30 threshold with the standings + form combination.
-                # Small 30-day samples (4-5 picks each) but directionally strong:
-                #   La Liga:    5 picks,  4-1, 80% WR, +11.6u
-                #   Bundesliga: 4 picks,  3-1, 75% WR, +4.7u
-                #   Ligue 1:    4 picks,  3-1, 75% WR, +5.6u
-                # Accumulate live data; re-evaluate at n>=20 per league.
-                'soccer_spain_la_liga':      0.30,
-                'soccer_germany_bundesliga': 0.30,
-                'soccer_france_ligue_one':   0.30,
+                # v25.63 (2026-04-22) — SOCCER PATH 2 TEMPORARILY HALTED.
+                # Why halted:
+                #   - v25.59 (same day) unblocked DATA_TOTAL firing.
+                #   - First live day fired 9 soccer Context picks (5 MLS + 2 LaLiga
+                #     + 1 Ligue 1 + 1 additional MLS from 9am run). All OVER direction.
+                #   - Agent 90d backtest: soccer OVER n=8 across ALL 7 leagues combined
+                #     (MLS=3, LaLiga=1, Bundesliga=1, Ligue 1=1, EPL=0, Serie A=1, UCL=1).
+                #     Today's run alone = 9 OVER picks → 90-day+ worth of volume in one day.
+                #   - Phase A backtest (MLS 15@66.7%, LaLiga 5@80%, etc.) did NOT
+                #     reproduce in independent 90d re-backtest. MLS UNDER actually
+                #     losing at 0.30 (n=5, 40% WR). EPL UNDER losing (n=8, 37.5%).
+                #   - Ligue 1 UNDER (83% WR, +30u on n=6) and Serie A UNDER (85.7%,
+                #     +19u on n=7) are the ONLY profitable soccer slices but n<10.
+                #   - Existing edge-based engine still fires soccer TOTAL picks
+                #     via 20% edge threshold — 11 picks post-rebuild, 6-5, ~breakeven.
+                # TODO (see data/agent_todo.md): properly re-calibrate soccer Context
+                # Path 2. Paths forward:
+                #   (a) Add DIRECTION-specific thresholds (UNDER only for Ligue 1/Serie A
+                #       at 0.50+, block OVER entirely until n>=10 OVER samples collected)
+                #   (b) Expand scope to Serie A (+18.95u backtest on UNDER) which wasn't
+                #       in original v25.47 scope
+                #   (c) Add shadow-logging of soccer Path 2 candidates so we accumulate
+                #       the live OVER sample we need for real calibration
+                # 'soccer_usa_mls':            0.30,   # BLOCKED v25.63
+                # 'soccer_spain_la_liga':      0.30,   # BLOCKED v25.63
+                # 'soccer_germany_bundesliga': 0.30,   # BLOCKED v25.63
+                # 'soccer_france_ligue_one':   0.30,   # BLOCKED v25.63
             }
             _ct_th = CONTEXT_TOTAL_P2_THRESHOLDS_V47.get(sp)
             if (_ct_th is not None
