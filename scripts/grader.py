@@ -26,7 +26,7 @@ DATA MODEL NOTE — `graded_bets` is authoritative, not `bets`:
     picks that passed all gates at save time.
 """
 import sqlite3, os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')

@@ -13,10 +13,10 @@ SIGNALS:
 
 WORKS FOR: Every player the API returns. No hardcoded player list.
 """
-import sqlite3, os, math
+import sqlite3, os
 from datetime import datetime, timedelta, timezone
 from collections import defaultdict
-from scottys_edge import get_star_rating, kelly_units, kelly_label
+from scottys_edge import get_star_rating, kelly_units
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 

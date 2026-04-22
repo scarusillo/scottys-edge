@@ -2613,7 +2613,8 @@ def _validate_picks(picks):
         # wrong-direction check below would block them incorrectly. Same for
         # BOOK_ARB picks which bypass model-side validation by design.
         if p.get('side_type') in ('SPREAD_FADE_FLIP', 'DATA_SPREAD',
-                                   'BOOK_ARB', 'PROP_BOOK_ARB'):
+                                   'BOOK_ARB', 'PROP_BOOK_ARB',
+                                   'DATA_TOTAL', 'PROP_FADE_FLIP', 'FADE_FLIP'):
             valid.append(p)
             continue
 

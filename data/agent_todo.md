@@ -1,5 +1,31 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-20 — post v25.35 / v25.36 / v25.37 ship session
+**Last updated:** 2026-04-22 — post-agent sweep + small code fixes
+
+---
+
+## 📆 FROM 2026-04-22 AGENT SWEEP
+
+**Closed same day:**
+- ✅ `scripts/grader.py:29` — dropped unused `timezone` import
+- ✅ `scripts/props_engine.py` — dropped unused `math` and `kelly_label` imports
+- ✅ `scripts/main.py:2615` — `_validate_picks` bypass now includes `DATA_TOTAL`, `PROP_FADE_FLIP`, `FADE_FLIP` (aligns with `_passes_filter`)
+- ✅ `scripts/model_engine.py:2027` — v25.60 fade-flip veto now calls `_log_divergence_block` + `skip_div += 1` before `continue` (observability fix)
+- ✅ `scripts/upload_db.py` — compress SLIM DB instead of 3.2 GB full DB (slim is ~30 MB vs 279 MB); switch to `upload --clobber` to preserve release + tag if upload fails. Root cause of `db-latest` 404: 279 MB upload was timing out, leaving release in draft with 0 assets.
+- ✅ IG card re-posted: bet 973 (TOR UNDER 224.5, +4.55u) added to 4/21 results card by bumping `created_at` from 4/18 to 4/21 (card filters on `MAX(DATE(created_at))`). `graded_at` untouched.
+
+**Next-session investigations (need live DB):**
+- 🔎 DraftKings post-Apr-17 isolated CLV (full-season avg_clv -0.50 on 112 bets; v25.22–25.25 fixes should have helped — confirm at n ≥ 30 post-fix picks)
+- 🔎 BetMGM sport/market breakdown — 61 bets, -29u, CLV +0.21; upgrade from "monitor" to WATCH. Shadow BetMGM routing if CLV goes negative.
+- 🔎 MLB Wednesday 3W-7L, -19.9u root-cause (home/away, pitcher type, line size). Sample=10; track only, do not block.
+- 🔎 NCAA Baseball Friday 9W-14L, -31.4u → split OVER vs UNDER. Do NOT re-flag the Friday UNDER rollback (shadow_factors.md). If OVERs are the drag, build a surgical OVER-specific gate.
+- 🔎 Pitcher_outs market: model runs 1.5–2.5 outs below market on 6+ starters today → investigate projection calibration vs the market's implied IP distribution.
+- 🔎 Away fast-paced factor: +4.7u overall but -21.3u 2nd half. Set an explicit shadow threshold (pattern mirrors Away letdown before it was shadowed).
+- 🔎 Steam: sharp opposes — 5W-7L, -14.2u; 2nd-half -11.2u. Shadow at -20u 2nd-half cumulative.
+
+**In-day watch items (today):**
+- 👁 v25.43 NCAA midweek shadow — first full live day. Confirm midweek totals that previously fired at ~20% edge no longer do.
+- 👁 Chase Field (1W-3L, -10.4u) — if DIA hosts a total, verify PARK_GATE fired correctly.
+- 👁 Context-free props (Cortes UNDER 0.5 K pattern) — watch for multi-pick pattern of props firing with `context_confirmed=0`.
 
 ---
 

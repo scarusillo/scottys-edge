@@ -89,9 +89,13 @@ def create_slim_db():
     size_mb = os.path.getsize(SLIM_PATH) / 1024 / 1024
     print(f"\n  Slim DB: {size_mb:.0f} MB, {total_rows:,} total rows")
 
-    # Compress FULL production DB (not slim) so cloud pipeline has all picks for dedup
-    print("  Compressing full DB...")
-    with open(DB_PATH, 'rb') as f_in:
+    # Compress the SLIM DB — full 3.2 GB prod DB compresses to ~280 MB and
+    # was timing out GitHub release uploads (leaving release in draft with
+    # 0 assets, which is why cloud agents got 404). Slim compresses to
+    # ~30-50 MB and uploads reliably. Slim already contains all authoritative
+    # tables (bets, graded_bets, elo_ratings, etc.) the cloud pipeline needs.
+    print("  Compressing slim DB...")
+    with open(SLIM_PATH, 'rb') as f_in:
         with gzip.open(GZ_PATH, 'wb', compresslevel=6) as f_out:
             while True:
                 chunk = f_in.read(8 * 1024 * 1024)  # 8MB chunks
@@ -109,31 +113,53 @@ def create_slim_db():
 
 
 def upload_to_github():
-    """Upload compressed DB to GitHub Releases as db-latest."""
-    today = datetime.now().strftime('%Y-%m-%d %H:%M')
+    """Upload compressed DB to GitHub Releases as db-latest.
 
-    # Delete existing release if it exists
-    subprocess.run(
-        ['gh', 'release', 'delete', 'db-latest', '--repo', 'scarusillo/scottys-edge', '--yes'],
-        capture_output=True
+    Uses `upload --clobber` on an existing release rather than delete+create.
+    Delete+create was leaving the release in draft with 0 assets when the
+    upload timed out, which 404'd cloud agents. --clobber preserves the
+    release and tag; if the upload fails, the prior asset remains downloadable.
+    """
+    today = datetime.now().strftime('%Y-%m-%d %H:%M')
+    repo = 'scarusillo/scottys-edge'
+
+    # Fast path: release + tag already exist, just replace the asset
+    upload = subprocess.run(
+        ['gh', 'release', 'upload', 'db-latest', GZ_PATH,
+         '--repo', repo, '--clobber'],
+        capture_output=True, text=True
     )
 
-    # Create new release with the .gz file
+    if upload.returncode == 0:
+        # Refresh title/notes + make sure it's published (not draft)
+        subprocess.run(
+            ['gh', 'release', 'edit', 'db-latest',
+             '--repo', repo,
+             '--title', f'Database Snapshot — {today}',
+             '--notes', f'Slim agent DB. Generated {today}.',
+             '--draft=false'],
+            capture_output=True
+        )
+        print(f"  Uploaded to GitHub Releases: db-latest")
+        return True
+
+    # Slow path: release doesn't exist yet — create it fresh, pinned to main
+    # so the tag actually resolves (prevents the "untagged-xxxx" draft trap).
     result = subprocess.run(
-        ['gh', 'release', 'create', 'db-latest',
-         GZ_PATH,
-         '--repo', 'scarusillo/scottys-edge',
+        ['gh', 'release', 'create', 'db-latest', GZ_PATH,
+         '--repo', repo,
+         '--target', 'main',
          '--title', f'Database Snapshot — {today}',
-         '--notes', f'Slim agent DB (recent odds only). Generated {today}.',
-         '--draft=false'],
+         '--notes', f'Slim agent DB. Generated {today}.',
+         '--latest=false'],
         capture_output=True, text=True
     )
 
     if result.returncode == 0:
-        print(f"  Uploaded to GitHub Releases: db-latest")
+        print(f"  Created GitHub Release: db-latest")
         return True
     else:
-        print(f"  Upload failed: {result.stderr}")
+        print(f"  Upload failed. upload stderr: {upload.stderr} | create stderr: {result.stderr}")
         return False
 
 

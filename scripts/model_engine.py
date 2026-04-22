@@ -2023,7 +2023,11 @@ def generate_predictions(conn, sport=None, date=None):
                             pass  # If Context check fails, default to firing (existing behavior)
 
                         if _ff_context_vetoes:
-                            # Skip fade flip — too much conviction on the other side
+                            # Skip fade flip — too much conviction on the other side.
+                            # Still log divergence block + bump skip_div so observability
+                            # counters stay accurate (v25.60 veto accounting fix).
+                            _log_divergence_block(conn, sp, eid, home, away, ms, mkt_hs, 'post_elo_rescue')
+                            skip_div += 1
                             continue
                         # Determine which side the model WANTED:
                         #   ms < mkt_hs → model more bullish on home than market → fade to AWAY
