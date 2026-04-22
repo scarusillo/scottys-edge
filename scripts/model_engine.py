@@ -1982,6 +1982,49 @@ def generate_predictions(conn, sport=None, date=None):
                         and mkt_hs is not None and mkt_as is not None
                         and mkt_hs_odds is not None and mkt_as_odds is not None):
                     try:
+                        # v25.60: Dual-model agreement check. Fade flip's thesis
+                        # is "Elo alone is wrong when divergent." If Context
+                        # also disagrees with market in the SAME direction as
+                        # Elo, both our brains agree — fading is betting against
+                        # our strongest conviction signal (65% WR edge cohort).
+                        # Backtest sample (42 NBA+NHL dual-agree fade scenarios):
+                        # 13-29, 31% WR, -86u. Veto when Context aligns with Elo.
+                        _ff_context_vetoes = False
+                        try:
+                            from context_model import compute_context_spread
+                            _ff_commence_date = (commence[:10] if commence else None)
+                            ms_ctx_ff, _ = compute_context_spread(
+                                conn, sp, home, away, eid, ms, _ff_commence_date)
+                            # Elo vs market direction
+                            _elo_more_bullish_home = (ms < mkt_hs)
+                            # Context vs market direction
+                            _ctx_more_bullish_home = (ms_ctx_ff < mkt_hs)
+                            # If both agree direction from market → don't fade
+                            if _elo_more_bullish_home == _ctx_more_bullish_home:
+                                _ff_context_vetoes = True
+                                _ctx_dir = 'home' if _ctx_more_bullish_home else 'away'
+                                _elo_dir = 'home' if _elo_more_bullish_home else 'away'
+                                print(f"    🧠 SPREAD_FADE_FLIP vetoed: Context ({ms_ctx_ff:+.1f}) "
+                                      f"agrees with Elo ({ms:+.1f}) on favoring {_ctx_dir} vs market {mkt_hs:+.1f}")
+                                try:
+                                    conn.execute("""INSERT INTO shadow_blocked_picks
+                                        (created_at, sport, event_id, selection, market_type, book,
+                                         line, odds, edge_pct, units, reason)
+                                        VALUES (?, ?, ?, ?, 'SPREAD', ?, ?, ?, ?, ?, ?)""",
+                                        (datetime.now().isoformat(), sp, eid,
+                                         f"{away}@{home} (fade flip blocked)", mkt_hs_book,
+                                         mkt_hs, mkt_hs_odds, 0, 5.0,
+                                         f'SPREAD_FADE_FLIP_DUAL_MODEL_VETO (v25.60 — Elo ms={ms:+.1f}, '
+                                         f'Context ms_ctx={ms_ctx_ff:+.1f}, market={mkt_hs:+.1f}; both favor {_ctx_dir})'))
+                                    conn.commit()
+                                except Exception:
+                                    pass
+                        except Exception:
+                            pass  # If Context check fails, default to firing (existing behavior)
+
+                        if _ff_context_vetoes:
+                            # Skip fade flip — too much conviction on the other side
+                            continue
                         # Determine which side the model WANTED:
                         #   ms < mkt_hs → model more bullish on home than market → fade to AWAY
                         #   ms > mkt_hs → model less bullish on home → fade to HOME
