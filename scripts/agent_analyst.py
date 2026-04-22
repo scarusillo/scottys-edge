@@ -692,6 +692,76 @@ def generate_briefing(conn):
     except Exception as _e:
         pass
 
+    # v25.57: Opener-age performance monitor — tracks picks by how long
+    # after opener we fired. 1-3 hr "danger zone" was -32u / 25% WR on
+    # a 13-pick sample (sharp money repricing but line not settled).
+    # 12-24 hr sweet spot showed 68% WR / +29u on 22 picks.
+    # Not a gate yet — watching until sample grows to n>=100.
+    try:
+        from datetime import timezone as _tz
+        from zoneinfo import ZoneInfo as _ZI
+        _ET = _ZI('America/New_York')
+        rows = conn.execute("""
+            SELECT gb.created_at, gb.event_id, gb.book, gb.market_type,
+                   gb.result, gb.pnl_units
+            FROM graded_bets gb
+            WHERE DATE(gb.created_at)>='2026-03-04' AND gb.units>=3.5
+              AND gb.result IN ('WIN','LOSS','PUSH')
+              AND gb.market_type IN ('SPREAD','TOTAL','MONEYLINE')
+        """).fetchall()
+        buckets = [
+            ('< 1 hr', 0, 60),
+            ('1-3 hrs (danger?)', 60, 180),
+            ('3-12 hrs', 180, 720),
+            ('12-24 hrs (sweet?)', 720, 1440),
+            ('24 hrs +', 1440, 999999),
+        ]
+        stats = {n: {'w': 0, 'l': 0, 'p': 0.0, 'n': 0} for n, _, _ in buckets}
+        analyzed = 0
+        for (created, eid, book, mtype, result, pnl) in rows:
+            market = {'TOTAL': 'totals', 'SPREAD': 'spreads', 'MONEYLINE': 'h2h'}.get(mtype)
+            if not market: continue
+            op_r = conn.execute(
+                'SELECT MIN(timestamp) FROM openers WHERE event_id=? AND book=? AND market=?',
+                (eid, book, market)
+            ).fetchone()
+            if not op_r or not op_r[0]:
+                op_r = conn.execute(
+                    'SELECT MIN(timestamp) FROM openers WHERE event_id=? AND market=?',
+                    (eid, market)
+                ).fetchone()
+            if not op_r or not op_r[0]: continue
+            try:
+                op_dt = datetime.fromisoformat(op_r[0].replace('Z', '+00:00'))
+                fire = datetime.fromisoformat(created).replace(tzinfo=_ET).astimezone(_tz.utc)
+                age_min = (fire - op_dt).total_seconds() / 60.0
+                if age_min < 0: continue
+            except Exception:
+                continue
+            for name, lo, hi in buckets:
+                if lo <= age_min < hi:
+                    d = stats[name]
+                    if result == 'WIN': d['w'] += 1
+                    elif result == 'LOSS': d['l'] += 1
+                    d['p'] += pnl or 0
+                    d['n'] += 1
+                    analyzed += 1
+                    break
+
+        if analyzed >= 5:
+            lines.append('')
+            lines.append('  OPENER-AGE MONITOR (picks by time between opener + fire):')
+            lines.append(f'  {"bucket":<20s}  {"n":>4s}  {"W-L":>7s}  {"WR":>5s}  {"P/L":>8s}')
+            for name, _, _ in buckets:
+                d = stats[name]
+                if d['n'] == 0: continue
+                wl = d['w'] + d['l']
+                wr = d['w']/wl*100 if wl else 0
+                lines.append(f'    {name:<20s}  {d["n"]:>4d}  {d["w"]:>3d}-{d["l"]:<3d}  {wr:>4.0f}%  {d["p"]:>+7.1f}u')
+            lines.append(f'    (total analyzed: {analyzed} — openers table only captures newer picks)')
+    except Exception:
+        pass
+
     # v25.23 / Option C — CRITICAL fade-flip monitoring
     fade_summary, fade_alerts = analyze_fade_flip_strategy(conn)
     if fade_alerts:
