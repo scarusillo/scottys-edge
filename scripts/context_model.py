@@ -88,6 +88,12 @@ PLAYOFF_INJURY_AMPLIFICATION = 1.3  # 30% boost to injury_adj in playoffs
 # Series momentum: if teams played recently (same series), heavily weight
 # the last game's margin direction. e.g. Game 1 blowout predicts Game 2.
 SERIES_MOMENTUM_WEIGHT = 0.25  # 25% of last-meeting margin carries forward
+# v25.64 (2026-04-22): Cap the raw last_margin before weighting. A single
+# playoff blowout (e.g. +35 → -8.75 adjustment) can overwhelm multi-game
+# form signals and drive untested DATA_SPREAD fires. Cap ±15 keeps momentum
+# as a meaningful signal (max ±3.75 after weight) while preventing single-
+# game outliers from dominating. OKC -17 pick (4/22 morning) was the trigger.
+SERIES_MOMENTUM_MARGIN_CAP = 15.0
 # Games-into-series adjustment: later games (4+) have different dynamics
 # than Game 1. Adjustments are experimental and applied only if we've seen
 # 3+ meetings recently.
@@ -409,7 +415,11 @@ def _get_playoff_adjustments(conn, sport, home, away, commence_date,
     if n_meetings >= 1 and last_margin is not None:
         # If home won last meeting by X, home probably covers again
         # ms more negative if home won last time
-        momentum_adj = -last_margin * SERIES_MOMENTUM_WEIGHT
+        # v25.64: cap last_margin to prevent single-game blowouts from
+        # dominating multi-game form signals (see constant definition).
+        capped_margin = max(-SERIES_MOMENTUM_MARGIN_CAP,
+                            min(SERIES_MOMENTUM_MARGIN_CAP, last_margin))
+        momentum_adj = -capped_margin * SERIES_MOMENTUM_WEIGHT
         labels['series_meetings'] = n_meetings
         labels['last_margin'] = last_margin
         labels['momentum_adj'] = momentum_adj
