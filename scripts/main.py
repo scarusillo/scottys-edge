@@ -3024,7 +3024,15 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # failed both the 20% edge floor and the ELITE/HIGH confidence check,
         # killing every prop arb pick silently. This unblocks prop arb to fire
         # on the same footing as game-line arb.
-        if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB', 'SPREAD_FADE_FLIP', 'DATA_SPREAD'):
+        # v25.59: DATA_TOTAL added to bypass. Same rationale as DATA_SPREAD —
+        # Context Path 2 picks have their own threshold gate in model_engine
+        # (sport-specific disagreement), and edge_pct=0 by construction.
+        # Without this bypass, every DATA_TOTAL pick was silently blocked
+        # here (line 3098 edge_pct check). Today's 148 Path 2 logs never
+        # became live picks because of this.
+        if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB', 'SPREAD_FADE_FLIP',
+                                    'DATA_SPREAD', 'DATA_TOTAL', 'PROP_FADE_FLIP',
+                                    'FADE_FLIP'):
             return True
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
