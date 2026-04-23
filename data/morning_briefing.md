@@ -1,56 +1,74 @@
 # Scotty's Edge Morning Briefing
-**Date:** Wednesday, April 22, 2026 | **Generated:** 05:25 AM ET
-**Game Date Graded:** 2026-04-21
+**Date:** Thursday, April 23, 2026 | **Generated:** 06:00 AM ET
+**Game Date Graded:** 2026-04-22
 
 ---
 ## Yesterday's Results
 
-**5W-2L-0P | +11.2u | GREEN DAY**
+**6W-4L-0P | +5.1u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Los Angeles Kings@Colorado Avalanche UNDER 5. | icehockey_nhl | UNDER | +105 | 5.0 | **W** | +5.2 | 0.0% |
-| Toronto Raptors@Cleveland Cavaliers UNDER 224 | basketball_nba | BOOK_ARB | -110 | 5.0 | **W** | +4.5 | 0.0% |
-| Tyrese Maxey OVER 25.5 pts | basketball_nba | PROP_FADE_FLIP | -122 | 5.0 | **W** | +4.1 | 1.9% |
-| High Point Panthers@North Carolina Tar Heels  | baseball_ncaa | UNDER | -130 | 5.0 | **W** | +3.9 | 1.0% |
-| Houston Cougars@Rice Owls UNDER 12.0 | baseball_ncaa | UNDER | -145 | 5.0 | **W** | +3.5 | 0.0% |
-| Hawai'i Rainbow Warriors@UCLA Bruins UNDER 12 | baseball_ncaa | UNDER | -115 | 5.0 | **L** | -5.0 | 0.0% |
-| Carlos Cortes UNDER 0.5 STRIKEOUTS | baseball_mlb | PROP_UNDER | +115 | 5.0 | **L** | -5.0 | 0.0% |
+| Atlanta Braves@Washington Nationals OVER 9.0 | baseball_mlb | DATA_TOTAL | -105 | 5.0 | **W** | +4.8 | 0.0% |
+| Lamar Cardinals@South Alabama Jaguars UNDER 1 | baseball_ncaa | UNDER | -113 | 5.0 | **W** | +4.4 | -1.0% |
+| Evan Bouchard UNDER 2.5 SOG | icehockey_nhl | PROP_UNDER | -115 | 5.0 | **W** | +4.3 | -1.1% |
+| Devin Booker UNDER 23.5 pts | basketball_nba | PROP_FADE_FLIP | -124 | 5.0 | **W** | +4.0 | 5.4% |
+| Tomoyuki Sugano UNDER 3.5 EARNED RUNS | baseball_mlb | PROP_UNDER | -124 | 5.0 | **W** | +4.0 | 0.0% |
+| Atlético Madrid@Elche CF OVER 2.5 | soccer_spain_la_liga | DATA_TOTAL | -141 | 5.0 | **W** | +3.5 | 0.0% |
+| Orlando Magic +9.0 | basketball_nba | DATA_SPREAD | -110 | 5.0 | **L** | -5.0 | 0.0% |
+| Houston Astros@Cleveland Guardians OVER 8.0 | baseball_mlb | DATA_TOTAL | -105 | 5.0 | **L** | -5.0 | 0.0% |
+| Cade Cunningham OVER 27.5 pts | basketball_nba | PROP_FADE_FLIP | -120 | 5.0 | **L** | -5.0 | 2.9% |
+| Phoenix Suns@Oklahoma City Thunder UNDER 216. | basketball_nba | DATA_TOTAL | -110 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
 
-### Hawai'i Rainbow Warriors@UCLA Bruins UNDER 12.0
+### Orlando Magic +9.0
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Home slow-paced (-0.5) | [SHADOW] Midweek game | UCLA Bruins allows 3.0 R/midweek | Hawai'i Rainbow Warriors allows 4.4 R/midweek | Pitching edge: UCLA Bruins (+0.4 pts) | Steam: no movement
+- **Final Score:** Orlando Magic 83 @ Detroit Pistons 98
+- **Model Spread:** -8.3 | Actual Margin: +15
+- **Context:** DATA_SPREAD v25.44 (Path 2) — CONTEXT: raw=-8.3 → adj=-4.5 | inj=-0.5 (h0.0/a0.5) | form=+5.0 | playoff[hca=-1.0,inj_amp=-0.2,momentum=+2.8 (last=-11)] | Market -8.5, Context -4.5 (ctx_disagreement=4.0 ≥ 2.5). Elo non-divergent (div=0.2 ≤ 4.0). Bet Orlando Magic +9.0 @ Fanatics -110. | Steam: sharp confirms (+9.0)
 
-### Carlos Cortes UNDER 0.5 STRIKEOUTS
+### Houston Astros@Cleveland Guardians OVER 8.0
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Athletics 5 @ Seattle Mariners 2
+- **Final Score:** Houston Astros 2 @ Cleveland Guardians 0
+- **Context:** DATA_TOTAL v25.47 (Path 2) — CONTEXT_TOTAL: mkt=8.0 → ctx=9.9 | form=+0.4 (h:+1.5, a:+1.0) | h2h=+0.6 (n=5) | pitcher=+1.2 (avg_era=5.73) | Market 8.0, Context 9.896 (disagreement=+1.90 ≥ 1.5). Bet OVER 8.0 @ FanDuel -105. | Steam: no movement
+
+### Cade Cunningham OVER 27.5 pts
+- **Category:** VARIANCE
+- **Analysis:** Positive CLV (+2.9%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** Orlando Magic 83 @ Detroit Pistons 98
+- **Context:** PROP_FADE_FLIP v25.31 — model proj 21.0 vs market median 28.5 (gap 7.5 > thr 3.0 pts). Market on opposite side of line 27.5 → flipped UNDER->OVER at BetMGM -120.
+
+### Phoenix Suns@Oklahoma City Thunder UNDER 216.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Final Score:** Phoenix Suns 107 @ Oklahoma City Thunder 120
+- **Context:** DATA_TOTAL v25.47 (Path 2) — CONTEXT_TOTAL: mkt=216.0 → ctx=214.13 | form=-1.3 (h:+1.4, a:-10.1) | h2h=-0.6 (n=5) | Market 216.0, Context 214.135 (disagreement=-1.87 ≥ 0.3). Bet UNDER 216.5 @ Caesars -110. | Steam: sharp opposes (+3.0)
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **216W-169L** |
-| Win Rate | 56.1% |
-| P/L | **+76.3u** |
-| ROI | +4.0% |
-| Wagered | 1889.0u |
+| Record | **222W-173L** |
+| Win Rate | 56.2% |
+| P/L | **+81.5u** |
+| ROI | +4.2% |
+| Wagered | 1939.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| icehockey_nhl | 55 | 33 | +42.4u |
+| icehockey_nhl | 56 | 33 | +46.8u |
+| baseball_ncaa | 69 | 55 | +21.1u |
 | basketball_ncaab | 17 | 12 | +18.7u |
-| baseball_ncaa | 68 | 55 | +16.7u |
-| basketball_nba | 38 | 31 | +13.7u |
-| soccer_spain_la_liga | 2 | 0 | +7.8u |
+| soccer_spain_la_liga | 3 | 0 | +11.3u |
+| baseball_mlb | 32 | 30 | +3.4u |
+| basketball_nba | 39 | 34 | +2.7u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
-| baseball_mlb | 30 | 29 | -0.4u |
 | soccer_italy_serie_a | 2 | 2 | -3.3u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
@@ -62,13 +80,14 @@
 | Factor | Record | P/L |
 |--------|--------|-----|
 | Midweek game | 17W-18L | -20.0u |
-| Steam: sharp opposes | 5W-7L | -14.2u |
+| Steam: sharp opposes | 6W-8L | -15.6u |
 | Park: Chase Field | 1W-3L | -10.4u |
 | Pitching edge: Clemson Tigers | 1W-2L | -7.2u |
 | Weather: light rain, 11mph wind | 1W-2L | -5.7u |
 | H2H high-scoring | 1W-2L | -5.3u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
 | Pitching edge: Florida Gators | 2W-2L | -1.7u |
+| DATA_TOTAL v25.47 | 2W-2L | -1.7u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
 
@@ -78,7 +97,7 @@
 ---
 ## Shadow Pick Report
 
-Found 34 shadow-tagged picks.
+Found 35 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -97,8 +116,8 @@ Found 34 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 158W-124L (56.0%) | +76.8u | 0.3 |
-| BELOW_CAP | 58W-45L (56.3%) | -0.5u | 0.6 |
+| AT_CAP | 159W-125L (56.0%) | +76.2u | 0.3 |
+| BELOW_CAP | 63W-48L (56.8%) | +5.2u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -128,7 +147,7 @@ Found 34 shadow-tagged picks.
 | baseball_mlb | OVER | 13 | 11 | +2.4u |
 | baseball_mlb | UNDER | 9 | 7 | +4.7u |
 | baseball_ncaa | OVER | 25 | 21 | +0.1u |
-| baseball_ncaa | UNDER | 33 | 28 | -1.5u |
+| baseball_ncaa | UNDER | 34 | 28 | +2.9u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
@@ -146,7 +165,7 @@ Found 34 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** WIN LOSS WIN LOSS WIN WIN WIN LOSS LOSS WIN
+- **Last 10:** WIN LOSS WIN WIN WIN LOSS WIN LOSS LOSS WIN
 - **Current Streak:** 1 WIN
 
 ---
@@ -157,9 +176,9 @@ Found 34 shadow-tagged picks.
 3. Factor 'H2H high-scoring' has -5.3u P/L over 3 bets. Consider reducing weight.
 4. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
 5. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-6. Factor 'Steam: sharp opposes' has -14.2u P/L over 12 bets. Consider reducing weight.
+6. Factor 'Steam: sharp opposes' has -15.6u P/L over 14 bets. Consider reducing weight.
 7. Concentration risk detected. Review directional exposure limits.
 8. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-22 05:25 ET*
+*Generated locally by export_briefing_data.py | 2026-04-23 06:00 ET*
