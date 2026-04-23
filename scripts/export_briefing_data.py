@@ -632,6 +632,49 @@ def generate_local_briefing(conn=None):
             add(f"| {ou['sport']} | {ou['side_type']} | {ou['W']} | {ou['L']} | {ou['pnl']:+.1f}u |")
         add()
 
+    # ── Line Movement Tracker (v25.83) ──
+    # Show yesterday's bets bucketed by trajectory shape so we can eyeball
+    # whether stable-line picks outperform drift-line picks. Early signal
+    # (n=21): stable n_steps=1 = 73% WR; drift n_steps>=2 = 43% WR.
+    try:
+        traj_rows = conn.execute("""
+            SELECT b.selection, b.sport, b.opener_move, b.n_steps,
+                   b.max_overshoot, gb.result, gb.pnl_units
+            FROM bets b JOIN graded_bets gb ON gb.bet_id = b.id
+            WHERE b.late_move_share IS NOT NULL
+              AND DATE(gb.graded_at) = (SELECT MAX(DATE(graded_at)) FROM graded_bets
+                                        WHERE result IN ('WIN','LOSS','PUSH'))
+              AND gb.result IN ('WIN','LOSS','PUSH')
+            ORDER BY b.n_steps, b.id
+        """).fetchall()
+        if traj_rows:
+            add("---")
+            add("## Line Movement Tracker (yesterday)")
+            add()
+            stable = [r for r in traj_rows if r[3] == 1]
+            drift = [r for r in traj_rows if (r[3] or 0) >= 2]
+            sn, sw = len(stable), sum(1 for r in stable if r[5] == 'WIN')
+            dn, dw = len(drift), sum(1 for r in drift if r[5] == 'WIN')
+            spnl = sum(r[6] for r in stable if r[6] is not None)
+            dpnl = sum(r[6] for r in drift if r[6] is not None)
+            add(f"| Cohort | n | W | WR | P/L |")
+            add(f"|---|---|---|---|---|")
+            add(f"| **Stable line (n_steps=1)** | {sn} | {sw} | {100*sw/sn if sn else 0:.0f}% | {spnl:+.1f}u |")
+            add(f"| **Drift (n_steps≥2)** | {dn} | {dw} | {100*dw/dn if dn else 0:.0f}% | {dpnl:+.1f}u |")
+            add()
+            add("> Stable lines historically (n=14): 71% WR, +22u. Drift (n=7): 43% WR, -6.4u.")
+            add("> Watch: does drift cohort keep losing? At n=30+, consider shadow-block.")
+            add()
+            # List drift picks specifically — the avoid candidates
+            if drift:
+                add("**Yesterday's drift-line picks (avoid candidates):**")
+                for sel, sport, om, ns, mo, res, pnl in drift:
+                    add(f"- `{(sel or '')[:55]}` ({sport}) — opener_move={om:+.2f}, "
+                        f"n_steps={ns}, overshoot={mo:.2f} → **{res}** {pnl:+.1f}u")
+                add()
+    except Exception as _e:
+        pass  # Silent fail — trajectory backfill may not have run yet
+
     # ── Streak ──
     add("---")
     add("## Current Streak")

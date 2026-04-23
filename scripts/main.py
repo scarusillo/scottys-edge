@@ -4869,6 +4869,56 @@ def cmd_grade(args):
     except Exception as e:
         print(f"  Briefing data export: {e}")
 
+    # ═══ TRAJECTORY BACKFILL — multi-point line-movement features ═══
+    # v25.83 (2026-04-23): for every recently-created bet that has opener_move
+    # data but no trajectory features yet, compute and store. Runs BEFORE
+    # retention so we have full odds-history access. Trajectory is static once
+    # the bet is fired; safe to compute post-hoc.
+    # Features populated: late_move_share, n_steps, max_overshoot.
+    # See scripts/line_trajectory.py.
+    try:
+        import sys as _sys
+        _scripts_dir = os.path.dirname(__file__)
+        if _scripts_dir not in _sys.path:
+            _sys.path.insert(0, _scripts_dir)
+        from line_trajectory import compute_trajectory
+        try:
+            from archive_db import attach_archive
+        except Exception:
+            attach_archive = None
+        _traj_conn = sqlite3.connect(db, timeout=30)
+        if attach_archive is not None:
+            try:
+                attach_archive(_traj_conn)
+            except Exception:
+                pass
+        _traj_cur = _traj_conn.cursor()
+        # Limit to bets from the last 14 days — older bets had odds DELETE'd
+        # before v25.79 archive shipped, so trajectory is unrecoverable.
+        _traj_cur.execute("""
+            SELECT id, created_at, event_id, market_type, side_type, selection
+            FROM bets
+            WHERE market_type IN ('SPREAD','TOTAL')
+              AND opener_move IS NOT NULL
+              AND late_move_share IS NULL
+              AND DATE(created_at) >= DATE('now', '-14 days')
+        """)
+        _traj_targets = _traj_cur.fetchall()
+        _traj_ok = 0
+        for _bid, _ct, _eid, _mt, _st, _sel in _traj_targets:
+            _f = compute_trajectory(_traj_conn, _eid, _mt, _ct, side_type=_st, selection=_sel)
+            if _f:
+                _traj_cur.execute(
+                    "UPDATE bets SET late_move_share=?, n_steps=?, max_overshoot=? WHERE id=?",
+                    (_f['late_move_share'], _f['n_steps'], _f['max_overshoot'], _bid))
+                _traj_ok += 1
+        _traj_conn.commit()
+        _traj_conn.close()
+        if _traj_targets:
+            print(f"  📈 Trajectory backfill: {_traj_ok}/{len(_traj_targets)} bets populated")
+    except Exception as e:
+        print(f"  Trajectory backfill: {e}")
+
     # ═══ DATA RETENTION — archive old odds/props/prop_snapshots ═══
     # Keep 7 days of snapshots LIVE in main DB for speed. Pre-prune rows
     # are moved to a SEPARATE archive DB file (data/betting_model_archive.db)
