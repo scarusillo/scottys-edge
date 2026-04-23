@@ -18,7 +18,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from context_model import compute_context_spread
+from context_spread_model import compute_context_spread
 
 DB = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 conn = sqlite3.connect(DB)

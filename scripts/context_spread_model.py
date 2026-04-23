@@ -1,4 +1,8 @@
-"""context_model.py v1 — Secondary spread model using real-world context.
+"""context_spread_model.py — Secondary spread model using real-world context.
+
+(Renamed from context_model.py in v25.77 for clarity — this file holds the
+SECONDARY SPREAD MODEL, distinct from context_engine.py which holds adjustment
+MODIFIERS like rest/altitude/travel.)
 
 Produces `ms_context` = raw Elo spread + context adjustments. Used alongside
 the raw Elo model (which feeds SPREAD_FADE_FLIP via its divergence signal).
@@ -11,7 +15,7 @@ Phase 2+ (not implemented yet): rest days / B2B, motivation (tanking,
 seeding locked), confirmed starting lineup, home/away splits.
 
 Usage:
-    from context_model import compute_context_spread
+    from context_spread_model import compute_context_spread
     ms_context, info = compute_context_spread(conn, sport, home, away,
                                                event_id, ms_elo)
 
@@ -681,11 +685,11 @@ def format_context_summary(info):
 
 
 # ═══════════════════════════════════════════════════════════════════
-# v25.46 — CONTEXT TOTAL (Path 2 for totals)
+# v25.46 — CONTEXT TOTAL (CONTEXT_STANDALONE for totals)
 # ═══════════════════════════════════════════════════════════════════
 # Anchored on market_total (no Elo-totals baseline exists in market_consensus).
 # Adds walk-forward-safe signals: team scoring form, H2H recent totals,
-# and MLB pitcher matchup. Path 2 fires OVER/UNDER own-picks when the
+# and MLB pitcher matchup. CONTEXT_STANDALONE fires OVER/UNDER own-picks when the
 # context-adjusted total disagrees with market by a sport-specific run/point
 # threshold. 30-day Phase A backtest:
 #   NBA: 173 picks, 101-71, 58.7% WR, +97.4u @ threshold 0.30 pts

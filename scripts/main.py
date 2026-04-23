@@ -3026,10 +3026,10 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # killing every prop arb pick silently. This unblocks prop arb to fire
         # on the same footing as game-line arb.
         # v25.59: DATA_TOTAL added to bypass. Same rationale as DATA_SPREAD —
-        # Context Path 2 picks have their own threshold gate in model_engine
+        # Context CONTEXT_STANDALONE picks have their own threshold gate in model_engine
         # (sport-specific disagreement), and edge_pct=0 by construction.
         # Without this bypass, every DATA_TOTAL pick was silently blocked
-        # here (line 3098 edge_pct check). Today's 148 Path 2 logs never
+        # here (line 3098 edge_pct check). Today's 148 CONTEXT_STANDALONE logs never
         # became live picks because of this.
         if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB', 'SPREAD_FADE_FLIP',
                                     'DATA_SPREAD', 'DATA_TOTAL', 'PROP_FADE_FLIP',
@@ -3488,7 +3488,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                     _ctx_direction_disagrees = False
                     _ctx_reason = ''
                     if _mt == 'TOTAL' and sport in _ctx_veto_sports_total and _mkt_tot is not None:
-                        from context_model import compute_context_total
+                        from context_spread_model import compute_context_total
                         _ctx_tot, _ = compute_context_total(conn, sport, _home, _away,
                                                             _eid, _mkt_tot, _commence_date)
                         _pick_side = 'OVER' if 'OVER' in _sel.upper() else 'UNDER'
@@ -3498,7 +3498,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                             _ctx_reason = (f'CONTEXT_DIRECTION_VETO (totals: pick {_pick_side}, '
                                            f'Context {_ctx_side} — ctx_tot={_ctx_tot:.2f} vs mkt={_mkt_tot})')
                     elif _mt == 'SPREAD' and sport in _ctx_veto_sports_spread and _ms is not None and _mkt_sp is not None:
-                        from context_model import compute_context_spread
+                        from context_spread_model import compute_context_spread
                         _ms_ctx, _ = compute_context_spread(conn, sport, _home, _away,
                                                              _eid, _ms, _commence_date)
                         _ctx_fav_home = (_ms_ctx < _mkt_sp)
@@ -3544,7 +3544,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     EXCLUDED_BOOKS = {'Bovada', 'BetOnline.ag', 'BetUS', 'MyBookie.ag', 'LowVig.ag'}
     game_filtered = [p for p in game_filtered if p.get('book') not in EXCLUDED_BOOKS]
     
-    # ── v25.51: Context Model picks (Path 1 + Path 2) bypass the soft/sharp
+    # ── v25.51: Context Model picks (ELO_DIVERGENCE_RESCUE + CONTEXT_STANDALONE) bypass the soft/sharp
     # merge cap. They have their own threshold-based gate (disagreement must
     # exceed sport-specific bar), so the MAX_SHARP_PICKS=6 cap shouldn't also
     # compete them against each other. BOOK_ARB/PROP_BOOK_ARB already bypass
@@ -3690,7 +3690,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
     # gate in model_engine). They still go through the concentration cap
     # below so same-event collisions are resolved normally.
     #
-    # v25.67 (2026-04-22): Per-sport daily cap on Context Path 2 picks.
+    # v25.67 (2026-04-22): Per-sport daily cap on Context CONTEXT_STANDALONE picks.
     # This morning's pipeline fired 9 MLS Context OVERs in a single run —
     # v25.65 direction-rules handle most of that via BLOCK/SHADOW, but a
     # busy slate in a profitable direction (e.g. Serie A UNDER) could still

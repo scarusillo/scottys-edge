@@ -1,4 +1,4 @@
-"""Path 1 backtest — measure SPREAD_FADE_FLIP + Context veto efficacy.
+"""ELO_DIVERGENCE_RESCUE backtest — measure SPREAD_FADE_FLIP + Context veto efficacy.
 
 For each historical game where Elo diverged from market significantly:
   1. Would Context have AGREED with Elo or with market?
@@ -6,7 +6,7 @@ For each historical game where Elo diverged from market significantly:
      Also: would the vetoed edge pick have lost (proving veto saved us)?
   3. If Context agreed with ELO (Case B): edge pick fires — did it win?
 
-This lets us answer: "Is Path 1 (Context as safety net) actually saving us
+This lets us answer: "Is ELO_DIVERGENCE_RESCUE (Context as safety net) actually saving us
 money, or is it adding noise?"
 """
 import sqlite3
@@ -14,7 +14,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from context_model import compute_context_spread
+from context_spread_model import compute_context_spread
 
 DB = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 conn = sqlite3.connect(DB)
@@ -23,7 +23,7 @@ c = conn.cursor()
 SPORTS = ['basketball_nba', 'icehockey_nhl', 'baseball_mlb',
           'soccer_italy_serie_a', 'soccer_usa_mls']
 # Max_div threshold per sport — from model_engine's SPORT_CONFIG.
-# Above this, Path 1 logic kicks in.
+# Above this, ELO_DIVERGENCE_RESCUE logic kicks in.
 MAX_DIV = {'basketball_nba': 4.0, 'icehockey_nhl': 1.5, 'baseball_mlb': 1.5,
            'soccer_italy_serie_a': 0.6, 'soccer_usa_mls': 0.6}
 
@@ -69,7 +69,7 @@ for sport, home, away, eid, commence, hs, as_, home_spread, home_odds, away_odds
 
     max_div = MAX_DIV.get(sport, 1.5)
     if elo_div < max_div:
-        continue  # Not a Path 1 trigger scenario
+        continue  # Not a ELO_DIVERGENCE_RESCUE trigger scenario
 
     # Actual cover resolution
     net = (hs + home_spread) - as_
@@ -141,9 +141,9 @@ print('=== CASE A: Context agreed with MARKET (Elo appeared wrong) ===')
 print('What happens if we FIRE FADE_FLIP (bet opposite of Elo)?')
 summarize('Case A — FADE FLIP record', case_a, 'fade_pnl')
 print('What happens if we had fired the EDGE PICK instead (Elo side)?')
-summarize('Case A — EDGE PICK (hypothetical, Path 1 prevents this)', case_a, 'elo_pnl')
+summarize('Case A — EDGE PICK (hypothetical, ELO_DIVERGENCE_RESCUE prevents this)', case_a, 'elo_pnl')
 delta_a = sum(d['fade_pnl'] for d in case_a) - sum(d['elo_pnl'] for d in case_a)
-print(f'  Path 1 value added in Case A: fade_flip vs edge_pick = {delta_a:+.2f}u over {len(case_a)} games')
+print(f'  ELO_DIVERGENCE_RESCUE value added in Case A: fade_flip vs edge_pick = {delta_a:+.2f}u over {len(case_a)} games')
 
 print()
 print('=== CASE B: Context agreed with ELO (both signals vs market) ===')
@@ -152,16 +152,16 @@ summarize('Case B — EDGE PICK (both models agree)', case_b, 'elo_pnl')
 print('What happens if we had fired FADE FLIP instead (the opposite)?')
 summarize('Case B — FADE FLIP (hypothetical, v25.60 vetoes this)', case_b, 'fade_pnl')
 delta_b = sum(d['elo_pnl'] for d in case_b) - sum(d['fade_pnl'] for d in case_b)
-print(f'  Path 1 (v25.60) value in Case B: edge_pick vs fade_flip = {delta_b:+.2f}u over {len(case_b)} games')
+print(f'  ELO_DIVERGENCE_RESCUE (v25.60) value in Case B: edge_pick vs fade_flip = {delta_b:+.2f}u over {len(case_b)} games')
 
 print()
-print('=== COMBINED Path 1 net value ===')
-# Compare "Path 1 logic" (fire fade in A, edge in B) vs "no Path 1" (always edge pick)
+print('=== COMBINED ELO_DIVERGENCE_RESCUE net value ===')
+# Compare "ELO_DIVERGENCE_RESCUE logic" (fire fade in A, edge in B) vs "no ELO_DIVERGENCE_RESCUE" (always edge pick)
 path1_total = sum(d['fade_pnl'] for d in case_a) + sum(d['elo_pnl'] for d in case_b)
 no_path1_total = sum(d['elo_pnl'] for d in case_a) + sum(d['elo_pnl'] for d in case_b)
-print(f'  Path 1 logic total P/L: {path1_total:+.2f}u')
-print(f'  No Path 1 (always edge pick): {no_path1_total:+.2f}u')
-print(f'  Path 1 value added: {path1_total - no_path1_total:+.2f}u')
+print(f'  ELO_DIVERGENCE_RESCUE logic total P/L: {path1_total:+.2f}u')
+print(f'  No ELO_DIVERGENCE_RESCUE (always edge pick): {no_path1_total:+.2f}u')
+print(f'  ELO_DIVERGENCE_RESCUE value added: {path1_total - no_path1_total:+.2f}u')
 
 # Also: what if we ALWAYS faded Elo regardless of Context
 all_fade = sum(d['fade_pnl'] for d in case_a) + sum(d['fade_pnl'] for d in case_b)

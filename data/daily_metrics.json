@@ -1,0 +1,39 @@
+[
+  {
+    "date": "2026-04-21",
+    "followers": 60,
+    "posts_count": 107,
+    "comments_posted_yesterday": 3,
+    "comments_skipped_yesterday": 16,
+    "comments_failed_yesterday": 0,
+    "comments_surviving": null,
+    "best_post_likes": null,
+    "recent_post_comments_total": 0,
+    "targets_posted": [
+      "nationals",
+      "braves",
+      "barstoolsports"
+    ],
+    "notes": "IG hides like counts behind View insights; comment counts visible (all 3 recent posts = 0). engagement_log has no target_post_url field, so individual comment survival can't be checked retrospectively without a slower per-account feed scan."
+  },
+  {
+    "date": "2026-04-22",
+    "ig_followers": 58,
+    "ig_posts_count": 109,
+    "tt_followers": 1,
+    "tt_posts_count": 0,
+    "tt_likes_total": 4,
+    "ig_comments_posted_yesterday": 5,
+    "ig_comments_skipped_yesterday": 12,
+    "tt_comments_posted_yesterday": 0,
+    "tt_comments_skipped_yesterday": 0,
+    "tt_queue_yesterday": 29,
+    "comments_surviving": 4,
+    "comments_sampled": 4,
+    "scheduler_heartbeats": 31,
+    "scheduler_heartbeat_starts": 26,
+    "scheduler_heartbeat_ends": 16,
+    "scheduler_expected": 15,
+    "notes": "Sandbox disk-full outage 2026-04-21 11:33am EDT\u2013undetected; only 5 IG posts went through (10:44 + 14:41) then 8+ hourly runs aborted; TikTok had 0 posts despite 29-item queue (platform regression); IG comment survival 4/4 sampled; scheduler fired post-cutoff (21:30\u201323:30) with speculative pre-written heartbeats (log pollution). Today's Apr 22 recent post (13m old) already shows updated 216W-169L record."
+  }
+]

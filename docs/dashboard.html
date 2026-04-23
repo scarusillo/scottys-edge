@@ -44,23 +44,23 @@ a:hover { text-decoration: underline; }
 <body>
 <a href="index.html" class="back-link">&larr; Back to Home</a>
 <h1>P&L Dashboard</h1>
-<p class="subtitle">Updated 2026-04-19 07:06 AM ET | Public record (3.5u+ picks)</p>
+<p class="subtitle">Updated 2026-04-22 05:25 AM ET | Public record (3.5u+ picks)</p>
 
 <div class="stats-row">
   <div class="stat-card">
-    <div class="stat-value green">206W-162L</div>
+    <div class="stat-value green">222W-174L</div>
     <div class="stat-label">Season Record</div>
   </div>
   <div class="stat-card">
-    <div class="stat-value green">+71.8u</div>
+    <div class="stat-value green">+79.2u</div>
     <div class="stat-label">Season P&L</div>
   </div>
   <div class="stat-card">
-    <div class="stat-value green">56.0%</div>
+    <div class="stat-value green">56.1%</div>
     <div class="stat-label">Win Rate</div>
   </div>
   <div class="stat-card">
-    <div class="stat-value green">$8,590</div>
+    <div class="stat-value green">$8,960</div>
     <div class="stat-label">Bankroll</div>
   </div>
   <div class="stat-card">
@@ -68,7 +68,7 @@ a:hover { text-decoration: underline; }
     <div class="stat-label">Max Drawdown</div>
   </div>
   <div class="stat-card">
-    <div class="stat-value">374</div>
+    <div class="stat-value">402</div>
     <div class="stat-label">Total Bets</div>
   </div>
 </div>
@@ -99,7 +99,7 @@ a:hover { text-decoration: underline; }
     <thead><tr><th>Month</th><th>Bets</th><th>W-L</th><th>Win%</th><th>P&L</th><th>CLV</th></tr></thead>
     <tbody>
       <tr><td>2026-03</td><td>214</td><td>125W-86L</td><td>59.2%</td><td class="positive">+88.5u</td><td>+0.35</td></tr>
-      <tr><td>2026-04</td><td>160</td><td>81W-76L</td><td>51.6%</td><td class="negative">-16.7u</td><td>+0.34</td></tr>
+      <tr><td>2026-04</td><td>188</td><td>97W-88L</td><td>52.4%</td><td class="negative">-9.3u</td><td>+0.36</td></tr>
     </tbody>
   </table>
 </div>
@@ -109,13 +109,13 @@ a:hover { text-decoration: underline; }
   <table>
     <thead><tr><th>Book</th><th>Bets</th><th>W-L</th><th>Win%</th><th>P&L</th></tr></thead>
     <tbody>
-      <tr><td>FanDuel</td><td>85</td><td>53W-32L</td><td>62.4%</td><td class="positive">+63.0u</td></tr>
-      <tr><td>Fanatics</td><td>32</td><td>21W-11L</td><td>65.6%</td><td class="positive">+31.0u</td></tr>
-      <tr><td>BetRivers</td><td>50</td><td>29W-20L</td><td>59.2%</td><td class="positive">+19.5u</td></tr>
+      <tr><td>FanDuel</td><td>90</td><td>56W-34L</td><td>62.2%</td><td class="positive">+65.8u</td></tr>
+      <tr><td>Fanatics</td><td>33</td><td>22W-11L</td><td>66.7%</td><td class="positive">+35.5u</td></tr>
+      <tr><td>BetRivers</td><td>55</td><td>33W-21L</td><td>61.1%</td><td class="positive">+29.4u</td></tr>
       <tr><td>None</td><td>1</td><td>1W-0L</td><td>100.0%</td><td class="positive">+6.5u</td></tr>
-      <tr><td>Caesars</td><td>45</td><td>22W-20L</td><td>52.4%</td><td class="positive">+0.7u</td></tr>
-      <tr><td>BetMGM</td><td>60</td><td>31W-29L</td><td>51.7%</td><td class="negative">-24.0u</td></tr>
-      <tr><td>DraftKings</td><td>101</td><td>49W-50L</td><td>49.5%</td><td class="negative">-24.8u</td></tr>
+      <tr><td>Caesars</td><td>48</td><td>23W-22L</td><td>51.1%</td><td class="negative">-5.9u</td></tr>
+      <tr><td>BetMGM</td><td>63</td><td>33W-30L</td><td>52.4%</td><td class="negative">-20.9u</td></tr>
+      <tr><td>DraftKings</td><td>112</td><td>54W-56L</td><td>49.1%</td><td class="negative">-31.3u</td></tr>
     </tbody>
   </table>
 </div>
@@ -138,9 +138,9 @@ Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
 new Chart(document.getElementById('equityChart'), {
   type: 'line',
   data: {
-    labels: ["2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-08", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18"],
+    labels: ["2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-08", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21"],
     datasets: [{
-      data: [2.8, 10.0, 14.9, 8.1, 11.6, 19.9, 18.7, 30.8, 40.1, 34.3, 33.6, 39.0, 53.8, 54.6, 56.3, 93.9, 107.1, 103.6, 93.9, 100.6, 76.7, 95.7, 90.7, 76.1, 88.5, 78.5, 77.4, 79.2, 104.0, 84.2, 61.2, 74.1, 66.2, 44.3, 57.7, 58.3, 64.7, 68.0, 76.6, 64.2, 65.3, 65.6, 71.8],
+      data: [2.8, 10.0, 14.9, 8.1, 11.6, 19.9, 18.7, 30.8, 40.1, 34.3, 33.6, 39.0, 53.8, 54.6, 56.3, 93.9, 107.1, 103.6, 93.9, 100.6, 76.7, 95.7, 90.7, 76.1, 88.5, 78.5, 77.4, 79.2, 104.0, 84.2, 61.2, 74.1, 66.2, 44.3, 57.7, 58.3, 64.7, 68.0, 76.6, 64.2, 65.3, 65.6, 75.0, 70.9, 68.0, 79.2],
       borderColor: '#00e676',
       backgroundColor: 'rgba(0,230,118,0.1)',
       fill: true,
@@ -156,10 +156,10 @@ new Chart(document.getElementById('equityChart'), {
 new Chart(document.getElementById('weeklyChart'), {
   type: 'bar',
   data: {
-    labels: ["2026-W09", "2026-W10", "2026-W11", "2026-W12", "2026-W13", "2026-W14", "2026-W15"],
+    labels: ["2026-W09", "2026-W10", "2026-W11", "2026-W12", "2026-W13", "2026-W14", "2026-W15", "2026-W16"],
     datasets: [{
-      data: [11.6, 21.9, 60.3, -3.2, -6.5, -19.4, 7.0],
-      backgroundColor: ["rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(0,230,118,0.8)"],
+      data: [11.6, 21.9, 60.3, -3.2, -6.5, -19.4, 6.2, 8.2],
+      backgroundColor: ["rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)"],
       borderRadius: 4,
     }]
   },
@@ -170,9 +170,9 @@ new Chart(document.getElementById('weeklyChart'), {
 new Chart(document.getElementById('drawdownChart'), {
   type: 'line',
   data: {
-    labels: ["2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-08", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18"],
+    labels: ["2026-03-03", "2026-03-04", "2026-03-05", "2026-03-06", "2026-03-08", "2026-03-10", "2026-03-11", "2026-03-12", "2026-03-13", "2026-03-14", "2026-03-15", "2026-03-18", "2026-03-19", "2026-03-20", "2026-03-21", "2026-03-22", "2026-03-23", "2026-03-24", "2026-03-25", "2026-03-26", "2026-03-27", "2026-03-28", "2026-03-29", "2026-03-30", "2026-03-31", "2026-04-01", "2026-04-02", "2026-04-03", "2026-04-04", "2026-04-05", "2026-04-06", "2026-04-07", "2026-04-08", "2026-04-09", "2026-04-10", "2026-04-11", "2026-04-12", "2026-04-13", "2026-04-14", "2026-04-15", "2026-04-16", "2026-04-17", "2026-04-18", "2026-04-19", "2026-04-20", "2026-04-21"],
     datasets: [{
-      data: [0.0, 0.0, 0.0, -6.8, -3.3, 0.0, -1.2, 0.0, 0.0, -5.8, -6.5, -1.1, 0.0, 0.0, 0.0, 0.0, 0.0, -3.5, -13.2, -6.5, -30.4, -11.4, -16.4, -31.0, -18.6, -28.6, -29.7, -27.9, -3.1, -22.9, -45.9, -33.0, -40.9, -62.8, -49.4, -48.8, -42.4, -39.1, -30.5, -42.9, -41.8, -41.5, -35.3],
+      data: [0.0, 0.0, 0.0, -6.8, -3.3, 0.0, -1.2, 0.0, 0.0, -5.8, -6.5, -1.1, 0.0, 0.0, 0.0, 0.0, 0.0, -3.5, -13.2, -6.5, -30.4, -11.4, -16.4, -31.0, -18.6, -28.6, -29.7, -27.9, -3.1, -22.9, -45.9, -33.0, -40.9, -62.8, -49.4, -48.8, -42.4, -39.1, -30.5, -42.9, -41.8, -41.5, -32.1, -36.2, -39.1, -27.9],
       borderColor: '#ff5252',
       backgroundColor: 'rgba(255,82,82,0.1)',
       fill: true,
@@ -188,9 +188,9 @@ new Chart(document.getElementById('drawdownChart'), {
 new Chart(document.getElementById('sportChart'), {
   type: 'bar',
   data: {
-    labels: ["NHL", "NCAA", "NCAAB", "SPAIN_LA_LIGA", "GERMANY_BUNDESLIGA", "MLB", "TENNIS_ATP_MIAMI_OPEN", "ITALY_SERIE_A", "USA_MLS", "UEFA_CHAMPS_LEAGUE", "TENNIS_ATP_MONTE_CARLO_MASTERS", "NBA"],
+    labels: ["NHL", "NCAA", "NBA", "NCAAB", "SPAIN_LA_LIGA", "GERMANY_BUNDESLIGA", "MLB", "TENNIS_ATP_MIAMI_OPEN", "ITALY_SERIE_A", "USA_MLS", "UEFA_CHAMPS_LEAGUE", "TENNIS_ATP_MONTE_CARLO_MASTERS"],
     datasets: [{
-      data: [56.2, 31.1, 13.1, 7.8, 2.0, 0.0, -1.1, -3.3, -4.5, -5.0, -10.7, -13.8],
+      data: [50.8, 16.7, 13.9, 13.1, 7.8, 2.0, -0.4, -1.1, -3.3, -4.5, -5.0, -10.7],
       backgroundColor: ["rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(0,230,118,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)", "rgba(255,82,82,0.8)"],
       borderRadius: 4,
     }]

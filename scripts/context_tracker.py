@@ -21,11 +21,11 @@ CONTEXT_GO_LIVE = '2026-04-21'  # date v25.44-v25.49 shipped
 # Backtest baselines: (channel, sport, side_type, backtest_wr, backtest_picks, backtest_pnl)
 # From 30-day Phase A results documented in v25.44/46/47/48/49 commits.
 BACKTEST_BASELINES = [
-    # Context Path 2 SPREADS
+    # Context CONTEXT_STANDALONE SPREADS
     ('Context Spread',  'icehockey_nhl',          'DATA_SPREAD',  0.572, 159,  73.6),
     ('Context Spread',  'basketball_nba',         'DATA_SPREAD',  0.557,  79,  25.0),
     ('Context Spread',  'soccer_italy_serie_a',   'DATA_SPREAD',  0.667,  12,  12.3),
-    # Context Path 2 TOTALS
+    # Context CONTEXT_STANDALONE TOTALS
     ('Context Total',   'basketball_nba',         'DATA_TOTAL',   0.587, 173,  97.4),
     ('Context Total',   'icehockey_nhl',          'DATA_TOTAL',   0.606,  95,  52.0),
     ('Context Total',   'baseball_mlb',           'DATA_TOTAL',   0.568,  77,  24.6),

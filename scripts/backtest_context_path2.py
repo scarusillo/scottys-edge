@@ -1,7 +1,7 @@
-"""Phase A backtest: Context Model as an OWN-PICK engine (Path 2).
+"""Phase A backtest: Context Model as an OWN-PICK engine (CONTEXT_STANDALONE).
 
 Current state: v25.39 Context Model only fires when Elo diverges from market
-past max_div and Context brings it back within threshold (Path 1 "rescue").
+past max_div and Context brings it back within threshold (ELO_DIVERGENCE_RESCUE "rescue").
 
 Phase A question: What if we ran Context on games where Elo AGREES with market
 (non-divergent)? On games where Context disagrees with market by a meaningful
@@ -11,8 +11,8 @@ Method (walk-forward-ish):
   1. Pull completed NHL/MLS/EPL games in the last 30 days
   2. For each, get stored model_spread (Elo) and best_home_spread (market)
      from market_consensus (tag='CURRENT', pre-game)
-  3. SKIP if |ms_elo - mkt_hs| > max_div (already covered by Path 1)
-  4. Compute ms_context from context_model.py against that date
+  3. SKIP if |ms_elo - mkt_hs| > max_div (already covered by ELO_DIVERGENCE_RESCUE)
+  4. Compute ms_context from context_spread_model.py against that date
   5. If |ms_context - mkt_hs| > ctx_threshold → candidate pick
   6. Pick Context's preferred side, grade against actual result
   7. Report W-L-PnL per sport and combined
@@ -26,7 +26,7 @@ import os, sys, sqlite3
 from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from context_model import compute_context_spread
+from context_spread_model import compute_context_spread
 
 DB = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 
@@ -106,7 +106,7 @@ def main():
         max_div = SPORT_MAX_DIV.get(sport, 2.5)
         elo_div = abs(ms_elo - mkt_hs)
         if elo_div > max_div:
-            continue  # Path 1 territory
+            continue  # ELO_DIVERGENCE_RESCUE territory
         d['non_divergent'] += 1
 
         # Run Context

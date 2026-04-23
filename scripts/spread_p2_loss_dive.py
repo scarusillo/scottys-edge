@@ -1,4 +1,4 @@
-"""Surgical loss analysis on DATA_SPREAD Path 2 backtest sample.
+"""Surgical loss analysis on DATA_SPREAD CONTEXT_STANDALONE backtest sample.
 
 Goal: find WHERE the losses concentrate. If a specific cohort loses big,
 we can add a gate. If losses are evenly distributed, no surgical fix works.
@@ -17,7 +17,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from context_model import compute_context_spread
+from context_spread_model import compute_context_spread
 
 DB = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 conn = sqlite3.connect(DB)

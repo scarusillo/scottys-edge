@@ -1,4 +1,4 @@
-"""DATA_SPREAD Path 2 (v25.44) inverse backtest.
+"""DATA_SPREAD CONTEXT_STANDALONE (v25.44) inverse backtest.
 
 Current scope (model_engine.py:2089):
   NHL (thresh 0.5): claimed 159 picks 57.2% WR +73.6u in Phase A
@@ -16,7 +16,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from context_model import compute_context_spread
+from context_spread_model import compute_context_spread
 
 DB = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 conn = sqlite3.connect(DB)

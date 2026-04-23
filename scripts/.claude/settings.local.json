@@ -23,7 +23,9 @@
       "WebFetch(domain:collegebaseball.readthedocs.io)",
       "WebFetch(domain:site.api.espn.com)",
       "Skill(schedule)",
-      "Skill(schedule:*)"
+      "Skill(schedule:*)",
+      "WebFetch(domain:gwritenm.com)",
+      "PowerShell(\\(Get-ScheduledTask -TaskName \"BettingModel_Tennis_Morning\"\\).Settings.StartWhenAvailable)"
     ]
   }
 }

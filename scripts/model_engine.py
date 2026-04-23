@@ -1922,7 +1922,7 @@ def generate_predictions(conn, sport=None, date=None):
                         and mkt_hs is not None and mkt_as is not None
                         and mkt_hs_odds is not None and mkt_as_odds is not None):
                     try:
-                        from context_model import compute_context_spread, format_context_summary
+                        from context_spread_model import compute_context_spread, format_context_summary
                         _commence_date = (commence[:10] if commence else None)
                         ms_ctx, _ctx_info = compute_context_spread(
                             conn, sp, home, away, eid, ms, _commence_date)
@@ -1991,7 +1991,7 @@ def generate_predictions(conn, sport=None, date=None):
                         # 13-29, 31% WR, -86u. Veto when Context aligns with Elo.
                         _ff_context_vetoes = False
                         try:
-                            from context_model import compute_context_spread
+                            from context_spread_model import compute_context_spread
                             _ff_commence_date = (commence[:10] if commence else None)
                             ms_ctx_ff, _ = compute_context_spread(
                                 conn, sp, home, away, eid, ms, _ff_commence_date)
@@ -2073,8 +2073,8 @@ def generate_predictions(conn, sport=None, date=None):
                 _log_divergence_block(conn, sp, eid, home, away, ms, mkt_hs, 'post_elo_rescue')
                 skip_div += 1; continue
 
-            # ═══ CONTEXT STANDALONE PICKS (formerly "Path 2") — v25.44 ═══
-            # Renamed 2026-04-22 (v25.76) from "Path 2" for semantic clarity.
+            # ═══ CONTEXT STANDALONE PICKS (formerly "CONTEXT_STANDALONE") — v25.44 ═══
+            # Renamed 2026-04-22 (v25.76) from "CONTEXT_STANDALONE" for semantic clarity.
             # Non-divergent games (Elo agrees with market within max_div).
             # Run Context Model and fire an own-pick at market line if Context
             # disagrees with market by >= sport-specific threshold. This turns
@@ -2119,7 +2119,7 @@ def generate_predictions(conn, sport=None, date=None):
                     and mkt_hs is not None and mkt_as is not None
                     and mkt_hs_odds is not None and mkt_as_odds is not None):
                 try:
-                    from context_model import compute_context_spread, format_context_summary
+                    from context_spread_model import compute_context_spread, format_context_summary
                     _p2_commence = (commence[:10] if commence else None)
                     ms_ctx_p2, _p2_info = compute_context_spread(
                         conn, sp, home, away, eid, ms, _p2_commence)
@@ -2847,7 +2847,7 @@ def generate_predictions(conn, sport=None, date=None):
 
             # ═══ CONTEXT MODEL TOTALS — v25.47/v25.48 (2026-04-21) ═══
             # Runs BEFORE the MLS hard-block and BEFORE the edge-based model so
-            # Path 2 own-picks fire independently. Scope + thresholds come from
+            # CONTEXT_STANDALONE own-picks fire independently. Scope + thresholds come from
             # Phase A with goalie-form, soccer-standings, and ref-tendency
             # signals layered onto form+H2H+MLB-pitcher:
             #   NBA    (0.30 pts): 173 picks, 58.7%, +97.4u
@@ -2889,7 +2889,7 @@ def generate_predictions(conn, sport=None, date=None):
             }
 
             def _log_context_shadow(sport_, eid_, sel_, line_, direction_, gap_, reason_tag):
-                """Log Context Path 2 candidate to shadow_blocked_picks so
+                """Log Context CONTEXT_STANDALONE candidate to shadow_blocked_picks so
                 we accumulate calibration data without firing live."""
                 try:
                     from datetime import datetime as _dt
@@ -2912,7 +2912,7 @@ def generate_predictions(conn, sport=None, date=None):
                     and over_total is not None and over_odds is not None
                     and under_total is not None and under_odds is not None):
                 try:
-                    from context_model import (
+                    from context_spread_model import (
                         compute_context_total, format_context_total_summary,
                     )
                     _ct_commence = (commence[:10] if commence else None)
@@ -2981,7 +2981,7 @@ def generate_predictions(conn, sport=None, date=None):
                     print(f"  ⚠ DATA_TOTAL Path2 error: {_cte}")
 
             # Hard block: MLS totals disabled for the EDGE-BASED model
-            # (1W-7L -72.8% ROI from edge path). v25.47 Path 2 above handles
+            # (1W-7L -72.8% ROI from edge path). v25.47 CONTEXT_STANDALONE above handles
             # MLS via Context — fires own-picks at market line independently.
             if sp == 'soccer_usa_mls':
                 over_total = None  # prevents edge-based totals evaluation below
@@ -3015,7 +3015,7 @@ def generate_predictions(conn, sport=None, date=None):
                             if ctx_total['total_adj'] != 0:
                                 model_total += ctx_total['total_adj']
 
-                        # v25.47 Path 2 for totals moved up before MLS hard-block —
+                        # v25.47 CONTEXT_STANDALONE for totals moved up before MLS hard-block —
                         # see CONTEXT_TOTAL_P2_THRESHOLDS_V47 block at line ~2676.
 
                         # Apply pitcher context for baseball (day-of-week quality + named starters)

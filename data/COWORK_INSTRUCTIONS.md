@@ -8,9 +8,11 @@ Every time the betting model finds picks and runs with `--email`, it generates a
 data/cowork_comments.json
 ```
 
-This file contains pre-written comments tailored for 2 platforms — **Instagram** and **Reddit** — targeting team pages and betting pages associated with the games we have picks on.
+This file contains pre-written comments tailored for 3 platforms — **Instagram**, **TikTok**, and **Reddit** — targeting team pages and betting pages associated with the games we have picks on.
 
 **Twitter/X is dead.** Account @Scottys_Edge was permanently suspended April 2026. Do not attempt to post to X.
+
+**TikTok was added Apr 19 2026.** Both Instagram and TikTok comments should be posted each run. Reddit is currently out of scope for automated posting (browser flow unreliable).
 
 ## File Locations
 
@@ -70,12 +72,18 @@ Each comment entry tells you:
 
 ### General Flow
 
-1. **Check `data/cowork_comments.json`** for new picks
-2. Check the `generated_at` timestamp — if it changed since your last check, there are new picks
-3. **Verify the season record** against the database before posting
-4. For each comment entry, find a **recent post from the target account about that game**
-5. Post the comment on that post
-6. **Only today's picks matter.** If the `generated_at` date is from a previous day, ignore
+1. **Heartbeat at run start (REQUIRED).** Before any other work, call `python scripts/log_heartbeat.py start --queue-size <N> --note "<short context>"`. This writes a `_heartbeat` entry to `engagement_log.json` so scheduler gaps are visible — a run that fires but finds nothing to do still leaves a trace. **Do not skip this even if you're about to exit early** (outside posting window, stale queue, etc.).
+2. **Check `data/cowork_comments.json`** for new picks
+3. Check the `generated_at` timestamp — if it changed since your last check, there are new picks
+4. **Verify the season record** against the database before posting
+5. For each comment entry, find a **recent post from the target account about that game**
+6. Post the comment on that post
+7. **Only today's picks matter.** If the `generated_at` date is from a previous day, ignore
+8. **Heartbeat at run end (REQUIRED).** Before exiting, call `python scripts/log_heartbeat.py end --posted <P> --skipped <S> --failed <F> --note "<short summary>"`. Run this on every exit path — including early exits from stale queue, outside-window, or CAPTCHA flags.
+
+### Why heartbeats matter
+
+The scheduled task `scotty-edge-engagement` runs hourly 6:30am–8:30pm. On Apr 20 2026, the scheduler went silent from ~10:41am to the next morning — no sessions spawned — and the outage was invisible because `engagement_log.json` only records posts/skips, not that a run happened. Heartbeats make missed fires detectable in the daily summary.
 
 ### The File Contains ALL of Today's Picks
 
@@ -105,6 +113,26 @@ Yesterday's comments are automatically cleared when the first run of a new day w
 - Like before commenting
 - Scroll before engaging
 - Stop on any CAPTCHA
+
+---
+
+## TikTok Rules (mirror of Instagram)
+
+TikTok posting uses the same browser-based flow as Instagram. Login is the **@scottys_edge** account.
+
+1. URL pattern: `tiktok.com/@<target>` (e.g., `tiktok.com/@barstoolsports`)
+2. Find the target's most recent video about the game in the `game` field
+3. **Like the video** before commenting — same anti-bot signal as IG
+4. Open the comments panel, type the **rephrased** comment, post
+5. **3–5 min gaps** between TikTok comments
+6. **Max 8–10 TikTok comments per hour**
+7. Rephrase each comment — TikTok also fingerprints duplicate text
+8. **Do NOT** use @ mentions in the comment body
+9. If a CAPTCHA or rate-limit appears, stop TikTok for this run and move on
+10. Same 24-hour freshness rule: skip if the target's latest relevant video is older than 24h
+11. Log each action to `engagement_log.json` with `platform="tiktok"`
+
+**Run order:** Instagram first (higher-risk platform, do it when the session is fresh), then TikTok, then heartbeat_end.
 
 ---
 
