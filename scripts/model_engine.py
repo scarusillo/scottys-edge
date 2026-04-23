@@ -2114,26 +2114,26 @@ def generate_predictions(conn, sport=None, date=None):
                 # 'basketball_nba': 2.5,           # DISABLED v25.70 — backtest -5.65u
                 # 'soccer_italy_serie_a': 0.5,     # DISABLED v25.70 — small sample (+5u)
             }
-            _p2_th = CONTEXT_STANDALONE_SPREAD_THRESHOLDS.get(sp)  # alias kept short internally
-            if (_p2_th is not None
+            _standalone_th = CONTEXT_STANDALONE_SPREAD_THRESHOLDS.get(sp)  # alias kept short internally
+            if (_standalone_th is not None
                     and mkt_hs is not None and mkt_as is not None
                     and mkt_hs_odds is not None and mkt_as_odds is not None):
                 try:
                     from context_spread_model import compute_context_spread, format_context_summary
-                    _p2_commence = (commence[:10] if commence else None)
-                    ms_ctx_p2, _p2_info = compute_context_spread(
-                        conn, sp, home, away, eid, ms, _p2_commence)
-                    _p2_disagreement = abs(ms_ctx_p2 - mkt_hs)
-                    if _p2_disagreement >= _p2_th:
+                    _standalone_commence = (commence[:10] if commence else None)
+                    ms_ctx_standalone, _standalone_info = compute_context_spread(
+                        conn, sp, home, away, eid, ms, _standalone_commence)
+                    _standalone_disagreement = abs(ms_ctx_standalone - mkt_hs)
+                    if _standalone_disagreement >= _standalone_th:
                         # ms_ctx < mkt_hs → Context more bullish on home → bet home
-                        if ms_ctx_p2 < mkt_hs:
-                            _p2_team, _p2_line, _p2_odds, _p2_book = home, mkt_hs, mkt_hs_odds, mkt_hs_book
+                        if ms_ctx_standalone < mkt_hs:
+                            _standalone_team, _standalone_line, _standalone_odds, _standalone_book = home, mkt_hs, mkt_hs_odds, mkt_hs_book
                         else:
-                            _p2_team, _p2_line, _p2_odds, _p2_book = away, mkt_as, mkt_as_odds, mkt_as_book
-                        from config import MIN_ODDS as _P2_MIN_ODDS
-                        if (_p2_odds is not None and _p2_odds > _P2_MIN_ODDS
-                                and _p2_odds <= 140 and _p2_book):
-                            _p2_summary = format_context_summary(_p2_info)
+                            _standalone_team, _standalone_line, _standalone_odds, _standalone_book = away, mkt_as, mkt_as_odds, mkt_as_book
+                        from config import MIN_ODDS as _STANDALONE_MIN_ODDS
+                        if (_standalone_odds is not None and _standalone_odds > _STANDALONE_MIN_ODDS
+                                and _standalone_odds <= 140 and _standalone_book):
+                            _standalone_summary = format_context_summary(_standalone_info)
 
                             # v25.69: tag the dominant signal driving this fire.
                             # Live DATA_SPREAD sample is 0, so we don't know which
@@ -2142,37 +2142,37 @@ def generate_predictions(conn, sport=None, date=None):
                             # when n>=20 we can backtest per-dominance-bucket and
                             # decide which archetypes to keep vs throttle.
                             _dom_candidates = {
-                                'form': abs(_p2_info.get('form_adj', 0) or 0),
-                                'momentum': abs(_p2_info.get('momentum_adj', 0) or 0),
-                                'injury': abs(_p2_info.get('injury_adj', 0) or 0),
-                                'hca': abs(_p2_info.get('hca_adj', 0) or 0),
-                                'injury_amp': abs(_p2_info.get('injury_amp_adj', 0) or 0),
-                                'h2h': abs(_p2_info.get('h2h_adj', 0) or 0),
-                                'rest': abs(_p2_info.get('rest_adj', 0) or 0),
-                                'motivation': abs(_p2_info.get('mot_adj', 0) or 0),
+                                'form': abs(_standalone_info.get('form_adj', 0) or 0),
+                                'momentum': abs(_standalone_info.get('momentum_adj', 0) or 0),
+                                'injury': abs(_standalone_info.get('injury_adj', 0) or 0),
+                                'hca': abs(_standalone_info.get('hca_adj', 0) or 0),
+                                'injury_amp': abs(_standalone_info.get('injury_amp_adj', 0) or 0),
+                                'h2h': abs(_standalone_info.get('h2h_adj', 0) or 0),
+                                'rest': abs(_standalone_info.get('rest_adj', 0) or 0),
+                                'motivation': abs(_standalone_info.get('mot_adj', 0) or 0),
                             }
-                            _p2_dominance = max(_dom_candidates, key=_dom_candidates.get) \
+                            _standalone_dominance = max(_dom_candidates, key=_dom_candidates.get) \
                                 if any(v > 0 for v in _dom_candidates.values()) else 'other'
-                            _p2_dominance_val = _dom_candidates.get(_p2_dominance, 0)
-                            _p2_dominance_share = (
-                                _p2_dominance_val / sum(_dom_candidates.values())
+                            _standalone_dominance_val = _dom_candidates.get(_standalone_dominance, 0)
+                            _standalone_dominance_share = (
+                                _standalone_dominance_val / sum(_dom_candidates.values())
                                 if sum(_dom_candidates.values()) > 0 else 0
                             )
 
-                            _p2_ctx = (
-                                f'DATA_SPREAD v25.44 (Path 2) — {_p2_summary} | '
-                                f'Market {mkt_hs:+.1f}, Context {ms_ctx_p2:+.1f} '
-                                f'(ctx_disagreement={_p2_disagreement:.1f} ≥ {_p2_th}). '
+                            _standalone_ctx = (
+                                f'DATA_SPREAD v25.44 (Path 2) — {_standalone_summary} | '
+                                f'Market {mkt_hs:+.1f}, Context {ms_ctx_standalone:+.1f} '
+                                f'(ctx_disagreement={_standalone_disagreement:.1f} ≥ {_standalone_th}). '
                                 f'Elo non-divergent (div={abs(ms-mkt_hs):.1f} ≤ {max_div}). '
-                                f'Bet {_p2_team} {_p2_line:+.1f} @ {_p2_book} {_p2_odds:+.0f}. '
-                                f'DOMINANCE:{_p2_dominance}({_p2_dominance_val:.1f}/{_p2_dominance_share*100:.0f}%)'
+                                f'Bet {_standalone_team} {_standalone_line:+.1f} @ {_standalone_book} {_standalone_odds:+.0f}. '
+                                f'DOMINANCE:{_standalone_dominance}({_standalone_dominance_val:.1f}/{_standalone_dominance_share*100:.0f}%)'
                             )
-                            _p2_pick = {
+                            _standalone_pick = {
                                 'sport': sp, 'event_id': eid, 'commence': commence,
                                 'home': home, 'away': away,
                                 'market_type': 'SPREAD',
-                                'selection': f'{_p2_team} {_p2_line:+.1f}',
-                                'book': _p2_book, 'line': _p2_line, 'odds': _p2_odds,
+                                'selection': f'{_standalone_team} {_standalone_line:+.1f}',
+                                'book': _standalone_book, 'line': _standalone_line, 'odds': _standalone_odds,
                                 'model_spread': ms,
                                 'model_prob': 0, 'implied_prob': 0,
                                 'edge_pct': 0,
@@ -2181,15 +2181,15 @@ def generate_predictions(conn, sport=None, date=None):
                                 'side_type': 'DATA_SPREAD',
                                 'spread_or_ml': 'SPREAD',
                                 'timing': 'STANDARD',
-                                'context': _p2_ctx,
-                                'notes': _p2_ctx,
+                                'context': _standalone_ctx,
+                                'notes': _standalone_ctx,
                             }
-                            print(f"  🧠 DATA_SPREAD Path2: {sp.split('_')[-1]} {_p2_team} "
-                                  f"{_p2_line:+.1f} @ {_p2_book} {_p2_odds:+.0f} "
-                                  f"(ctx_disagreement {_p2_disagreement:.1f}, elo_div {abs(ms-mkt_hs):.1f})")
-                            all_picks.append(_p2_pick)
-                except Exception as _p2e:
-                    print(f"  ⚠ DATA_SPREAD Path2 error: {_p2e}")
+                            print(f"  🧠 DATA_SPREAD Path2: {sp.split('_')[-1]} {_standalone_team} "
+                                  f"{_standalone_line:+.1f} @ {_standalone_book} {_standalone_odds:+.0f} "
+                                  f"(ctx_disagreement {_standalone_disagreement:.1f}, elo_div {abs(ms-mkt_hs):.1f})")
+                            all_picks.append(_standalone_pick)
+                except Exception as _standalone_exc:
+                    print(f"  ⚠ DATA_SPREAD Path2 error: {_standalone_exc}")
 
             # ═══ STEAM_CHASE — v25.72 (2026-04-22) ═══
             # Pattern-recognition channel: follow sharp-book spread movement.
@@ -2857,7 +2857,7 @@ def generate_predictions(conn, sport=None, date=None):
             #   La Liga/Bundesliga/Ligue 1 (0.30 gls): 4-5 picks each,
             #     75-80% WR, +4-12u (v25.48 — tiny samples, re-eval at n>=20)
             # Non-soccer sports: single threshold regardless of direction
-            CONTEXT_TOTAL_P2_THRESHOLDS_V47 = {
+            CONTEXT_TOTAL_STANDALONE_THRESHOLDS_V47 = {
                 'basketball_nba': 0.30,
                 'icehockey_nhl':  1.00,
                 'baseball_mlb':   1.50,
@@ -2878,7 +2878,7 @@ def generate_predictions(conn, sport=None, date=None):
             #              directions where we have no historical validation.
             #   'block'  → skip entirely (cohort known to be losing on follow).
             # Missing sport-key → skip (out of scope entirely).
-            CONTEXT_TOTAL_P2_SOCCER_RULES = {
+            CONTEXT_TOTAL_STANDALONE_SOCCER_RULES = {
                 'soccer_italy_serie_a':      {'UNDER': 0.30, 'OVER': 'shadow'},  # 7-1 +18.95u
                 'soccer_france_ligue_one':   {'UNDER': 0.50, 'OVER': 'shadow'},  # 3-0 +30.37u at >=0.50
                 'soccer_germany_bundesliga': {'UNDER': 'shadow', 'OVER': 'shadow'},  # n<=1
@@ -2905,9 +2905,9 @@ def generate_predictions(conn, sport=None, date=None):
 
             # Resolve threshold & rule for this sport
             _ct_th = None
-            _soccer_rules = CONTEXT_TOTAL_P2_SOCCER_RULES.get(sp)
+            _soccer_rules = CONTEXT_TOTAL_STANDALONE_SOCCER_RULES.get(sp)
             if _soccer_rules is None:
-                _ct_th = CONTEXT_TOTAL_P2_THRESHOLDS_V47.get(sp)
+                _ct_th = CONTEXT_TOTAL_STANDALONE_THRESHOLDS_V47.get(sp)
             if ((_ct_th is not None or _soccer_rules is not None)
                     and over_total is not None and over_odds is not None
                     and under_total is not None and under_odds is not None):
@@ -3016,7 +3016,7 @@ def generate_predictions(conn, sport=None, date=None):
                                 model_total += ctx_total['total_adj']
 
                         # v25.47 CONTEXT_STANDALONE for totals moved up before MLS hard-block —
-                        # see CONTEXT_TOTAL_P2_THRESHOLDS_V47 block at line ~2676.
+                        # see CONTEXT_TOTAL_STANDALONE_THRESHOLDS_V47 block at line ~2676.
 
                         # Apply pitcher context for baseball (day-of-week quality + named starters)
                         pitcher_ctx = None

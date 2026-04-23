@@ -1,5 +1,28 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-22 end-of-day — 9 ships (v25.61→v25.68) + tennis scheduler + docs
+**Last updated:** 2026-04-22 end-of-day extended — 18 ships (v25.61→v25.78) + tech debt foundation work
+
+## 📅 SATURDAY MORNING (user's next focused chunk)
+
+User explicitly said Saturday morning is the next focused work block.
+These are the top items ranked for that session. Full details below in
+"TECH DEBT + ARCHITECTURE REVIEW" — this is the pre-flight list.
+
+**Quick wins (2-4 hours each):**
+1. **Typed `shadow_blocked_picks` reason column** — split free-text reason into `reason_category` + `reason_detail`. Unlocks structured observability.
+2. **Proper CLV at fire time** — add `line_at_fire`, `line_at_opener`, `line_at_close` columns to bets. Populate at fire + update at grade. CLV becomes first-class column, not derived report.
+
+**Medium (1 dedicated day each):**
+3. **Didn't-fire observability (gate counters)** — for every gate, track fired/blocked per day. Current blind spot.
+4. **Regression-fit Context Model weights** — today's calibration backtest said optimal scale=0%. Fit weights from 90+ days of historical data instead of magic numbers.
+
+**Big projects (NOT for Saturday — need planning session):**
+5. Break `generate_predictions()` into pipeline stages (3-5 days)
+6. Refactor `main.py` god-file (1-2 weeks)
+7. Per-market sharp/soft tagging matrix (1 week)
+8. Regression test suite (2 weeks)
+9. Versioned ratings (2 weeks)
+
+---
 
 ---
 
