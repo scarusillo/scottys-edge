@@ -3,6 +3,49 @@
 
 ---
 
+## 🛠 TECH DEBT + ARCHITECTURE REVIEW (2026-04-22)
+
+Fresh-eyes review of the whole codebase (48K lines, 93 files, 35 tables).
+Two masks: "first time seeing this" + "everything is wrong."
+
+### Fresh-eyes observations (what a new collaborator would flag)
+
+1. **`context_engine.py` vs `context_model.py`** — near-identical names, two files (2,457 + 938 lines). Which is canonical? Confuses everyone.
+2. **`main.py` is a 5,230-line god-file** — CLI, orchestration, email, filters, cards, social, caps all in one.
+3. **`model_engine.py` `generate_predictions()` is ~1,500 lines** — one function does everything from rating loading to pick firing.
+4. **"Path 1" / "Path 2" are internal jargon** — leaked into code naming. User had to ask 3× what they mean in one session.
+5. **92 version-stamped comments in `model_engine.py` alone** — code is a living museum. `v25.4 ROLLBACK`, `v22 REMOVED`, `v17 FIX`. Hard to distinguish load-bearing from archaeological.
+6. **Tables of unclear lifecycle** — `team_ratings` vs `power_ratings`, `model_b_shadow` (never referenced elsewhere), `prop_openers` vs `openers` vs `prop_snapshots` vs `prop_snapshots_archive`.
+7. **Odds data discarded after 7 days** — core project asset pruned on a cron. Backtests keep failing to reproduce Phase A numbers because the data is gone.
+8. **Results ↔ odds event_id mismatch** — NCAA results use ESPN IDs, odds use API hash IDs. These tables CAN'T be joined. Blocked today's NCAA steam-chase backtest entirely.
+9. **No unified backtest harness** — 10+ one-off backtest scripts, each reimplementing join logic. No shared test framework.
+10. **Configuration scattered across 4+ files** — `config.py`, inline dicts in `model_engine.py`, constants in `player_prop_model.py`, weights in `context_model.py`. No single view of "what knobs can I tune."
+
+### Adversarial review (ranked for engineering work)
+
+**Tier A — Critical data infrastructure:**
+- Odds retention 7 days → **archive to cold storage** *(1 day, starting now)*
+- Results ↔ odds event_id mismatch → build event-matcher on home/away/date *(2-3 days)*
+- No "didn't fire" observability → instrument every gate with counters *(1 week)*
+
+**Tier B — Code structure:**
+- Refactor `main.py` into focused modules (cmd_run, cmd_grade, cmd_opener, etc.) *(1-2 weeks)*
+- Break `generate_predictions()` into pipeline stages *(1-2 weeks)*
+- Rename Path 1 / Path 2 → semantic names; merge context_engine.py + context_model.py *(4-8 hours)*
+
+**Tier C — Modeling:**
+- Context Model weights are hardcoded magic numbers (`FORM_WEIGHT=0.5`, `SERIES_MOMENTUM_WEIGHT=0.25`). Never fit to data. Today's backtest said optimal scale = 0%. Regression-fit on 90d+ data. *(1 week)*
+- No regression test suite — every ship is "backtest + pray" *(2 weeks)*
+- Binary sharp/soft book tagging — books have different sharpness per market *(1 week)*
+- Ship-cadence is too fast — 13 ships today, flip-flopped 3× on one channel. Slow to 2-3/week *(organizational)*
+
+**Tier D — Observability:**
+- `shadow_blocked_picks` conflates different block types in free-text reason column → split into typed columns *(3 days)*
+- CLV not tracked at fire time (we just shipped clv_tracker.py as a report, not instrumentation) *(1 week)*
+- Ratings updates aren't versioned → time-travel queries impossible *(2 weeks)*
+
+---
+
 ## 🔍 ELO SPREAD CHANNEL DIAGNOSIS (2026-04-22, findings)
 
 **Fact:** Zero edge-based SPREAD picks fired since 2026-04-06 (16 days).
