@@ -1,5 +1,21 @@
 # Scotty's Edge — Model & Channel Glossary
 
+## Naming terminology (v25.76 rename, 2026-04-22)
+
+Old code + DB rows may reference "Path 1" / "Path 2" — these have been
+renamed for semantic clarity going forward:
+
+| Old name | New name | What it is |
+|---|---|---|
+| `Path 1` | `ELO_DIVERGENCE_RESCUE` | Context acts as a safety check when Elo disagrees significantly with market. Either vetoes a bad Elo pick or fires SPREAD_FADE_FLIP. |
+| `Path 2` | `CONTEXT_STANDALONE` | Context fires its OWN pick when Elo agrees with market. Produces `DATA_SPREAD` (killed v25.70) and `DATA_TOTAL` (live) side_types. |
+
+Historical bets in the DB still contain "Path 1" / "Path 2" in their
+context_factors text — we can't retroactively rewrite stored data.
+New picks use the semantic names in comments and log output.
+
+
+
 **Purpose:** Plain-English definitions of every model, channel, gate, and signal
 used to generate picks. Reference this when you forget what something does.
 
@@ -34,7 +50,7 @@ Elo by 0-5 points.
 on 1-day rest (+1 fatigue), recent form gap favoring Celtics (-2 form). Context
 spread = -13. Market at -7. Context says Celtics are severely underpriced.
 
-**Status:** Live. Used in multiple channels (see Path 1 / Path 2 below).
+**Status:** Live. Used in multiple channels (see ELO_DIVERGENCE_RESCUE / CONTEXT_STANDALONE below).
 
 ---
 
@@ -57,20 +73,20 @@ inverse backtest. Listed as next priority after DATA_SPREAD.
 
 ---
 
-### B. Context Model Path 1 — divergence rescue
+### B. Context Model ELO_DIVERGENCE_RESCUE — divergence rescue
 
 **Side-type:** `OVER`, `UNDER`, `DOG`, `FAVORITE` (same as edge-based)
 **File:** `model_engine.py` around line 1925
 
 **What it does:** When Elo disagrees with market by a LOT (big divergence),
 normally the edge model would fire a high-edge pick. But extreme divergence
-often means Elo is wrong. Path 1 checks Context. If Context agrees with
+often means Elo is wrong. ELO_DIVERGENCE_RESCUE checks Context. If Context agrees with
 market (i.e., Elo is the outlier), the edge pick is BLOCKED. If Context
 agrees with Elo, it fires.
 
 **Example:** Elo says Celtics -15. Market has Celtics -7 (8-point divergence).
 Normally edge fires at 20%. Context Model checks: Context says Celtics -8
-(agrees with market, not Elo). Path 1 vetoes the pick — Elo was probably
+(agrees with market, not Elo). ELO_DIVERGENCE_RESCUE vetoes the pick — Elo was probably
 wrong because of stale ratings.
 
 **Status:** Live. Saved us from numerous bad high-edge fires. Not inverse-
@@ -79,7 +95,7 @@ less urgent to re-validate.
 
 ---
 
-### C. Context Model Path 2 TOTALS — `DATA_TOTAL`
+### C. Context Model CONTEXT_STANDALONE TOTALS — `DATA_TOTAL`
 
 **Side-type:** `DATA_TOTAL`
 **File:** `model_engine.py` around line 2723
@@ -103,7 +119,7 @@ rules). NBA / NHL / MLB still live with original thresholds.
 
 ---
 
-### D. Context Model Path 2 SPREADS — `DATA_SPREAD` ← YOU ASKED ABOUT THIS
+### D. Context Model CONTEXT_STANDALONE SPREADS — `DATA_SPREAD` ← YOU ASKED ABOUT THIS
 
 **Side-type:** `DATA_SPREAD`
 **File:** `model_engine.py` around line 2089
@@ -221,7 +237,7 @@ These don't generate picks; they filter them.
   per sport per day. Prevents correlation risk.
 - **GAME_CAP** — max 1 game-line pick per event. Stacking spread + total
   on the same game is too correlated. Props exempt.
-- **MAX_CONTEXT_PER_SPORT_DAILY = 5** (v25.67, shipped today) — Context Path 2
+- **MAX_CONTEXT_PER_SPORT_DAILY = 5** (v25.67, shipped today) — Context CONTEXT_STANDALONE
   picks limited to 5 per sport per day.
 
 ### PROP_DIVERGENCE_GATE
@@ -259,7 +275,7 @@ tighter`, `+121 to +140`.
 **Why:** Inverse backtest found prop odds distribution is bimodal — middle
 zones lose money at scale.
 
-### Soccer Context Path 2 direction rules (v25.65, shipped today)
+### Soccer Context CONTEXT_STANDALONE direction rules (v25.65, shipped today)
 
 **What:** Per-league × direction rules for soccer DATA_TOTAL:
 - Serie A UNDER @ 0.30: FOLLOW
@@ -309,7 +325,7 @@ Currently shadowed:
   or against us (negative) after we bet. Positive CLV = sharp; we got a better
   number than the closer. Doesn't guarantee win but correlates.
 - **Gap / disagreement** — how far Context's projection is from market (for
-  Path 2 picks). Large gap = high conviction.
+  CONTEXT_STANDALONE picks). Large gap = high conviction.
 - **Fade vs Follow** — fade = bet the OPPOSITE of the model's direction;
   follow = bet the same direction.
 - **Shadow** — a factor/cohort that's computed and logged but doesn't
@@ -321,14 +337,14 @@ Currently shadowed:
 
 - **v25.61** — Code auditor fixes; db-latest GitHub release 404 fixed
 - **v25.62** — NHL Away fast-paced shadow (sport-gated pace adjustment)
-- **v25.63** — Soccer Context Path 2 halted (same-day reversed)
+- **v25.63** — Soccer Context CONTEXT_STANDALONE halted (same-day reversed)
 - **v25.64** — Playoff series momentum capped at ±15 points
-- **v25.65** — Soccer Context Path 2 re-enabled with direction rules
+- **v25.65** — Soccer Context CONTEXT_STANDALONE re-enabled with direction rules
 - **v25.66** — PROP odds-bucket gate (bimodal odds calibration)
-- **v25.67** — Context Path 2 daily per-sport cap (max 5)
+- **v25.67** — Context CONTEXT_STANDALONE daily per-sport cap (max 5)
 - **v25.68** — cmd_predict auto-detects tennis + tennis 5am scheduler
 - **v25.69** — DATA_SPREAD dominance tagging (observability)
-- **v25.70** — DATA_SPREAD Path 2 killed; DATA_TOTAL Path 2 retained; Path 1 intact
+- **v25.70** — DATA_SPREAD CONTEXT_STANDALONE killed; DATA_TOTAL CONTEXT_STANDALONE retained; ELO_DIVERGENCE_RESCUE intact
 
 ## 8. Unused strategies (wishlist — known-valuable, not built)
 
@@ -370,9 +386,9 @@ When adding a new strategy, **check this section first** — it may already be o
 
 ## 9. Key decisions made 2026-04-22
 
-- **Kill DATA_SPREAD Path 2** — 90d backtest showed Context absolute error worse than market, optimal scaling 0%, cannot find threshold tuning or gate addition that restores profitability. Preserving code scaffolding for future re-enable.
-- **Keep DATA_TOTAL Path 2** — totals backtest +101u FOLLOW on n=133 holds up across 7 sports; architectural asymmetry (totals additive, markets less efficient than spreads).
-- **Keep Path 1 (SPREAD_FADE_FLIP + Context veto on edge picks)** — v25.60 veto saved +20u in Case B (both models agree); Case A (fade flip) mixed but user preference to retain pending more live data.
+- **Kill DATA_SPREAD CONTEXT_STANDALONE** — 90d backtest showed Context absolute error worse than market, optimal scaling 0%, cannot find threshold tuning or gate addition that restores profitability. Preserving code scaffolding for future re-enable.
+- **Keep DATA_TOTAL CONTEXT_STANDALONE** — totals backtest +101u FOLLOW on n=133 holds up across 7 sports; architectural asymmetry (totals additive, markets less efficient than spreads).
+- **Keep ELO_DIVERGENCE_RESCUE (SPREAD_FADE_FLIP + Context veto on edge picks)** — v25.60 veto saved +20u in Case B (both models agree); Case A (fade flip) mixed but user preference to retain pending more live data.
 - **Tennis Elo validated** — 3,376 matches / 70-73% winner-pick accuracy across tour/surface; green-lit via 5am dedicated schedule.
 
 ---

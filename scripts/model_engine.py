@@ -2073,44 +2073,48 @@ def generate_predictions(conn, sport=None, date=None):
                 _log_divergence_block(conn, sp, eid, home, away, ms, mkt_hs, 'post_elo_rescue')
                 skip_div += 1; continue
 
-            # ═══ CONTEXT MODEL PATH 2 — v25.44 (2026-04-21) ═══
+            # ═══ CONTEXT STANDALONE PICKS (formerly "Path 2") — v25.44 ═══
+            # Renamed 2026-04-22 (v25.76) from "Path 2" for semantic clarity.
             # Non-divergent games (Elo agrees with market within max_div).
             # Run Context Model and fire an own-pick at market line if Context
             # disagrees with market by >= sport-specific threshold. This turns
-            # Context from a divergence rescuer (Path 1) into a general second
-            # opinion engine (Path 2). Sport scope limited to where Phase A
-            # 30-day backtest showed positive EV:
+            # Context from a divergence-rescue guardrail (see ELO_DIVERGENCE_RESCUE
+            # block above, ~line 1950) into a general second-opinion engine firing
+            # its own picks. Sport scope limited to where Phase A 30-day backtest
+            # showed positive EV:
             #   NHL (thresh 0.5): 159 picks, 91-68, 57.2% WR, +73.6u
             #   NBA (thresh 2.5): 79 picks, 44-35, 55.7% WR, +25.0u
             #   Serie A (0.5):    12 picks, 6-3, 66.7% WR, +12.3u
             # MLB excluded — runline (±1.5) incompatible with additive Context
             # adjustments (49.6% WR, -70u backtest on 271 picks). MLS + other
             # soccer excluded — 30-day backtest lost at every threshold level.
-            # v25.70 (2026-04-22): Path 2 SPREADS disabled (DATA_SPREAD channel killed).
-            # Keeping DATA_TOTAL Path 2 live (different dict, different code path)
-            # because totals backtest held up (+101u FOLLOW on n=133, positive in
-            # every sport × direction except MLS/EPL UNDER which are blocked).
+            # v25.70 (2026-04-22): Context Standalone SPREADS disabled (DATA_SPREAD
+            # channel killed). DATA_TOTAL Context Standalone still live (different
+            # dict, different code path) because totals backtest held up (+101u
+            # FOLLOW on n=133, positive in every sport × direction except MLS/EPL
+            # UNDER which are blocked).
             #
             # Why DATA_SPREAD died:
             #   90d backtest: NBA -5.65u, NHL -7.43u, Serie A +5.12u (n=61 total)
             #   Context absolute error is worse than market on every slice (5.64 vs 4.49 pts)
             #   Optimal Context scaling factor: 0% (any Context weight hurts)
-            #   Path 1 backtest: fade flip loses -3.89u vs just firing edge picks
+            #   ELO_DIVERGENCE_RESCUE backtest: fade flip loses -3.89u vs just
+            #     firing edge picks
             #   70% of the time Context pushes AWAY from actual outcome, not toward
             #
-            # Path 1 (SPREAD_FADE_FLIP + Context-as-safety-veto) REMAINS ACTIVE.
-            # Only Path 2 standalone DATA_SPREAD own-picks are dropped.
+            # ELO_DIVERGENCE_RESCUE (SPREAD_FADE_FLIP + Context-as-safety-veto)
+            # REMAINS ACTIVE. Only standalone DATA_SPREAD own-picks are dropped.
             # Edge-based spread picks (OVER/UNDER/DOG/FAVORITE) continue normally.
             #
             # Dict emptied rather than deleted so future investigation can re-enable
             # specific sports if new methodology (ML model, pattern matching, etc.)
             # proves out.
-            CONTEXT_PATH2_THRESHOLDS = {
+            CONTEXT_STANDALONE_SPREAD_THRESHOLDS = {  # renamed from CONTEXT_PATH2_THRESHOLDS (v25.76)
                 # 'icehockey_nhl': 0.5,            # DISABLED v25.70 — backtest -7.43u
                 # 'basketball_nba': 2.5,           # DISABLED v25.70 — backtest -5.65u
                 # 'soccer_italy_serie_a': 0.5,     # DISABLED v25.70 — small sample (+5u)
             }
-            _p2_th = CONTEXT_PATH2_THRESHOLDS.get(sp)
+            _p2_th = CONTEXT_STANDALONE_SPREAD_THRESHOLDS.get(sp)  # alias kept short internally
             if (_p2_th is not None
                     and mkt_hs is not None and mkt_as is not None
                     and mkt_hs_odds is not None and mkt_as_odds is not None):

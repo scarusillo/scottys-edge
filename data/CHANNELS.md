@@ -22,8 +22,8 @@ and live win record.
 | **SPREAD_FADE_FLIP** | 1 | 1-0 | +4.55u | 0% | n too small |
 | **BOOK_ARB** (game line) | 2 | 1-1 | -0.45u | 0% | n too small (TOR UNDER 224.5 was a BOOK_ARB win — graded as SPREAD_FADE_FLIP tag per bet 973) |
 | **FAVORITE** (edge SPREAD fav) | 22 | 12-10 | -1.20u | +0.43% | Underperforming |
-| **DATA_SPREAD** (Context Path 2) | 0 graded | — | — | — | First 2 live fires scrubbed today |
-| **DATA_TOTAL** (Context Path 2) | 0 graded | — | — | — | First fires today — 9 scrubbed for tomorrow's review |
+| **DATA_SPREAD** (Context CONTEXT_STANDALONE) | 0 graded | — | — | — | First 2 live fires scrubbed today |
+| **DATA_TOTAL** (Context CONTEXT_STANDALONE) | 0 graded | — | — | — | First fires today — 9 scrubbed for tomorrow's review |
 
 ---
 
@@ -140,7 +140,7 @@ v25.66 odds gate should improve going forward.
 
 ---
 
-## Channel 7 — DATA_SPREAD (Context Model Path 2 spreads) — **DISABLED v25.70**
+## Channel 7 — DATA_SPREAD (Context Model CONTEXT_STANDALONE spreads) — **DISABLED v25.70**
 
 **Status (2026-04-22):** Channel killed via v25.70. `CONTEXT_PATH2_THRESHOLDS` dict in model_engine.py is empty; no sports fire DATA_SPREAD picks. Code preserved for future re-enable if new methodology proves out.
 
@@ -180,7 +180,7 @@ Leaving live pending 30 days real data.
 
 ---
 
-## Channel 8 — DATA_TOTAL (Context Model Path 2 totals, v25.47-49)
+## Channel 8 — DATA_TOTAL (Context Model CONTEXT_STANDALONE totals, v25.47-49)
 
 **What it does:** Same as DATA_SPREAD but for totals. When Elo and market
 agree but Context disagrees on the total, fire OWN pick at market line.
@@ -218,7 +218,7 @@ ALSO disagrees with Elo, fire the OPPOSITE of Elo (betting the market's side).
 wrong, the market is more accurate than Elo. Bet the market side.
 
 **Works with:** Elo and Context. Replaces what would otherwise be a high-edge
-Elo pick that Path 1 would have vetoed.
+Elo pick that ELO_DIVERGENCE_RESCUE would have vetoed.
 
 **Gates:**
 - Elo divergence ≥ `max_div` threshold
@@ -315,7 +315,7 @@ Rough order of evaluation in `model_engine.py`:
 2. **Context computes adjusted spread/total** via all adjustments
 3. **Elo-divergence check**:
    - If |Elo - market| > `max_div`: high-edge pick territory
-     - Context Path 1 vetoes IF Context agrees with market (Elo is wrong)
+     - Context ELO_DIVERGENCE_RESCUE vetoes IF Context agrees with market (Elo is wrong)
      - SPREAD_FADE_FLIP fires IF Context confirms Elo is wrong (bet market side)
    - If Elo ≈ market: normal edge flow
      - Edge pick fires IF edge ≥ threshold
