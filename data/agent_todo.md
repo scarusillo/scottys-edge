@@ -36,6 +36,25 @@ Once forward data accumulates, ship gates/boosts based on classification:
 - SHARP_LEAD picks → consider stake boost (1u extra)
 - DIVERGENT with sharp_soft_divergence >= 0.5 → route to the sharper book's price
 
+**Saturday quick-check — LINE_AGAINST_GATE exemption review (10 min)**
+
+Today (2026-04-23) we exempted DATA_SPREAD/DATA_TOTAL/SPREAD_FADE_FLIP/etc.
+from LINE_AGAINST_GATE on the theory that anti-market channels have their
+own logic. Backtest at ship time was non-conclusive: only 1 DATA_TOTAL had
+opener_move ≤ -0.5 (it lost), and DATA_SPREAD had n=0 (helper doesn't compute
+opener_move for `side_type='DATA_SPREAD'` — small bug, but DATA_SPREAD is
+disabled per v25.70 so not urgent).
+
+When n>=10 DATA_TOTAL picks have opener_move data (~2-3 weeks):
+1. Re-run the backtest in this same agent_todo entry's notes
+2. If would-be-blocked cohort underperforms by >5u with WR<45% → remove
+   DATA_TOTAL from the LINE_AGAINST_GATE exemption list (main.py near line 3608)
+3. If similar to non-blocked cohort → keep exemption, document as validated
+
+Also: extend `_compute_opener_move_for_pick` to handle DATA_SPREAD direction
+(infer from model_spread sign) so future DATA_SPREAD re-enablement can use
+trajectory features.
+
 **Other Saturday quick wins (1-2 hours each):**
 2. **Didn't-fire observability (gate counters)** — for every gate, track fired/blocked
    per day. Current blind spot. Now easier with v25.71 typed reason_category.
