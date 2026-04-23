@@ -13,55 +13,28 @@ These are the top items ranked for that session.
 **Partial — Saturday to finish:**
 1. **Proper CLV at fire time** — `bets.opener_line` and `bets.opener_move` shipped today (v25.80). Still TODO: `line_at_close` + `closing_odds` columns populated at grade time, + `clv_line_pct` and `clv_odds_pct` separate metrics. The opener side is done; the close side is still derived in reports.
 
-**🔥 TOP PRIORITY for Saturday — Per-book line trajectory (Layer 2)**
+**✅ Per-book line trajectory (Layer 2) — SHIPPED 2026-04-23 evening (v25.84)**
 
-User flagged this 2026-04-23 evening: today we shipped Layer 1 of line-movement
-analysis (n_steps, late_move_share, max_overshoot — see v25.83 + scripts/line_trajectory.py).
-Layer 1 measures the **SHAPE** of the move (stable vs drift vs overshoot). It does NOT
-tell us **WHO moved the line** (sharp money vs public vs news).
+`scripts/per_book_trajectory.py` + columns `originator_book`, `move_breadth`,
+`sharp_movers`, `soft_movers`, `sharp_soft_divergence`, `move_class` on bets.
+Classifies every pick into STABLE / SHARP_LEAD / SOFT_LEAD / STEAM / DIVERGENT / MIXED.
+Backfilled on 38 historical bets with trajectory data; nightly backfill in cmd_grade.
 
-**The missing piece:** at fire time we average all books into a single consensus
-line. That throws away which books moved first and whether sharp/soft books agreed.
-Per-book trajectory would let us classify every move into:
+Forward signal to watch (n=21 graded, directional only):
+- STABLE: 73% WR / +18.3u (the workhorse)
+- SOFT_LEAD: 50% WR / -1.8u on 6 bets — forming fade signal, watch
+- SHARP_LEAD: too thin (1 graded so far)
+- DIVERGENT: 50% / -0.5u
+- MIXED: -5u (1 graded)
 
-  - **SHARP_LEAD** — Pinnacle / BetRivers / Circa moved first; soft books followed later
-    → strong sharp signal, follow conviction
-  - **SOFT_LEAD** — DraftKings / FanDuel moved first; sharp books didn't follow
-    → public/retail flow, contrarian/fade signal
-  - **STEAM** — all books moved within 5-15 minutes of each other
-    → coordinated syndicate hit, follow with caution
-  - **DIVERGENT** — sharp books at one number, soft books at another, no convergence
-    → bet the sharper line (often a value gap)
+Briefing now shows L1 + L2 tables daily + lists drift/soft-led/divergent picks
+as avoid-candidates for human-in-loop review.
 
-**Effort:** 2-3 days
-1. Build `scripts/per_book_trajectory.py` — `compute_per_book_trajectory(conn, event_id, market)`
-   returns dict mapping each book to its time series of line values (we have this in odds table).
-2. Detect **first mover** — which book moved first, by how much, when.
-3. Detect **lonely move** — sharp moved while soft stayed flat (sharp signal); or vice versa.
-4. Add columns to bets: `originator_book TEXT`, `move_breadth INTEGER` (count of books that
-   moved), `sharp_soft_divergence REAL` (sharp_avg_line - soft_avg_line at fire time).
-5. Backfill on graded bets (with archive attached) and re-run cohort analysis.
-6. Hook nightly population into cmd_grade like v25.83 trajectory backfill.
-
-**Why this matters:** today's CLV gate (LINE_AGAINST_GATE v25.80) treats all line moves
-against us identically. With per-book detection we'd know:
-  - line moved against us only at DraftKings (soft) → probably noise, fire anyway
-  - line moved against us at Pinnacle + BetRivers but not soft books → real sharp
-    signal, definitely block
-  - line moved against us EVERYWHERE within 10 minutes → news/lineup change, block
-
-**Data already present:** `odds` table has every book's line at every snapshot. Nothing new
-to fetch. Pure analytical work on existing data + a backfill script.
-
-**Key files to read first (Saturday session start):**
-- `scripts/line_trajectory.py` — Layer 1 that we shipped today, similar architecture
-- `scripts/main.py:_compute_opener_move_for_pick` — fire-time helper pattern
-- `scripts/main.py` cmd_grade trajectory hook (~line 4872) — example backfill pattern
-- `data/MODEL_GLOSSARY.md` Section I (CLV_MICRO_EDGE) and the LINE_AGAINST_GATE
-  description — what we're augmenting
-
-**Reference memory:** `project_v25_80_clv_micro_edge.md` has the v25.80 channel
-infrastructure context.
+**Saturday step-up for Layer 2 (when sample reaches n>=60):**
+Once forward data accumulates, ship gates/boosts based on classification:
+- SOFT_LEAD picks at sub-20 edge → block (likely retail flow)
+- SHARP_LEAD picks → consider stake boost (1u extra)
+- DIVERGENT with sharp_soft_divergence >= 0.5 → route to the sharper book's price
 
 **Other Saturday quick wins (1-2 hours each):**
 2. **Didn't-fire observability (gate counters)** — for every gate, track fired/blocked

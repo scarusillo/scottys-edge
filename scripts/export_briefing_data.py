@@ -632,14 +632,15 @@ def generate_local_briefing(conn=None):
             add(f"| {ou['sport']} | {ou['side_type']} | {ou['W']} | {ou['L']} | {ou['pnl']:+.1f}u |")
         add()
 
-    # ── Line Movement Tracker (v25.83) ──
-    # Show yesterday's bets bucketed by trajectory shape so we can eyeball
-    # whether stable-line picks outperform drift-line picks. Early signal
-    # (n=21): stable n_steps=1 = 73% WR; drift n_steps>=2 = 43% WR.
+    # ── Line Movement Tracker (v25.83 + v25.84) ──
+    # Show yesterday's bets bucketed by trajectory SHAPE (L1) and by ORIGINATOR
+    # CLASS (L2 — SHARP_LEAD / SOFT_LEAD / STEAM / DIVERGENT / STABLE).
+    # Early signal (n=21): stable n_steps=1 = 73% WR; drift n_steps>=2 = 43% WR.
     try:
         traj_rows = conn.execute("""
-            SELECT b.selection, b.sport, b.opener_move, b.n_steps,
-                   b.max_overshoot, gb.result, gb.pnl_units
+            SELECT b.selection, b.sport, b.opener_move, b.n_steps, b.max_overshoot,
+                   b.move_class, b.originator_book, b.sharp_soft_divergence,
+                   gb.result, gb.pnl_units
             FROM bets b JOIN graded_bets gb ON gb.bet_id = b.id
             WHERE b.late_move_share IS NOT NULL
               AND DATE(gb.graded_at) = (SELECT MAX(DATE(graded_at)) FROM graded_bets
@@ -651,26 +652,50 @@ def generate_local_briefing(conn=None):
             add("---")
             add("## Line Movement Tracker (yesterday)")
             add()
+            # L1 — shape
             stable = [r for r in traj_rows if r[3] == 1]
             drift = [r for r in traj_rows if (r[3] or 0) >= 2]
-            sn, sw = len(stable), sum(1 for r in stable if r[5] == 'WIN')
-            dn, dw = len(drift), sum(1 for r in drift if r[5] == 'WIN')
-            spnl = sum(r[6] for r in stable if r[6] is not None)
-            dpnl = sum(r[6] for r in drift if r[6] is not None)
+            sn, sw = len(stable), sum(1 for r in stable if r[8] == 'WIN')
+            dn, dw = len(drift), sum(1 for r in drift if r[8] == 'WIN')
+            spnl = sum(r[9] for r in stable if r[9] is not None)
+            dpnl = sum(r[9] for r in drift if r[9] is not None)
+            add("**Layer 1 — Line shape**")
+            add()
             add(f"| Cohort | n | W | WR | P/L |")
             add(f"|---|---|---|---|---|")
-            add(f"| **Stable line (n_steps=1)** | {sn} | {sw} | {100*sw/sn if sn else 0:.0f}% | {spnl:+.1f}u |")
-            add(f"| **Drift (n_steps≥2)** | {dn} | {dw} | {100*dw/dn if dn else 0:.0f}% | {dpnl:+.1f}u |")
+            add(f"| Stable line (n_steps=1) | {sn} | {sw} | {100*sw/sn if sn else 0:.0f}% | {spnl:+.1f}u |")
+            add(f"| Drift (n_steps≥2) | {dn} | {dw} | {100*dw/dn if dn else 0:.0f}% | {dpnl:+.1f}u |")
             add()
-            add("> Stable lines historically (n=14): 71% WR, +22u. Drift (n=7): 43% WR, -6.4u.")
-            add("> Watch: does drift cohort keep losing? At n=30+, consider shadow-block.")
+            # L2 — originator
+            from collections import defaultdict
+            by_class = defaultdict(list)
+            for r in traj_rows:
+                if r[5]: by_class[r[5]].append(r)
+            if by_class:
+                add("**Layer 2 — Move classification (who moved the line)**")
+                add()
+                add(f"| Class | n | W | WR | P/L |")
+                add(f"|---|---|---|---|---|")
+                for cls in ['STABLE','SHARP_LEAD','SOFT_LEAD','STEAM','DIVERGENT','MIXED']:
+                    items = by_class.get(cls, [])
+                    if not items: continue
+                    n = len(items)
+                    w = sum(1 for r in items if r[8] == 'WIN')
+                    p = sum(r[9] for r in items if r[9] is not None)
+                    add(f"| {cls} | {n} | {w} | {100*w/n:.0f}% | {p:+.1f}u |")
+                add()
+            add("> Historical (n=21): STABLE 73% WR / +18.3u; SOFT_LEAD 50% WR / -1.8u (forming fade signal).")
             add()
-            # List drift picks specifically — the avoid candidates
-            if drift:
-                add("**Yesterday's drift-line picks (avoid candidates):**")
-                for sel, sport, om, ns, mo, res, pnl in drift:
-                    add(f"- `{(sel or '')[:55]}` ({sport}) — opener_move={om:+.2f}, "
-                        f"n_steps={ns}, overshoot={mo:.2f} → **{res}** {pnl:+.1f}u")
+            # List interesting picks — drift OR soft-led OR divergent
+            interesting = [r for r in traj_rows
+                          if (r[3] or 0) >= 2 or r[5] in ('SOFT_LEAD','DIVERGENT','MIXED')]
+            if interesting:
+                add("**Yesterday's avoid-candidate picks (drift / soft-led / divergent):**")
+                for r in interesting:
+                    sel, sport, om, ns, mo, cls, orig, div, res, pnl = r
+                    div_str = f"{div:+.2f}" if div is not None else '—'
+                    add(f"- `{(sel or '')[:55]}` ({sport}) — n_steps={ns}, class={cls or '—'}, "
+                        f"orig={orig or '—'}, sharp/soft div={div_str} → **{res}** {pnl:+.1f}u")
                 add()
     except Exception as _e:
         pass  # Silent fail — trajectory backfill may not have run yet

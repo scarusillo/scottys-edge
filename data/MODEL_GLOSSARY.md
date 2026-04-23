@@ -427,6 +427,10 @@ Currently shadowed:
 - **v25.69** — DATA_SPREAD dominance tagging (observability)
 - **v25.70** — DATA_SPREAD CONTEXT_STANDALONE killed; DATA_TOTAL CONTEXT_STANDALONE retained; ELO_DIVERGENCE_RESCUE intact
 
+### 2026-04-23 cycle (continued)
+- **v25.83** — Line trajectory Layer 1 (SHAPE): `bets.late_move_share`, `n_steps`, `max_overshoot`. Helper at `scripts/line_trajectory.py`. cmd_grade backfill hook. Briefing surfaces stable vs drift cohorts.
+- **v25.84** — Line trajectory Layer 2 (ORIGINATOR): per-book detection. `bets.originator_book`, `move_breadth`, `sharp_movers`, `soft_movers`, `sharp_soft_divergence`, `move_class`. Classifies each move as STABLE / SHARP_LEAD / SOFT_LEAD / STEAM / DIVERGENT / MIXED. Helper at `scripts/per_book_trajectory.py`. Sharp = FanDuel + BetRivers; Soft = DK + MGM + Caesars + Fanatics + ESPN BET. Same nightly backfill hook in cmd_grade as v25.83.
+
 ### 2026-04-23 cycle
 - **v25.71** — `shadow_blocked_picks.reason_category` + `reason_detail` typed columns; AFTER INSERT trigger auto-populates from free-text `reason`; 13,096 rows backfilled. Unlocks clean gate-counter queries.
 - **v25.74–v25.75** — Odds archive moved to separate `betting_model_archive.db` file to keep main DB query-hot.
