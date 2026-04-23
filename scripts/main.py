@@ -4752,21 +4752,22 @@ def cmd_grade(args):
         print(f"  Briefing data export: {e}")
 
     # ═══ DATA RETENTION — prune old odds/props snapshots ═══
-    # Keep 7 days of snapshots LIVE. Old data goes to *_archive tables for backtests.
+    # Keep 7 days of snapshots LIVE for speed. Pre-prune rows go to a
+    # SEPARATE archive DB file (data/betting_model_archive.db) so main DB
+    # stays lean and queries stay fast.
     # Without pruning, odds grows ~7.5K rows/run × 15 runs/day = 112K/day.
-    # After 30 days that's 3.4M rows, slowing every query.
-    # v25.74 (2026-04-22): odds_archive added alongside prop_snapshots_archive so
-    # backtests can UNION ALL across (odds + odds_archive). Previously odds-only
-    # backtests were capped at 7d window which caused repeated "can't reproduce
-    # Phase A" issues (e.g. DATA_SPREAD + steam chase validation both blocked by
-    # this).
+    # v25.75 (2026-04-22): odds_archive moved to separate file to fix the
+    # v25.74 mistake of bloating main DB. Main DB is query-hot; archive is
+    # only touched by explicit backtest scripts via ATTACH DATABASE.
     try:
         _prune_conn = sqlite3.connect(db)
         _cutoff = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
 
-        # v25.74: create odds_archive schema (idempotent) + index for backtest queries
+        # Archive DB path (sibling to main DB)
+        _archive_db = os.path.join(os.path.dirname(db), 'betting_model_archive.db')
+        _prune_conn.execute(f"ATTACH DATABASE '{_archive_db}' AS arc")
         _prune_conn.executescript('''
-            CREATE TABLE IF NOT EXISTS odds_archive (
+            CREATE TABLE IF NOT EXISTS arc.odds_archive (
                 id              INTEGER PRIMARY KEY,
                 snapshot_date   TEXT NOT NULL,
                 snapshot_time   TEXT,
@@ -4782,17 +4783,22 @@ def cmd_grade(args):
                 line            REAL,
                 odds            REAL
             );
-            CREATE INDEX IF NOT EXISTS idx_oa_event ON odds_archive(event_id, snapshot_date);
-            CREATE INDEX IF NOT EXISTS idx_oa_sport_date ON odds_archive(sport, snapshot_date);
-            CREATE INDEX IF NOT EXISTS idx_oa_market ON odds_archive(market, snapshot_date);
+            CREATE INDEX IF NOT EXISTS arc.idx_oa_event ON odds_archive(event_id, snapshot_date);
+            CREATE INDEX IF NOT EXISTS arc.idx_oa_sport_date ON odds_archive(sport, snapshot_date);
+            CREATE INDEX IF NOT EXISTS arc.idx_oa_market ON odds_archive(market, snapshot_date);
         ''')
         _odds_before = _prune_conn.execute('SELECT COUNT(*) FROM odds').fetchone()[0]
-        # Archive before prune
+        # Archive pre-prune rows to separate DB file, then delete from main DB
         _prune_conn.execute('''
-            INSERT INTO odds_archive
+            INSERT INTO arc.odds_archive
             SELECT * FROM odds WHERE snapshot_date < ?
         ''', (_cutoff,))
         _prune_conn.execute('DELETE FROM odds WHERE snapshot_date < ?', (_cutoff,))
+        _prune_conn.commit()
+        try:
+            _prune_conn.execute("DETACH DATABASE arc")
+        except Exception:
+            pass
         _props_before = _prune_conn.execute('SELECT COUNT(*) FROM props').fetchone()[0]
         _prune_conn.execute("DELETE FROM props WHERE commence_time < datetime('now', '-7 days')")
         # v25.34: prop_snapshots archival. Live table stays small for fast
