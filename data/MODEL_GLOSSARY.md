@@ -330,7 +330,45 @@ Currently shadowed:
 - **v25.69** — DATA_SPREAD dominance tagging (observability)
 - **v25.70** — DATA_SPREAD Path 2 killed; DATA_TOTAL Path 2 retained; Path 1 intact
 
-## 8. Key decisions made 2026-04-22
+## 8. Unused strategies (wishlist — known-valuable, not built)
+
+Industry-standard betting strategies we could add without invention — just implementation.
+
+### 🔥 Reverse Line Movement (RLM)
+Public bets 75% on Team A, line moves toward Team B. Sharp money overpowered public. Fade the public.
+**Requires:** public-betting-% data (Action Network or VSiN API, ~$50/mo).
+**Effort:** 2-3 days + data cost. High value.
+
+### 🔥 MLB umpire tendencies
+Specific umpires call wider/tighter strike zones, shifting totals by 3-5% WR. Industry-proven edge.
+**Status:** We have `referee_engine.py` for NBA/NHL but nothing for MLB umpires.
+**Effort:** 1 week — umpire scraper + tendency model + integration. High value for baseball.
+
+### 🟡 Key number exploitation
+Basketball lines at 3 and 7 (or 2/3 in halves), NHL at 1.5 (puck-line), NFL at 3/7. Crossing a key number is way more valuable than a half-point at 5.5 → 6.0.
+**Status:** Our Elo naturally produces some key-number picks but we don't explicitly exploit.
+**Effort:** Light (analyze existing picks for key-number asymmetry). Moderate value.
+
+### 🟡 Middling / scalping
+Bet both sides at different books after line moves to lock small profit. Full middle = both sides hit = huge win.
+**Status:** BOOK_ARB opens the door; full middling needs real-time line tracking.
+**Effort:** Medium. Requires "opportunity" tracking after first bet placed.
+
+### 🟡 First-half / First-quarter markets
+Half-game and quarter-game totals/spreads sometimes have specific edges (hot/cold starters, teams that fade late, etc.).
+**Status:** We only bet full-game markets.
+**Effort:** New model for partial-game lines. Moderate.
+
+### 🟢 Alt line scanning
+If main total is Over 8.5, book also offers Over 8 (-170) and Over 9 (+130). Asymmetries across alt lines can signal sharp action.
+**Status:** We don't query alt lines.
+**Effort:** API coverage + new channel. Niche edge.
+
+When adding a new strategy, **check this section first** — it may already be on the wishlist with cost/value estimates.
+
+---
+
+## 9. Key decisions made 2026-04-22
 
 - **Kill DATA_SPREAD Path 2** — 90d backtest showed Context absolute error worse than market, optimal scaling 0%, cannot find threshold tuning or gate addition that restores profitability. Preserving code scaffolding for future re-enable.
 - **Keep DATA_TOTAL Path 2** — totals backtest +101u FOLLOW on n=133 holds up across 7 sports; architectural asymmetry (totals additive, markets less efficient than spreads).

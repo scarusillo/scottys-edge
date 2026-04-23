@@ -2248,7 +2248,7 @@ def generate_predictions(conn, sport=None, date=None):
                                     'model_spread': None,
                                     'model_prob': 0, 'implied_prob': 0,
                                     'edge_pct': 0,
-                                    'star_rating': 3, 'units': 3.5,  # capped until live validation
+                                    'star_rating': 4, 'units': 5.0,  # v25.73: full 5u per user call (82% WR backtest confidence)
                                     'confidence': 'STEAM_CHASE',
                                     'side_type': 'STEAM_CHASE',
                                     'spread_or_ml': 'SPREAD',
