@@ -307,6 +307,41 @@ excluded (main-line overlap detection not yet built).
 
 ---
 
+## Channel 13 — CLV_MICRO_EDGE (v25.80, shipped 2026-04-23)
+
+**What it does:** Fires picks at **13%-20% edge** (below the normal 20% firing
+threshold) when the consensus line has already moved ≥ 0.5 since opener —
+either toward us OR back against us. SPREAD/TOTAL only (not props or ML).
+
+**How it finds edge:** The 16-18% edge bucket has a 45.2% rate of positive CLV
+outcomes (vs 27-30% at 20%+ edges). Combined with confirming opener→fire move,
+this captures sub-threshold picks where the market agrees with our lean.
+
+**Works with:** `_compute_opener_move_for_pick()` (main.py near _merge_and_select).
+Populated from `bets.opener_move` — direction-adjusted move between `openers`
+table average and fire-time line.
+
+**Fire rule:**
+- `13.0 <= edge_pct < 20.0`
+- `abs(opener_move) >= 0.5`
+- `market_type in ('SPREAD', 'TOTAL')`
+- Stake forced to 5u
+- Tagged in `context_factors`: `CLV_MICRO_EDGE (edge=X.X%, pre_move=+/-X.XX DIR)`
+
+**Shadow variant:** `CLV_MICRO_EDGE_BORDERLINE` logs (not fires) picks where
+`0.25 <= abs(opener_move) < 0.5`. Exists in `shadow_blocked_picks` for forward
+sample growth; promote to live if cohort demonstrates positive P/L at n≥20.
+
+**Historical cohort basis (2026-04-23 analysis):** 51 picks in scope, +9.3u.
+
+**Kill-switch thresholds:**
+- WR < 45% on n ≥ 10, OR
+- P/L ≤ -15u on n ≥ 15
+
+**Record:** n=0 (live as of 2026-04-23, no fires graded yet).
+
+---
+
 ## How channels interact (the decision flow)
 
 Rough order of evaluation in `model_engine.py`:
@@ -343,6 +378,7 @@ Rough order of evaluation in `model_engine.py`:
 - `PROP_DIVERGENCE_GATE` — model vs market-median prop threshold
 - `CONTEXT_DIRECTION_VETO` (v25.52) — edge picks must agree with Context direction
 - `SHARP_OPPOSES_BLOCK` (v25.35) — block picks where sharp-book line moved against us (NHL + NCAA BB only)
+- `LINE_AGAINST_GATE` (v25.80, 2026-04-23) — block 20%+ edge picks where `opener_move ≤ -0.5`. Historical bleed: 47 picks = -31.7u on SPREAD/TOTAL, concentrated in NCAA baseball / DK / Caesars. Exempts fade-flip / Context / arb side types. Only 8/47 overlap v25.35.
 
 **Odds floors/ceilings:**
 - `MIN_ODDS = -150` game lines
@@ -370,6 +406,8 @@ Rough order of evaluation in `model_engine.py`:
 | PROP_FADE_FLIP | `player_prop_model.py` | prop divergence + flip logic |
 | BOOK_ARB (game) | `model_engine.py` | book_arb scanner |
 | PROP_BOOK_ARB | `player_prop_model.py` / `props_engine.py` | cross-book scanner |
+| CLV_MICRO_EDGE | `main.py` | `_passes_filter` (~3150) |
+| LINE_AGAINST_GATE | `main.py` | end of `_passes_filter` (~3608) |
 
 ---
 

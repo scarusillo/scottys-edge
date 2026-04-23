@@ -766,6 +766,44 @@ def build_tennis_elo(verbose=True):
             margin = h_score - a_score
         surface_games[surface_key].append((home, away, h_score, a_score, margin, commence))
 
+    # v25.81: Merge historical Sackmann data to seed clay/grass/hard priors.
+    # Without this, clay Elo only has ~1,265 matches (2025-2026) and most
+    # Madrid/Roland Garros players sit at default 1500. Adding 2023-2024
+    # priors (~4K clay matches across both tours) gives the model real
+    # surface-specific signal. See scripts/import_tennis_history.py.
+    try:
+        hist_rows = conn.execute("""
+            SELECT tour, surface, winner_name, loser_name,
+                   winner_games, loser_games, tourney_date
+            FROM tennis_match_history
+            WHERE winner_games IS NOT NULL AND loser_games IS NOT NULL
+              AND winner_games > 0 AND loser_games >= 0
+            ORDER BY tourney_date ASC
+        """).fetchall()
+        if hist_rows and verbose:
+            print(f"  📚 Merging {len(hist_rows):,} historical matches from tennis_match_history")
+        for tour, surface_raw, winner, loser, w_g, l_g, date in hist_rows:
+            # Sackmann uses 'Clay','Hard','Grass','Carpet'; we key lowercase
+            surface = (surface_raw or 'Hard').lower()
+            if surface == 'carpet':
+                # Treat carpet as hard for rating purposes (rarely used post-2009)
+                surface = 'hard'
+            if surface not in ('hard', 'clay', 'grass'):
+                continue
+            surface_key = f'tennis_{tour}_{surface}'
+            margin = (w_g or 0) - (l_g or 0)
+            if margin <= 0:
+                # Skip retirements / walkovers where we can't determine margin
+                continue
+            # Treat winner as 'home' for Elo math; margin positive means 'home won'
+            surface_games[surface_key].append((winner, loser, w_g, l_g, margin, date))
+        # Re-sort by date so historical matches process in temporal order
+        for sk in surface_games:
+            surface_games[sk].sort(key=lambda g: g[5] or '')
+    except sqlite3.OperationalError:
+        # tennis_match_history doesn't exist yet — that's fine, run import script
+        pass
+
     if verbose:
         print(f"\n  🎾 TENNIS ELO — Surface-split ratings")
         for sk, games in sorted(surface_games.items()):

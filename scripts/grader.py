@@ -707,6 +707,27 @@ def grade_bets(conn, days_back=3):
                             if score:
                                 print(f"  ✓ Matched by selection name: {sel} ({sport})")
 
+            # v25.82: Tennis ML fallback — selection format "Player Name ML"
+            # has no '@' separator, so the home/away split above never runs.
+            # Match by player name against results.home OR results.away.
+            if not score and sport and 'tennis' in sport and mtype == 'MONEYLINE':
+                player_name = re.sub(r'\s+ML\s*$', '', sel).strip() if sel else ''
+                # Also strip " (cross-mkt)" annotation if present
+                player_name = player_name.replace(' (cross-mkt)', '').strip()
+                if player_name and created:
+                    bet_date = created[:10]
+                    score = conn.execute("""
+                        SELECT home_score, away_score, home, away, completed
+                        FROM results
+                        WHERE sport=? AND completed=1
+                          AND (home=? OR away=?)
+                          AND DATE(commence_time) BETWEEN DATE(?) AND DATE(?, '+1 day')
+                        ORDER BY commence_time DESC LIMIT 1
+                    """, (sport, player_name, player_name,
+                          bet_date, bet_date)).fetchone()
+                    if score:
+                        print(f"  ✓ Matched tennis ML by player name: {player_name}")
+
             if not score:
                 print(f"  ⚠ No score found: {sel} ({sport}) — event ID mismatch, team lookup failed")
                 continue

@@ -222,6 +222,46 @@ on player lines.
 
 ---
 
+### I. CLV_MICRO_EDGE (v25.80, shipped 2026-04-23)
+
+**Tag:** `CLV_MICRO_EDGE` in `context_factors` string
+**File:** `main.py` (inside `_passes_filter` of `_merge_and_select`, ~line 3150)
+
+**What it does:** Lowers the 20% edge floor down to 13% for picks where the
+consensus line has already moved ≥ 0.5 since opener — either TOWARD us or
+AGAINST us. SPREAD/TOTAL only.
+
+**Why this works:** The 16-18% edge bucket has a 45.2% rate of positive CLV
+outcomes — higher than any 20%+ bucket (which cluster at 27-30%). Our model is
+often just as correct on sub-threshold picks; the 20% floor was excluding
+signal, not just noise. Line movement confirms the model's direction matters.
+
+**Fire rule:**
+- `13.0 <= edge_pct < 20.0`
+- `abs(opener_move) >= 0.5`
+- `market_type in ('SPREAD', 'TOTAL')`
+- Stake forced to **5u** (same as full-edge picks)
+
+**Shadow variant:** `CLV_MICRO_EDGE_BORDERLINE` logs (but doesn't fire) picks
+in the 0.25–0.5 move bucket — forward sample growth for future threshold tuning.
+
+**Infrastructure dependencies:**
+- `bets.opener_line` + `bets.opener_move` columns (v25.80 migration)
+- AFTER INSERT trigger `bets_populate_opener_move` auto-computes on every new
+  bet (pure SQL, no Python writer changes).
+- Helper `_compute_opener_move_for_pick(conn, p)` in `main.py`.
+
+**Kill-switch thresholds:**
+- WR < 45% at n ≥ 10, OR P/L ≤ -15u at n ≥ 15
+
+**Coverage gap:** Props + moneyline are NOT in scope — props use `prop_snapshots`
+which doesn't join to `openers` yet, and ML has no "line" to move. Separate
+future investigation for a prop-side version.
+
+**Status:** Live as of 2026-04-23. n=0 graded.
+
+---
+
 ## 3. Gates — things that BLOCK or modify picks
 
 These don't generate picks; they filter them.
@@ -284,6 +324,46 @@ zones lose money at scale.
 - EPL UNDER: BLOCK (known fade cohort)
 - All soccer OVER + other: SHADOW (log, don't fire)
 
+### LINE_AGAINST_GATE (v25.80, shipped 2026-04-23)
+
+**What:** Blocks game-line picks at 20%+ edge where the consensus line has
+already moved **≥ 0.5 AGAINST our side** between opener and fire. SPREAD/TOTAL
+only.
+
+**Why:** Historical cohort analysis (2026-04-23, n=47 on SPREAD/TOTAL) showed
+this subset lost -31.7u — concentrated in NCAA baseball (-24.9u on 29),
+DraftKings (-22.5u on 10), Caesars (-19.0u on 8). Sharp lines moving against
+us before we fire = we're buying stale-favorable prices that the market has
+already corrected. Only 8 of 47 overlap existing v25.35 SHARP_OPPOSES_BLOCK
+(which applies to Steam context tags on NHL+NCAAB only), so 39 net-new blocks.
+
+**Rule:**
+- `edge_pct >= 20.0`
+- `opener_move <= -0.5`
+- `market_type in ('SPREAD', 'TOTAL')`
+- NOT in exempt `side_type` list: `SPREAD_FADE_FLIP`, `PROP_FADE_FLIP`,
+  `DATA_SPREAD`, `DATA_TOTAL`, `BOOK_ARB`, `PROP_BOOK_ARB`, `FADE_FLIP`.
+  Those channels intentionally bet against market movement and have their own
+  logic.
+
+**Log entry format:** `LINE_AGAINST_GATE (edge=X.X%, opener_move=-X.XX)` in
+`shadow_blocked_picks.reason`.
+
+**File:** `main.py` (end of `_passes_filter` in `_merge_and_select`, ~line 3608).
+
+### Tennis ML grader fallback (v25.82, shipped 2026-04-23)
+
+**What:** Adds a fallback path in `grader.py` for tennis MONEYLINE selections.
+
+**Why:** Tennis ML selection format is "Player Name ML" — no `@` separator —
+so the existing home/away lookup never matched. Previously **no tennis ML bet
+had ever been graded**; they stayed PENDING or were scrubbed.
+
+**How:** If the event_id match fails AND the `@`-split lookup fails AND it's
+tennis MONEYLINE, extract the player name (strip " ML", " (cross-mkt)") and
+search `results` where `sport=?  AND (home=?  OR  away=?)` within ±1 day of
+bet date. Additive — existing paths unchanged.
+
 ---
 
 ## 4. Shadow / monitoring factors (`shadow_factors.md`)
@@ -333,8 +413,9 @@ Currently shadowed:
 
 ---
 
-## 7. Version history index (today, 2026-04-22)
+## 7. Version history index
 
+### 2026-04-22 cycle
 - **v25.61** — Code auditor fixes; db-latest GitHub release 404 fixed
 - **v25.62** — NHL Away fast-paced shadow (sport-gated pace adjustment)
 - **v25.63** — Soccer Context CONTEXT_STANDALONE halted (same-day reversed)
@@ -345,6 +426,16 @@ Currently shadowed:
 - **v25.68** — cmd_predict auto-detects tennis + tennis 5am scheduler
 - **v25.69** — DATA_SPREAD dominance tagging (observability)
 - **v25.70** — DATA_SPREAD CONTEXT_STANDALONE killed; DATA_TOTAL CONTEXT_STANDALONE retained; ELO_DIVERGENCE_RESCUE intact
+
+### 2026-04-23 cycle
+- **v25.71** — `shadow_blocked_picks.reason_category` + `reason_detail` typed columns; AFTER INSERT trigger auto-populates from free-text `reason`; 13,096 rows backfilled. Unlocks clean gate-counter queries.
+- **v25.74–v25.75** — Odds archive moved to separate `betting_model_archive.db` file to keep main DB query-hot.
+- **v25.79** — Tiered storage: `props` + `prop_snapshots` also archived to `betting_model_archive.db`. Moved 5.79M rows of `prop_snapshots_archive` out of main DB. `scripts/archive_db.py` helper for backtests.
+- **v25.80** — `bets.opener_line` / `bets.opener_move` columns. Additive trigger. Two new channels live:
+  - **CLV_MICRO_EDGE** — fires 13-20% edge picks with `|opener_move| >= 0.5`
+  - **LINE_AGAINST_GATE** — blocks 20%+ edge picks with `opener_move <= -0.5`
+- **v25.81** — Tennis Elo historical backfill (Jeff Sackmann 2023-2024 ATP+WTA). Clay ratings: 8→114 strong ATP players, 3→98 WTA. Madrid players now have real clay Elo instead of default 1500. Fixes why tennis picks were being DIVERGENCE_GATE'd to zero.
+- **v25.82** — Grader fallback for tennis MONEYLINE selection format ("Player Name ML"). No tennis ML had ever graded before today; this fixes future grading.
 
 ## 8. Unused strategies (wishlist — known-valuable, not built)
 

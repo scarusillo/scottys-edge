@@ -2937,6 +2937,46 @@ def _merge_prop_sources(consensus_props, model_props):
     return list(best.values())
 
 
+def _compute_opener_move_for_pick(conn, p):
+    """Direction-adjusted opener→fire line move for a candidate pick.
+    Positive = line moved TOWARD our side between opener and fire.
+    Returns None if openers data is missing or market_type unsupported.
+
+    Used by v25.80 CLV_MICRO_EDGE_SHADOW logger + future stake-variable logic.
+    """
+    mtype = p.get('market_type')
+    if mtype not in ('SPREAD', 'TOTAL'):
+        return None
+    event_id = p.get('event_id')
+    fire_line = p.get('line')
+    if not event_id or fire_line is None:
+        return None
+    market = 'spreads' if mtype == 'SPREAD' else 'totals'
+    try:
+        row = conn.execute(
+            "SELECT AVG(line) FROM openers WHERE event_id=? AND market=? AND line IS NOT NULL",
+            (event_id, market)).fetchone()
+    except Exception:
+        return None
+    if not row or row[0] is None:
+        return None
+    opener_line = row[0]
+    raw = fire_line - opener_line
+    if mtype == 'TOTAL':
+        sel = (p.get('selection') or '').upper()
+        if 'OVER' in sel:
+            return raw
+        if 'UNDER' in sel:
+            return -raw
+    elif mtype == 'SPREAD':
+        st = p.get('side_type') or ''
+        if st == 'DOG':
+            return raw
+        if st == 'FAVORITE':
+            return -raw
+    return None
+
+
 def _merge_and_select(game_picks, prop_picks, conn=None):
     """
     Merge game and prop picks. Apply market-tier selection:
@@ -3104,7 +3144,50 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # Picks with real edge from pitching/power ratings will fire normally.
 
         _min_u = MIN_UNITS
-        if not (p.get('units', 0) >= _min_u and p.get('edge_pct', 0) >= min_edge):
+        _edge = p.get('edge_pct', 0)
+        _units = p.get('units', 0)
+
+        # v25.80 CLV_MICRO_EDGE (LIVE): fire picks at 13-20% edge when the
+        # consensus line has already moved >= 0.5 since opener (either
+        # direction — TOWARD us OR mild reversal AGAINST). The FLAT bucket
+        # (|move| < 0.25) remains excluded as the historical bleed zone.
+        #   Signal rationale (2026-04-23 analysis):
+        #     16-18% edge has 45.2% POS CLV rate vs 27-30% at 20%+ edges.
+        #     13-20% + |move|>=0.5 historical cohort: 51 picks, +9.3u.
+        #   Borderline (0.25 <= |move| < 0.5) still shadow-logs as
+        #   CLV_MICRO_EDGE_BORDERLINE for forward tracking; does NOT fire.
+        #   Stake is forced to 5u per user spec (vs Kelly-scaled lower).
+        _clv_micro_edge_active = False
+        if (conn is not None
+                and _edge < min_edge and 13.0 <= _edge < 20.0
+                and p.get('market_type') in ('SPREAD', 'TOTAL')):
+            try:
+                _opener_move = _compute_opener_move_for_pick(conn, p)
+                if _opener_move is not None and abs(_opener_move) >= 0.5:
+                    _clv_micro_edge_active = True
+                    # Force 5u stake for consistency with full-edge picks
+                    p['units'] = 5.0
+                    _units = 5.0
+                    _dir = 'TOWARD' if _opener_move > 0 else 'AGAINST'
+                    _tag = f' | CLV_MICRO_EDGE (edge={_edge:.1f}%, pre_move={_opener_move:+.2f} {_dir})'
+                    p['context'] = (p.get('context', '') or '') + _tag
+                elif _opener_move is not None and abs(_opener_move) >= 0.25 and _units >= _min_u:
+                    # Borderline — shadow-log for forward tracking, do not fire
+                    from datetime import datetime as _dt
+                    _dir = 'TOWARD' if _opener_move > 0 else 'AGAINST'
+                    conn.execute("""
+                        INSERT INTO shadow_blocked_picks (created_at, sport, event_id,
+                            selection, market_type, book, line, odds, edge_pct, units, reason)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (_dt.now().isoformat(), p.get('sport'), p.get('event_id'),
+                          p.get('selection'), p.get('market_type'), p.get('book'),
+                          p.get('line'), p.get('odds'), _edge, _units,
+                          f'CLV_MICRO_EDGE_BORDERLINE (edge={_edge:.1f}%, pre_move={_opener_move:+.2f} {_dir})'))
+                    conn.commit()
+            except Exception:
+                pass
+
+        if not (_units >= _min_u and (_edge >= min_edge or _clv_micro_edge_active)):
             return False
         # v23: ELITE + HIGH. HIGH allowed for soft book 15-20% edges (17W-8L +27u).
         # STRONG still blocked (3W-7L -22.5u).
@@ -3533,6 +3616,41 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                         return False
             except Exception:
                 pass  # Context check failures fail-open — pick still fires
+
+        # v25.80 LINE_AGAINST_GATE (LIVE): block picks at 20%+ edge where the
+        # consensus line has already moved >= 0.5 AGAINST our side before we
+        # fire. Historical bleed (2026-04-23 analysis):
+        #   47 picks, W-L 21-24 (45% WR), -31.7u P/L on SPREAD/TOTAL.
+        #   Concentration: NCAA baseball -24.9u (29), DK -22.5u (10),
+        #   Caesars -19.0u (8). Only 8/47 overlap existing v25.35 SHARP_OPPOSES.
+        # Exempt: fade-flip / Context / arb side types — they intentionally
+        # bet against market movement and have their own logic.
+        _st_line_against = p.get('side_type') or ''
+        _edge_line_against = p.get('edge_pct', 0)
+        if (conn is not None and _edge_line_against >= 20.0
+                and not _clv_micro_edge_active  # CLV_MICRO_EDGE picks already cleared below 20%
+                and p.get('market_type') in ('SPREAD', 'TOTAL')
+                and _st_line_against not in ('SPREAD_FADE_FLIP', 'PROP_FADE_FLIP',
+                                              'DATA_SPREAD', 'DATA_TOTAL',
+                                              'BOOK_ARB', 'PROP_BOOK_ARB', 'FADE_FLIP')):
+            try:
+                _om_la = _compute_opener_move_for_pick(conn, p)
+                if _om_la is not None and _om_la <= -0.5:
+                    from datetime import datetime as _dt
+                    conn.execute("""
+                        INSERT INTO shadow_blocked_picks (created_at, sport, event_id,
+                            selection, market_type, book, line, odds, edge_pct, units, reason)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (_dt.now().isoformat(), p.get('sport'), p.get('event_id'),
+                          p.get('selection'), p.get('market_type'), p.get('book'),
+                          p.get('line'), p.get('odds'), _edge_line_against,
+                          p.get('units', 0),
+                          f'LINE_AGAINST_GATE (edge={_edge_line_against:.1f}%, opener_move={_om_la:+.2f})'))
+                    conn.commit()
+                    print(f"    🚫 LINE_AGAINST_GATE: {p.get('selection','')[:55]} — pre-bet line moved {_om_la:+.2f} against us")
+                    return False
+            except Exception:
+                pass
 
         return True
 
@@ -4751,14 +4869,14 @@ def cmd_grade(args):
     except Exception as e:
         print(f"  Briefing data export: {e}")
 
-    # ═══ DATA RETENTION — prune old odds/props snapshots ═══
-    # Keep 7 days of snapshots LIVE for speed. Pre-prune rows go to a
-    # SEPARATE archive DB file (data/betting_model_archive.db) so main DB
-    # stays lean and queries stay fast.
-    # Without pruning, odds grows ~7.5K rows/run × 15 runs/day = 112K/day.
-    # v25.75 (2026-04-22): odds_archive moved to separate file to fix the
-    # v25.74 mistake of bloating main DB. Main DB is query-hot; archive is
-    # only touched by explicit backtest scripts via ATTACH DATABASE.
+    # ═══ DATA RETENTION — archive old odds/props/prop_snapshots ═══
+    # Keep 7 days of snapshots LIVE in main DB for speed. Pre-prune rows
+    # are moved to a SEPARATE archive DB file (data/betting_model_archive.db)
+    # so main DB stays lean and queries stay fast.
+    # v25.75 (2026-04-22): odds_archive moved to separate file.
+    # v25.79 (2026-04-23): props + prop_snapshots also archived to separate
+    # file (was DELETE-only / in-main bloat). Single ATTACH covers all three.
+    # Backtest scripts: use scripts/archive_db.py to UNION live + archive.
     try:
         _prune_conn = sqlite3.connect(db)
         _cutoff = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
@@ -4786,45 +4904,78 @@ def cmd_grade(args):
             CREATE INDEX IF NOT EXISTS arc.idx_oa_event ON odds_archive(event_id, snapshot_date);
             CREATE INDEX IF NOT EXISTS arc.idx_oa_sport_date ON odds_archive(sport, snapshot_date);
             CREATE INDEX IF NOT EXISTS arc.idx_oa_market ON odds_archive(market, snapshot_date);
+
+            CREATE TABLE IF NOT EXISTS arc.props_archive (
+                id              INTEGER PRIMARY KEY,
+                snapshot_date   TEXT NOT NULL,
+                snapshot_time   TEXT,
+                tag             TEXT,
+                sport           TEXT NOT NULL,
+                event_id        TEXT NOT NULL,
+                commence_time   TEXT,
+                home            TEXT NOT NULL,
+                away            TEXT NOT NULL,
+                book            TEXT NOT NULL,
+                market          TEXT NOT NULL,
+                selection       TEXT NOT NULL,
+                line            REAL,
+                odds            REAL
+            );
+            CREATE INDEX IF NOT EXISTS arc.idx_arc_pa_event ON props_archive(event_id, snapshot_date);
+            CREATE INDEX IF NOT EXISTS arc.idx_arc_pa_sport_date ON props_archive(sport, snapshot_date);
+            CREATE INDEX IF NOT EXISTS arc.idx_arc_pa_market ON props_archive(market, snapshot_date);
+
+            CREATE TABLE IF NOT EXISTS arc.prop_snapshots_archive (
+                id              INTEGER PRIMARY KEY,
+                captured_at     TEXT NOT NULL,
+                sport           TEXT NOT NULL,
+                event_id        TEXT NOT NULL,
+                commence_time   TEXT,
+                home            TEXT NOT NULL,
+                away            TEXT NOT NULL,
+                book            TEXT NOT NULL,
+                market          TEXT NOT NULL,
+                player          TEXT NOT NULL,
+                side            TEXT NOT NULL,
+                line            REAL,
+                odds            REAL,
+                implied_prob    REAL
+            );
+            CREATE INDEX IF NOT EXISTS arc.idx_arc_psa_player ON prop_snapshots_archive(player, market, event_id);
+            CREATE INDEX IF NOT EXISTS arc.idx_arc_psa_event ON prop_snapshots_archive(event_id, captured_at);
+            CREATE INDEX IF NOT EXISTS arc.idx_arc_psa_date ON prop_snapshots_archive(captured_at);
         ''')
+
+        # 1. Odds — archive + delete (snapshot_date < cutoff)
         _odds_before = _prune_conn.execute('SELECT COUNT(*) FROM odds').fetchone()[0]
-        # Archive pre-prune rows to separate DB file, then delete from main DB
         _prune_conn.execute('''
             INSERT INTO arc.odds_archive
             SELECT * FROM odds WHERE snapshot_date < ?
         ''', (_cutoff,))
         _prune_conn.execute('DELETE FROM odds WHERE snapshot_date < ?', (_cutoff,))
+
+        # 2. Props — archive + delete (commence_time > 7 days old)
+        _props_before = _prune_conn.execute('SELECT COUNT(*) FROM props').fetchone()[0]
+        _prune_conn.execute('''
+            INSERT INTO arc.props_archive
+            SELECT * FROM props WHERE commence_time < datetime('now', '-7 days')
+        ''')
+        _prune_conn.execute("DELETE FROM props WHERE commence_time < datetime('now', '-7 days')")
+
+        # 3. Prop_snapshots — archive + delete (captured_at > 7 days old)
+        _ps_before = _prune_conn.execute('SELECT COUNT(*) FROM prop_snapshots').fetchone()[0]
+        _prune_conn.execute('''
+            INSERT INTO arc.prop_snapshots_archive
+            SELECT * FROM prop_snapshots WHERE captured_at < datetime('now', '-7 days')
+        ''')
+        _prune_conn.execute("DELETE FROM prop_snapshots WHERE captured_at < datetime('now', '-7 days')")
+
         _prune_conn.commit()
         try:
             _prune_conn.execute("DETACH DATABASE arc")
         except Exception:
             pass
-        _props_before = _prune_conn.execute('SELECT COUNT(*) FROM props').fetchone()[0]
-        _prune_conn.execute("DELETE FROM props WHERE commence_time < datetime('now', '-7 days')")
-        # v25.34: prop_snapshots archival. Live table stays small for fast
-        # scanner/grader queries; archive preserves full history for backtests.
-        # Backtest scripts UNION ALL across prop_snapshots + prop_snapshots_archive.
-        _prune_conn.executescript('''
-            CREATE TABLE IF NOT EXISTS prop_snapshots_archive (
-                id INTEGER PRIMARY KEY,
-                captured_at TEXT NOT NULL, sport TEXT NOT NULL,
-                event_id TEXT NOT NULL, commence_time TEXT,
-                home TEXT NOT NULL, away TEXT NOT NULL,
-                book TEXT NOT NULL, market TEXT NOT NULL,
-                player TEXT NOT NULL, side TEXT NOT NULL,
-                line REAL, odds REAL, implied_prob REAL
-            );
-            CREATE INDEX IF NOT EXISTS idx_psa_player ON prop_snapshots_archive(player, market, event_id);
-            CREATE INDEX IF NOT EXISTS idx_psa_event ON prop_snapshots_archive(event_id, captured_at);
-            CREATE INDEX IF NOT EXISTS idx_psa_date ON prop_snapshots_archive(captured_at);
-        ''')
-        _ps_before = _prune_conn.execute('SELECT COUNT(*) FROM prop_snapshots').fetchone()[0]
-        _prune_conn.execute("""
-            INSERT INTO prop_snapshots_archive
-            SELECT * FROM prop_snapshots WHERE captured_at < datetime('now', '-7 days')
-        """)
-        _prune_conn.execute("DELETE FROM prop_snapshots WHERE captured_at < datetime('now', '-7 days')")
-        _prune_conn.commit()
+
         _odds_after = _prune_conn.execute('SELECT COUNT(*) FROM odds').fetchone()[0]
         _props_after = _prune_conn.execute('SELECT COUNT(*) FROM props').fetchone()[0]
         _ps_after = _prune_conn.execute('SELECT COUNT(*) FROM prop_snapshots').fetchone()[0]
@@ -4833,7 +4984,7 @@ def cmd_grade(args):
         _props_pruned = _props_before - _props_after
         _ps_pruned = _ps_before - _ps_after
         if _odds_pruned > 0 or _props_pruned > 0 or _ps_pruned > 0:
-            print(f"  🗑️ Retention: pruned {_odds_pruned:,} odds + {_props_pruned:,} props + {_ps_pruned:,} prop_snapshots→archive (>7 days old)")
+            print(f"  🗃️ Retention: archived {_odds_pruned:,} odds + {_props_pruned:,} props + {_ps_pruned:,} prop_snapshots (>7 days old → betting_model_archive.db)")
     except Exception as e:
         print(f"  Retention pruning: {e}")
 
