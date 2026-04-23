@@ -1,26 +1,83 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-22 end-of-day extended — 18 ships (v25.61→v25.78) + tech debt foundation work
+**Last updated:** 2026-04-23 end-of-day — 24+ ships today (v25.71→v25.83), CLV channels + tennis backfill + line trajectory
 
 ## 📅 SATURDAY MORNING (user's next focused chunk)
 
 User explicitly said Saturday morning is the next focused work block.
-These are the top items ranked for that session. Full details below in
-"TECH DEBT + ARCHITECTURE REVIEW" — this is the pre-flight list.
+These are the top items ranked for that session.
 
-**Quick wins (2-4 hours each):**
-1. **Typed `shadow_blocked_picks` reason column** — split free-text reason into `reason_category` + `reason_detail`. Unlocks structured observability.
-2. **Proper CLV at fire time** — add `line_at_fire`, `line_at_opener`, `line_at_close` columns to bets. Populate at fire + update at grade. CLV becomes first-class column, not derived report.
+**✅ DONE on 2026-04-23 (no longer Saturday work):**
+- ~~Typed `shadow_blocked_picks` reason column~~ — shipped v25.71
+- ~~Tiered odds/props/prop_snapshots storage to separate archive DB~~ — shipped v25.79
 
-**Medium (1 dedicated day each):**
-3. **Didn't-fire observability (gate counters)** — for every gate, track fired/blocked per day. Current blind spot.
-4. **Regression-fit Context Model weights** — today's calibration backtest said optimal scale=0%. Fit weights from 90+ days of historical data instead of magic numbers.
+**Partial — Saturday to finish:**
+1. **Proper CLV at fire time** — `bets.opener_line` and `bets.opener_move` shipped today (v25.80). Still TODO: `line_at_close` + `closing_odds` columns populated at grade time, + `clv_line_pct` and `clv_odds_pct` separate metrics. The opener side is done; the close side is still derived in reports.
+
+**🔥 TOP PRIORITY for Saturday — Per-book line trajectory (Layer 2)**
+
+User flagged this 2026-04-23 evening: today we shipped Layer 1 of line-movement
+analysis (n_steps, late_move_share, max_overshoot — see v25.83 + scripts/line_trajectory.py).
+Layer 1 measures the **SHAPE** of the move (stable vs drift vs overshoot). It does NOT
+tell us **WHO moved the line** (sharp money vs public vs news).
+
+**The missing piece:** at fire time we average all books into a single consensus
+line. That throws away which books moved first and whether sharp/soft books agreed.
+Per-book trajectory would let us classify every move into:
+
+  - **SHARP_LEAD** — Pinnacle / BetRivers / Circa moved first; soft books followed later
+    → strong sharp signal, follow conviction
+  - **SOFT_LEAD** — DraftKings / FanDuel moved first; sharp books didn't follow
+    → public/retail flow, contrarian/fade signal
+  - **STEAM** — all books moved within 5-15 minutes of each other
+    → coordinated syndicate hit, follow with caution
+  - **DIVERGENT** — sharp books at one number, soft books at another, no convergence
+    → bet the sharper line (often a value gap)
+
+**Effort:** 2-3 days
+1. Build `scripts/per_book_trajectory.py` — `compute_per_book_trajectory(conn, event_id, market)`
+   returns dict mapping each book to its time series of line values (we have this in odds table).
+2. Detect **first mover** — which book moved first, by how much, when.
+3. Detect **lonely move** — sharp moved while soft stayed flat (sharp signal); or vice versa.
+4. Add columns to bets: `originator_book TEXT`, `move_breadth INTEGER` (count of books that
+   moved), `sharp_soft_divergence REAL` (sharp_avg_line - soft_avg_line at fire time).
+5. Backfill on graded bets (with archive attached) and re-run cohort analysis.
+6. Hook nightly population into cmd_grade like v25.83 trajectory backfill.
+
+**Why this matters:** today's CLV gate (LINE_AGAINST_GATE v25.80) treats all line moves
+against us identically. With per-book detection we'd know:
+  - line moved against us only at DraftKings (soft) → probably noise, fire anyway
+  - line moved against us at Pinnacle + BetRivers but not soft books → real sharp
+    signal, definitely block
+  - line moved against us EVERYWHERE within 10 minutes → news/lineup change, block
+
+**Data already present:** `odds` table has every book's line at every snapshot. Nothing new
+to fetch. Pure analytical work on existing data + a backfill script.
+
+**Key files to read first (Saturday session start):**
+- `scripts/line_trajectory.py` — Layer 1 that we shipped today, similar architecture
+- `scripts/main.py:_compute_opener_move_for_pick` — fire-time helper pattern
+- `scripts/main.py` cmd_grade trajectory hook (~line 4872) — example backfill pattern
+- `data/MODEL_GLOSSARY.md` Section I (CLV_MICRO_EDGE) and the LINE_AGAINST_GATE
+  description — what we're augmenting
+
+**Reference memory:** `project_v25_80_clv_micro_edge.md` has the v25.80 channel
+infrastructure context.
+
+**Other Saturday quick wins (1-2 hours each):**
+2. **Didn't-fire observability (gate counters)** — for every gate, track fired/blocked
+   per day. Current blind spot. Now easier with v25.71 typed reason_category.
+3. **Regression-fit Context Model weights** — today's calibration backtest said optimal
+   scale=0%. Fit weights from 90+ days of historical data instead of magic numbers.
 
 **Big projects (NOT for Saturday — need planning session):**
-5. Break `generate_predictions()` into pipeline stages (3-5 days)
-6. Refactor `main.py` god-file (1-2 weeks)
-7. Per-market sharp/soft tagging matrix (1 week)
-8. Regression test suite (2 weeks)
-9. Versioned ratings (2 weeks)
+4. Break `generate_predictions()` into pipeline stages (3-5 days)
+5. Refactor `main.py` god-file (1-2 weeks)
+6. Per-market sharp/soft tagging matrix (1 week)
+7. Regression test suite (2 weeks)
+8. Versioned ratings (2 weeks)
+9. ML-based CLV prediction model (combines Layer 1 + Layer 2 features into a regression
+   that predicts CLV at fire time; use as gate. Wait until n>=100 graded bets with full
+   trajectory data before building — currently n=21.)
 
 ---
 
