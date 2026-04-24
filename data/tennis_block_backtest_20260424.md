@@ -25,17 +25,19 @@ Bet logic: model spread vs market spread — we bet the side the model thinks is
 | 7 | ATP | Arthur Fils vs Ignacio Buse | Fils -4.5 | -1.0 | **Buse +4.5 spread** | -110 | ✅ |
 | 8 | WTA | Sorana Cirstea vs Tyra Caterina Grant | Cirstea -4.5 | -1.0 | **Grant +4.5 spread** | -110 | ✅ |
 | 9 | WTA | Yulia Putintseva vs Marta Kostyuk | Kostyuk -4.5 | +1.3 | Putintseva ML | +320 | ❌ |
-| 10 | WTA | Janice Tjen vs Liudmila Samsonova | Samsonova -3.5 | +0.6 | **Tjen ML** | +176 | ✅ |
+| 10 | WTA | Janice Tjen vs Liudmila Samsonova | Samsonova -3.5 | +0.6 | Tjen ML | +176 | ❌ |
 | 11 | ATP | Bonzi vs Sinner | Sinner -6.5 | -10.2 | Sinner ML | -8000 | ❌ |
 
-**In-scope for grading: 5 bets (2 WTA + 3 ATP).** Bets 1,2,4,6,9 excluded for exceeding tennis ML cap (+200). Bet 11 excluded for exceeding MIN_ODDS floor (-150).
+**In-scope for grading: 4 bets (1 WTA + 3 ATP).** Bets 1,2,4,6,9,10 excluded for odds too long (user threshold tighter than +200 formal cap). Bet 11 excluded for exceeding MIN_ODDS floor (-150).
 
 ## WTA vs ATP split (in-scope only)
 
-- **WTA:** 2 of 5 (Grant spread, Tjen ML)
-- **ATP:** 3 of 5 (Lajovic ML, Prizmic spread, Buse spread)
+- **WTA:** 1 of 4 (Grant +4.5 spread only)
+- **ATP:** 3 of 4 (Lajovic ML, Prizmic spread, Buse spread)
 
-**WTA soft-market hypothesis is harder to test here** — most of our WTA "edges" were on +200+ longshot MLs that the live rules prevent us from playing. That itself is informational: if our WTA edge is concentrated in longshot picks the market prices correctly, the "soft" signal may be a model artifact, not a real exploit. Track anyway but expect ambiguous conclusion at n=2 WTA.
+**WTA soft-market hypothesis not testable from this day.** At n=1 WTA we can't infer anything about a tour-level edge. Nearly all our WTA virtual bets fell outside live odds window, which is itself informational: if our WTA model edges keep concentrating in longshot MLs that live rules prevent, the "soft market" signal may be an Elo calibration artifact (thin clay seasoning overestimates upset probability) rather than an exploitable tour-level edge.
+
+**Carry forward:** need Madrid R16/QF + Rome R32 samples before re-testing.
 
 ## Expected values (if each hits)
 
