@@ -12,28 +12,30 @@ All picks blocked today by DIVERGENCE_GATE (`insufficient_elo_games` or `post_el
 
 Bet logic: model spread vs market spread — we bet the side the model thinks is underpriced. Default to ML on the dog unless model favors favorite more than market (then bet favorite ML).
 
-| # | Tour | Matchup | Market | Model | Bet | Odds | Units |
+**REVISED SCOPE (2026-04-24 afternoon):** Filtered to plays within odds window — `TENNIS_ML_CAP = ±200` per config.py, `MIN_ODDS = -150` globally. Bets outside that window wouldn't fire live, so excluded from grading scope.
+
+| # | Tour | Matchup | Market | Model | Bet | Odds | In-scope |
 |---|---|---|---|---|---|---|---|
-| 1 | WTA | Linda Noskova vs Emiliana Arango | Noskova -5.5 | -0.2 | **Arango ML** | +610 | 1.0u |
-| 2 | WTA | Elena Gabriela Ruse vs Elena Rybakina | Rybakina -6.5 | +1.0 | **Ruse ML** (model thinks she wins) | +1340 | 1.0u |
-| 3 | ATP | Dusan Lajovic vs Arthur Rinderknech | Rinderknech -2.5 | -2.0 | **Lajovic ML** (model fav) | +143 | 1.0u |
-| 4 | WTA | Caty McNally vs Victoria Mboko | Mboko -4.5 | +0.3 | **McNally ML** (model fav) | +250 | 1.0u |
-| 5 | ATP | Ben Shelton vs Dino Prizmic | Shelton -2.5 | -1.6 | Prizmic +2.5 spread | — | 1.0u |
-| 6 | WTA | Jessica Pegula vs Katie Boulter | Pegula -5.5 | -1.9 | **Boulter ML** (big mispricing) | +520 | 1.0u |
-| 7 | ATP | Arthur Fils vs Ignacio Buse | Fils -4.5 | -1.0 | Buse +4.5 spread | — | 1.0u |
-| 8 | WTA | Sorana Cirstea vs Tyra Caterina Grant | Cirstea -4.5 | -1.0 | Grant +4.5 spread | — | 1.0u |
-| 9 | WTA | Yulia Putintseva vs Marta Kostyuk | Kostyuk -4.5 | +1.3 | **Putintseva ML** (model fav) | +320 | 1.0u |
-| 10 | WTA | Janice Tjen vs Liudmila Samsonova | Samsonova -3.5 | +0.6 | **Tjen ML** (model fav) | +176 | 1.0u |
-| 11 | ATP | Benjamin Bonzi vs Jannik Sinner | Sinner -6.5 | -10.2 | Sinner ML (conviction amp) | -8000 | skip |
+| 1 | WTA | Linda Noskova vs Emiliana Arango | Noskova -5.5 | -0.2 | Arango ML | +610 | ❌ |
+| 2 | WTA | Elena Gabriela Ruse vs Elena Rybakina | Rybakina -6.5 | +1.0 | Ruse ML | +1340 | ❌ |
+| 3 | ATP | Dusan Lajovic vs Arthur Rinderknech | Rinderknech -2.5 | -2.0 | **Lajovic ML** | +143 | ✅ |
+| 4 | WTA | Caty McNally vs Victoria Mboko | Mboko -4.5 | +0.3 | McNally ML | +250 | ❌ |
+| 5 | ATP | Ben Shelton vs Dino Prizmic | Shelton -2.5 | -1.6 | **Prizmic +2.5 spread** | -110 | ✅ |
+| 6 | WTA | Jessica Pegula vs Katie Boulter | Pegula -5.5 | -1.9 | Boulter ML | +520 | ❌ |
+| 7 | ATP | Arthur Fils vs Ignacio Buse | Fils -4.5 | -1.0 | **Buse +4.5 spread** | -110 | ✅ |
+| 8 | WTA | Sorana Cirstea vs Tyra Caterina Grant | Cirstea -4.5 | -1.0 | **Grant +4.5 spread** | -110 | ✅ |
+| 9 | WTA | Yulia Putintseva vs Marta Kostyuk | Kostyuk -4.5 | +1.3 | Putintseva ML | +320 | ❌ |
+| 10 | WTA | Janice Tjen vs Liudmila Samsonova | Samsonova -3.5 | +0.6 | **Tjen ML** | +176 | ✅ |
+| 11 | ATP | Bonzi vs Sinner | Sinner -6.5 | -10.2 | Sinner ML | -8000 | ❌ |
 
-Effective virtual bets: **10** (skip Sinner due to odds floor).
+**In-scope for grading: 5 bets (2 WTA + 3 ATP).** Bets 1,2,4,6,9 excluded for exceeding tennis ML cap (+200). Bet 11 excluded for exceeding MIN_ODDS floor (-150).
 
-## WTA vs ATP split
+## WTA vs ATP split (in-scope only)
 
-- **WTA:** 7 of 10 (Arango, Ruse, McNally, Boulter, Grant, Putintseva, Tjen)
-- **ATP:** 3 of 10 (Lajovic, Prizmic spread, Buse spread)
+- **WTA:** 2 of 5 (Grant spread, Tjen ML)
+- **ATP:** 3 of 5 (Lajovic ML, Prizmic spread, Buse spread)
 
-If WTA hits ≥ 5 of 7 while ATP hits ≤ 1 of 3, that's the soft-market signal.
+**WTA soft-market hypothesis is harder to test here** — most of our WTA "edges" were on +200+ longshot MLs that the live rules prevent us from playing. That itself is informational: if our WTA edge is concentrated in longshot picks the market prices correctly, the "soft" signal may be a model artifact, not a real exploit. Track anyway but expect ambiguous conclusion at n=2 WTA.
 
 ## Expected values (if each hits)
 
