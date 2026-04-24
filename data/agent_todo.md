@@ -1,5 +1,35 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-23 end-of-day — 24+ ships today (v25.71→v25.83), CLV channels + tennis backfill + line trajectory
+**Last updated:** 2026-04-24 — v25.85 tennis seasoning, v25.86 LINE_AGAINST_GATE observability, housekeeping batch
+
+## 🛑 AGENT: DO NOT RE-FLAG THESE (already handled)
+
+Cloud agents (CLV Patterns, Morning Briefing, Code Auditor, Pre-Run Validator)
+keep citing cohorts that are already gated. Before surfacing a "new" finding,
+verify it's not one of these. Each entry lists the trigger phrase agents
+typically use, and why it's already solved.
+
+| Agent-surfaced claim | Status | Gate / Memory |
+|---|---|---|
+| "DK NCAA BB UNDERs -51u / 9-18, structural loss" | Handled | v25.56 HARD_VETO_DK_NCAA_BB_UNDERS (2026-04-21). Query cites pre-fix data. |
+| "DK NCAA BB OVERs -21.8u / 2-6, propose new veto" | Handled | Combined v25.22/23/24 Option C + v25.35 SHARP_OPPOSES stack. ZERO DK NCAA OVERs have fired since 2026-04-19. |
+| "NCAA BB OVER directional bias -28.8u, raise edge floor 20→22" | Handled | edge_pct stored capped at 20.0 — raising floor is meaningless. Bleed is historical; zero NCAA OVERs of any book have fired since 2026-04-21. |
+| "Week 15 (Apr 14-20) NCAA BB -30.3u, audit required" | Handled | -30.65u of the week's damage was the DK UNDER cohort killed by v25.56. |
+| "STABLE cohort WR regression 73% → 55.6%, workhorse softening" | Parked | v25.84 backfill only covers 14 days; n=21 "baseline" was first 4 days. Do NOT act until n≥60 graded with full live trajectory data (per v25.83/84 memo). |
+| "NBA SHARP_OPPOSES / NBA UNDERs -11.8u" | Watched | Per v24 review (2026-04-18): NBA variance — wait. Act only if CLV drops below +0.5 at n≥25 more picks. |
+| "NBA PROP phantom CLV / EDGE_12_16/16_20 losing" | Partial | v25.30 PROP_DIVERGENCE_GATE + v25.66 odds-bucket gate + Apr 15 stale-odds fix cover it. Re-evaluate at n≥15 post-Apr-15 per `project_prop_review.md`. Currently n=4. |
+| "DK NBA -24.1u routing problem" | Watched | Most damage pre-Apr-15 stale-odds bug. Post-fix: 3-5 / -9.15u on n=8. Subset of broader NBA variance watch. |
+| "LINE_AGAINST_GATE: 0 entries, propose fix" | Handled | v25.86 (2026-04-24) — gate now populates reason_category. Pre-v25.86 queries returned zero because gate wrote only to free-text `reason` column. |
+| "Tennis clay DIVERGENCE_GATE blocking 218 picks" | Partially handled | v25.85 (2026-04-24) lowered seasoning threshold 10 → 7 for tennis. Remaining blocks are legitimate (qualifiers with <7 clay matches). Divergence cap 2.5 + 20% edge floor untested post-backfill — park until n≥15 live clay picks. |
+| "Midweek game factor -20u" | Shadow | Already in `shadow_factors.md`. Do not re-propose. |
+| "Steam sharp opposes -15.6u" | Handled | v25.35 SHARP_OPPOSES_BLOCK for NHL + NCAA BB. Remaining MLB cohort 2-1 +3.56u — do NOT extend. |
+
+**How to use this table:** Before a cloud agent proposes a gate/veto/change,
+match the claim against the left column. If any handled/parked item matches,
+say so instead of proposing. Cite the gate name + ship date.
+
+---
+
+## Original content
 
 ## 📅 SATURDAY MORNING (user's next focused chunk)
 
