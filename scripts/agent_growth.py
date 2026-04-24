@@ -232,6 +232,8 @@ def analyze_content_performance(conn):
     
     # Win rate messaging
     total = len(bets)
+    if not total:
+        return insights
     wins = sum(1 for b in bets if b[3] == 'WIN')
     wp = wins / total * 100
     if wp >= 55:

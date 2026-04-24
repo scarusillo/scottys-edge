@@ -807,7 +807,8 @@ def cmd_run(args):
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         created_at TEXT, sport TEXT, event_id TEXT, selection TEXT,
                         market_type TEXT, book TEXT, line REAL, odds REAL,
-                        edge_pct REAL, units REAL, reason TEXT
+                        edge_pct REAL, units REAL, reason TEXT,
+                        reason_category TEXT, reason_detail TEXT
                     )""")
                     for _bp in _blocked:
                         conn.execute("""INSERT INTO shadow_blocked_picks
