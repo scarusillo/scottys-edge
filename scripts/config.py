@@ -215,9 +215,13 @@ for _tk in TENNIS_SPORTS:
     else:
         PLAY_THRESHOLDS[_tk] = 15.0
 
-# Tennis ML cap: no picks beyond ±200 (no big favorites or long-shot dogs)
-# +200 dog = 33% implied, -200 fav = 67% implied. Keeps us in competitive matches.
-TENNIS_ML_CAP = 200
+# Tennis ML cap: no picks beyond ±140 (no long-shot dogs, no big favorites)
+# +140 dog = 41.7% implied, -140 fav = 58.3% implied.
+# v25.88: tightened from ±200 — aligns with MAX_PROP_ODDS policy (+140 ceiling
+# across all pick types). Heavier dogs (+141+) underperformed in calibration
+# (v25.13 props bucket 0-2). Same logic applies to tennis ML longshots where
+# thin-sample Elo overestimates upset probability.
+TENNIS_ML_CAP = 140
 
 
 # ═══════════════════════════════════════════════════════════════
