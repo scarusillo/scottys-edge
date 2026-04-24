@@ -60,6 +60,19 @@ PYTHONIOENCODING=utf-8 python scripts/grade_tennis_blocks.py --date 2026-04-24
 
 (Grade script needs to be written — or done manually by looking up each match in `results` table.)
 
+## 🔴 USER-REPORTED RESULT (2026-04-24 evening)
+
+**User-reported: 2-1 across the 3 in-scope bets.** Specific per-match results to be confirmed tomorrow AM when `results` table populates.
+
+At -110 juice, 2-1 = +14.1% above break-even. Profitable signal on a 3-pick sample.
+
+**Implication:** clay DIVERGENCE_GATE filters (max_spread_divergence = 2.5, insufficient_elo_games threshold = 7) may be too aggressive. Specifically:
+- All 3 picks had divergence 3.5-4.1 (above 2.5 cap) and at least one player at 4-6 clay matches (below 7 floor)
+- Market was giving us the right side on 2 of 3 matches
+- Suggests clay Elo post-v25.81 backfill is sharper than the gate assumes
+
+**Not shipping a change on n=3** — per `feedback_no_panic_kill.md` and `feedback_backtest_before_recommend.md`, we need Rome + French Open samples before loosening. But the signal is worth the formal review added to tomorrow AM to-do.
+
 ## Decision matrix
 
 | Outcome | Interpretation | Action |

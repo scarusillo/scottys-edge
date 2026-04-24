@@ -33,6 +33,28 @@ say so instead of proposing. Cite the gate name + ship date.
 
 ## Original content
 
+## 🔴 TOMORROW MORNING (2026-04-25) — Review clay DIVERGENCE_GATE
+
+**User priority.** The 3 in-scope Madrid R32 blocked picks (Prizmic +2.5, Buse +4.5, Grant +4.5, all -110) went **2-1** per user report. At -110 juice that's +14% above break-even — profitable signal that the clay filters are blocking real edges.
+
+**The two filters at play:**
+1. `insufficient_elo_games` threshold = 7 (lowered from 10 this morning in v25.85)
+2. `max_spread_divergence` = 2.5 for clay (tightened from 4.5 in v24)
+
+All 3 blocked picks had:
+- Seasoning: one player at 4-6 clay matches (below 7 floor)
+- Divergence: 3.5-4.1 (above 2.5 cap)
+
+**Tomorrow AM checklist:**
+1. Confirm per-match results from `results` table once backfilled — identify which 2 covered (Prizmic, Buse, or Grant)
+2. Pull all blocked tennis clay picks since v25.81 backfill (Apr 21+) with reason=`DIVERGENCE_GATE` — retroactive grade to see if the 2-1 pattern holds
+3. Decide: is the pattern strong enough at Rome to test threshold loosening (max_spread_divergence 2.5 → 3.5)?
+4. DO NOT ship a change today on n=3 — need Rome + French samples before any tuning per `feedback_no_panic_kill.md`
+
+**Tracker:** `data/tennis_block_backtest_20260424.md`
+
+---
+
 ## 🗓 NEXT WEEK — NBA Playoff Series Awareness
 
 **Investigation flagged 2026-04-24.** Our NBA DATA_TOTAL Context Model uses regular-season form and H2H but ignores games played in the current playoff series. DEN/MIN Game 3 missed by 30 pts (we projected 239.2, actual 209) while Games 1-2 of same series already showed series avg -11 UNDER vs line. Pattern holds across most series in Apr 18-24 (15-5 UNDERs league-wide, 7/8 series opened UNDER).
