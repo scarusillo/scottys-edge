@@ -18,7 +18,7 @@ Bet logic: model spread vs market spread — we bet the side the model thinks is
 |---|---|---|---|---|---|---|---|
 | 1 | WTA | Linda Noskova vs Emiliana Arango | Noskova -5.5 | -0.2 | Arango ML | +610 | ❌ |
 | 2 | WTA | Elena Gabriela Ruse vs Elena Rybakina | Rybakina -6.5 | +1.0 | Ruse ML | +1340 | ❌ |
-| 3 | ATP | Dusan Lajovic vs Arthur Rinderknech | Rinderknech -2.5 | -2.0 | **Lajovic ML** | +143 | ✅ |
+| 3 | ATP | Dusan Lajovic vs Arthur Rinderknech | Rinderknech -2.5 | -2.0 | Lajovic ML | +143 | ❌ |
 | 4 | WTA | Caty McNally vs Victoria Mboko | Mboko -4.5 | +0.3 | McNally ML | +250 | ❌ |
 | 5 | ATP | Ben Shelton vs Dino Prizmic | Shelton -2.5 | -1.6 | **Prizmic +2.5 spread** | -110 | ✅ |
 | 6 | WTA | Jessica Pegula vs Katie Boulter | Pegula -5.5 | -1.9 | Boulter ML | +520 | ❌ |
@@ -28,12 +28,14 @@ Bet logic: model spread vs market spread — we bet the side the model thinks is
 | 10 | WTA | Janice Tjen vs Liudmila Samsonova | Samsonova -3.5 | +0.6 | Tjen ML | +176 | ❌ |
 | 11 | ATP | Bonzi vs Sinner | Sinner -6.5 | -10.2 | Sinner ML | -8000 | ❌ |
 
-**In-scope for grading: 4 bets (1 WTA + 3 ATP).** Bets 1,2,4,6,9,10 excluded for odds too long (user threshold tighter than +200 formal cap). Bet 11 excluded for exceeding MIN_ODDS floor (-150).
+**In-scope for grading: 3 bets (1 WTA + 2 ATP), all spreads at -110.** User's effective odds ceiling is MAX_PROP_ODDS = +140 (not the TENNIS_ML_CAP = +200). Bets 1,2,3,4,6,9,10 all excluded for odds > +140. Bet 11 excluded for exceeding MIN_ODDS floor (-150).
 
 ## WTA vs ATP split (in-scope only)
 
-- **WTA:** 1 of 4 (Grant +4.5 spread only)
-- **ATP:** 3 of 4 (Lajovic ML, Prizmic spread, Buse spread)
+- **WTA:** 1 of 3 (Grant +4.5 spread only)
+- **ATP:** 2 of 3 (Prizmic +2.5 spread, Buse +4.5 spread)
+
+All 3 are spreads at -110. No ML fires in scope.
 
 **WTA soft-market hypothesis not testable from this day.** At n=1 WTA we can't infer anything about a tour-level edge. Nearly all our WTA virtual bets fell outside live odds window, which is itself informational: if our WTA model edges keep concentrating in longshot MLs that live rules prevent, the "soft market" signal may be an Elo calibration artifact (thin clay seasoning overestimates upset probability) rather than an exploitable tour-level edge.
 
