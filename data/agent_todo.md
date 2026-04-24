@@ -33,6 +33,23 @@ say so instead of proposing. Cite the gate name + ship date.
 
 ## Original content
 
+## 🗓 NEXT WEEK — NBA Playoff Series Awareness
+
+**Investigation flagged 2026-04-24.** Our NBA DATA_TOTAL Context Model uses regular-season form and H2H but ignores games played in the current playoff series. DEN/MIN Game 3 missed by 30 pts (we projected 239.2, actual 209) while Games 1-2 of same series already showed series avg -11 UNDER vs line. Pattern holds across most series in Apr 18-24 (15-5 UNDERs league-wide, 7/8 series opened UNDER).
+
+**Proposal (not shipped):** `NBA_PLAYOFF_SERIES_ADJUSTMENT` — when Game 2+ of a series, dampen context projection by 50% of the series_avg_vs_line trend.
+
+**Why waiting:** Only 3 Game 3+ data points; n too thin to ship per `feedback_no_panic_kill.md`.
+
+**Decision by May 1 (also passive monitoring item):**
+1. Ship standalone gate if sample supports at n=30+ playoff games
+2. Fold into broader NBA market-baseline redesign
+3. Drop if market closing totals catch up to actual avg (~213) before then
+
+See `project_nba_playoff_series_awareness.md` for full analysis + sample DEN/MIN calculations.
+
+---
+
 ## 📅 SATURDAY MORNING (user's next focused chunk)
 
 User explicitly said Saturday morning is the next focused work block.
