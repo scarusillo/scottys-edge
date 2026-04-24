@@ -212,6 +212,12 @@ Two masks: "first time seeing this" + "everything is wrong."
 
 ## 📊 PASSIVE MONITORING — no code, just watch
 
+- **2026-05-01 NBA playoff total recalibration check.** Current window: playoff closings avg 219.8 vs actual avg 213.4 (UNDERs 15-5 / 75% league-wide). Our Context Model disagreement threshold 0.3 is firing correct direction but sample n=6, record 0-2 UNDER / 1-1 OVER. Re-verify at ~7-day mark. If closing totals drop another 5 pts toward actual while our disagreement shrinks, the un-priced UNDER edge is gone.
+
+- **Tennis block backtest (2026-04-24 Madrid R32).** 11 blocked picks tracked as virtual bets in `data/tennis_block_backtest_20260424.md`. Grade tomorrow AM. **WTA soft-market hypothesis:** user flags WTA as a soft market (lower public volume, cruder book models, qualifier-heavy draws). If WTA WR > ATP WR by >20pts in this sample OR WTA hits ≥ 5 of 7, validates hypothesis — test threshold drops (seasoning 7→5, max_div 2.5→3.5, clay edge 20%→17%) in sequence at Rome next week.
+
+
+
 - **BetMGM CLV trip-wire** — alert if next 20 picks drop below 0 avg CLV
 - **Steam sharp opposes** — shadow at -20u 2nd-half cumulative (currently -14u, 6u buffer)
 - **Away fast-paced baseball** — shadow not applied (baseball factor profitable +14u); if baseball drops below +5u, revisit
