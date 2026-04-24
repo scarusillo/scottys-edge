@@ -35,7 +35,15 @@ say so instead of proposing. Cite the gate name + ship date.
 
 ## 🔴 TOMORROW MORNING (2026-04-25) — Review clay DIVERGENCE_GATE
 
-**User priority.** The 3 in-scope Madrid R32 blocked picks (Prizmic +2.5, Buse +4.5, Grant +4.5, all -110) went **2-1** per user report. At -110 juice that's +14% above break-even — profitable signal that the clay filters are blocking real edges.
+**User priority.** Combined 2-day signal on clay picks the DIVERGENCE_GATE blocked live:
+
+| Date | Source | Record | Notes |
+|---|---|---|---|
+| 2026-04-23 | Cristian + Atmane ML (retroactive backfill after v25.81) | 2-0 | +12.9u; blocked live by insufficient_elo_games, backfill cleared |
+| 2026-04-24 | Prizmic +2.5, Buse +4.5, Grant +4.5 (virtual monitoring) | 2-1 | at -110 = +14% above break-even |
+| **Combined** | | **4-1 (80% WR)** | |
+
+At -110 juice, 4-1 = +14% above break-even on 5 picks. Still small sample but the signal is getting hard to dismiss.
 
 **The two filters at play:**
 1. `insufficient_elo_games` threshold = 7 (lowered from 10 this morning in v25.85)
@@ -46,10 +54,12 @@ All 3 blocked picks had:
 - Divergence: 3.5-4.1 (above 2.5 cap)
 
 **Tomorrow AM checklist:**
-1. Confirm per-match results from `results` table once backfilled — identify which 2 covered (Prizmic, Buse, or Grant)
-2. Pull all blocked tennis clay picks since v25.81 backfill (Apr 21+) with reason=`DIVERGENCE_GATE` — retroactive grade to see if the 2-1 pattern holds
-3. Decide: is the pattern strong enough at Rome to test threshold loosening (max_spread_divergence 2.5 → 3.5)?
-4. DO NOT ship a change today on n=3 — need Rome + French samples before any tuning per `feedback_no_panic_kill.md`
+1. Confirm per-match results from `results` table once backfilled — identify which 2 of today's 3 covered (Prizmic, Buse, or Grant)
+2. Pull ALL blocked tennis clay picks since v25.81 backfill (Apr 21+) with reason=`DIVERGENCE_GATE` — retroactive grade to see if the 4-1 pattern holds on larger sample
+3. If sample expands to 8-10+ with 70%+ WR, strong case to loosen:
+   - max_spread_divergence 2.5 → 3.5 for clay
+   - insufficient_elo_games 7 → 5 for tennis
+4. Don't ship on current n=5 — wait for Rome/French cross-check. But start drafting the config edit so it's ready to go if the pattern holds.
 
 **Tracker:** `data/tennis_block_backtest_20260424.md`
 
