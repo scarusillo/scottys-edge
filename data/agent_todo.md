@@ -20,6 +20,8 @@ typically use, and why it's already solved.
 | "DK NBA -24.1u routing problem" | Watched | Most damage pre-Apr-15 stale-odds bug. Post-fix: 3-5 / -9.15u on n=8. Subset of broader NBA variance watch. |
 | "LINE_AGAINST_GATE: 0 entries, propose fix" | Handled | v25.86 (2026-04-24) — gate now populates reason_category. Pre-v25.86 queries returned zero because gate wrote only to free-text `reason` column. |
 | "Tennis clay DIVERGENCE_GATE blocking 218 picks" | Partially handled | v25.85 (2026-04-24) lowered seasoning threshold 10 → 7 for tennis. Remaining blocks are legitimate (qualifiers with <7 clay matches). Divergence cap 2.5 + 20% edge floor untested post-backfill — park until n≥15 live clay picks. |
+| "NBA OVER props losing on below-career lines (Naz Reid, Schroder, Merrill)" | Handled | v25.87 PROP_CAREER_FADE (2026-04-24) — flips NBA OVER→UNDER when market median ≥1.0 below career avg at 5u. Do not propose additional career-based prop gates for NBA. |
+| "Josh Hart UNDER 4.5 AST model error" | Partially handled | Covered by PROP_CAREER_FADE investigation — Hart was outlier in UNDER-below-career cohort (2-1 +3.70u), not a structural problem. Real problem was OVER-below-career which v25.87 addresses. |
 | "Midweek game factor -20u" | Shadow | Already in `shadow_factors.md`. Do not re-propose. |
 | "Steam sharp opposes -15.6u" | Handled | v25.35 SHARP_OPPOSES_BLOCK for NHL + NCAA BB. Remaining MLB cohort 2-1 +3.56u — do NOT extend. |
 
@@ -215,6 +217,12 @@ Two masks: "first time seeing this" + "everything is wrong."
 - **2026-05-01 NBA playoff total recalibration check.** Current window: playoff closings avg 219.8 vs actual avg 213.4 (UNDERs 15-5 / 75% league-wide). Our Context Model disagreement threshold 0.3 is firing correct direction but sample n=6, record 0-2 UNDER / 1-1 OVER. Re-verify at ~7-day mark. If closing totals drop another 5 pts toward actual while our disagreement shrinks, the un-priced UNDER edge is gone.
 
 - **Tennis block backtest (2026-04-24 Madrid R32).** 11 blocked picks tracked as virtual bets in `data/tennis_block_backtest_20260424.md`. Grade tomorrow AM. **WTA soft-market hypothesis:** user flags WTA as a soft market (lower public volume, cruder book models, qualifier-heavy draws). If WTA WR > ATP WR by >20pts in this sample OR WTA hits ≥ 5 of 7, validates hypothesis — test threshold drops (seasoning 7→5, max_div 2.5→3.5, clay edge 20%→17%) in sequence at Rome next week.
+
+- **PROP_CAREER_FADE live monitoring (v25.87, shipped 2026-04-24).** New NBA prop channel flipping OVER→UNDER when market median ≥ 1.0 below career avg. Shipped at 5u live (not shadow) based on 0-4 OVER / 4-0 flip backtest. Decision triggers:
+  - **Kill-switch:** if WR < 40% on n≥10 live fires → disable
+  - **Expand scope:** if WR ≥ 70% on n≥10, evaluate MLB (currently 2-0 on too-thin sample) at n≥5 matched
+  - **Tune threshold:** if 7+ of 10 flips win, consider relaxing gap threshold from 1.0 → 0.75 to catch more
+  - Track channel P/L separately in morning briefing — requires `side_type='PROP_CAREER_FADE'` segmentation
 
 
 
