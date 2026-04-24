@@ -3638,15 +3638,18 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                 _om_la = _compute_opener_move_for_pick(conn, p)
                 if _om_la is not None and _om_la <= -0.5:
                     from datetime import datetime as _dt
+                    _la_detail = f'edge={_edge_line_against:.1f}%, opener_move={_om_la:+.2f}'
                     conn.execute("""
                         INSERT INTO shadow_blocked_picks (created_at, sport, event_id,
-                            selection, market_type, book, line, odds, edge_pct, units, reason)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            selection, market_type, book, line, odds, edge_pct, units,
+                            reason, reason_category, reason_detail)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (_dt.now().isoformat(), p.get('sport'), p.get('event_id'),
                           p.get('selection'), p.get('market_type'), p.get('book'),
                           p.get('line'), p.get('odds'), _edge_line_against,
                           p.get('units', 0),
-                          f'LINE_AGAINST_GATE (edge={_edge_line_against:.1f}%, opener_move={_om_la:+.2f})'))
+                          f'LINE_AGAINST_GATE ({_la_detail})',
+                          'LINE_AGAINST_GATE', _la_detail))
                     conn.commit()
                     print(f"    🚫 LINE_AGAINST_GATE: {p.get('selection','')[:55]} — pre-bet line moved {_om_la:+.2f} against us")
                     return False
