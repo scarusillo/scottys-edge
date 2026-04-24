@@ -1368,6 +1368,100 @@ def generate_prop_projections(conn=None):
             except Exception:
                 pass
 
+            # v25.87: PROP_CAREER_FADE — when books collectively set OVER line
+            # well below player's career average, the market is signaling that
+            # this player's current-situation production is depressed (playoff
+            # minutes cut, role change, tough matchup). Fade our OVER.
+            #
+            # Distinct from PROP_FADE_FLIP which measures our model vs books.
+            # This measures market consensus vs career history.
+            #
+            # Scope: NBA PROP_OVER only. MLB and NHL samples too thin.
+            # Backtest: 0-4 OVER → 4-0 UNDER flip on 7 weeks of NBA data.
+            try:
+                if (side == 'Over'
+                        and sport == 'basketball_nba'
+                        and stat_type in ('pts', 'reb', 'ast', 'threes', 'blk', 'stl')):
+                    from career_stats import get_career_stat as _get_career
+                    _car_avg, _car_games = _get_career(conn, player, stat_type, sport)
+                    if (_car_avg is not None and _car_games is not None
+                            and _car_games >= 50):
+                        # Recompute market_median across other books (cheap)
+                        import statistics as _stats2
+                        _per_book_cf = {}
+                        for _e in legal_entries:
+                            if _e['book'] == book: continue
+                            _per_book_cf.setdefault(_e['book'], []).append(_e['line'])
+                        _book_lines_cf = [_stats2.median(v) for v in _per_book_cf.values()]
+                        if len(_book_lines_cf) >= 3:
+                            _market_med_cf = _stats2.median(_book_lines_cf)
+                            _career_gap = _car_avg - _market_med_cf
+                            if _career_gap >= 1.0:
+                                # Market consensus line is >=1.0 below career avg.
+                                # Flip to UNDER at same book+line if odds pass MIN_ODDS.
+                                from config import MIN_ODDS as _CF_MIN_ODDS
+                                _cf_flip_entries = grouped.get((eid, player, market, 'Under'), [])
+                                _cf_flip_entry = next(
+                                    (e for e in _cf_flip_entries
+                                     if e['book'] == book and e['line'] == line),
+                                    None
+                                )
+                                _cf_flip_odds = _cf_flip_entry.get('odds') if _cf_flip_entry else None
+                                if _cf_flip_odds is not None and _cf_flip_odds > _CF_MIN_ODDS:
+                                    _cf_sel = f"{player} UNDER {line} {stat_type}"
+                                    _cf_ctx = (
+                                        f'PROP_CAREER_FADE v25.87 — market median {_market_med_cf:.1f} '
+                                        f'is {_career_gap:.1f} below career avg {_car_avg} '
+                                        f'({_car_games} career games). Books signaling current-situation '
+                                        f'decline (playoff minutes, role shift, matchup). '
+                                        f'Fading OVER→UNDER at {book} {_cf_flip_odds:+.0f}.'
+                                    )
+                                    # Log shadow block record for observability
+                                    try:
+                                        conn.execute("""INSERT INTO shadow_blocked_picks
+                                            (created_at, sport, event_id, selection, market_type,
+                                             book, line, odds, edge_pct, units, reason,
+                                             reason_category, reason_detail)
+                                            VALUES (?, ?, ?, ?, 'PROP', ?, ?, ?, NULL, NULL, ?, ?, ?)""",
+                                            (datetime.now(timezone.utc).isoformat(), sport, eid,
+                                             f"{player} OVER {line} {stat_type}",
+                                             book, line, odds,
+                                             f'PROP_CAREER_FADE_FLIP (career={_car_avg}, mkt={_market_med_cf:.1f}, gap={_career_gap:.1f})',
+                                             'PROP_CAREER_FADE',
+                                             f'career={_car_avg}, mkt={_market_med_cf:.1f}, gap={_career_gap:.1f}'))
+                                        conn.commit()
+                                    except Exception:
+                                        pass
+                                    _cf_pick = {
+                                        'sport': sport, 'event_id': eid, 'commence': commence,
+                                        'home': home, 'away': away,
+                                        'market_type': 'PROP', 'selection': _cf_sel,
+                                        'book': book, 'line': line, 'odds': _cf_flip_odds,
+                                        'model_spread': None,
+                                        'model_prob': 0,
+                                        'implied_prob': round(american_to_implied(_cf_flip_odds) or 0, 4),
+                                        'edge_pct': round(max(MIN_EDGE_PCT + 0.5, _career_gap * 5.0), 1),
+                                        'star_rating': 3, 'units': 5.0,
+                                        'confidence': 'CAREER_FADE', 'spread_or_ml': 'PROP',
+                                        'timing': 'STANDARD',
+                                        'context': _cf_ctx,
+                                        'notes': _cf_ctx,
+                                        'side_type': 'PROP_CAREER_FADE',
+                                        '_signals': {
+                                            'projection': _proj_val,
+                                            'career_avg': _car_avg,
+                                            'career_games': _car_games,
+                                            'market_median': _market_med_cf,
+                                            'career_gap': _career_gap,
+                                            'book_count': len(_book_lines_cf),
+                                        },
+                                        '_source': 'PROP_CAREER_FADE',
+                                    }
+                                    picks.append(_cf_pick)
+                                    continue
+            except Exception:
+                pass
+
             # Hit rate gate: check actual clearing rate vs implied breakeven
             # For OVER: need hit_rate (stat > line) >= implied
             # For UNDER: need under_rate (stat <= line) >= implied

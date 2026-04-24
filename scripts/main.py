@@ -2615,7 +2615,8 @@ def _validate_picks(picks):
         # BOOK_ARB picks which bypass model-side validation by design.
         if p.get('side_type') in ('SPREAD_FADE_FLIP', 'DATA_SPREAD',
                                    'BOOK_ARB', 'PROP_BOOK_ARB',
-                                   'DATA_TOTAL', 'PROP_FADE_FLIP', 'FADE_FLIP'):
+                                   'DATA_TOTAL', 'PROP_FADE_FLIP', 'FADE_FLIP',
+                                   'PROP_CAREER_FADE'):
             valid.append(p)
             continue
 
@@ -3074,7 +3075,7 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         # became live picks because of this.
         if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB', 'SPREAD_FADE_FLIP',
                                     'DATA_SPREAD', 'DATA_TOTAL', 'PROP_FADE_FLIP',
-                                    'FADE_FLIP'):
+                                    'FADE_FLIP', 'PROP_CAREER_FADE'):
             return True
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
@@ -3633,7 +3634,8 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
                 and p.get('market_type') in ('SPREAD', 'TOTAL')
                 and _st_line_against not in ('SPREAD_FADE_FLIP', 'PROP_FADE_FLIP',
                                               'DATA_SPREAD', 'DATA_TOTAL',
-                                              'BOOK_ARB', 'PROP_BOOK_ARB', 'FADE_FLIP')):
+                                              'BOOK_ARB', 'PROP_BOOK_ARB', 'FADE_FLIP',
+                                              'PROP_CAREER_FADE')):
             try:
                 _om_la = _compute_opener_move_for_pick(conn, p)
                 if _om_la is not None and _om_la <= -0.5:
