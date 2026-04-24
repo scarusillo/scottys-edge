@@ -30,7 +30,7 @@ from model_engine import (
     spread_to_win_prob, spread_to_cover_prob,
     devig_ml_odds, american_to_implied_prob, _ncdf,
 )
-from scottys_edge import kelly_units, get_star_rating
+from scottys_edge import kelly_units
 
 SPORT = 'baseball_ncaa'
 

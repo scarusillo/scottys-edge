@@ -35,5 +35,55 @@
     "scheduler_heartbeat_ends": 16,
     "scheduler_expected": 15,
     "notes": "Sandbox disk-full outage 2026-04-21 11:33am EDT\u2013undetected; only 5 IG posts went through (10:44 + 14:41) then 8+ hourly runs aborted; TikTok had 0 posts despite 29-item queue (platform regression); IG comment survival 4/4 sampled; scheduler fired post-cutoff (21:30\u201323:30) with speculative pre-written heartbeats (log pollution). Today's Apr 22 recent post (13m old) already shows updated 216W-169L record."
+  },
+  {
+    "date": "2026-04-23",
+    "ig_followers": 79,
+    "ig_posts_count": 113,
+    "tt_followers": 2,
+    "tt_posts_count": 0,
+    "tt_likes_total": 5,
+    "ig_comments_posted_yesterday": 0,
+    "ig_comments_skipped_yesterday": 0,
+    "tt_comments_posted_yesterday": 0,
+    "tt_comments_skipped_yesterday": 0,
+    "comments_surviving": 3,
+    "comments_sampled": 3,
+    "scheduler_heartbeats": 2,
+    "scheduler_heartbeat_starts": 0,
+    "scheduler_heartbeat_ends": 0,
+    "scheduler_expected": 15,
+    "queue_today": {
+      "ig": 7,
+      "reddit": 7,
+      "tiktok": 7,
+      "total": 21
+    },
+    "notes": "SCHEDULER OUTAGE: only 2 heartbeats yesterday (both at 00:32 EDT). Last posting activity 2026-04-22T23:43 (orlandomagic TikTok). Scheduler silent ~24h (00:32 Apr 23 \u2192 05:29 Apr 24 EDT). Same failure mode as Apr 20 outage. Queue regenerated this morning 05:12 EDT (21 items: 7 IG / 7 reddit / 7 TikTok) but no posts attempted. IG growth steady: +21 followers since Apr 22. TikTok video grid failed to load \u2014 couldn't sample TikTok comment survival. 3/3 IG comments sampled still live (atleticodemadrid, fcbarcelona, orlandomagic)."
+  },
+  {
+    "date": "2026-04-24",
+    "ig_followers": 79,
+    "ig_posts_count": 113,
+    "tt_followers": 2,
+    "tt_posts_count": 0,
+    "tt_likes_total": 5,
+    "ig_comments_posted_yesterday": 0,
+    "ig_comments_skipped_yesterday": 0,
+    "tt_comments_posted_yesterday": 0,
+    "tt_comments_skipped_yesterday": 0,
+    "comments_surviving": null,
+    "comments_sampled": 0,
+    "scheduler_heartbeats": 0,
+    "scheduler_heartbeat_starts": 0,
+    "scheduler_heartbeat_ends": 0,
+    "scheduler_expected": 15,
+    "queue_today": {
+      "ig": 7,
+      "reddit": 7,
+      "tiktok": 7,
+      "total": 21
+    },
+    "notes": "CRITICAL: Scheduler fully silent across entire 2026-04-23 EDT window. Last heartbeat 2026-04-23T00:32 UTC (20:32 EDT 04-22, post-cutoff), next 2026-04-24T09:29 UTC (05:29 EDT 04-24) \u2014 ~29h gap. Second major outage in 4 days (Apr 20 precedent, Apr 22 post-cutoff firing). IG 79 followers and 113 posts unchanged from 04-23 snapshot (zero organic change). Today's queue regenerated 2026-04-24T05:12 EDT (21 items, now includes tiktok in by_platform). 3 most recent IG posts (Apr 24, Apr 23 reel, Apr 23) all show 0 comments. No comments posted yesterday \u2014 nothing to sample for survival. TikTok profile has no visible video grid (same issue as 04-23)."
   }
 ]

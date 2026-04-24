@@ -13,7 +13,7 @@ Usage:
     python agent_totals.py --email             # Email report
 """
 import sqlite3, sys, os
-from datetime import datetime, timedelta
+from datetime import datetime
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
 

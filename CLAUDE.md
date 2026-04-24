@@ -49,6 +49,7 @@ betting_model/
     config.py                       # Single source of truth for ALL thresholds/constants
     grader.py                       # Grade bets W/L/P + CLV analysis
     context_engine.py               # Contextual adjustments (rest, travel, pace, etc.)
+    context_spread_model.py         # Data-driven spread/total model (Context Path 2)
     elo_engine.py                   # Elo ratings from game results
     odds_api.py                     # The Odds API interface
     emailer.py                      # Gmail SMTP (picks, grades, captions, alerts)
@@ -56,7 +57,9 @@ betting_model/
     card_image.py                   # Instagram PNG cards (2160x2700, @2x retina)
     player_prop_model.py            # Own-projection prop engine (box score based)
     props_engine.py                 # Cross-book prop disagreement engine
+    career_stats.py                 # Career stat scraper for prop baselines
     pitcher_scraper.py              # Baseball pitcher rotation + quality + DOW adj
+    steam_engine.py                 # Steam signal detection (NO_MOVEMENT / SHARP_CONFIRMS / SHARP_OPPOSES)
     historical_scores.py            # ESPN scoreboard scraper (free)
     espn_team_scores.py             # ESPN team endpoint (fallback for missing scores)
     ncaa_scores.py                  # NCAA.com scraper (backup for college scores)

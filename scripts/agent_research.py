@@ -15,7 +15,7 @@ Usage:
     python agent_research.py --email            # Email the brief
 """
 import sqlite3, json, os, sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from urllib.request import Request, urlopen
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')

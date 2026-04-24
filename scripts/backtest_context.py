@@ -4,9 +4,8 @@ backtest_context.py — Compare OLD (ms += ctx) vs NEW (ms -= ctx) context sign
 Replays the full spread pipeline over the last 45 days with both sign modes.
 Shows favorites vs underdogs, by spread bucket, by sport.
 """
-import sqlite3, io, sys, math, os
+import sqlite3, io, sys, os
 from datetime import datetime, timedelta
-from collections import defaultdict
 
 if sys.stdout.encoding != 'utf-8':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
@@ -25,12 +24,12 @@ def _get_conn():
 
 conn = _get_conn()
 
-from elo_engine import get_elo_ratings, blended_spread, ELO_CONFIG
+from elo_engine import get_elo_ratings, blended_spread
 from model_engine import (
     SPORT_CONFIG, spread_to_cover_prob, american_to_implied_prob,
     compute_model_spread, get_latest_ratings,
 )
-from scottys_edge import scottys_edge_assessment, minimum_play_threshold, kelly_units
+from scottys_edge import scottys_edge_assessment, minimum_play_threshold
 from context_engine import get_context_adjustments
 
 DAYS_BACK = 45

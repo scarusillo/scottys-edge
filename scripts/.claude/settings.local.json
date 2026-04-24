@@ -25,7 +25,8 @@
       "Skill(schedule)",
       "Skill(schedule:*)",
       "WebFetch(domain:gwritenm.com)",
-      "PowerShell(\\(Get-ScheduledTask -TaskName \"BettingModel_Tennis_Morning\"\\).Settings.StartWhenAvailable)"
+      "PowerShell(\\(Get-ScheduledTask -TaskName \"BettingModel_Tennis_Morning\"\\).Settings.StartWhenAvailable)",
+      "PowerShell(Get-ScheduledTask | Where-Object { $_.TaskName -match \"Scotty|Betting|Picks|Morning|Hourly|Odds|Grade|Run|Pipeline\" } | Select-Object TaskName, State, @{n='LastRunTime';e={\\(Get-ScheduledTaskInfo $_\\).LastRunTime}}, @{n='NextRunTime';e={\\(Get-ScheduledTaskInfo $_\\).NextRunTime}}, @{n='LastResult';e={\\(Get-ScheduledTaskInfo $_\\).LastTaskResult}} | Format-Table -AutoSize)"
     ]
   }
 }
