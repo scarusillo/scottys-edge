@@ -1789,7 +1789,11 @@ def generate_predictions(conn, sport=None, date=None):
                     # Hard-block teams with <10 Elo games — SIU-E had 3 games,
                     # generated a -4.5 fav pick that flipped to +2.5 by game time.
                     # Soft weighting wasn't enough to prevent fake edges.
-                    if _min_gp < 10:
+                    # v25.85: tennis lowered to 7 — clay backfill (v25.81) seeds 2023-2024
+                    # history but 2025 debutants still sit below 10. Qualifier protection
+                    # preserved (players with 1-5 clay matches still blocked).
+                    _seasoning_min = 7 if sp.startswith('tennis_') else 10
+                    if _min_gp < _seasoning_min:
                         _log_divergence_block(conn, sp, eid, home, away, ms, mkt_hs, 'insufficient_elo_games')
                         skip_div += 1; continue
                     _sport_min = cfg.get('min_games_elo', 15)  # Target: 15+ games for full weight
