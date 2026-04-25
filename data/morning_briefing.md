@@ -1,11 +1,11 @@
 # Scotty's Edge Morning Briefing
-**Date:** Saturday, April 25, 2026 | **Generated:** 06:13 AM ET
+**Date:** Saturday, April 25, 2026 | **Generated:** 06:23 AM ET
 **Game Date Graded:** 2026-04-24
 
 ---
 ## Yesterday's Results
 
-**6W-3L-1P | +11.1u | GREEN DAY**
+**8W-4L-1P | +13.9u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
@@ -15,13 +15,22 @@
 | Boston Celtics@Philadelphia 76ers UNDER 216.5 | basketball_nba | DATA_TOTAL | -118 | 5.0 | **W** | +4.2 | 1.0% |
 | Tyrese Maxey OVER 26.5 pts | basketball_nba | PROP_FADE_FLIP | -120 | 5.0 | **W** | +4.2 | 0.4% |
 | Keldon Johnson UNDER 10.5 pts | basketball_nba | PROP_CAREER_FADE | -120 | 5.0 | **W** | +4.2 | 0.0% |
+| Dino Prizmic +2.5 | tennis_atp_madrid_open | DOG | -110 | 3.5 | **W** | +3.2 | -- |
+| Ignacio Buse +4.5 | tennis_atp_madrid_open | DOG | -110 | 3.5 | **W** | +3.2 | -- |
 | Washington Nationals@Chicago White Sox OVER 9 | baseball_mlb | DATA_TOTAL | -120 | 5.0 | **P** | +0.0 | 0.5% |
+| Tyra Caterina Grant +4.5 | tennis_wta_madrid_open | DOG | -110 | 3.5 | **L** | -3.5 | -- |
 | Luke Kornet UNDER 8.5 REBOUNDS | basketball_nba | PROP_UNDER | -150 | 5.0 | **L** | -5.0 | 0.0% |
 | San Antonio Spurs@Portland Trail Blazers UNDE | basketball_nba | DATA_TOTAL | -112 | 5.0 | **L** | -5.0 | 1.0% |
 | Houston Cougars@TCU Horned Frogs OVER 11.5 | baseball_ncaa | OVER | -130 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
+
+### Tyra Caterina Grant +4.5
+- **Category:** NO CLV DATA
+- **Analysis:** No closing line available for comparison.
+- **Final Score:** Sorana Cirstea 2 @ Tyra Caterina Grant 0
+- **Context:** BLOCK_BACKTEST_TENNIS_APR24
 
 ### Luke Kornet UNDER 8.5 REBOUNDS
 - **Category:** MARGINAL
@@ -44,11 +53,11 @@
 
 | Metric | Value |
 |--------|-------|
-| Record | **235W-183L** |
-| Win Rate | 56.2% |
-| P/L | **+93.4u** |
-| ROI | +4.5% |
-| Wagered | 2054.0u |
+| Record | **237W-184L** |
+| Win Rate | 56.3% |
+| P/L | **+96.2u** |
+| ROI | +4.7% |
+| Wagered | 2064.5u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -58,8 +67,8 @@
 | basketball_ncaab | 17 | 12 | +18.7u |
 | soccer_spain_la_liga | 3 | 0 | +11.3u |
 | baseball_mlb | 34 | 31 | +7.5u |
+| TENNIS | 6 | 5 | +4.0u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
-| TENNIS | 4 | 4 | +1.2u |
 | soccer_italy_serie_a | 2 | 2 | -3.3u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
@@ -109,7 +118,7 @@ Found 38 shadow-tagged picks.
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
 | AT_CAP | 164W-128L (56.2%) | +87.7u | 0.3 |
-| BELOW_CAP | 71W-55L (56.3%) | +5.7u | 0.6 |
+| BELOW_CAP | 73W-56L (56.6%) | +8.5u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -157,7 +166,7 @@ Found 38 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** WIN WIN LOSS WIN LOSS WIN WIN LOSS WIN LOSS
+- **Last 10:** WIN WIN LOSS WIN WIN LOSS WIN LOSS WIN WIN
 - **Current Streak:** 2 WIN
 
 ---
@@ -173,4 +182,4 @@ Found 38 shadow-tagged picks.
 8. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-25 06:13 ET*
+*Generated locally by export_briefing_data.py | 2026-04-25 06:23 ET*

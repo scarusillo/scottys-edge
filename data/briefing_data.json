@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-25 06:13",
+  "generated_at": "2026-04-25 06:23",
   "game_date": "2026-04-24",
   "yesterday": [
     {
@@ -111,6 +111,42 @@
       "dt": "2026-04-24"
     },
     {
+      "selection": "Dino Prizmic +2.5",
+      "sport": "tennis_atp_madrid_open",
+      "market_type": "SPREAD",
+      "side_type": "DOG",
+      "result": "WIN",
+      "pnl_units": 3.18,
+      "clv": null,
+      "edge_pct": null,
+      "odds": -110.0,
+      "units": 3.5,
+      "context_factors": "BLOCK_BACKTEST_TENNIS_APR24",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": null,
+      "event_id": "espn_tennis_atp_174119",
+      "dt": "2026-04-24"
+    },
+    {
+      "selection": "Ignacio Buse +4.5",
+      "sport": "tennis_atp_madrid_open",
+      "market_type": "SPREAD",
+      "side_type": "DOG",
+      "result": "WIN",
+      "pnl_units": 3.18,
+      "clv": null,
+      "edge_pct": null,
+      "odds": -110.0,
+      "units": 3.5,
+      "context_factors": "BLOCK_BACKTEST_TENNIS_APR24",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": null,
+      "event_id": "espn_tennis_atp_174117",
+      "dt": "2026-04-24"
+    },
+    {
       "selection": "Washington Nationals@Chicago White Sox OVER 9.0",
       "sport": "baseball_mlb",
       "market_type": "TOTAL",
@@ -127,6 +163,32 @@
       "closing_line": 9.5,
       "event_id": "1a7da3935dee427bcfb5038b6aca6b69",
       "dt": "2026-04-24"
+    },
+    {
+      "selection": "Tyra Caterina Grant +4.5",
+      "sport": "tennis_wta_madrid_open",
+      "market_type": "SPREAD",
+      "side_type": "DOG",
+      "result": "LOSS",
+      "pnl_units": -3.5,
+      "clv": null,
+      "edge_pct": null,
+      "odds": -110.0,
+      "units": 3.5,
+      "context_factors": "BLOCK_BACKTEST_TENNIS_APR24",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": null,
+      "event_id": "espn_tennis_wta_174274",
+      "dt": "2026-04-24",
+      "actual_score": {
+        "home": "Tyra Caterina Grant",
+        "away": "Sorana Cirstea",
+        "home_score": 0,
+        "away_score": 2,
+        "actual_total": 21,
+        "actual_margin": -2
+      }
     },
     {
       "selection": "Luke Kornet UNDER 8.5 REBOUNDS",
@@ -201,10 +263,10 @@
   ],
   "season": {
     "result": "LOSS",
-    "W": 235,
-    "L": 183,
-    "pnl": 93.4,
-    "wagered": 2054.0
+    "W": 237,
+    "L": 184,
+    "pnl": 96.2,
+    "wagered": 2064.5
   },
   "by_sport": [
     {
@@ -269,9 +331,9 @@
     },
     {
       "sport": "TENNIS",
-      "W": 4,
-      "L": 4,
-      "pnl": 1.2
+      "W": 6,
+      "L": 5,
+      "pnl": 4.0
     }
   ],
   "context_health": [
@@ -445,6 +507,15 @@
       "first_half_pnl": -7.6,
       "second_half_pnl": 8.7,
       "trending": "BETTER"
+    },
+    {
+      "factor": "BLOCK_BACKTEST_TENNIS_APR24",
+      "W": 2,
+      "L": 1,
+      "pnl": 2.9,
+      "first_half_pnl": 3.2,
+      "second_half_pnl": -0.3,
+      "trending": "WORSE"
     },
     {
       "factor": "Indiana Hoosiers SP: Reagan Rivera",
@@ -928,6 +999,13 @@
       "pnl": 5.8
     },
     {
+      "day_of_week": "",
+      "sport": "tennis_atp_madrid_open",
+      "W": 2,
+      "L": 0,
+      "pnl": 6.4
+    },
+    {
       "day_of_week": "Sunday",
       "sport": "basketball_ncaab",
       "W": 3,
@@ -1022,9 +1100,9 @@
     },
     {
       "bucket": "BELOW_CAP",
-      "W": 71,
-      "L": 55,
-      "pnl": 5.7,
+      "W": 73,
+      "L": 56,
+      "pnl": 8.5,
       "avg_clv": 0.6
     }
   ],
@@ -1221,22 +1299,304 @@
       "pnl": -4.5
     }
   ],
-  "ungraded": [],
+  "ungraded": [
+    {
+      "selection": "Nikola Jokic OVER 29.5 pts",
+      "sport": "basketball_nba",
+      "dt": "2026-04-25"
+    }
+  ],
   "last_10": [
     "WIN",
     "WIN",
     "LOSS",
     "WIN",
-    "LOSS",
-    "WIN",
     "WIN",
     "LOSS",
     "WIN",
-    "LOSS"
+    "LOSS",
+    "WIN",
+    "WIN"
   ],
   "streak": 2,
   "streak_type": "WIN",
   "shadow_blocked_picks": [
+    {
+      "created_at": "2026-04-25T10:16:11.850443+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Donte DiVincenzo OVER 2.5 threes",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": -132.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=3.4 vs market_median=2.5, gap=0.9 > thr 0.75, books=5)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:11.849637+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Donte DiVincenzo OVER 2.5 threes",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": -141.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=3.4 vs market_median=2.5, gap=0.9 > thr 0.75, books=5)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:11.848917+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Donte DiVincenzo OVER 2.5 threes",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": -141.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=3.4 vs market_median=2.5, gap=0.9 > thr 0.75, books=5)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:11.848008+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Donte DiVincenzo OVER 2.5 threes",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": -125.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=3.4 vs market_median=2.5, gap=0.9 > thr 0.75, books=5)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:11.847351+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Donte DiVincenzo OVER 2.5 threes",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": -130.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=3.4 vs market_median=2.5, gap=0.9 > thr 0.75, books=5)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:11.845787+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Donte DiVincenzo OVER 2.5 threes",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": -111.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=3.4 vs market_median=2.5, gap=0.9 > thr 0.75, books=5)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:11.843566+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Donte DiVincenzo OVER 2.5 threes",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": -132.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=3.4 vs market_median=2.5, gap=0.9 > thr 0.75, books=5)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:05.352704+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Naz Reid OVER 10.5 pts",
+      "market_type": "PROP",
+      "line": 10.5,
+      "odds": -114.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_FLIP (career=13.8, mkt=10.5, gap=3.3)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:04.786985+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Nikola Jokic UNDER 30.5 pts",
+      "market_type": "PROP",
+      "line": 30.5,
+      "odds": -124.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=23.8 vs market_median=30.5, gap=6.7 > thr 3.0, books=4)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:04.782576+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Nikola Jokic UNDER 29.5 pts",
+      "market_type": "PROP",
+      "line": 29.5,
+      "odds": -110.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_FADE_FLIP (proj=23.8 vs market_median=30.5, gap=6.7 > thr 3.0, books=4)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:03.542675+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Donte DiVincenzo OVER 10.5 pts",
+      "market_type": "PROP",
+      "line": 10.5,
+      "odds": -125.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_FLIP (career=12.7, mkt=11.5, gap=1.2)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:02.833507+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Ayo Dosunmu OVER 11.5 pts",
+      "market_type": "PROP",
+      "line": 11.5,
+      "odds": -139.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_FLIP (career=13.5, mkt=12.5, gap=1.0)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:02.831120+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Ayo Dosunmu OVER 11.5 pts",
+      "market_type": "PROP",
+      "line": 11.5,
+      "odds": -115.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_FLIP (career=13.5, mkt=12.5, gap=1.0)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:02.481102+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Julius Randle OVER 19.5 pts",
+      "market_type": "PROP",
+      "line": 19.5,
+      "odds": -127.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_FLIP (career=21.0, mkt=19.8, gap=1.2)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:02.480297+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Julius Randle OVER 19.5 pts",
+      "market_type": "PROP",
+      "line": 19.5,
+      "odds": -130.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_FLIP (career=21.0, mkt=19.5, gap=1.5)"
+    },
+    {
+      "created_at": "2026-04-25T10:16:02.476108+00:00",
+      "sport": "basketball_nba",
+      "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+      "selection": "Julius Randle OVER 19.5 pts",
+      "market_type": "PROP",
+      "line": 19.5,
+      "odds": -125.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_FLIP (career=21.0, mkt=19.8, gap=1.2)"
+    },
+    {
+      "created_at": "2026-04-25T10:14:18.029011+00:00",
+      "sport": "basketball_nba",
+      "event_id": "184d31a9a32dffc9c91eac3766d6f12d",
+      "selection": "Gabe Vincent OVER 2.5 pts",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": -129.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_FLIP (career=4.7, mkt=2.5, gap=2.2)"
+    },
+    {
+      "created_at": "2026-04-25T10:14:18.028578+00:00",
+      "sport": "basketball_nba",
+      "event_id": "184d31a9a32dffc9c91eac3766d6f12d",
+      "selection": "Gabe Vincent OVER 2.5 pts",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": -132.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_FLIP (career=4.7, mkt=2.5, gap=2.2)"
+    },
+    {
+      "created_at": "2026-04-25T10:14:18.027482+00:00",
+      "sport": "basketball_nba",
+      "event_id": "184d31a9a32dffc9c91eac3766d6f12d",
+      "selection": "Gabe Vincent OVER 2.5 pts",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": -147.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_FLIP (career=4.7, mkt=2.5, gap=2.2)"
+    },
+    {
+      "created_at": "2026-04-25T10:14:02.351355+00:00",
+      "sport": "basketball_nba",
+      "event_id": "184d31a9a32dffc9c91eac3766d6f12d",
+      "selection": "Jalen Brunson UNDER 27.5 pts",
+      "market_type": "PROP",
+      "line": 27.5,
+      "odds": -127.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=23.7 vs market_median=27.5, gap=3.8 > thr 3.0, books=4)"
+    },
+    {
+      "created_at": "2026-04-25T10:14:02.350585+00:00",
+      "sport": "basketball_nba",
+      "event_id": "184d31a9a32dffc9c91eac3766d6f12d",
+      "selection": "Jalen Brunson UNDER 26.5 pts",
+      "market_type": "PROP",
+      "line": 26.5,
+      "odds": -110.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_FADE_FLIP (proj=23.7 vs market_median=27.5, gap=3.8 > thr 3.0, books=4)"
+    },
+    {
+      "created_at": "2026-04-25T10:14:02.350156+00:00",
+      "sport": "basketball_nba",
+      "event_id": "184d31a9a32dffc9c91eac3766d6f12d",
+      "selection": "Jalen Brunson UNDER 27.5 pts",
+      "market_type": "PROP",
+      "line": 27.5,
+      "odds": -124.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=23.7 vs market_median=27.5, gap=3.8 > thr 3.0, books=4)"
+    },
+    {
+      "created_at": "2026-04-25T10:14:02.349003+00:00",
+      "sport": "basketball_nba",
+      "event_id": "184d31a9a32dffc9c91eac3766d6f12d",
+      "selection": "Jalen Brunson UNDER 27.5 pts",
+      "market_type": "PROP",
+      "line": 27.5,
+      "odds": -128.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=23.7 vs market_median=27.5, gap=3.8 > thr 3.0, books=4)"
+    },
     {
       "created_at": "2026-04-25T10:13:23.080149+00:00",
       "sport": "basketball_nba",
@@ -2160,292 +2520,16 @@
       "edge_pct": null,
       "units": null,
       "reason": "PROP_CAREER_FADE_FLIP (career=21.7, mkt=19.5, gap=2.2)"
-    },
-    {
-      "created_at": "2026-04-24T23:32:43.388641+00:00",
-      "sport": "basketball_nba",
-      "event_id": "af4847d63733e67ddd02f2bafac8ea6f",
-      "selection": "Devin Vassell OVER 14.5 pts",
-      "market_type": "PROP",
-      "line": 14.5,
-      "odds": -130.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_CAREER_FADE_FLIP (career=15.7, mkt=14.5, gap=1.2)"
-    },
-    {
-      "created_at": "2026-04-24T23:32:43.387399+00:00",
-      "sport": "basketball_nba",
-      "event_id": "af4847d63733e67ddd02f2bafac8ea6f",
-      "selection": "Devin Vassell OVER 14.5 pts",
-      "market_type": "PROP",
-      "line": 14.5,
-      "odds": -124.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_CAREER_FADE_FLIP (career=15.7, mkt=14.5, gap=1.2)"
-    },
-    {
-      "created_at": "2026-04-24T23:32:43.386820+00:00",
-      "sport": "basketball_nba",
-      "event_id": "af4847d63733e67ddd02f2bafac8ea6f",
-      "selection": "Devin Vassell OVER 14.5 pts",
-      "market_type": "PROP",
-      "line": 14.5,
-      "odds": -125.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_CAREER_FADE_FLIP (career=15.7, mkt=14.5, gap=1.2)"
-    },
-    {
-      "created_at": "2026-04-24T23:32:43.385618+00:00",
-      "sport": "basketball_nba",
-      "event_id": "af4847d63733e67ddd02f2bafac8ea6f",
-      "selection": "Devin Vassell OVER 14.5 pts",
-      "market_type": "PROP",
-      "line": 14.5,
-      "odds": -122.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_CAREER_FADE_FLIP (career=15.7, mkt=14.5, gap=1.2)"
-    },
-    {
-      "created_at": "2026-04-24T23:32:37.855969+00:00",
-      "sport": "icehockey_nhl",
-      "event_id": "e2d2c01a1afa073fc70698a37554c36e",
-      "selection": "Matt Savoie OVER 1.5 sog",
-      "market_type": "PROP",
-      "line": 1.5,
-      "odds": -144.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=2.5 vs market_median=1.5, gap=1.0 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:32:30.847813+00:00",
-      "sport": "icehockey_nhl",
-      "event_id": "863fdb33769ad2bb155134384e205a7a",
-      "selection": "Dylan Guenther UNDER 3.5 sog",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": -121.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=2.5 vs market_median=3.5, gap=1.0 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:32:30.847443+00:00",
-      "sport": "icehockey_nhl",
-      "event_id": "863fdb33769ad2bb155134384e205a7a",
-      "selection": "Dylan Guenther UNDER 3.5 sog",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": -115.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=2.5 vs market_median=3.5, gap=1.0 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:32:30.846542+00:00",
-      "sport": "icehockey_nhl",
-      "event_id": "863fdb33769ad2bb155134384e205a7a",
-      "selection": "Dylan Guenther UNDER 3.5 sog",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": -128.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=2.5 vs market_median=3.5, gap=1.0 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:32:30.844949+00:00",
-      "sport": "icehockey_nhl",
-      "event_id": "863fdb33769ad2bb155134384e205a7a",
-      "selection": "Dylan Guenther UNDER 3.5 sog",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": -110.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=2.5 vs market_median=3.5, gap=1.0 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:28:25.392867+00:00",
-      "sport": "basketball_nba",
-      "event_id": "5000a9f1dd7ba71de7ae6ceef836aa48",
-      "selection": "Jaxson Hayes OVER 5.5 pts",
-      "market_type": "PROP",
-      "line": 5.5,
-      "odds": -127.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=9.3 vs market_median=5.5, gap=3.8 > thr 3.0, books=4)"
-    },
-    {
-      "created_at": "2026-04-24T23:28:25.392101+00:00",
-      "sport": "basketball_nba",
-      "event_id": "5000a9f1dd7ba71de7ae6ceef836aa48",
-      "selection": "Jaxson Hayes OVER 5.5 pts",
-      "market_type": "PROP",
-      "line": 5.5,
-      "odds": -125.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=9.3 vs market_median=5.5, gap=3.8 > thr 3.0, books=4)"
-    },
-    {
-      "created_at": "2026-04-24T23:28:25.391606+00:00",
-      "sport": "basketball_nba",
-      "event_id": "5000a9f1dd7ba71de7ae6ceef836aa48",
-      "selection": "Jaxson Hayes OVER 5.5 pts",
-      "market_type": "PROP",
-      "line": 5.5,
-      "odds": -115.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=9.3 vs market_median=5.5, gap=3.8 > thr 3.0, books=4)"
-    },
-    {
-      "created_at": "2026-04-24T23:28:25.390993+00:00",
-      "sport": "basketball_nba",
-      "event_id": "5000a9f1dd7ba71de7ae6ceef836aa48",
-      "selection": "Jaxson Hayes OVER 5.5 pts",
-      "market_type": "PROP",
-      "line": 5.5,
-      "odds": -111.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=9.3 vs market_median=5.5, gap=3.8 > thr 3.0, books=4)"
-    },
-    {
-      "created_at": "2026-04-24T23:28:25.144893+00:00",
-      "sport": "basketball_nba",
-      "event_id": "5000a9f1dd7ba71de7ae6ceef836aa48",
-      "selection": "Jake LaRavia OVER 3.5 pts",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": -131.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_CAREER_FADE_FLIP (career=8.3, mkt=4.5, gap=3.8)"
-    },
-    {
-      "created_at": "2026-04-24T23:26:32.367151+00:00",
-      "sport": "baseball_mlb",
-      "event_id": "34a8cd87a97eb098ddeb7d6d4022544d",
-      "selection": "Luis Severino OVER 15.5 pitcher_outs",
-      "market_type": "PROP",
-      "line": 15.5,
-      "odds": -110.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=17.3 vs market_median=15.5, gap=1.8 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:26:32.366311+00:00",
-      "sport": "baseball_mlb",
-      "event_id": "34a8cd87a97eb098ddeb7d6d4022544d",
-      "selection": "Luis Severino OVER 15.5 pitcher_outs",
-      "market_type": "PROP",
-      "line": 15.5,
-      "odds": -110.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=17.3 vs market_median=15.5, gap=1.8 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:26:32.365800+00:00",
-      "sport": "baseball_mlb",
-      "event_id": "34a8cd87a97eb098ddeb7d6d4022544d",
-      "selection": "Luis Severino OVER 15.5 pitcher_outs",
-      "market_type": "PROP",
-      "line": 15.5,
-      "odds": -115.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=17.3 vs market_median=15.5, gap=1.8 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:26:32.365147+00:00",
-      "sport": "baseball_mlb",
-      "event_id": "34a8cd87a97eb098ddeb7d6d4022544d",
-      "selection": "Luis Severino OVER 15.5 pitcher_outs",
-      "market_type": "PROP",
-      "line": 15.5,
-      "odds": -129.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=17.3 vs market_median=15.5, gap=1.8 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:24:26.238800+00:00",
-      "sport": "baseball_mlb",
-      "event_id": "781378f4580bd5ca464d5bfa8f1035a2",
-      "selection": "Yusei Kikuchi OVER 16.5 pitcher_outs",
-      "market_type": "PROP",
-      "line": 16.5,
-      "odds": -114.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=17.9 vs market_median=16.5, gap=1.4 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:24:26.238124+00:00",
-      "sport": "baseball_mlb",
-      "event_id": "781378f4580bd5ca464d5bfa8f1035a2",
-      "selection": "Yusei Kikuchi OVER 16.5 pitcher_outs",
-      "market_type": "PROP",
-      "line": 16.5,
-      "odds": -113.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=17.9 vs market_median=16.5, gap=1.4 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:18:56.575104+00:00",
-      "sport": "baseball_mlb",
-      "event_id": "8a412fa061b10c75d57bc591bf081271",
-      "selection": "Grant Holmes OVER 15.5 pitcher_outs",
-      "market_type": "PROP",
-      "line": 15.5,
-      "odds": 130.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=16.8 vs market_median=15.5, gap=1.3 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T23:18:56.515286+00:00",
-      "sport": "baseball_mlb",
-      "event_id": "8a412fa061b10c75d57bc591bf081271",
-      "selection": "Grant Holmes OVER 15.5 pitcher_outs",
-      "market_type": "PROP",
-      "line": 15.5,
-      "odds": 135.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=16.8 vs market_median=15.5, gap=1.3 > thr 1.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-24T22:28:45.742319+00:00",
-      "sport": "basketball_nba",
-      "event_id": "af4847d63733e67ddd02f2bafac8ea6f",
-      "selection": "Scoot Henderson OVER 1.5 threes",
-      "market_type": "PROP",
-      "line": 1.5,
-      "odds": -115.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=2.3 vs market_median=1.5, gap=0.8 > thr 0.75, books=5)"
     }
   ],
   "book_performance": [
     {
       "book": "FanDuel",
-      "bets": 96,
-      "wins": 58,
-      "losses": 36,
-      "pnl": 64.6,
-      "wagered": 469.5,
+      "bets": 99,
+      "wins": 60,
+      "losses": 37,
+      "pnl": 67.5,
+      "wagered": 480.0,
       "avg_clv": 0.25
     },
     {
