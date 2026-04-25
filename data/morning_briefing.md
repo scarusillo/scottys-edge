@@ -1,89 +1,60 @@
 # Scotty's Edge Morning Briefing
-**Date:** Friday, April 24, 2026 | **Generated:** 05:08 AM ET
-**Game Date Graded:** 2026-04-23
+**Date:** Saturday, April 25, 2026 | **Generated:** 06:13 AM ET
+**Game Date Graded:** 2026-04-24
 
 ---
 ## Yesterday's Results
 
-**7W-7L-0P | +0.9u | GREEN DAY**
+**6W-3L-1P | +11.1u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Jaqueline Cristian ML | tennis_wta_madrid_open | DOG | +135 | 5.0 | **W** | +6.8 | 0.0% |
-| Terence Atmane ML | tennis_atp_madrid_open | DOG | +123 | 5.0 | **W** | +6.2 | 0.0% |
-| Carolina Hurricanes@Ottawa Senators UNDER 5.5 | icehockey_nhl | DATA_TOTAL | +102 | 5.0 | **W** | +5.1 | 0.0% |
-| Pittsburgh Pirates@Texas Rangers UNDER 8.0 | baseball_mlb | UNDER | -109 | 5.0 | **W** | +4.6 | 0.0% |
-| Cleveland Cavaliers@Toronto Raptors OVER 219. | basketball_nba | DATA_TOTAL | -110 | 5.0 | **W** | +4.5 | 1.5% |
-| Tyler Glasnow UNDER 4.5 HITS ALLOWED | baseball_mlb | PROP_UNDER | -110 | 5.0 | **W** | +4.5 | 0.0% |
-| R.J. Barrett OVER 18.5 POINTS | basketball_nba | PROP_BOOK_ARB | -120 | 5.0 | **W** | +4.2 | 0.0% |
-| Colorado Avalanche@Los Angeles Kings UNDER 5. | icehockey_nhl | UNDER | -105 | 5.0 | **L** | -5.0 | 0.0% |
-| Philadelphia Phillies@Chicago Cubs UNDER 9.0 | baseball_mlb | UNDER | -109 | 5.0 | **L** | -5.0 | -0.5% |
-| Denver Nuggets@Minnesota Timberwolves OVER 23 | basketball_nba | DATA_TOTAL | -110 | 5.0 | **L** | -5.0 | -1.5% |
-| New York Knicks@Atlanta Hawks UNDER 216.5 | basketball_nba | DATA_TOTAL | -110 | 5.0 | **L** | -5.0 | 2.0% |
-| Josh Hart UNDER 4.5 ASSISTS | basketball_nba | PROP_UNDER | -113 | 5.0 | **L** | -5.0 | -2.6% |
-| Naz Reid OVER 10.5 POINTS | basketball_nba | PROP_OVER | -112 | 5.0 | **L** | -5.0 | 0.9% |
-| Sam Merrill OVER 1.5 ASSISTS | basketball_nba | PROP_OVER | +125 | 5.0 | **L** | -5.0 | 0.0% |
+| Evan Bouchard UNDER 2.5 SOG | icehockey_nhl | PROP_UNDER | -110 | 5.0 | **W** | +4.5 | 0.0% |
+| Tari Eason UNDER 1.5 THREES | basketball_nba | PROP_UNDER | -111 | 5.0 | **W** | +4.5 | 0.0% |
+| Nebraska Cornhuskers@Illinois Fighting Illini | baseball_ncaa | OVER | -113 | 5.0 | **W** | +4.4 | 0.0% |
+| Boston Celtics@Philadelphia 76ers UNDER 216.5 | basketball_nba | DATA_TOTAL | -118 | 5.0 | **W** | +4.2 | 1.0% |
+| Tyrese Maxey OVER 26.5 pts | basketball_nba | PROP_FADE_FLIP | -120 | 5.0 | **W** | +4.2 | 0.4% |
+| Keldon Johnson UNDER 10.5 pts | basketball_nba | PROP_CAREER_FADE | -120 | 5.0 | **W** | +4.2 | 0.0% |
+| Washington Nationals@Chicago White Sox OVER 9 | baseball_mlb | DATA_TOTAL | -120 | 5.0 | **P** | +0.0 | 0.5% |
+| Luke Kornet UNDER 8.5 REBOUNDS | basketball_nba | PROP_UNDER | -150 | 5.0 | **L** | -5.0 | 0.0% |
+| San Antonio Spurs@Portland Trail Blazers UNDE | basketball_nba | DATA_TOTAL | -112 | 5.0 | **L** | -5.0 | 1.0% |
+| Houston Cougars@TCU Horned Frogs OVER 11.5 | baseball_ncaa | OVER | -130 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
 
-### Colorado Avalanche@Los Angeles Kings UNDER 5.5
+### Luke Kornet UNDER 8.5 REBOUNDS
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Colorado Avalanche 4 @ Los Angeles Kings 2
-- **Model Spread:** +0.6 | Actual Margin: -2
-- **Context:** Both teams slow-paced (-1.0) | Division familiarity (-0.3) | Goalies: Anton Forsberg 1.83 (recent 2.25) vs Scott Wedgewood 1.47 (recent 0.75) (-1.0) | Steam: no movement
+- **Final Score:** San Antonio Spurs 120 @ Portland Trail Blazers 108
 
-### Philadelphia Phillies@Chicago Cubs UNDER 9.0
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-0.5%) -- borderline call.
-- **Final Score:** Philadelphia Phillies 7 @ Chicago Cubs 8
-- **Model Spread:** -0.6 | Actual Margin: +1
-- **Context:** Weather: 11mph wind (-0.5) | [SHADOW] Midweek game | Chicago Cubs SP: Edward Cabrera (2.84 ERA) | Philadelphia Phillies SP: Cristopher Sanchez (1.93 ERA) | Pitching: Edward Cabrera 3.41 vs Cristopher Sanchez 2.51 (-0.8) | Park: Wrigley Field (+0.1) | Bullpen: Cubs 3.19 vs Phillies 4.57 (+0.0) | Steam: no movement
-
-### Denver Nuggets@Minnesota Timberwolves OVER 233.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-1.5%) -- borderline call.
-- **Final Score:** Denver Nuggets 96 @ Minnesota Timberwolves 113
-- **Context:** DATA_TOTAL v25.47 (Path 2) — CONTEXT_TOTAL: mkt=233.5 → ctx=239.19 | form=+3.5 (h:+6.7, a:+16.8) | h2h=+2.2 (n=5) | Market 233.5, Context 239.185 (disagreement=+5.69 ≥ 0.3). Bet OVER 233.5 @ Fanatics -110. | Steam: no movement
-
-### New York Knicks@Atlanta Hawks UNDER 216.5
+### San Antonio Spurs@Portland Trail Blazers UNDER 220
 - **Category:** VARIANCE
-- **Analysis:** Positive CLV (+2.0%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** New York Knicks 108 @ Atlanta Hawks 109
-- **Context:** DATA_TOTAL v25.47 (Path 2) — CONTEXT_TOTAL: mkt=216.0 → ctx=213.11 | form=-1.4 (h:+1.4, a:-11.1) | h2h=-1.4 (n=5) | Market 216.0, Context 213.10500000000002 (disagreement=-2.89 ≥ 0.3). Bet UNDER 216.5 @ Fanatics -110. | Steam: no movement
+- **Analysis:** Positive CLV (+1.0%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** San Antonio Spurs 120 @ Portland Trail Blazers 108
+- **Context:** DATA_TOTAL v25.47 (Path 2) — CONTEXT_TOTAL: mkt=220.0 → ctx=217.09 | form=-0.2 (h:-5.8, a:+4.3) | h2h=-2.7 (n=5) | Market 220.0, Context 217.095 (disagreement=-2.91 ≥ 0.3). Bet UNDER 220.5 @ DraftKings -112. | Steam: no movement
 
-### Josh Hart UNDER 4.5 ASSISTS
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-2.6%) -- borderline call.
-- **Final Score:** New York Knicks 108 @ Atlanta Hawks 109
-
-### Naz Reid OVER 10.5 POINTS
-- **Category:** VARIANCE
-- **Analysis:** Positive CLV (+0.9%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Denver Nuggets 96 @ Minnesota Timberwolves 113
-
-### Sam Merrill OVER 1.5 ASSISTS
+### Houston Cougars@TCU Horned Frogs OVER 11.5
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Cleveland Cavaliers 104 @ Toronto Raptors 126
+- **Context:** Friday game | TCU Horned Frogs allows 6.9 R/friday | Houston Cougars allows 7.9 R/friday | Pitching edge: TCU Horned Frogs (+0.3 pts) | CLV_MICRO_EDGE (edge=16.4%, pre_move=+0.61 TOWARD) | Steam: no movement
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **229W-180L** |
-| Win Rate | 56.0% |
-| P/L | **+82.3u** |
-| ROI | +4.1% |
-| Wagered | 2009.0u |
+| Record | **235W-183L** |
+| Win Rate | 56.2% |
+| P/L | **+93.4u** |
+| ROI | +4.5% |
+| Wagered | 2054.0u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| icehockey_nhl | 57 | 34 | +46.9u |
-| baseball_ncaa | 69 | 55 | +21.1u |
+| icehockey_nhl | 58 | 34 | +51.4u |
+| baseball_ncaa | 70 | 56 | +20.5u |
 | basketball_ncaab | 17 | 12 | +18.7u |
 | soccer_spain_la_liga | 3 | 0 | +11.3u |
 | baseball_mlb | 34 | 31 | +7.5u |
@@ -92,7 +63,7 @@
 | soccer_italy_serie_a | 2 | 2 | -3.3u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
-| basketball_nba | 41 | 39 | -13.5u |
+| basketball_nba | 45 | 41 | -6.5u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -106,9 +77,9 @@
 | Weather: light rain, 11mph wind | 1W-2L | -5.7u |
 | H2H high-scoring | 1W-2L | -5.3u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
-| DATA_TOTAL v25.47 | 4W-4L | -2.0u |
+| DATA_TOTAL v25.47 | 5W-5L | -2.8u |
+| Steam: no movement | 13W-12L | -2.5u |
 | Pitching edge: Florida Gators | 2W-2L | -1.7u |
-| Steam: no movement | 11W-10L | -1.2u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
 
@@ -118,7 +89,7 @@
 ---
 ## Shadow Pick Report
 
-Found 37 shadow-tagged picks.
+Found 38 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -137,8 +108,8 @@ Found 37 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 163W-128L (56.0%) | +83.3u | 0.3 |
-| BELOW_CAP | 66W-52L (55.9%) | -0.9u | 0.6 |
+| AT_CAP | 164W-128L (56.2%) | +87.7u | 0.3 |
+| BELOW_CAP | 71W-55L (56.3%) | +5.7u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -167,7 +138,7 @@ Found 37 shadow-tagged picks.
 |-------|------|---|---|-----|
 | baseball_mlb | OVER | 13 | 11 | +2.4u |
 | baseball_mlb | UNDER | 10 | 8 | +4.3u |
-| baseball_ncaa | OVER | 25 | 21 | +0.1u |
+| baseball_ncaa | OVER | 26 | 22 | -0.5u |
 | baseball_ncaa | UNDER | 34 | 28 | +2.9u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
@@ -186,8 +157,8 @@ Found 37 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS WIN WIN WIN WIN WIN LOSS LOSS WIN LOSS
-- **Current Streak:** 1 LOSS
+- **Last 10:** WIN WIN LOSS WIN LOSS WIN WIN LOSS WIN LOSS
+- **Current Streak:** 2 WIN
 
 ---
 ## Action Items
@@ -202,4 +173,4 @@ Found 37 shadow-tagged picks.
 8. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-24 05:08 ET*
+*Generated locally by export_briefing_data.py | 2026-04-25 06:13 ET*
