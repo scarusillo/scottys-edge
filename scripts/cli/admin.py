@@ -10,6 +10,7 @@ these directly are unchanged.
 """
 import os
 import sys
+from model_engine import DB_PATH
 
 
 def cmd_bootstrap(args):
@@ -21,7 +22,7 @@ def cmd_bootstrap(args):
 
 def cmd_reboot_ratings(args):
     import sqlite3
-    db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+    db = DB_PATH
     conn = sqlite3.connect(db)
     for sp in get_sports(args):
         conn.execute("DELETE FROM power_ratings WHERE sport=?", (sp,))
@@ -126,7 +127,7 @@ def cmd_elo(args):
 
 
 def cmd_setup_scheduler(args):
-    scripts_dir = os.path.dirname(os.path.abspath(__file__))
+    from model_engine import SCRIPTS_DIR as scripts_dir
     print(f"""
   🕐 AUTO-SCHEDULER SETUP — 4 Daily Runs (Windows Task Scheduler)
   ══════════════════════════════════════════════════════════════

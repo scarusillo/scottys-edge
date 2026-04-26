@@ -28,7 +28,7 @@ def backfill_trajectory_features(db):
     # Trajectory + per-book are static once a bet is fired; safe to compute post-hoc.
     try:
         import sys as _sys
-        _scripts_dir = os.path.dirname(__file__)
+        from model_engine import SCRIPTS_DIR as _scripts_dir
         if _scripts_dir not in _sys.path:
             _sys.path.insert(0, _scripts_dir)
         from line_trajectory import compute_trajectory

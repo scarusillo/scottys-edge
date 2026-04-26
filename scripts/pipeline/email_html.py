@@ -12,6 +12,8 @@ Re-exported from main for back-compat.
 """
 import re
 from datetime import datetime
+import os
+from model_engine import CARDS_DIR
 
 
 def _generate_html_card(picks):
@@ -593,7 +595,7 @@ def _generate_results_html(report_text):
 </body>
 </html>"""
     
-    cards_dir = os.path.join(os.path.dirname(__file__), '..', 'data', 'cards')
+    cards_dir = CARDS_DIR
     os.makedirs(cards_dir, exist_ok=True)
 
     filepath = os.path.join(cards_dir, 'scottys_edge_results.html')

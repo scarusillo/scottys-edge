@@ -10,13 +10,14 @@ these directly are unchanged.
 """
 import os
 import sys
+from model_engine import DB_PATH
 
 
 def cmd_predict(args):
     """Preview picks WITHOUT saving to DB. Use 'run' for actual picks."""
     import sqlite3
     from model_engine import generate_predictions, print_picks
-    db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+    db = DB_PATH
     conn = sqlite3.connect(db)
     sports = get_sports(args)
     # v25.68: auto-detect active tennis tournaments (mirrors cmd_run logic).
@@ -54,7 +55,7 @@ def cmd_report(args):
     sport = None
     sports = get_sports(args)
     if len(sports) == 1: sport = sports[0]
-    db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+    db = DB_PATH
     conn = sqlite3.connect(db)
     performance_report(conn, days=days, sport=sport)
     conn.close()

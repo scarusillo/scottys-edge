@@ -12,6 +12,8 @@ Re-exported from main for back-compat.
 """
 import re
 from datetime import datetime
+import os
+from model_engine import CARDS_DIR
 
 
 def _generate_kling_prompt(conn):
@@ -106,7 +108,7 @@ Scene {scene_num} ({t:.1f}-12.0s): Camera pulls back smoothly to reveal the full
 Style: Dark ESPN SportsCenter aesthetic. Athletes are fully visible and well-lit with sport-specific colored spotlights — NOT silhouettes. Green neon is the signature accent color throughout. All numbers appear on LED scoreboards inside the studio. Smooth, slow camera movements. Premium sports broadcast quality. 9:16 vertical, 12 seconds total."""
 
     # Save prompt to file and email
-    prompt_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'cards', 'kling_prompt.txt')
+    prompt_path = os.path.join(CARDS_DIR, 'kling_prompt.txt')
     with open(prompt_path, 'w', encoding='utf-8') as f:
         f.write(prompt)
     print(f"  Kling prompt saved: {prompt_path}")

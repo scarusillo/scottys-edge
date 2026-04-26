@@ -23,6 +23,8 @@ import sqlite3
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from model_engine import DB_PATH
+
 
 def run_data_refresh(sports, run_type, _log, _mark, PROP_SPORTS):
     """Run Steps 1 through 5b of cmd_run.
@@ -77,7 +79,7 @@ def run_data_refresh(sports, run_type, _log, _mark, PROP_SPORTS):
 
     # Health check: count how many odds rows were stored this run
     try:
-        _hc_db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+        _hc_db = DB_PATH
         _hc_conn = sqlite3.connect(_hc_db)
         _today = datetime.now().strftime('%Y-%m-%d')
         total_odds_fetched = _hc_conn.execute(
@@ -185,7 +187,7 @@ def run_data_refresh(sports, run_type, _log, _mark, PROP_SPORTS):
     try:
         from elo_engine import build_elo_ratings, get_elo_ratings
         import sqlite3 as _sq
-        _conn = _sq.connect(os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db'))
+        _conn = _sq.connect(DB_PATH)
         for sp in sports:
             elo_data = get_elo_ratings(_conn, sp)
             if elo_data:

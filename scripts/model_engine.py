@@ -59,6 +59,10 @@ from pipeline.display import (  # noqa: F401
 )
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPTS_DIR, '..'))
+DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
+CARDS_DIR = os.path.join(DATA_DIR, 'cards')
 
 from scottys_edge import (
     scottys_edge_assessment, calculate_point_value, get_star_rating,

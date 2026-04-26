@@ -11,6 +11,7 @@ these directly are unchanged.
 """
 import os
 import sys
+from model_engine import DB_PATH
 
 
 def cmd_scrub(args):
@@ -24,7 +25,7 @@ def cmd_scrub(args):
     """
     import sqlite3
     from datetime import datetime
-    db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+    db = DB_PATH
 
     if not args or args[0].startswith('--'):
         print("Usage: python main.py scrub <bet_id> [reason]")
@@ -112,7 +113,7 @@ def cmd_unscrub(args):
     """
     import sqlite3, re as _re
     from datetime import datetime
-    db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+    db = DB_PATH
 
     if not args or args[0].startswith('--'):
         print("Usage: python main.py unscrub <bet_id>")

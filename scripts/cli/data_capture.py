@@ -10,6 +10,7 @@ these directly are unchanged.
 """
 import os
 import sys
+from model_engine import DB_PATH
 
 
 def cmd_opener(args):
@@ -134,7 +135,7 @@ def cmd_props(args):
 
     print("\n🧠 Evaluating props...")
     from props_engine import evaluate_props, print_props
-    db = os.path.join(os.path.dirname(__file__), '..', 'data', 'betting_model.db')
+    db = DB_PATH
     conn = sqlite3.connect(db)
     picks = evaluate_props(conn)
     conn.close()
