@@ -1192,6 +1192,54 @@ def generate_prop_projections(conn=None):
         if not legal_entries:
             continue
 
+        # v25.90: PROP_PLAYOFF_ROLE_GATE (SHADOW MODE)
+        # Cohort analysis (post-Apr-15) showed ROLE-tier (avg pts < 12) NBA
+        # PROP_OVER picks losing 1-4 (-16u) in playoffs vs 1-1 (+1.2u) in
+        # reg-season. Same player class, different regime. Hypothesis:
+        # playoff rotations shorten and outcome variance widens beyond
+        # what season-trained model accounts for. CLV +1.04 on losers
+        # means model finds real edge — variance, not wrongness — but
+        # variance compounds and eats us. Sam Merrill OVER 1.5 AST lost
+        # again 2026-04-26 after scrub.
+        # SHADOW: log to shadow_blocked_picks but DON'T block. Re-evaluate
+        # at n>=15 cohort; promote to live block if blocked picks lose.
+        try:
+            from context_spread_model import _is_playoff_game as _pgr_is_playoff
+            _pgr_commence = (commence or '')[:10]
+            if (sport == 'basketball_nba'
+                    and side == 'Over'
+                    and stat_type in ('pts', 'ast', 'reb')
+                    and _pgr_is_playoff(sport, _pgr_commence)):
+                # Use pts baseline as tier proxy (works regardless of stat being bet)
+                _pgr_pts_baseline = get_player_baseline(conn, player, 'pts', sport)
+                _pgr_pts_avg = _pgr_pts_baseline.get('avg') if _pgr_pts_baseline else None
+                if _pgr_pts_avg is not None and _pgr_pts_avg < 12.0:
+                    # Log once per (event, player, stat, side) using median line.
+                    # Reason format MUST be 'CATEGORY (detail)' — the
+                    # shadow_blocked_picks_categorize trigger parses on " (" to
+                    # split reason_category from reason_detail.
+                    _pgr_lines = [e['line'] for e in legal_entries]
+                    _pgr_med = sorted(_pgr_lines)[len(_pgr_lines)//2] if _pgr_lines else None
+                    try:
+                        conn.execute("""INSERT INTO shadow_blocked_picks
+                            (created_at, sport, event_id, selection, market_type,
+                             book, line, odds, edge_pct, units, reason)
+                            VALUES (?, ?, ?, ?, 'PROP', ?, ?, NULL, NULL, NULL, ?)""",
+                            (datetime.now(timezone.utc).isoformat(), sport, eid,
+                             f"{player} OVER {_pgr_med} {stat_type}",
+                             'MEDIAN', _pgr_med,
+                             f'PROP_PLAYOFF_ROLE_GATE_SHADOW '
+                             f'(v25.90, pts_avg={_pgr_pts_avg:.1f} < 12.0, '
+                             f'stat={stat_type}, line={_pgr_med})'))
+                        conn.commit()
+                    except Exception:
+                        pass
+                    # SHADOW: do NOT continue — pick still fires live. Promote
+                    # to live block in `agent_morning_prompt.md` Section 6d
+                    # decision rules: n>=15 cohort and WR<40% and net P/L<-3u.
+        except Exception:
+            pass
+
         # For each book offering this OVER
         for entry in legal_entries:
             book = entry['book']

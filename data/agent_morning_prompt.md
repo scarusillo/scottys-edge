@@ -221,6 +221,46 @@ Report weekly progress toward those thresholds. If shadow W/L < 45% after
 15+ candidates, remove PRA from THRESHOLDS in `_prop_book_arb_scan` — the
 signal isn't there.
 
+## 6d. PROP_PLAYOFF_ROLE_GATE SHADOW TRACKING (v25.90, live 2026-04-26)
+
+Background: cohort study (post-Apr-15 NBA props) showed ROLE-tier (player
+pts avg < 12) PROP_OVER picks losing 1-4 (-16u) in playoffs vs 1-1 (+1.2u)
+in reg-season. Gate logs would-be-blocks to `shadow_blocked_picks` with
+`reason_category = 'PROP_PLAYOFF_ROLE_GATE_SHADOW'`. Shadow only — picks
+still fire live. Sam Merrill is the canonical example (lost again 4/26
+after scrub).
+
+### Part A — How many picks shadowed yesterday?
+
+```sql
+SELECT created_at, sport, event_id, selection, line, reason_detail
+FROM shadow_blocked_picks
+WHERE reason_category = 'PROP_PLAYOFF_ROLE_GATE_SHADOW'
+  AND DATE(created_at) = <yesterday>
+```
+
+Report count + the player names + the bet stat.
+
+### Part B — Did the cohort lose?
+
+For each shadow log, find the matching live bet in `graded_bets` (same
+event_id, same player, same OVER stat, units >= 3.5) and grade the result.
+
+Report:
+- n shadow-flagged picks that became live bets
+- W-L-P record + net P/L
+- CLV (mean) on the cohort
+
+### Part C — Promotion / kill decision
+
+- **Promote to live block** when n ≥ 15 cohort picks AND win rate < 40%
+  AND net P/L < -3u. Add Action Item: flip `# SHADOW: do NOT continue` to
+  `continue` in `player_prop_model.py` (PROP_PLAYOFF_ROLE_GATE block).
+- **Kill the gate** when n ≥ 20 AND net P/L > 0u. Cohort thesis was wrong.
+- **Continue shadowing** otherwise.
+
+Reference: see `feedback_no_panic_kill.md` and `project_session_apr26.md`.
+
 ## 7. ACTION ITEMS
 
 Concrete, numbered. Max 5. NEVER recommend things already resolved in

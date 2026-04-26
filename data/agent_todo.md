@@ -293,6 +293,21 @@ Two masks: "first time seeing this" + "everything is wrong."
 
 ## 🔎 NEXT-SESSION INVESTIGATIONS — code needed
 
+**Bench-player props (UPDATED 2026-04-26 — partially shipped as v25.90):**
+Initial flag from Sam Merrill / Vucevic scrubs evolved into cohort study:
+post-Apr-15 NBA props showed ROLE-tier (60d avg pts < 12) PROP_OVER picks
+losing 1-4 (-16u) in playoffs vs 1-1 (+1.2u) reg-season. Sam Merrill lost
+again 4/26 after scrub. Shipped `PROP_PLAYOFF_ROLE_GATE_SHADOW` (v25.90,
+player_prop_model.py ~line 1195) — logs candidates to shadow_blocked_picks
+without blocking. Tracked in agent Section 6d. Promote/kill rules: live
+block when n≥15 AND WR<40% AND P/L<-3u; kill if n≥20 AND P/L>0u.
+
+**Still open** (broader bench/usage gate, NOT shipped): minutes-based
+filter requires usage rate or avg-min stats not currently in box_scores
+(only pts/ast/reb/blk/stl/threes). Either backfill minutes via ESPN box
+score scrape or rely on the v25.90 pts-tier proxy. Decide AFTER the
+EDGE≥25% prop ceiling decision and after v25.90 shadow accumulates n≥15.
+
 **Context Model completeness:**
 - **Soccer Path 2 shadow data review** at n≥15 per sport × direction — promote OVER cohorts if backtest supports
 - **Re-validate fade cohorts** (MLS UNDER, EPL UNDER) at n≥15 — consider explicit FADE logic vs BLOCK
