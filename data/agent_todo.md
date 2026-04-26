@@ -283,11 +283,43 @@ Two masks: "first time seeing this" + "everything is wrong."
 
 ## 🟢 TOMORROW MORNING — grade + decide
 
-1. **Grade 9 scrubbed soccer OVER picks** → pull actual totals for bets 1008-1014, 1021, 1022. If 6+/9 hit OVER, consider promoting soccer OVER cohorts from SHADOW to FOLLOW. If <=4 hit, shadow rule was right.
+1. **Grade unscrubbed bets #1079 (SA@POR UNDER 219) and #1080 (SD@ARI OVER 15.0).** Both restored to 5u after positive-CLV cohort argument. Note for #1080: if it loses BIG against a high market line, investigate Mexico City altitude park-factor gap (model said 16.78 vs market 15.0 — verify whether that disagreement was altitude-aware or coincidence).
 
-2. **Check 5am tennis run output.** Did `BettingModel_Tennis_Morning` fire? What edges? Confirm the scheduled task actually executed (PC was on). Tennis Elo green-lit via 3,376-match backtest (70-73% WR across all slices).
+2. **Check v25.90 PROP_PLAYOFF_ROLE_GATE_SHADOW first daily report** — agent Section 6d should populate. 27 picks shadowed on 4/26 evening run. Track cohort outcomes in graded_bets.
 
-3. **Normal agent flow** — morning briefing + pre-run validator + code auditor should all work tomorrow now that `db-latest` release is fixed (v25.61). Check for fresh action items.
+3. **Grade 9 scrubbed soccer OVER picks** → pull actual totals for bets 1008-1014, 1021, 1022. If 6+/9 hit OVER, consider promoting soccer OVER cohorts from SHADOW to FOLLOW. If <=4 hit, shadow rule was right.
+
+4. **Check 5am tennis run output.** Did `BettingModel_Tennis_Morning` fire? What edges? Confirm the scheduled task actually executed (PC was on). Tennis Elo green-lit via 3,376-match backtest (70-73% WR across all slices).
+
+5. **Normal agent flow** — morning briefing + pre-run validator + code auditor should all work tomorrow now that `db-latest` release is fixed (v25.61). Check for fresh action items.
+
+---
+
+## 🚨 PRIORITY: NBA playoff regime mismatch (added 2026-04-26)
+
+**The diagnosis from the 4/26 session**: NORMAL channel WR fell from
+58.7% (March, n=211, +72.78u) to 51.2% (April, n=203, -24.25u) on stable
+CLV (+0.35 → +0.29). Not a broken model — it's regime-blind. Three of four
+high-volume sports shifted regime in April: NBA→playoffs, NHL→playoffs,
+tennis→clay (Monte Carlo). Elo+Context was calibrated on regular-season.
+
+**Hot fix candidates** (Path A — surgical, 1-2 days):
+1. **NBA DATA_TOTAL UNDER threshold raise from 0.3 → ≥3.5** — would have
+   flipped the 1-4 (-15.76u) playoff cohort to 1-0 (+4.24u). The one
+   winning UNDER (BOS@PHI 4/24) had disagreement -4.68; all 4 losers had
+   disagreement in -1.87 to -2.91 range. Tightening to ≥3.5 keeps the
+   winner, drops the noise. See Apr 25 OKC@PHX UNDER 214.5 pick — same
+   pattern.
+2. **MLB ERA reliability tightening** for early-season — current MIN_IP
+   thresholds set for mid-season; April still has thin pitcher samples.
+3. **Tennis surface-Elo audit** — Monte Carlo went 1-3 -10.67u with CLV
+   -0.25 (only negative-CLV cohort this month). Clay specialists likely
+   under-weighted in Elo despite v25.81 backfill.
+
+**Don't do:** retraining Elo, replacing NORMAL channel, panic-killing
+specialty channels. CLV proves edge exists — just regime-blind.
+
+**Reference:** `project_session_apr26.md`, `project_nba_playoff_series_awareness.md`
 
 ---
 
@@ -312,6 +344,17 @@ EDGE≥25% prop ceiling decision and after v25.90 shadow accumulates n≥15.
 - **Soccer Path 2 shadow data review** at n≥15 per sport × direction — promote OVER cohorts if backtest supports
 - **Re-validate fade cohorts** (MLS UNDER, EPL UNDER) at n≥15 — consider explicit FADE logic vs BLOCK
 - **Root-cause Phase A discrepancy** — v25.47 code comments cite MLS 15@66.7%, Serie A 12@66.7%; my 90d backtest found 8 and 10 respectively. Odds-table 7-day retention is partial answer; need to reproduce Phase A methodology precisely.
+
+**Mexico City altitude park-factor audit (added 2026-04-26):** SD@ARI OVER
+15.0 (bet #1080) was a Mexico City Series game played at ~7,300 ft (higher
+than Coors at 5,200 ft). Model arrived at projection 16.78 vs market 15.0,
++1.78 disagreement (above DATA_TOTAL MLB 1.5 threshold). Verify whether
+weather/park engine recognizes Mexico City venues — if it doesn't, the
+model is blind to the largest single-venue altitude effect in baseball
+and arrived at the elevated projection coincidentally. Check:
+- `weather_engine.py` for venue-altitude lookup
+- park factor table for Mexico City entry
+- If missing, add Mexico City stadium with appropriate altitude multiplier
 
 **Model channels never inverse-backtested:**
 - **Primary Elo edge model** — our workhorse (385+ graded picks, +76u, 56% WR). Run per-sport × market_type inverse backtest.
