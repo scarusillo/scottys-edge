@@ -1,0 +1,47 @@
+[
+  {
+    "book": "BetRivers",
+    "confidence": "STRONG",
+    "context_factors": "",
+    "edge_pct": 14.4,
+    "event_id": "99d2aa1ca35e112f2b327d2754702c3d",
+    "line": 2.5,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": -141.0,
+    "selection": "Pumas@Pachuca OVER 2.5",
+    "side_type": null,
+    "sport": "soccer_mexico_ligamx",
+    "units": 4.0
+  },
+  {
+    "book": "BetMGM",
+    "confidence": "STRONG",
+    "context_factors": "",
+    "edge_pct": 13.7,
+    "event_id": "9ac15108707cab4ec72b57548cd08e96",
+    "line": 3.5,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": -130.0,
+    "selection": "Mazatl\u00e1n FC@Tigres UNDER 3.5",
+    "side_type": null,
+    "sport": "soccer_mexico_ligamx",
+    "units": 5.0
+  },
+  {
+    "book": "BetMGM",
+    "confidence": "STRONG",
+    "context_factors": "",
+    "edge_pct": 14.6,
+    "event_id": "ecb2588081054246cfc791a787597c6f",
+    "line": 2.5,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": -145.0,
+    "selection": "Atlas@Am\u00e9rica UNDER 2.5",
+    "side_type": null,
+    "sport": "soccer_mexico_ligamx",
+    "units": 5.0
+  }
+]

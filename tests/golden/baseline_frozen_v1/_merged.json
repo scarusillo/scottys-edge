@@ -1,0 +1,17 @@
+[
+  {
+    "book": "Caesars",
+    "confidence": "DATA_TOTAL",
+    "context_factors": "",
+    "edge_pct": 0,
+    "event_id": "b24e970fd53cf667dd009e54d107d4b1",
+    "line": 228.0,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": -105.0,
+    "selection": "Denver Nuggets@Minnesota Timberwolves OVER 228.0",
+    "side_type": "DATA_TOTAL",
+    "sport": "basketball_nba",
+    "units": 5.0
+  }
+]

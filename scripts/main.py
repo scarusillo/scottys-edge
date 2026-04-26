@@ -2940,43 +2940,12 @@ def _merge_prop_sources(consensus_props, model_props):
 
 
 def _compute_opener_move_for_pick(conn, p):
-    """Direction-adjusted opener→fire line move for a candidate pick.
-    Positive = line moved TOWARD our side between opener and fire.
-    Returns None if openers data is missing or market_type unsupported.
+    """v26.0 Phase 3: thin wrapper kept for backwards compatibility.
 
-    Used by v25.80 CLV_MICRO_EDGE_SHADOW logger + future stake-variable logic.
+    Logic moved to pipeline.score_helpers.compute_opener_move_for_pick.
     """
-    mtype = p.get('market_type')
-    if mtype not in ('SPREAD', 'TOTAL'):
-        return None
-    event_id = p.get('event_id')
-    fire_line = p.get('line')
-    if not event_id or fire_line is None:
-        return None
-    market = 'spreads' if mtype == 'SPREAD' else 'totals'
-    try:
-        row = conn.execute(
-            "SELECT AVG(line) FROM openers WHERE event_id=? AND market=? AND line IS NOT NULL",
-            (event_id, market)).fetchone()
-    except Exception:
-        return None
-    if not row or row[0] is None:
-        return None
-    opener_line = row[0]
-    raw = fire_line - opener_line
-    if mtype == 'TOTAL':
-        sel = (p.get('selection') or '').upper()
-        if 'OVER' in sel:
-            return raw
-        if 'UNDER' in sel:
-            return -raw
-    elif mtype == 'SPREAD':
-        st = p.get('side_type') or ''
-        if st == 'DOG':
-            return raw
-        if st == 'FAVORITE':
-            return -raw
-    return None
+    from pipeline.score_helpers import compute_opener_move_for_pick
+    return compute_opener_move_for_pick(conn, p)
 
 
 def _merge_and_select(game_picks, prop_picks, conn=None):
@@ -3081,10 +3050,9 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
         sport = p.get('sport', '')
         book = p.get('book', '')
 
-        # v23: Minimum book count — thin markets produce fake edges
-        odds_market = {'SPREAD': 'spreads', 'TOTAL': 'totals', 'MONEYLINE': 'h2h'}.get(mtype, 'h2h')
-        book_count = _get_book_count(p.get('event_id', ''), odds_market)
-        if book_count < MIN_BOOKS:
+        # v26.0 Phase 3: extracted to pipeline.gates.gate_thin_market_block.
+        from pipeline.gates import gate_thin_market_block
+        if gate_thin_market_block(p, _get_book_count, MIN_BOOKS):
             return False
 
         # v24: Unified 20% edge floor for all books
@@ -3095,11 +3063,10 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
             min_edge = SOFT_BOOK_MIN_EDGE.get(mtype, 20.0)
         else:
             min_edge = SHARP_BOOK_MIN_EDGE.get(mtype, 20.0)
-        # v16: Soccer spreads DISABLED — backtest 80W-86L -70u.
-        # Only totals are profitable (92W-62L +104u, 59.7%).
-        # EPL/Ligue 1 spreads showed profit but not enough sample to trust yet.
-        if mtype == 'SPREAD' and 'soccer' in sport:
-            return False  # Block all soccer spreads — backtest negative
+        # v26.0 Phase 3: extracted to pipeline.gates.gate_soccer_spread_block.
+        from pipeline.gates import gate_soccer_spread_block
+        if gate_soccer_spread_block(p):
+            return False
         # Soccer totals: backtest 92W-62L +104u at 59.7% — the real edge
         # v23.1: Respect book tiers — sharp books (BetMGM etc) still need 20%.
         # Live soccer is 1W-3L -11.3u; don't let 5% floor bypass sharp-book gate.
@@ -3191,472 +3158,81 @@ def _merge_and_select(game_picks, prop_picks, conn=None):
 
         if not (_units >= _min_u and (_edge >= min_edge or _clv_micro_edge_active)):
             return False
-        # v23: ELITE + HIGH. HIGH allowed for soft book 15-20% edges (17W-8L +27u).
-        # STRONG still blocked (3W-7L -22.5u).
-        if p.get('confidence') not in REQUIRED_CONFIDENCE and p.get('confidence') is not None:
+        # v26.0 Phase 3: confidence + soft-market context extracted.
+        from pipeline.gates import gate_confidence, gate_soft_market_context
+        if gate_confidence(p, REQUIRED_CONFIDENCE):
+            return False
+        if gate_soft_market_context(p, SOFT_MARKETS):
             return False
         
-        # v17: Soft market context requirement.
-        # Data: Context-confirmed 42W-26L +54.2u (17.4% ROI).
-        #       Raw model (no ctx) 1W-2L -4.4u — no signal without context.
-        # Context at 20-25% edge is the sweet spot: 17W-5L +51.4u.
-        # Lowered gate from 20% to 18% — context 15-20% is 10W-8L (slight positive).
-        #
-        # Exceptions: March Madness (15%+), Soccer (5%+) — both work without context.
-        is_soft = sport in SOFT_MARKETS
-        has_context = bool(p.get('context', ''))
-        edge = p.get('edge_pct', 0)
-        _is_march_madness = (sport == 'basketball_ncaab'
-            and (datetime.now().month == 3 or (datetime.now().month == 4 and datetime.now().day <= 7)))
-        _ctx_min = 20.0  # v24: Unified context gate
-        if is_soft and not has_context and edge < _ctx_min:
-            # v14: March Madness exception. Tournament neutral-site games
-            # don't trigger context (no B2B, no home/away rest). The Elo
-            # spread itself is the signal. Allow picks through at 15% edge.
-            if _is_march_madness and edge >= 20.0:
-                pass  # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
-            # Soccer exception: European soccer lines are set by sharp global
-            # books. Context rarely fires (no B2B, no revenge in soccer). The
-            # Elo spread edge IS the signal. Backtest: EPL +21%, L1 +27% ROI
-            # at 5%+ edge without context. Allow soccer through at 5%+ edge.
-            elif 'soccer' in sport and edge >= 5.0:
-                pass  # Allow through — soccer Elo edges are proven
-            # Tennis exception: Same rationale as soccer — no B2B, no rest,
-            # no revenge in tennis. Surface-split Elo IS the signal.
-            # Context rarely fires for individual sport. Allow at 15%+ edge.
-            elif 'tennis' in sport and edge >= 20.0:
-                pass  # v21: Raised from 18% — 20%+ bucket is +82.2u, below is negative
-            else:
-                return False
-        
-        # ── Elo-only ML filter ──
-        # Data: NCAAB Elo-only ML is 3W-4L -3.6u — cross-conference Elo breaks down.
-        # But NBA/NHL Elo is better calibrated (larger samples, no conference issue).
-        # Block Elo-only ML for soft markets only. Sharp markets (NBA/NHL) allowed.
-        # Baseball ML exempt — uses pitcher data path, not Elo-only path.
-        if mtype == 'MONEYLINE' and 'baseball' not in sport and sport not in SHARP_MARKETS:
-            ctx_str = str(p.get('context', ''))
-            _elo_only = (ctx_str.strip() == 'Elo probability edge')
-            if _elo_only:
-                return False  # Block Elo-only ML in soft markets — no situational edge
+        # v26.0 Phase 3: extracted to pipeline.gates.gate_elo_only_ml_soft_market.
+        from pipeline.gates import gate_elo_only_ml_soft_market
+        if gate_elo_only_ml_soft_market(p, SHARP_MARKETS):
+            return False
 
-        # ── Heavy favorite ML filter ──
-        # Laying -300 or worse is terrible risk/reward for subscribers.
-        # A -450 ML risks $450 to win $100 — one loss wipes 4 wins.
-        # If the model likes a heavy favorite, the spread is the play.
+        # v26.0 Phase 3: heavy fav / heavy dog / NHL puck juice gates extracted.
+        from pipeline.gates import (gate_heavy_favorite_ml, gate_heavy_dog_ml,
+                                    gate_nhl_puck_line_juice)
         odds = p.get('odds', -110)
-        if mtype == 'MONEYLINE' and odds <= -300:
+        if gate_heavy_favorite_ml(p):
+            return False
+        if gate_heavy_dog_ml(p):
+            return False
+        # Small dog stake cap (+100..+150): not a gate, just a stake mutation.
+        if mtype == 'MONEYLINE' and odds > 0:
+            p['units'] = min(p.get('units', 5.0), 4.5)
+        if gate_nhl_puck_line_juice(p):
             return False
 
-        # ── Underdog ML filter ──
-        # v17: Tightened from +200 to +150. Data shows:
-        #   Small dogs (+100 to +150): 4W-1L +17.4u, 63% ROI — printing money
-        #   Med dogs (+151 to +200): 0W-2L -10.0u — complete loss
-        # Cap at +150. Dogs +151+ blocked entirely.
-        if mtype == 'MONEYLINE' and odds >= 151:
-            return False  # Block dogs +151 and higher
-        if mtype == 'MONEYLINE' and odds > 0:
-            # Small dogs (+100 to +150): cap at 4.5u
-            p['units'] = min(p.get('units', 5.0), 4.5)
-        
-        # ── NHL puck line juice cap ──
-        # v25: Tightened from -200 to -130. Full data: -130 and below is
-        # 15W-11L -11.3u (58% win rate but avg odds -178 needs 64% to profit).
-        # -115 to -129 is 5W-1L +15.5u. The juice eats all edge on heavy lines.
-        if mtype == 'SPREAD' and 'hockey' in sport and odds <= -130:
-            return False  # Puck line juice too heavy — need -129 or better
-
-        # ── NHL spread dog Elo floor ──
-        # v21: Raised from 1450 — Calgary (1460) lost by 7 on +2.5. Bottom ~5 teams blocked.
-        # Blackhawks (Elo 1431) 1W-4L -15u as puck line dog, 60% blowout rate
-        # when losing. Bottom-tier teams get blown out too often for ANY spread
-        # to cover. Blocks all spread dogs (any line > 0: +1.5, +2.5, etc.) when Elo < 1475.
+        # v26.0 Phase 3: extracted to pipeline.gates.gate_nhl_spread_dog_elo_floor.
+        from pipeline.gates import gate_nhl_spread_dog_elo_floor
+        if gate_nhl_spread_dog_elo_floor(p, conn):
+            return False
         sel = p.get('selection', '')
         line = p.get('line')
-        if mtype == 'SPREAD' and 'hockey' in sport and line is not None and line > 0:
-            team_name = sel.rsplit(' ', 1)[0].strip() if sel else ''
-            if team_name and conn:
-                elo_row = conn.execute(
-                    "SELECT elo FROM elo_ratings WHERE sport='icehockey_nhl' AND team=?",
-                    (team_name,)
-                ).fetchone()
-                if elo_row and elo_row[0] < 1475:
-                    return False  # v21: Block bottom ~5 NHL dogs from ALL spread lines — blowout rate too high
 
-        # ── Early NCAAB block ──
-        # Data: Early NCAAB is 4W-7L, -33.9% ROI. Lines haven't settled.
-        # The 8% surcharge wasn't enough. Block early NCAAB entirely.
-        # Late NCAAB is where the value lives.
-        if timing == 'EARLY' and sport == 'basketball_ncaab':
-            return False  # Block early NCAAB — lines too unsettled
-
-        # ── NCAAB totals block ──
-        # Data: NCAAB totals are 0W-3L, -14.0u. Model has no signal —
-        # TOTAL_STD=22 generates fake 18-35% edges. NCAAB spreads are
-        # profitable (late 15W-8L +30.3u), totals are not.
-        if mtype == 'TOTAL' and sport == 'basketball_ncaab':
+        # v26.0 Phase 3: NCAAB blocks extracted to pipeline.gates.
+        from pipeline.gates import gate_early_ncaab_block, gate_ncaab_totals_block
+        if gate_early_ncaab_block(p):
+            return False
+        if gate_ncaab_totals_block(p):
             return False
 
-        # v12 FIX: Graduated edge requirements for dogs.
-        # Elo compression makes the model systematically favor dogs.
-        # Small dogs (1-3.5) in NCAAB: 5W-9L — most efficiently priced.
-        # But NBA small dogs are part of our 10W-4L record — don't over-filter.
-        # Split by market tier: sharp markets trust the model, soft markets tighten.
-        line = p.get('line')
-        if mtype == 'SPREAD' and line is not None and line > 0 and 'tennis' not in sport:
-            is_sharp = sport in SHARP_MARKETS
-            if line <= 3.5:
-                # Small dogs: sharp markets (NBA/NHL) keep normal threshold
-                # Soft markets (NCAAB) need 20% — books nail these
-                if not is_sharp and edge < 20.0:
-                    return False
-            elif line <= 7.5:
-                # Med dogs: require 15% for sharp, 17% for soft
-                if is_sharp and edge < 15.0:
-                    return False
-                elif not is_sharp and edge < 17.0:
-                    return False
-            # Big dogs (8+): keep current thresholds, they're working
-
-        # ── Baseball total signal conflict filter ──
-        # Session 3/23 analysis: all 3 losses were baseball totals where internal
-        # signals contradicted the bet direction. Since we only recommend MAX PLAYs,
-        # conflicted picks should be suppressed entirely rather than size-reduced.
-        #
-        # Conflict 1: Pace direction vs bet side
-        #   - "fast-paced (+X)" means higher scoring → conflicts with UNDER
-        #   - "slow-paced (-X)" means lower scoring → conflicts with OVER
-        # Conflict 2: Pitching edge vs bet side
-        #   - Negative pitching adj (team suppresses runs) → conflicts with OVER
-        #   - Positive pitching adj (team allows runs) → conflicts with UNDER
-        #
-        # Data: 3 losses all had conflicts + CLV=0.0. 13 wins had aligned signals.
-        # Only applies to baseball totals — NHL/soccer have different dynamics.
-        if mtype == 'TOTAL' and 'baseball' in sport:
-            import re as _re
-            ctx = str(p.get('context', ''))
-            sel = p.get('selection', '')
-            is_over = 'OVER' in sel.upper()
-            is_under = 'UNDER' in sel.upper()
-
-            # Check pace direction from context string
-            _pace_match = _re.search(r'(fast|slow)-paced\s*\(([+-]?\d+\.?\d*)\)', ctx, _re.IGNORECASE)
-            _pace_conflicts = False
-            if _pace_match:
-                _pace_val = float(_pace_match.group(2))
-                # Positive pace = fast = more runs. Negative pace = slow = fewer runs.
-                if is_under and _pace_val > 0:
-                    _pace_conflicts = True  # Fast-paced but betting Under
-                elif is_over and _pace_val < 0:
-                    _pace_conflicts = True  # Slow-paced but betting Over
-
-            # Check pitching edge direction from context string
-            # Format: "Pitching edge: Team Name (+/-X.X pts)"
-            _pitch_match = _re.search(r'Pitching edge:.*?\(([+-]?\d+\.?\d*)\s*pts?\)', ctx, _re.IGNORECASE)
-            _pitch_conflicts = False
-            if _pitch_match:
-                _pitch_val = float(_pitch_match.group(1))
-                # Negative pitching adj = pitcher suppresses runs (Under signal)
-                # Positive pitching adj = pitcher allows runs (Over signal)
-                if is_over and _pitch_val <= -0.5:
-                    _pitch_conflicts = True  # Strong Under pitcher but betting Over
-                elif is_under and _pitch_val >= 0.5:
-                    _pitch_conflicts = True  # Weak pitcher but betting Under
-
-            # Block rules (tested against 3/22 data — 13W-3L):
-            # 1. Pitching edge ≥ 1.0 pts against bet direction → strong single conflict
-            # 2. Pace conflicts AND pitching doesn't support the bet (neutral or against)
-            #    i.e. pace says Over but betting Under, and pitching isn't helping the Under
-            #
-            # What this catches:
-            #   - UCF/TCU OVER: pitching -1.0 (strong Under pitcher) → blocked (rule 1)
-            #   - Wake/UVA UNDER: pace +0.6 (fast, Over signal) + pitching -0.1 (neutral) → blocked (rule 2)
-            # What this preserves:
-            #   - Houston/Kansas UNDER: pace +1.7 conflicts but pitching -0.3 supports Under → pass
-            #   - Troy/SoMiss UNDER: pace -0.7 supports Under (no pace conflict) → pass
-            #   - Creighton/Miami OVER: pitching -0.5 (below 1.0 threshold) → pass
-            _strong_pitch = _pitch_conflicts and abs(float(_pitch_match.group(1))) >= 1.0 if _pitch_match and _pitch_conflicts else False
-
-            # Check if pitching SUPPORTS the bet direction (counteracts pace conflict)
-            _pitch_supports_bet = False
-            if _pitch_match:
-                _pv = float(_pitch_match.group(1))
-                # Negative pitching = suppresses runs (supports Under)
-                # Positive pitching = allows runs (supports Over)
-                if is_under and _pv <= -0.2:
-                    _pitch_supports_bet = True
-                elif is_over and _pv >= 0.2:
-                    _pitch_supports_bet = True
-
-            _pace_unsupported = _pace_conflicts and not _pitch_supports_bet
-
-            if _pace_unsupported or _strong_pitch:
-                _conflict_type = []
-                if _pace_conflicts: _conflict_type.append('pace')
-                if _pitch_conflicts: _conflict_type.append('pitching')
-                if _pace_unsupported and not _pitch_conflicts: _conflict_type.append('no pitching support')
-                print(f"    ⚠ BLOCKED: {sel[:50]} — signal conflict ({', '.join(_conflict_type)} vs bet side)")
-                # v25.3: log to shadow_blocked_picks for observability
-                try:
-                    _gate_name = 'PITCHING_GATE' if _strong_pitch else 'PACE_GATE'
-                    conn.execute("""INSERT INTO shadow_blocked_picks
-                        (created_at, sport, event_id, selection, market_type, book,
-                         line, odds, edge_pct, units, reason)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                        (datetime.now().isoformat(), p.get('sport',''), p.get('event_id',''),
-                         p.get('selection',''), p.get('market_type',''), p.get('book',''),
-                         p.get('line'), p.get('odds'), p.get('edge_pct', 0),
-                         p.get('units', 0),
-                         f"{_gate_name} (signal conflict: {', '.join(_conflict_type)})"))
-                    conn.commit()
-                except Exception:
-                    pass
-                return False
-
-        # ── CLV-aware filter ──
-        # Data: Positive CLV bets 16W-4L (76%), CLV > 1pt is 12W-0L.
-        # Negative CLV bets 1W-3L (25%). Line movement against us = negative expected CLV.
-        # If opener exists and line moved 1.5+ pts against us, block the bet.
-        # This catches stale edges where the market has already corrected.
-        if conn is not None:
-            try:
-                import re
-                eid = p.get('event_id', '')
-                sel = p.get('selection', '')
-                if mtype == 'TOTAL':
-                    # Totals: extract "Over" or "Under" for opener lookup
-                    _lm_sel = 'Over' if 'OVER' in sel.upper() else 'Under'
-                    _lm_mkt = 'totals'
-                elif mtype == 'SPREAD':
-                    # Spreads: strip the line number to get team name
-                    _lm_sel = re.sub(r'\s*[+-]?\d+\.?\d*$', '', sel).strip()
-                    _lm_mkt = 'spreads'
-                else:
-                    _lm_sel = sel.replace(' ML', '').replace(' (cross-mkt)', '').strip()
-                    _lm_mkt = 'h2h'
-                # Query opener and current line directly
-                _opener = conn.execute("""
-                    SELECT line, odds FROM openers
-                    WHERE event_id = ? AND market = ? AND selection LIKE ?
-                    ORDER BY timestamp ASC LIMIT 1
-                """, (eid, _lm_mkt, f'%{_lm_sel}%')).fetchone()
-                _current = conn.execute("""
-                    SELECT line, odds FROM odds
-                    WHERE event_id = ? AND market = ? AND selection LIKE ?
-                    ORDER BY snapshot_date DESC, snapshot_time DESC LIMIT 1
-                """, (eid, _lm_mkt, f'%{_lm_sel}%')).fetchone()
-                if _opener and _current and _opener[0] is not None and _current[0] is not None:
-                    if mtype == 'TOTAL':
-                        if 'OVER' in sel.upper():
-                            _clv_move = _current[0] - _opener[0]  # Line rose = good for over (easier to clear)
-                        else:
-                            _clv_move = _opener[0] - _current[0]  # Line dropped = good for under (easier to stay under)
-                    elif mtype == 'SPREAD':
-                        _clv_move = _current[0] - _opener[0]  # More points = good for dog
-                    else:
-                        # ML: compare implied probs from odds
-                        _clv_move = 0.0  # Skip ML CLV for now — odds-based, not line-based
-                    if _clv_move <= -1.5:
-                        print(f"  ⚠ CLV BLOCK: {sel} — line moved {_clv_move:+.1f} against us (opener={_opener[0]}, now={_current[0]})")
-                        return False
-            except Exception:
-                pass  # Line movement data unavailable — don't block
-
-        # v25.35: SHARP_OPPOSES_BLOCK — gate picks where opener→current line
-        # moved against our side past the sport-specific steam threshold.
-        # Scoped to NHL + NCAA BB only (backtest post-Apr-1):
-        #   NHL:    17 picks, 8-9, -14.26u — decent sample, below coinflip
-        #   NCAA BB: 5 picks, 1-3-1, -10.65u — small sample but 25% hit rate
-        #                                       plus morning-agent cross-signal
-        # MLB stays monitored (50% hit, juice drag only). NBA/others not
-        # enough data yet. Sport list is the knob to promote/demote sports.
-        # Catches smaller movements that the CLV filter (-1.5 threshold) misses:
-        # NHL threshold is 0.5, NCAA BB is 1.0 — both below CLV cutoff.
-        SHARP_OPPOSES_BLOCK_SPORTS = {'icehockey_nhl', 'baseball_ncaa'}
-        if sport in SHARP_OPPOSES_BLOCK_SPORTS and conn is not None:
-            try:
-                from steam_engine import get_steam_signal
-                _sel = p.get('selection', '')
-                _eid = p.get('event_id', '')
-                _line = p.get('line')
-                if mtype == 'TOTAL':
-                    _steam_side = 'OVER' if 'OVER' in _sel.upper() else 'UNDER'
-                elif mtype == 'SPREAD':
-                    _st = (p.get('side_type') or '').upper()
-                    if _st in ('FAVORITE', 'DOG'):
-                        _steam_side = _st
-                    else:
-                        _steam_side = 'FAVORITE' if (_line is not None and _line < 0) else 'DOG'
-                else:
-                    _steam_side = None
-                if _steam_side and _eid and _line is not None:
-                    _sig, _info = get_steam_signal(conn, sport, _eid, mtype,
-                                                    _steam_side, _line, p.get('odds'))
-                    if _sig == 'SHARP_OPPOSES':
-                        _mv = _info.get('movement', 0)
-                        print(f"  ⚠ SHARP_OPPOSES_BLOCK: {_sel[:55]} — line moved {_mv:+.1f} against us")
-                        conn.execute("""INSERT INTO shadow_blocked_picks
-                            (created_at, sport, event_id, selection, market_type, book,
-                             line, odds, edge_pct, units, reason)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                            (datetime.now().isoformat(), sport, _eid, _sel, mtype,
-                             p.get('book', ''), _line, p.get('odds'),
-                             p.get('edge_pct', 0), p.get('units', 0),
-                             f'SHARP_OPPOSES_BLOCK ({sport}, move={_mv:+.1f})'))
-                        conn.commit()
-                        return False
-            except Exception:
-                pass
-
-        # v25.56: HARD_VETO_DK_NCAA_BB_UNDERS — surgical veto on the specific
-        # broken cohort. Post-rebuild DraftKings × NCAA Baseball UNDERs:
-        #   9W-18L, -51.0u, 33% WR on 27 picks
-        # Meanwhile DK NCAA OVERs (not vetoed) are 7-8, -10u — marginal
-        # juice bleed but not structurally broken.
-        #
-        # Why UNDERs specifically: even with positive CLV, DK NCAA UNDERs
-        # still lost (0-3 on CLV > 1). Line can close in our favor and
-        # games still go OVER → structural miscalibration, not pricing gap.
-        # Existing v25.22-24 DK-specific gates didn't narrow this cohort
-        # enough (post-gate record still 1-5 at -21u).
-        _sel_upper = (p.get('selection') or '').upper()
-        if (sport == 'baseball_ncaa'
-                and (p.get('book') or '') == 'DraftKings'
-                and (p.get('market_type') or '') == 'TOTAL'
-                and 'UNDER' in _sel_upper):
-            try:
-                conn.execute("""INSERT INTO shadow_blocked_picks
-                    (created_at, sport, event_id, selection, market_type, book,
-                     line, odds, edge_pct, units, reason)
-                    VALUES (?, ?, ?, ?, 'TOTAL', 'DraftKings', ?, ?, ?, ?, ?)""",
-                    (datetime.now().isoformat(), sport, p.get('event_id',''),
-                     p.get('selection',''), p.get('line'), p.get('odds'),
-                     p.get('edge_pct', 0), p.get('units', 0),
-                     'HARD_VETO_DK_NCAA_BB_UNDERS (v25.56 — 9-18 -51u post-rebuild)'))
-                conn.commit()
-            except Exception:
-                pass
-            print(f"    🚫 HARD_VETO_DK_NCAA_BB_UNDERS: {p.get('selection','')[:55]} — DK NCAA UNDERs 9-18 -51u post-rebuild")
+        # v26.0 Phase 3: extracted to pipeline.gates.gate_dog_spread_graduated_edge.
+        from pipeline.gates import gate_dog_spread_graduated_edge
+        if gate_dog_spread_graduated_edge(p, SHARP_MARKETS):
             return False
 
-        # v25.52: CONTEXT_DIRECTION_VETO — when Context Model's directional
-        # view disagrees with the pick's direction, veto the pick. Context is
-        # our primary brain; edge-based picks should defer on direction when
-        # the two conflict. Fade-flip / Context / arb picks are exempt (they
-        # have their own theses that intentionally bet against the model).
-        #
-        # 30-day backtest on 116 eligible TOTAL/SPREAD picks:
-        #   Context AGREES (81 picks): 49-32 (60%) +36.92u
-        #   Context DISAGREES (35 picks, would be vetoed): 15-20 (43%) -41.24u
-        # Expected save: +41u per 30 days.
-        _ctx_veto_sports_total = {'basketball_nba','icehockey_nhl','baseball_mlb',
-                                   'soccer_usa_mls','soccer_spain_la_liga',
-                                   'soccer_germany_bundesliga','soccer_france_ligue_one'}
-        _ctx_veto_sports_spread = {'icehockey_nhl','basketball_nba','soccer_italy_serie_a'}
-        _veto_exempt_side_types = {'SPREAD_FADE_FLIP','PROP_FADE_FLIP','DATA_SPREAD',
-                                    'DATA_TOTAL','BOOK_ARB','PROP_BOOK_ARB','FADE_FLIP'}
-        _st_norm = p.get('side_type') or ''
-        if conn is not None and _st_norm not in _veto_exempt_side_types:
-            try:
-                _eid = p.get('event_id', '')
-                _sel = p.get('selection', '') or ''
-                _line = p.get('line')
-                _mt = p.get('market_type', '')
-                # Fetch game info + market baselines
-                _mc = conn.execute("""
-                    SELECT home, away, commence_time, model_spread, best_home_spread, best_over_total
-                    FROM market_consensus WHERE event_id=? AND tag='CURRENT' LIMIT 1
-                """, (_eid,)).fetchone()
-                if _mc and _mc[0] and _mc[1] and _mc[2]:
-                    _home, _away, _commence, _ms, _mkt_sp, _mkt_tot = _mc
-                    _commence_date = _commence[:10]
-                    _ctx_direction_disagrees = False
-                    _ctx_reason = ''
-                    if _mt == 'TOTAL' and sport in _ctx_veto_sports_total and _mkt_tot is not None:
-                        from context_spread_model import compute_context_total
-                        _ctx_tot, _ = compute_context_total(conn, sport, _home, _away,
-                                                            _eid, _mkt_tot, _commence_date)
-                        _pick_side = 'OVER' if 'OVER' in _sel.upper() else 'UNDER'
-                        _ctx_side = 'OVER' if _ctx_tot > _mkt_tot else ('UNDER' if _ctx_tot < _mkt_tot else _pick_side)
-                        if _pick_side != _ctx_side:
-                            _ctx_direction_disagrees = True
-                            _ctx_reason = (f'CONTEXT_DIRECTION_VETO (totals: pick {_pick_side}, '
-                                           f'Context {_ctx_side} — ctx_tot={_ctx_tot:.2f} vs mkt={_mkt_tot})')
-                    elif _mt == 'SPREAD' and sport in _ctx_veto_sports_spread and _ms is not None and _mkt_sp is not None:
-                        from context_spread_model import compute_context_spread
-                        _ms_ctx, _ = compute_context_spread(conn, sport, _home, _away,
-                                                             _eid, _ms, _commence_date)
-                        _ctx_fav_home = (_ms_ctx < _mkt_sp)
-                        # Infer pick side: side_type FAVORITE or DOG, fallback team-match
-                        _pick_on_home = None
-                        if _st_norm == 'FAVORITE':
-                            _pick_on_home = (_mkt_sp < 0)
-                        elif _st_norm == 'DOG':
-                            _pick_on_home = (_mkt_sp > 0)
-                        else:
-                            _pick_on_home = (_home and _home.split()[0] in _sel.split()[0])
-                        if _pick_on_home is not None and _ctx_fav_home != _pick_on_home:
-                            _ctx_direction_disagrees = True
-                            _ctx_reason = (f'CONTEXT_DIRECTION_VETO (spread: pick on '
-                                           f'{"home" if _pick_on_home else "away"}, Context favors '
-                                           f'{"home" if _ctx_fav_home else "away"} — '
-                                           f'ms_ctx={_ms_ctx:+.1f} vs mkt_sp={_mkt_sp:+.1f})')
-                    if _ctx_direction_disagrees:
-                        print(f"    🧠 CONTEXT_DIRECTION_VETO: {_sel[:60]} — {_ctx_reason}")
-                        try:
-                            conn.execute("""INSERT INTO shadow_blocked_picks
-                                (created_at, sport, event_id, selection, market_type, book,
-                                 line, odds, edge_pct, units, reason)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                                (datetime.now().isoformat(), p.get('sport',''), p.get('event_id',''),
-                                 p.get('selection',''), p.get('market_type',''), p.get('book',''),
-                                 p.get('line'), p.get('odds'), p.get('edge_pct', 0),
-                                 p.get('units', 0), _ctx_reason))
-                            conn.commit()
-                        except Exception:
-                            pass
-                        return False
-            except Exception:
-                pass  # Context check failures fail-open — pick still fires
+        # v26.0 Phase 3: extracted to pipeline.gates.gate_baseball_pace_pitching_conflict.
+        from pipeline.gates import gate_baseball_pace_pitching_conflict
+        if gate_baseball_pace_pitching_conflict(p, conn):
+            return False
 
-        # v25.80 LINE_AGAINST_GATE (LIVE): block picks at 20%+ edge where the
-        # consensus line has already moved >= 0.5 AGAINST our side before we
-        # fire. Historical bleed (2026-04-23 analysis):
-        #   47 picks, W-L 21-24 (45% WR), -31.7u P/L on SPREAD/TOTAL.
-        #   Concentration: NCAA baseball -24.9u (29), DK -22.5u (10),
-        #   Caesars -19.0u (8). Only 8/47 overlap existing v25.35 SHARP_OPPOSES.
-        # Exempt: fade-flip / Context / arb side types — they intentionally
-        # bet against market movement and have their own logic.
-        _st_line_against = p.get('side_type') or ''
-        _edge_line_against = p.get('edge_pct', 0)
-        if (conn is not None and _edge_line_against >= 20.0
-                and not _clv_micro_edge_active  # CLV_MICRO_EDGE picks already cleared below 20%
-                and p.get('market_type') in ('SPREAD', 'TOTAL')
-                and _st_line_against not in ('SPREAD_FADE_FLIP', 'PROP_FADE_FLIP',
-                                              'DATA_SPREAD', 'DATA_TOTAL',
-                                              'BOOK_ARB', 'PROP_BOOK_ARB', 'FADE_FLIP',
-                                              'PROP_CAREER_FADE')):
-            try:
-                _om_la = _compute_opener_move_for_pick(conn, p)
-                if _om_la is not None and _om_la <= -0.5:
-                    from datetime import datetime as _dt
-                    _la_detail = f'edge={_edge_line_against:.1f}%, opener_move={_om_la:+.2f}'
-                    conn.execute("""
-                        INSERT INTO shadow_blocked_picks (created_at, sport, event_id,
-                            selection, market_type, book, line, odds, edge_pct, units,
-                            reason, reason_category, reason_detail)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (_dt.now().isoformat(), p.get('sport'), p.get('event_id'),
-                          p.get('selection'), p.get('market_type'), p.get('book'),
-                          p.get('line'), p.get('odds'), _edge_line_against,
-                          p.get('units', 0),
-                          f'LINE_AGAINST_GATE ({_la_detail})',
-                          'LINE_AGAINST_GATE', _la_detail))
-                    conn.commit()
-                    print(f"    🚫 LINE_AGAINST_GATE: {p.get('selection','')[:55]} — pre-bet line moved {_om_la:+.2f} against us")
-                    return False
-            except Exception:
-                pass
+        # v26.0 Phase 3: extracted to pipeline.gates.gate_clv_block.
+        from pipeline.gates import gate_clv_block
+        if gate_clv_block(p, conn):
+            return False
+
+        # v26.0 Phase 3: extracted to pipeline.gates.gate_sharp_opposes_block.
+        from pipeline.gates import gate_sharp_opposes_block
+        if gate_sharp_opposes_block(p, conn):
+            return False
+
+        # v26.0 Phase 3: HARD_VETO_DK_NCAA_BB_UNDERS extracted to pipeline.gates.
+        # Same gate, same log format, same block behavior.
+        from pipeline.gates import gate_dk_ncaa_bb_unders_veto
+        if gate_dk_ncaa_bb_unders_veto(p, conn):
+            return False
+
+        # v26.0 Phase 3: extracted to pipeline.gates.gate_context_direction_veto.
+        from pipeline.gates import gate_context_direction_veto
+        if gate_context_direction_veto(p, conn):
+            return False
+
+        # v26.0 Phase 3: extracted to pipeline.gates.gate_line_against.
+        from pipeline.gates import gate_line_against
+        if gate_line_against(p, conn, clv_micro_edge_active=_clv_micro_edge_active):
+            return False
 
         return True
 
@@ -4858,9 +4434,18 @@ def cmd_grade(args):
         from export_briefing_data import export_data, generate_local_briefing
         export_data()
         generate_local_briefing()
+        # v25.89: write daily gate-observability card (closes "didn't-fire" blind spot)
+        try:
+            from gate_observability import write_daily_card
+            _gh_conn = sqlite3.connect(db)
+            _gh_path = write_daily_card(_gh_conn)
+            _gh_conn.close()
+            print(f"  Gate health card: {_gh_path}")
+        except Exception as _ge:
+            print(f"  Gate health card: {_ge}")
         import subprocess as _bp
         _repo = os.path.join(os.path.dirname(__file__), '..')
-        _bp.run(['git', '-C', _repo, 'add', 'data/briefing_data.json', 'data/morning_briefing.md'], capture_output=True)
+        _bp.run(['git', '-C', _repo, 'add', 'data/briefing_data.json', 'data/morning_briefing.md', 'data/gate_health.md'], capture_output=True)
         _bp.run(['git', '-C', _repo, 'commit', '-m',
                  f'Update briefing data {datetime.now().strftime("%Y-%m-%d")}'], capture_output=True)
         # v24: Pull --rebase before push to handle concurrent pushes (e.g. pages workflow)

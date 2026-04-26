@@ -80,3 +80,11 @@ scripts/.claude/
 
 # Unknown binary temp file seen 2026-04-19
 scripts/ziOBVE8R
+
+# v26.0 shadow harness — DB snapshots are 3.4 GB each, regenerable via capture
+tests/golden/*/_snapshot.db
+# Transient verification artifacts (regenerable on demand)
+tests/golden/_det_*/
+
+# Local data salvage files (not part of any pipeline)
+data/*.salvaged.json

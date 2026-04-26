@@ -1,0 +1,17 @@
+[
+  {
+    "book": "BetMGM",
+    "confidence": "STRONG",
+    "context_factors": "",
+    "edge_pct": 14.4,
+    "event_id": "63dc13d149982e8f2c908b42b236c912",
+    "line": 5.5,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": -120.0,
+    "selection": "Pittsburgh Penguins@Philadelphia Flyers OVER 5.5",
+    "side_type": null,
+    "sport": "icehockey_nhl",
+    "units": 4.0
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "book": "BetMGM",
+    "confidence": "ELITE",
+    "context_factors": "",
+    "edge_pct": 20.0,
+    "event_id": "923d805add7039794f2363537d65f6c3",
+    "line": 9.5,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": 100.0,
+    "selection": "Detroit Tigers@Cincinnati Reds OVER 9.5",
+    "side_type": null,
+    "sport": "baseball_mlb",
+    "units": 5.0
+  },
+  {
+    "book": "DraftKings",
+    "confidence": "STRONG",
+    "context_factors": "",
+    "edge_pct": 9.66,
+    "event_id": "b266f49858dc754c6db869ecff6d52d5",
+    "line": 1.5,
+    "market_tier": null,
+    "market_type": "SPREAD",
+    "odds": -122.0,
+    "selection": "Houston Astros +1.5",
+    "side_type": null,
+    "sport": "baseball_mlb",
+    "units": 2.5
+  }
+]

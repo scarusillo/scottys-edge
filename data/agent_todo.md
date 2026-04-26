@@ -1,5 +1,45 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-24 — v25.85 tennis seasoning, v25.86 LINE_AGAINST_GATE observability, housekeeping batch
+**Last updated:** 2026-04-25 evening — v26.0 refactor in progress (Phases 0-3 + 4 POC shipped, see top of doc)
+
+## 🔧 IN PROGRESS — v26.0 generate_predictions refactor (USER PRIORITY for 2026-04-26 morning)
+
+The 2,190-line `generate_predictions()` god-function is being decomposed into testable
+pipeline stages. **Phases 0-3 + 4 POC + wall-clock freeze shipped on 2026-04-25.**
+Production verified clean — `main.py predict` runs end-to-end with new modular code.
+
+### Done (production-verified)
+- `tests/shadow_predict.py` — capture/replay/determinism harness with frozen wall-clock
+- `scripts/pipeline/stage_1_fetch.py` — sport setup + games (217 lines)
+- `scripts/pipeline/score_helpers.py` — pure scoring math + `compute_opener_move_for_pick` (165 lines)
+- `scripts/pipeline/gates.py` — **18 gate predicates + log_divergence_block** (~735 lines)
+- `_passes_filter` reduced from 600 → ~120 lines
+
+### Remaining (USER FOCUS 2026-04-26 — has all day)
+
+| Task | Effort | Risk | Priority |
+|---|---|---|---|
+| **Per-game loop body extraction** (1,782 lines → `score_game(setup, game, ctx)`) | 3-4 hr | HIGH | KEYSTONE |
+| Channel modules (SPREAD_FADE_FLIP, DATA_TOTAL, ELO ML rescue) | 4-5 hr | MED | blocked by ↑ |
+| Route + Merge (Phase 5) | 1.5-2 hr | LOW | unblocked |
+| Orchestrator cutover + 3-day shadow mode | 1 hr active + obs | LOW | last |
+| Final cutover + dead code cleanup | 30 min | LOW | last |
+| DATA_SPREAD dead code removal (v25.70 disabled the channel) | 20 min | LOW | quick win |
+
+**See `project_v26_refactor.md` in user's session memory for full state + workflow notes.**
+
+### Workflow that worked today
+1. Capture fresh `baseline_pre_phase_X` immediately before each change
+2. Make the change
+3. `python tests/shadow_predict.py replay --label baseline_pre_phase_X`
+4. POST-MERGE: 0 diffs = ship it
+5. Wall-clock drift on per-sport diffs is now neutralized by the harness freeze
+
+### DO NOT touch v26.0 work via cloud agents
+This is user-driven refactor work. Cloud agents should NOT propose changes to
+`scripts/pipeline/`, `tests/shadow_predict.py`, `_passes_filter`, or
+`generate_predictions` until v26.0 is fully shipped.
+
+---
 
 ## 🛑 AGENT: DO NOT RE-FLAG THESE (already handled)
 
@@ -24,6 +64,12 @@ typically use, and why it's already solved.
 | "Josh Hart UNDER 4.5 AST model error" | Partially handled | Covered by PROP_CAREER_FADE investigation — Hart was outlier in UNDER-below-career cohort (2-1 +3.70u), not a structural problem. Real problem was OVER-below-career which v25.87 addresses. |
 | "Midweek game factor -20u" | Shadow | Already in `shadow_factors.md`. Do not re-propose. |
 | "Steam sharp opposes -15.6u" | Handled | v25.35 SHARP_OPPOSES_BLOCK for NHL + NCAA BB. Remaining MLB cohort 2-1 +3.56u — do NOT extend. |
+| "NCAA BB SHARP_OPPOSES 1W-4L approaching gate threshold" | Handled | v25.35 SHARP_OPPOSES_BLOCK already gates NCAA BB. Live: 10 blocks Apr 24, 9 Apr 23, 4 Apr 22. Claim cites pre-v25.35 historical data. |
+| "NCAA BB TOTAL EDGE_20_PLUS -21u CLV-1.2 propose new gate" | Handled | Cohort fixed by v25.22-24 + v25.35 + v25.56 stack. Pre-v25.56: 49 picks, -21.9u. Post-v25.56 (Apr 21+): 5 picks, **+11.1u** (4W-1L). |
+| "LINE_AGAINST_GATE Cal@Miami logged 5x, propose dedup" | Not a bug | Hourly pipeline correctly re-evaluates each cycle (1hr apart). Every gate shows 1-16 fires/pick: CONTEXT_TOTAL_P2 16.3, PROP_DIVERGENCE 14.6, PROP_CAREER_FADE 3.9, etc. Expected behavior. |
+| "SOFT_LEAD thesis weakening at n=10, action needed" | Parked | Same parking logic as STABLE entry above. v25.84 L2 originator channels (SOFT_LEAD, SHARP_LEAD, DIVERGENT, MIXED, originator_book) all need n≥60 with full live trajectory data before any thesis revision. Currently observation-only. |
+| "Loosen clay DIVERGENCE_GATE — 4-1 retroactive signal" | Tested + Held (user revisiting) | Retroactive grade Apr 25 of full Apr 21-24 sample (n=31 SPREADs at -110): 13-17-1, 43.3% WR, -5.17u. WTA worst at 38.9%. ML in-scope [-150,+140] only n=5 (3-2 +1.4u — noise). Gate stays at max_spread_divergence=2.5, insufficient_elo_games=7. **USER FLAGGED FOR DEEPER ANALYSIS** — see TO-DO below. Do not re-propose until that analysis is run. See `project_wta_soft_market_thesis.md`. |
+| "Tennis Caesars routing veto — 1-4 -15.67u" | False positive | **All 4 Caesars Monte Carlo losses (Apr 5-6) fired pre-fix:** before commit 9e185e4 (Apr 6 spread_per_elo 120→13 fix), v24 (Apr 7 clay edge floor + divergence tighten), v25.81 (Apr 23 Sackmann Elo backfill 4×), v25.85 (Apr 24 seasoning 10→7), v25.88 (Apr 24 ML cap 200→140). The 16-24% "edges" were phantom math from a 10× spread_per_elo bug + thin Elo seasoning. Current model post-Apr-23 is 4-1 +15.76u on tennis. **Any tennis routing/gate analysis MUST filter to created_at >= 2026-04-23** to exclude bug-era data. |
 
 **How to use this table:** Before a cloud agent proposes a gate/veto/change,
 match the claim against the left column. If any handled/parked item matches,
@@ -33,7 +79,28 @@ say so instead of proposing. Cite the gate name + ship date.
 
 ## Original content
 
-## 🔴 TOMORROW MORNING (2026-04-25) — Review clay DIVERGENCE_GATE
+## 🔬 USER FLAGGED — Deeper clay DIVERGENCE_GATE analysis (2026-04-25)
+
+First-pass retro grade of n=31 Apr 21-24 blocks ran 2026-04-25 AM and showed the gate is doing its job (43.3% WR, -5.17u at SPREAD -110; WTA 38.9%). User wants to analyze further before accepting that conclusion.
+
+**⚠️ Key constraint:** ANY tennis analysis must filter `created_at >= 2026-04-23` (post-v25.81 Sackmann backfill + post-Apr-7 v24 fixes). Pre-Apr-7 tennis picks were generated by a broken model (10× spread_per_elo bug fixed in commit 9e185e4 on Apr 6, thin Elo seasoning fixed Apr 23). Including pre-fix picks in any tennis backtest produces false signals — see "Tennis Caesars routing veto" entry in handled list above.
+
+Possible angles to explore next session:
+
+1. **Split by gate reason** — `insufficient_elo_games` vs `post_elo_rescue` may behave differently. The 31-pick aggregate may hide a profitable subset.
+2. **Filter by divergence size** — div=2.5-3.0 (just over threshold) vs div=4.0+ (large divergence). Small-div picks may be the noise; large-div may be real signal or strong fade.
+3. **Filter by player seasoning** — the picks where one player has 4-6 clay matches (just under the 7 floor) vs picks where one has <3. The latter may be the genuinely uncertain cases the gate should keep blocking.
+4. **Round-stratified** — R32 vs R16 vs QF. Maybe the gate is right at R32 (large field, more qualifiers) but wrong at R16+ where Elo seasoning becomes meaningful.
+5. **ML + MAX_PROP_ODDS=200 sensitivity** — re-run the ML grade with TENNIS_ML_CAP +200 instead of +140 to see if it expands the in-scope sample meaningfully.
+6. **Add Apr 25 today picks** once Madrid R16 finishes (today), bumps sample by ~7-10 events.
+
+Source data: `shadow_blocked_picks` rows where `sport LIKE 'tennis%'` AND `reason LIKE '%insufficient_elo%' OR '%post_elo%'`, deduped by event_id. Reason string format: `DIVERGENCE_GATE (insufficient_elo_games, div=X.X, ms=±X.X, mkt_sp=±X.X)`. Bet side determined by ms vs mkt_sp comparison (ms < mkt_sp → bet player1; ms > mkt_sp → bet player2).
+
+Tracker: `data/tennis_block_backtest_20260424.md` + `project_wta_soft_market_thesis.md` (now marked INVALIDATED — re-open if angles 1-6 above flip the conclusion).
+
+---
+
+## 🔴 ORIGINAL TOMORROW MORNING (2026-04-25) — Review clay DIVERGENCE_GATE
 
 **User priority.** Combined 2-day signal on clay picks the DIVERGENCE_GATE blocked live:
 

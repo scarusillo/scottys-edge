@@ -740,26 +740,13 @@ def _log_park_veto(conn, sport, event_id, selection, park_adj, park_ctx):
 
 
 def _log_divergence_block(conn, sport, event_id, home, away, model_spread, market_spread, reason_detail):
-    """Log a pick blocked by max_spread_divergence to shadow_blocked_picks.
+    """v26.0 Phase 4: thin wrapper kept for backwards compatibility.
 
-    Divergence blocks fire BEFORE we know which bet type would have been generated,
-    so 'selection' just records the matchup. The reason_detail explains which of
-    the 3 div paths fired (insufficient_elo / post_elo_rescue / ml_only_implied).
+    Implementation moved to pipeline.gates.log_divergence_block.
     """
-    try:
-        div = abs(model_spread - market_spread) if (model_spread is not None and market_spread is not None) else None
-        div_str = f"{div:.1f}" if div is not None else "?"
-        ms_str = f"{model_spread:+.1f}" if model_spread is not None else "?"
-        msp_str = f"{market_spread:+.1f}" if market_spread is not None else "?"
-        conn.execute("""
-            INSERT INTO shadow_blocked_picks (created_at, sport, event_id, selection,
-                market_type, line, odds, edge_pct, units, reason)
-            VALUES (?, ?, ?, ?, 'SPREAD', NULL, NULL, NULL, NULL, ?)
-        """, (datetime.now().isoformat(), sport, event_id, f"{home} vs {away}",
-              f"DIVERGENCE_GATE ({reason_detail}, div={div_str}, ms={ms_str}, mkt_sp={msp_str})"))
-        conn.commit()
-    except Exception:
-        pass
+    from pipeline.gates import log_divergence_block
+    log_divergence_block(conn, sport, event_id, home, away,
+                          model_spread, market_spread, reason_detail)
 
 
 # ═══ MLB PARK FACTOR MAPPING ═══
@@ -1377,209 +1364,23 @@ def generate_predictions(conn, sport=None, date=None):
     print(f"  Game window: TODAY ONLY — {window_start} to {window_end}")
 
     for sp in sports:
-        ratings = get_latest_ratings(conn, sp)
+        # v26.0 Phase 1: data loading extracted to pipeline.stage_1_fetch.
+        # All sport setup (ratings, Elo, games, thresholds, auto-seed, sport
+        # config inference) lives there. Behavior is byte-equivalent vs the
+        # pre-refactor code path, verified by tests/shadow_predict.py.
+        from pipeline.stage_1_fetch import load_sport_setup
+        _setup = load_sport_setup(conn, sp, window_start, window_end)
+        if _setup is None:
+            continue
+        ratings = _setup['ratings']
+        elo_data = _setup['elo_data']
+        games = _setup['games']
+        is_thin = _setup['is_thin']
+        min_pv = _setup['min_pv']
+        min_pv_totals = _setup['min_pv_totals']
+        min_pv_ml = _setup['min_pv_ml']
+        cfg = _setup['cfg']
 
-        # Tennis: no bootstrap power ratings — seed from Elo so the pipeline proceeds
-        if sp.startswith('tennis_') and len(ratings) < 5:
-            try:
-                from elo_engine import get_tennis_elo
-                _t_elo, _t_key = get_tennis_elo(conn, sp)
-                if _t_elo:
-                    for player, data in _t_elo.items():
-                        # Convert Elo to a spread-scale rating (centered at 0)
-                        ratings[player] = {
-                            'base': round((data['elo'] - 1500) / 120, 2),  # 120 Elo per set
-                            'home_court': 0.0,
-                            'final': round((data['elo'] - 1500) / 120, 2),
-                        }
-                    print(f"  {sp}: {len(ratings)} players seeded from Elo ({_t_key})")
-            except Exception as e:
-                print(f"  {sp}: Elo seed failed: {e}")
-
-        if len(ratings) < 5:
-            print(f"  {sp}: only {len(ratings)} teams — SKIP"); continue
-        print(f"  {sp}: {len(ratings)} teams rated")
-
-        # Load Elo ratings if available
-        elo_data = {}
-        if HAS_ELO:
-            # Tennis: use surface-split Elo (e.g., tennis_atp_clay for French Open)
-            if sp.startswith('tennis_'):
-                try:
-                    from elo_engine import get_tennis_elo
-                    elo_data, _elo_key = get_tennis_elo(conn, sp)
-                    if elo_data:
-                        elo_count = sum(1 for v in elo_data.values() if v['confidence'] != 'LOW')
-                        print(f"    + Tennis Elo ({_elo_key}): {elo_count} players with confidence")
-                    else:
-                        print(f"    ⚠ No tennis Elo — run historical_scores.py + elo_engine.py")
-                except ImportError:
-                    pass
-            else:
-                elo_data = get_elo_ratings(conn, sp)
-                if elo_data:
-                    elo_count = sum(1 for v in elo_data.values() if v['confidence'] != 'LOW')
-                    print(f"    + Elo ratings: {elo_count} teams with confidence")
-                else:
-                    print(f"    ⚠ No Elo data — using market ratings only (run historical_scores.py + elo_engine.py)")
-
-        game_count = conn.execute(
-            "SELECT COUNT(DISTINCT event_id) FROM market_consensus WHERE sport=?",
-            (sp,)).fetchone()[0]
-        is_thin = game_count < 30
-        if is_thin: print(f"    {game_count} games — conservative mode")
-        min_pv = minimum_play_threshold(sp, is_thin)
-        min_pv_totals = min_pv + 5.0  # v12 FIX: Totals 24% +CLV rate. Require 5% more edge than spreads.
-        # Soccer totals: independent model produces smaller PV% (goals vs points),
-        # but backtest shows 9W-2L at 5%+ edge. Lower threshold for soccer.
-        if 'soccer' in sp:
-            min_pv_totals = 5.0
-        # Walters ML threshold: Elo probability vs de-vigged ML odds.
-        # Lower than spread thresholds because ML edges are raw probability
-        # comparisons — no key number inflation. Spread min_pv is calibrated
-        # for PV% which can reach 15-25% from crossing multiple key numbers.
-        # ML edges are naturally 4-12% for genuine disagreements.
-        min_pv_ml = max(5.0, min_pv * 0.50)  # Half of spread threshold, floor 5%
-
-        games = conn.execute("""
-            SELECT event_id, commence_time, home, away,
-                   best_home_spread, best_home_spread_odds, best_home_spread_book,
-                   best_away_spread, best_away_spread_odds, best_away_spread_book,
-                   best_over_total, best_over_odds, best_over_book,
-                   best_under_total, best_under_odds, best_under_book,
-                   best_home_ml, best_home_ml_book, best_away_ml, best_away_ml_book
-            FROM market_consensus
-            WHERE sport=? AND commence_time>=? AND commence_time<=?
-            AND snapshot_date = (
-                SELECT MAX(mc2.snapshot_date) FROM market_consensus mc2
-                WHERE mc2.event_id = market_consensus.event_id AND mc2.sport = market_consensus.sport
-            )
-            ORDER BY commence_time
-        """, (sp, window_start, window_end)).fetchall()
-        print(f"    {len(games)} games today")
-
-        # ── AUTO-SEED unrated teams from RESULTS + market data ──
-        # Critical for NCAAB: 363 teams, many small schools won't be
-        # in power_ratings from bootstrap. Step 1: try to derive a real
-        # rating from game results (like a mini-bootstrap). Step 2: if
-        # no results exist, derive from market spread. Step 3: only if
-        # truly no data, seed at 0.0 (model = market, no false edges).
-        seeded = 0
-        hca_seed = SPORT_CONFIG.get(sp, {}).get('home_court', 2.5)
-        
-        def _derive_rating_from_results(team, sport_key, conn_local, ratings_local, hca_val):
-            """Mini-bootstrap: derive a team's rating from their game results."""
-            rows = conn_local.execute("""
-                SELECT home, away, actual_margin
-                FROM results
-                WHERE (home = ? OR away = ?) AND sport = ? AND completed = 1
-                AND actual_margin IS NOT NULL
-                ORDER BY commence_time DESC LIMIT 10
-            """, (team, team, sport_key)).fetchall()
-            
-            if len(rows) < 2:
-                return None
-            
-            implied_ratings = []
-            for r in rows:
-                home_r, away_r, margin = r
-                is_home = (home_r == team)
-                opponent = away_r if is_home else home_r
-                opp_rating = ratings_local.get(opponent, {}).get('final')
-                
-                if opp_rating is not None:
-                    # TGPL: team_rating = margin + opponent_rating (adjusted for HCA)
-                    if is_home:
-                        implied = margin + opp_rating - hca_val
-                    else:
-                        implied = -margin + opp_rating + hca_val
-                    implied_ratings.append(implied)
-            
-            if not implied_ratings:
-                return None
-            
-            return round(sum(implied_ratings) / len(implied_ratings), 2)
-        
-        for g in games:
-            home_t, away_t = g[2], g[3]
-            mkt_spread = g[4]  # home spread (negative = home favored)
-            h_rated = home_t in ratings
-            a_rated = away_t in ratings
-
-            if h_rated and a_rated:
-                continue  # Both already rated
-
-            # Step 1: Try to derive from results
-            if not h_rated:
-                derived = _derive_rating_from_results(home_t, sp, conn, ratings, hca_seed)
-                if derived is not None:
-                    ratings[home_t] = {'base': derived, 'home_court': hca_seed, 'final': derived}
-                    h_rated = True
-                    seeded += 1
-            
-            if not a_rated:
-                derived = _derive_rating_from_results(away_t, sp, conn, ratings, hca_seed)
-                if derived is not None:
-                    ratings[away_t] = {'base': derived, 'home_court': hca_seed, 'final': derived}
-                    a_rated = True
-                    seeded += 1
-            
-            if h_rated and a_rated:
-                continue
-            
-            # Step 2: Derive from market spread + rated opponent
-            if mkt_spread is not None:
-                if h_rated and not a_rated:
-                    derived = ratings[home_t]['final'] + mkt_spread + hca_seed
-                    ratings[away_t] = {'base': derived, 'home_court': hca_seed, 'final': round(derived, 2)}
-                    seeded += 1
-                elif a_rated and not h_rated:
-                    derived = ratings[away_t]['final'] - mkt_spread - hca_seed
-                    ratings[home_t] = {'base': derived, 'home_court': hca_seed, 'final': round(derived, 2)}
-                    seeded += 1
-                else:
-                    # Neither rated, no results — seed from market (model = market, zero false edge)
-                    ratings[home_t] = {'base': 0.0, 'home_court': hca_seed, 'final': 0.0}
-                    derived = 0.0 + mkt_spread + hca_seed
-                    ratings[away_t] = {'base': derived, 'home_court': hca_seed, 'final': round(derived, 2)}
-                    seeded += 2
-            else:
-                if not h_rated:
-                    ratings[home_t] = {'base': 0.0, 'home_court': hca_seed, 'final': 0.0}
-                    seeded += 1
-                if not a_rated:
-                    ratings[away_t] = {'base': 0.0, 'home_court': hca_seed, 'final': 0.0}
-                    seeded += 1
-
-        if seeded:
-            print(f"    + Auto-seeded {seeded} unrated teams (from results + market data)")
-
-        cfg = SPORT_CONFIG.get(sp)
-        if cfg is None:
-            if 'tennis' in sp:
-                # Infer surface from tournament name — paramount for correct Elo + model params
-                _sp_lower = sp.lower()
-                _CLAY_KEYWORDS = ['french_open', 'roland_garros', 'monte_carlo', 'madrid',
-                                  'italian_open', 'rome', 'barcelona', 'hamburg', 'rio',
-                                  'buenos_aires', 'lyon', 'bastad', 'kitzbuhel', 'umag',
-                                  'gstaad', 'geneva', 'marrakech', 'bucharest', 'parma',
-                                  'palermo', 'prague', 'rabat', 'strasbourg', 'lausanne',
-                                  'portoroz', 'bogota', 'istanbul', 'budapest']
-                _GRASS_KEYWORDS = ['wimbledon', 'queens', 'halle', 'stuttgart_grass',
-                                   'eastbourne', 'berlin', 'bad_homburg', 'nottingham',
-                                   'mallorca', 's_hertogenbosch', 'birmingham', 'libema']
-                if any(kw in _sp_lower for kw in _CLAY_KEYWORDS):
-                    _surface = 'clay'
-                elif any(kw in _sp_lower for kw in _GRASS_KEYWORDS):
-                    _surface = 'grass'
-                else:
-                    _surface = 'hard'  # Most tournaments are hard court
-                cfg = dict(_TENNIS_PARAMS[_surface])
-                SPORT_CONFIG[sp] = cfg
-                print(f"    Auto-config: {sp} → {_surface} court")
-            else:
-                print(f"    ⚠ Unknown sport: {sp} — skipping")
-                continue
         seen = set()
         skip_nr = skip_div = skip_w = 0
 
@@ -1599,23 +1400,9 @@ def generate_predictions(conn, sport=None, date=None):
             ms = compute_model_spread(home, away, ratings, sp)
             if ms is None: skip_nr += 1; continue
 
-            # Neutral-site detection for NCAA tournament games.
-            # Before March 17: regular season + conference tournaments (HCA mostly applies)
-            # March 17+: NCAA tournament / NIT / CBI — ALL neutral sites
-            # April 1-7: Final Four + Championship — neutral
-            # Old code treated ALL of March as neutral, removing 3.2 pts of real HCA
-            # from regular season home games in early March.
-            _neutral = False
-            # Tennis: all matches are at neutral tournament venues
-            if sp.startswith('tennis_'):
-                _neutral = True
-            elif sp == 'basketball_ncaab':
-                _now = datetime.now()
-                _m, _d = _now.month, _now.day
-                if _m == 4 and _d <= 7:
-                    _neutral = True   # Final Four / Championship
-                elif _m == 3 and _d >= 17:
-                    _neutral = True   # NCAA tournament (post-Selection Sunday)
+            # v26.0 Phase 2: neutral-site detection extracted to score_helpers.
+            from pipeline.score_helpers import compute_neutral_site
+            _neutral = compute_neutral_site(sp)
 
             # UPGRADE: If Elo ratings available, use blended spread
             # This creates predictions INDEPENDENT of market lines
@@ -1797,47 +1584,10 @@ def generate_predictions(conn, sport=None, date=None):
                         _log_divergence_block(conn, sp, eid, home, away, ms, mkt_hs, 'insufficient_elo_games')
                         skip_div += 1; continue
                     _sport_min = cfg.get('min_games_elo', 15)  # Target: 15+ games for full weight
-                    _conf_w = min(1.0, _min_gp / _sport_min)
-
-                    # v14: SOS dampening for cross-conference matchups (esp March Madness).
-                    # Elo built from conference play can't compare across conferences.
-                    # A 1780 Elo in the MAC != 1780 in the Big 12.
-                    # Two checks:
-                    #   1. SOS gap > 60: teams played in different strength leagues
-                    #   2. Weak SOS (< 1510): team's Elo is inflated by cupcakes
-                    # Either condition dampens the edge. Both together = block.
-                    _sos_w = 1.0
-                    if sp == 'basketball_ncaab' and conn is not None:
-                        try:
-                            h_sos = conn.execute("""
-                                SELECT AVG(e.elo) FROM results r
-                                JOIN elo_ratings e ON e.team = CASE WHEN r.home=? THEN r.away ELSE r.home END
-                                    AND e.sport=?
-                                WHERE (r.home=? OR r.away=?) AND r.sport=? AND r.completed=1
-                            """, (home, sp, home, home, sp)).fetchone()[0] or 1500
-                            a_sos = conn.execute("""
-                                SELECT AVG(e.elo) FROM results r
-                                JOIN elo_ratings e ON e.team = CASE WHEN r.home=? THEN r.away ELSE r.home END
-                                    AND e.sport=?
-                                WHERE (r.home=? OR r.away=?) AND r.sport=? AND r.completed=1
-                            """, (away, sp, away, away, sp)).fetchone()[0] or 1500
-                            _sos_gap = abs(h_sos - a_sos)
-
-                            # Check 1: SOS gap between teams
-                            if _sos_gap > 100:
-                                _sos_w = 0.0  # Block: completely different leagues
-                            elif _sos_gap > 50:
-                                _sos_w = max(0.20, 1.0 - (_sos_gap - 50) / 60)
-
-                            # Check 2: Either team has weak SOS (< 1510 = mid-major)
-                            # Their Elo is inflated regardless of the gap
-                            _min_sos = min(h_sos, a_sos)
-                            if _min_sos < 1500:
-                                _sos_w = 0.0  # Hard block: cupcake schedule inflates Elo. Was 0.10 soft-block at 1480.
-                            elif _min_sos < 1520:
-                                _sos_w = min(_sos_w, 0.20)  # Heavy dampen: weak schedule. Was 0.30 at 1510.
-                        except Exception:
-                            pass
+                    # v26.0 Phase 2: confidence + SOS weighting extracted to score_helpers.
+                    from pipeline.score_helpers import compute_elo_confidence_weight, compute_sos_dampening
+                    _conf_w = compute_elo_confidence_weight(_min_gp, _sport_min)
+                    _sos_w = compute_sos_dampening(home, away, sp, conn)
 
                     from elo_engine import elo_win_probability
                     home_prob = elo_win_probability(home, away, elo_data, sp, neutral_site=_neutral)
@@ -1845,15 +1595,10 @@ def generate_predictions(conn, sport=None, date=None):
                         away_prob = 1.0 - home_prob
 
                         # ═══ INJURY ADJUSTMENT FOR ELO ML ═══
-                        # Elo ratings reflect historical performance WITH key players.
-                        # If a star is out, Elo overstates the team's strength.
-                        # Convert point impact to probability shift:
-                        #   5.0 pts impact ≈ 8-10% win probability swing (NBA/NHL).
-                        #   Scale: 1.5% win prob per point of injury impact.
-                        _inj_prob_shift = (a_imp - h_imp) * 0.015  # Positive = home advantage
-                        if abs(_inj_prob_shift) >= 0.01:
-                            home_prob = max(0.05, min(0.95, home_prob + _inj_prob_shift))
-                            away_prob = 1.0 - home_prob
+                        # v26.0 Phase 2: extracted to score_helpers.apply_injury_to_prob.
+                        from pipeline.score_helpers import apply_injury_to_prob
+                        home_prob = apply_injury_to_prob(home_prob, h_imp, a_imp)
+                        away_prob = 1.0 - home_prob
 
                         # Hard gate: block ML pick if the PICKED team has a star out
                         # (5.0+ point impact = MVP-caliber player missing)
@@ -1862,11 +1607,9 @@ def generate_predictions(conn, sport=None, date=None):
 
                         h_fair, a_fair, _ = devig_ml_odds(hml, aml)
                         if h_fair and a_fair:
-                            # Mismatch dampening: Elo compresses toward 50% and
-                            # can't distinguish 95% from 99% favorites. Close games
-                            # get full weight; extreme mismatches are dampened.
-                            _mkt_max = max(h_fair, a_fair)
-                            _mismatch_w = 1.0 if _mkt_max <= 0.75 else max(0.40, 1.0 - (_mkt_max - 0.75) * 2.4)
+                            # v26.0 Phase 2: mismatch dampening extracted to score_helpers.
+                            from pipeline.score_helpers import compute_mismatch_dampening
+                            _mismatch_w = compute_mismatch_dampening(h_fair, a_fair)
                             _elo_w = _conf_w * _mismatch_w * _sos_w
                             _min = min_pv if _is_tourney else min_pv_ml
                             # Home ML
@@ -2631,10 +2374,10 @@ def generate_predictions(conn, sport=None, date=None):
                     a_prob_ml = 1.0 - h_prob_ml
 
                 # ═══ INJURY ADJUSTMENT FOR WALTERS ML ═══
-                _inj_prob_shift = (a_imp - h_imp) * 0.015
-                if abs(_inj_prob_shift) >= 0.01:
-                    h_prob_ml = max(0.05, min(0.95, h_prob_ml + _inj_prob_shift))
-                    a_prob_ml = 1.0 - h_prob_ml
+                # v26.0 Phase 2: injury probability shift extracted to score_helpers.
+                from pipeline.score_helpers import apply_injury_to_prob
+                h_prob_ml = apply_injury_to_prob(h_prob_ml, h_imp, a_imp)
+                a_prob_ml = 1.0 - h_prob_ml
 
                 # Hard gate: block ML pick if picked team has star out
                 _home_star_out = h_imp >= 5.0

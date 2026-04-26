@@ -1,0 +1,62 @@
+[
+  {
+    "book": "BetOnline.ag",
+    "confidence": "ELITE",
+    "context_factors": "",
+    "edge_pct": 8.4,
+    "event_id": "4ca7c78e641b892b7ec0e9a188319c90",
+    "line": -0.5,
+    "market_tier": null,
+    "market_type": "SPREAD",
+    "odds": -140.0,
+    "selection": "FC Cincinnati -0.5",
+    "side_type": null,
+    "sport": "soccer_usa_mls",
+    "units": 5.0
+  },
+  {
+    "book": "MyBookie.ag",
+    "confidence": "ELITE",
+    "context_factors": "",
+    "edge_pct": 10.58,
+    "event_id": "8b3c6a6dd6d21aa88956f4f7464f7d9b",
+    "line": -0.5,
+    "market_tier": null,
+    "market_type": "SPREAD",
+    "odds": -139.0,
+    "selection": "San Diego FC -0.5",
+    "side_type": null,
+    "sport": "soccer_usa_mls",
+    "units": 5.0
+  },
+  {
+    "book": "FanDuel",
+    "confidence": "MEDIUM",
+    "context_factors": "",
+    "edge_pct": 7.14,
+    "event_id": "9ab3eb7088bf119b5e88c0c659ecd3db",
+    "line": null,
+    "market_tier": null,
+    "market_type": "MONEYLINE",
+    "odds": 410.0,
+    "selection": "Charlotte FC ML",
+    "side_type": null,
+    "sport": "soccer_usa_mls",
+    "units": 1.0
+  },
+  {
+    "book": "LowVig.ag",
+    "confidence": "ELITE",
+    "context_factors": "",
+    "edge_pct": 15.12,
+    "event_id": "a6df706107ac1333cf13aa483d24a56a",
+    "line": -1.5,
+    "market_tier": null,
+    "market_type": "SPREAD",
+    "odds": -128.0,
+    "selection": "Chicago Fire -1.5",
+    "side_type": null,
+    "sport": "soccer_usa_mls",
+    "units": 5.0
+  }
+]
