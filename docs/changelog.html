@@ -80,7 +80,52 @@ hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 40px 0;
   <p>If you see a change that moved numbers against us being honestly documented here, that's the point. If we ever silently changed a rule to make a past loss look better, we'd have to hide that commit. We don't.</p>
 </div>
 
-<!-- v25.34 -->
+<!-- v25.86–v25.89 -->
+<div class="version-group">
+  <div class="version-header">
+    <div class="ver">v25.86–v25.89</div>
+    <div class="date">Apr 24–25, 2026</div>
+    <div class="tag live">Live</div>
+  </div>
+
+  <div class="change">
+    <h3>Closing-line CLV split into components (v25.89)</h3>
+    <p>Three new columns on <code>bets</code> + <code>graded_bets</code>: <code>closing_odds</code> (american odds at close), <code>clv_line</code> (raw line movement in points, signed so positive = bet got a better number), and <code>clv_odds_pct</code> (juice movement in implied-probability percentage points). The existing <code>clv</code> field stays as the canonical "primary CLV" view. New <code>compute_clv_split()</code> helper in <code>grader.py</code> populates all three at grade time. Backfilled 84 of 439 historical graded rows where odds snapshots survived the v25.79 archive cutoff; future bets auto-populate.</p>
+    <p class="why">Why: Single combined CLV averages line and juice components, hiding cases where the line moved one way but the juice moved the other. Apr 25 backfill surfaced multiple sign-divergent cases (e.g. High Point/UNC UNDER 13.5 — line moved +1 toward us but juice swung -8% against). Splitting lets analysts ask "did we win the line or just the juice?" cleanly.</p>
+  </div>
+
+  <div class="change">
+    <h3>Gate observability — daily fired/blocked report (v25.89)</h3>
+    <p>New module <code>scripts/gate_observability.py</code> writes <code>data/gate_health.md</code> on every grade run. Card includes: fires by sport (graded + pending), block volume by sport, blocks by gate (sorted), and approximate pass-rate (fires / fires + distinct-blocked-events). 7-day per-gate breakdown table tops the report. Auto-committed to repo alongside <code>briefing_data.json</code>.</p>
+    <p class="why">Why: <code>shadow_blocked_picks</code> told us what was blocked but we had no aggregate "didn't-fire" view. First card surfaced yesterday's pass rate: 13 fires / (13 + 52 distinct-blocked) = 20%. Top gate: <code>PROP_DIVERGENCE_GATE</code> 4,716 entries / 7 days. Now measurable.</p>
+  </div>
+
+  <div class="change">
+    <h3>opener_move handles DATA_SPREAD/FADE_FLIP (v25.89)</h3>
+    <p><code>_compute_opener_move_for_pick()</code> previously only worked for <code>side_type='DOG'</code> and <code>'FAVORITE'</code> — returned <code>None</code> for custom side_types like <code>DATA_SPREAD</code> and <code>SPREAD_FADE_FLIP</code>. Added fallback: when side_type is non-standard, infer direction from the bet line's sign (line &lt; 0 → favorite, line &gt; 0 → underdog).</p>
+    <p class="why">Why: Future re-enablement of DATA_SPREAD (killed in v25.70) needs trajectory features for the upcoming dual-spread model. Quietly broken; quietly fixed.</p>
+  </div>
+
+  <div class="change">
+    <h3>TENNIS_ML_CAP tightened: +200 → +140 (v25.88)</h3>
+    <p>Hard cap on tennis ML pricing brought into alignment with <code>MAX_PROP_ODDS=140</code>. Picks where the bet side has ML &gt; +140 are filtered before the merge stage.</p>
+    <p class="why">Why: Internal odds policy cap is +140 (per user guidance). Letting +140-200 ML through created phantom "fires" that no actual stake would back. Now consistent across all virtual-bet/monitoring filters.</p>
+  </div>
+
+  <div class="change">
+    <h3>PROP_CAREER_FADE — flip NBA OVERs below career average (v25.87)</h3>
+    <p>New gate that flips NBA OVER prop picks to UNDER when the market median for the stat is at least 1.0 below the player's career average and the model says the OVER is +20% edge. Stake capped at 5u; tagged <code>PROP_CAREER_FADE</code>. Shipped Apr 24 after the Naz Reid / Schroder / Merrill cohort showed structural OVER losses on lines materially below career.</p>
+    <p class="why">Why: Books were posting NBA prop lines below career averages on rotation/role-shift games. Our model was firing OVER on the implied undervalue — but those games are usually low-minute scenarios where the dip is justified. Flipping the bet to UNDER aligns with the book's read. Kill switch: WR &lt; 40% at n ≥ 10.</p>
+  </div>
+
+  <div class="change">
+    <h3>LINE_AGAINST_GATE observability (v25.86)</h3>
+    <p>Gate now populates <code>shadow_blocked_picks.reason_category = 'LINE_AGAINST_GATE'</code> alongside the free-text reason. Pre-v25.86 queries returned zero entries for this gate because reason_category was unset (NULL). Coverage check post-fix: 100% typed in last 7 days.</p>
+    <p class="why">Why: Cloud agents kept reporting "LINE_AGAINST_GATE: 0 entries, propose fix." Wasn't broken — was unobservable. Type-the-column fix made it visible.</p>
+  </div>
+</div>
+
+<!-- v25.39 -->
 <div class="version-group">
   <div class="version-header">
     <div class="ver">v25.39</div>

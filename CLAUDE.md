@@ -75,6 +75,7 @@ betting_model/
     agent_research.py               # Pre-run injury/lineup check
     agent_growth.py                 # Social media growth tracking
     agent_tournament.py             # NCAA tournament monitor
+    gate_observability.py           # v25.89: daily gate fired/blocked report → data/gate_health.md
   .claude/
     commands/                       # Custom slash commands (/grade, /loss-analysis, etc.)
     settings.json                   # Hooks (notification on input needed)
@@ -129,6 +130,8 @@ all gates at save time.
 - **Concentration cap:** Max 1 game-line pick per event (props exempt)
 - **Market tiers:** SOFT (NCAAB, MLS, college baseball, tennis) vs SHARP (NBA, NHL, EPL, La Liga, MLB)
 - **Merge caps:** Max 4 sharp + 10 soft picks per run; min 3.0u game lines, 2.0u props
+- **Tennis ML cap:** +140 (v25.88, was +200) — aligned with `MAX_PROP_ODDS`
+- **CLV split (v25.89):** `clv_line` (raw points) + `clv_odds_pct` (juice as % implied prob) on bets/graded_bets — original `clv` field retained for backwards compatibility
 
 ## Environment Variables
 

@@ -84,11 +84,21 @@ def ensure_tables(conn):
         'side_type': 'TEXT', 'spread_bucket': 'TEXT', 'edge_bucket': 'TEXT',
         'timing': 'TEXT', 'context_factors': 'TEXT', 'context_confirmed': 'INT',
         'market_tier': 'TEXT', 'model_spread': 'REAL', 'day_of_week': 'TEXT',
+        # v25.89: split CLV into line component (points) + odds component (implied-prob %)
+        'closing_odds': 'REAL', 'clv_line': 'REAL', 'clv_odds_pct': 'REAL',
     }
     for col, dtype in migrations.items():
         if col not in existing:
             try:
                 conn.execute(f"ALTER TABLE graded_bets ADD COLUMN {col} {dtype}")
+            except Exception:
+                pass
+    # Mirror the new CLV-split columns onto bets table so reports can join either side
+    bets_existing = {row[1] for row in conn.execute("PRAGMA table_info(bets)").fetchall()}
+    for col, dtype in {'closing_odds': 'REAL', 'clv_line': 'REAL', 'clv_odds_pct': 'REAL'}.items():
+        if col not in bets_existing:
+            try:
+                conn.execute(f"ALTER TABLE bets ADD COLUMN {col} {dtype}")
             except Exception:
                 pass
     conn.commit()
@@ -386,6 +396,42 @@ def _american_to_implied(odds):
     elif odds < 0:
         return abs(odds) / (abs(odds) + 100.0)
     return None
+
+
+def compute_clv_split(bet_line, closing_line, market_type, selection, bet_odds=None, closing_odds=None):
+    """
+    v25.89: Split CLV into line + odds components for cleaner attribution.
+
+    Returns (clv_line, clv_odds_pct):
+      - clv_line: line movement in points (SPREAD/TOTAL/PROP-line). NULL for ML.
+        Positive = bet got a better number than closing line.
+      - clv_odds_pct: odds/juice movement in implied-prob percentage points.
+        Computed from bet_odds vs closing_odds for any market type.
+        Positive = closing odds imply higher win probability than bet odds.
+
+    The existing `clv` field is kept as the canonical "primary CLV" view (line for
+    SPREAD/TOTAL, implied-prob % for ML). These split components let analysts ask
+    e.g. "did we win the line or just the juice?" without re-deriving from raw odds.
+    """
+    sel_upper = (selection or '').upper()
+    clv_line = None
+    if market_type in ('SPREAD', 'TOTAL', 'PROP') and bet_line is not None and closing_line is not None:
+        if market_type == 'SPREAD':
+            clv_line = round(bet_line - closing_line, 2)
+        else:  # TOTAL or PROP — direction depends on OVER/UNDER
+            if 'OVER' in sel_upper:
+                clv_line = round(closing_line - bet_line, 2)
+            else:
+                clv_line = round(bet_line - closing_line, 2)
+
+    clv_odds_pct = None
+    if bet_odds is not None and closing_odds is not None:
+        bi = _american_to_implied(bet_odds)
+        ci = _american_to_implied(closing_odds)
+        if bi is not None and ci is not None:
+            clv_odds_pct = round((ci - bi) * 100, 2)
+
+    return clv_line, clv_odds_pct
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -819,6 +865,8 @@ def grade_bets(conn, days_back=3):
         market_key = _market_key(mtype, sel)
         closing_line_val, closing_odds, closing_snap_ts, closing_book = get_closing_line(conn, eid, market_key, sel, bet_book=book)
         clv = compute_clv(line, closing_line_val, mtype, sel, bet_odds=odds, closing_odds=closing_odds)
+        # v25.89: split CLV into line vs odds components
+        clv_line, clv_odds_pct = compute_clv_split(line, closing_line_val, mtype, sel, bet_odds=odds, closing_odds=closing_odds)
 
         # Build display name — include teams for totals
         display_sel = sel
@@ -834,19 +882,23 @@ def grade_bets(conn, days_back=3):
                 market_type, book, line, odds, edge_pct, confidence, units,
                 result, pnl_units, closing_line, clv, created_at,
                 side_type, spread_bucket, edge_bucket, timing,
-                context_factors, context_confirmed, market_tier, model_spread, day_of_week)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                context_factors, context_confirmed, market_tier, model_spread, day_of_week,
+                closing_odds, clv_line, clv_odds_pct)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (now, bid, sport, eid, sel, mtype, book, line, odds, edge, conf,
               units, result, pnl, closing_line_val, clv, created,
               side_type, spread_bucket, edge_bucket, timing,
-              context_factors, context_confirmed, market_tier, model_spread, day_of_week))
+              context_factors, context_confirmed, market_tier, model_spread, day_of_week,
+              closing_odds, clv_line, clv_odds_pct))
 
         # v17: Backfill result/profit/clv into source bets table
         # Previously only graded_bets got updated — bets table was 97% empty
+        # v25.89: also backfill closing_odds + CLV components
         conn.execute("""
-            UPDATE bets SET result=?, profit=?, closing_line=?, clv=?
+            UPDATE bets SET result=?, profit=?, closing_line=?, clv=?,
+                closing_odds=?, clv_line=?, clv_odds_pct=?
             WHERE id=?
-        """, (result, pnl, closing_line_val, clv, bid))
+        """, (result, pnl, closing_line_val, clv, closing_odds, clv_line, clv_odds_pct, bid))
 
         # Also mark any duplicate copies as graded
         dupes = conn.execute("""
