@@ -1,0 +1,47 @@
+[
+  {
+    "book": "BetUS",
+    "confidence": "ELITE",
+    "context_factors": "",
+    "edge_pct": 13.19,
+    "event_id": "8b2db66328633438dcd0b0cb30f8f3df",
+    "line": 1.5,
+    "market_tier": null,
+    "market_type": "SPREAD",
+    "odds": -125.0,
+    "selection": "Torino +1.5",
+    "side_type": null,
+    "sport": "soccer_italy_serie_a",
+    "units": 5.0
+  },
+  {
+    "book": "BetRivers",
+    "confidence": "ELITE",
+    "context_factors": "",
+    "edge_pct": 20.0,
+    "event_id": "b0d1e670b682b0ed37d6b0bc271efa6a",
+    "line": 2.5,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": 102.0,
+    "selection": "Como@Genoa OVER 2.5",
+    "side_type": null,
+    "sport": "soccer_italy_serie_a",
+    "units": 5.0
+  },
+  {
+    "book": "BetRivers",
+    "confidence": "STRONG",
+    "context_factors": "",
+    "edge_pct": 14.8,
+    "event_id": "df605bb6aea644247b5ce9fe90713252",
+    "line": 2.5,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": -130.0,
+    "selection": "Juventus@AC Milan UNDER 2.5",
+    "side_type": null,
+    "sport": "soccer_italy_serie_a",
+    "units": 5.0
+  }
+]

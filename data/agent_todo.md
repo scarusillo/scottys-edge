@@ -1,43 +1,33 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-25 evening — v26.0 refactor in progress (Phases 0-3 + 4 POC shipped, see top of doc)
+**Last updated:** 2026-04-26 — v26.0 refactor COMPLETE (all phases shipped today)
 
-## 🔧 IN PROGRESS — v26.0 generate_predictions refactor (USER PRIORITY for 2026-04-26 morning)
+## ✅ DONE — v26.0 generate_predictions refactor (shipped 2026-04-26)
 
-The 2,190-line `generate_predictions()` god-function is being decomposed into testable
-pipeline stages. **Phases 0-3 + 4 POC + wall-clock freeze shipped on 2026-04-25.**
-Production verified clean — `main.py predict` runs end-to-end with new modular code.
+All 7 phases shipped. `model_engine.py` 3,807 → 2,171 lines (−43%); `main.py`
+5,077 → 4,300 lines (−15%). New `pipeline/` package: 11 files, 3,841 lines,
+all replay-verified 0-diff at every chunk.
 
-### Done (production-verified)
-- `tests/shadow_predict.py` — capture/replay/determinism harness with frozen wall-clock
-- `scripts/pipeline/stage_1_fetch.py` — sport setup + games (217 lines)
-- `scripts/pipeline/score_helpers.py` — pure scoring math + `compute_opener_move_for_pick` (165 lines)
-- `scripts/pipeline/gates.py` — **18 gate predicates + log_divergence_block** (~735 lines)
-- `_passes_filter` reduced from 600 → ~120 lines
+See `project_v26_refactor.md` in user memory for the full breakdown
+(stage map, bug post-mortems, compat shims preserved, workflow notes).
 
-### Remaining (USER FOCUS 2026-04-26 — has all day)
+**For agents:** the per-game loop body now lives in `scripts/pipeline/per_game.py`
+and channel logic in `scripts/pipeline/channels/`. `model_engine.generate_predictions`
+and `main._merge_and_select` are thin compat wrappers — calling them still works.
+Use `pipeline.orchestrator.run(conn)` for new code.
 
-| Task | Effort | Risk | Priority |
-|---|---|---|---|
-| **Per-game loop body extraction** (1,782 lines → `score_game(setup, game, ctx)`) | 3-4 hr | HIGH | KEYSTONE |
-| Channel modules (SPREAD_FADE_FLIP, DATA_TOTAL, ELO ML rescue) | 4-5 hr | MED | blocked by ↑ |
-| Route + Merge (Phase 5) | 1.5-2 hr | LOW | unblocked |
-| Orchestrator cutover + 3-day shadow mode | 1 hr active + obs | LOW | last |
-| Final cutover + dead code cleanup | 30 min | LOW | last |
-| DATA_SPREAD dead code removal (v25.70 disabled the channel) | 20 min | LOW | quick win |
+---
 
-**See `project_v26_refactor.md` in user's session memory for full state + workflow notes.**
+## 📅 2026-04-26 morning to-do — items closed today
 
-### Workflow that worked today
-1. Capture fresh `baseline_pre_phase_X` immediately before each change
-2. Make the change
-3. `python tests/shadow_predict.py replay --label baseline_pre_phase_X`
-4. POST-MERGE: 0 diffs = ship it
-5. Wall-clock drift on per-sport diffs is now neutralized by the harness freeze
-
-### DO NOT touch v26.0 work via cloud agents
-This is user-driven refactor work. Cloud agents should NOT propose changes to
-`scripts/pipeline/`, `tests/shadow_predict.py`, `_passes_filter`, or
-`generate_predictions` until v26.0 is fully shipped.
+| # | Item | Decision |
+|---|---|---|
+| 2 | Bet 1063 COL@NYM rainout | Graded PUSH (direct DB update) |
+| 3 | scottys_edge.py:325 OverflowError guard | Patched (try/except for extreme spreads) |
+| 4 | odds_api.py orphan `_grade_bets()` | Removed (~88 lines) |
+| 5 | Prop floor doc comment in config.py | Added (clarifies 8/10/20% three-tier policy is intentional, not a bug) |
+| 6 | reel_generator.py — archive or document? | **Documented**: added "manual tool only" note in module docstring; kept as fallback to Sora workflow |
+| 7 | BetMGM PROP gate? | **Defer**: post-Apr-15 stale-odds-fix data is n=9 (3W-6L, -17.28u, avg CLV +0.31) — too small. Re-evaluate at n=20 per the existing BetMGM CLV trip-wire monitor |
+| 8 | CLV agent SOFT_LEAD reply | **Keep watching neutrally**: per the handled-list parking rule (n≥60 with full live trajectory data), do not act on n=10 signal regardless of direction |
 
 ---
 

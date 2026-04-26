@@ -322,7 +322,10 @@ def spread_to_fair_ml(spread, sport):
     else:
         scale = 6.3
 
-    win_prob = 1.0 / (1.0 + math.exp(spread / scale))
+    try:
+        win_prob = 1.0 / (1.0 + math.exp(spread / scale))
+    except OverflowError:
+        win_prob = 0.0 if spread > 0 else 1.0
 
     if win_prob >= 0.99:
         return (-9900, 9900)

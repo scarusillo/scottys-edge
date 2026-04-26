@@ -1,0 +1,66 @@
+{
+  "label": "baseline_pre_phase_4",
+  "db_source": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\data\\betting_model.db",
+  "db_used": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\_snapshot.db",
+  "snapshotted": true,
+  "captured_at": "2026-04-26T09:26:24.555847",
+  "wall_clock_frozen_at": "2026-04-26T09:26:24.555847",
+  "sports": {
+    "baseball_mlb": {
+      "count": 2,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\baseball_mlb.json"
+    },
+    "baseball_ncaa": {
+      "count": 1,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\baseball_ncaa.json"
+    },
+    "basketball_nba": {
+      "count": 2,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\basketball_nba.json"
+    },
+    "icehockey_nhl": {
+      "count": 5,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\icehockey_nhl.json"
+    },
+    "soccer_epl": {
+      "count": 0,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\soccer_epl.json"
+    },
+    "soccer_france_ligue_one": {
+      "count": 0,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\soccer_france_ligue_one.json"
+    },
+    "soccer_germany_bundesliga": {
+      "count": 0,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\soccer_germany_bundesliga.json"
+    },
+    "soccer_italy_serie_a": {
+      "count": 3,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\soccer_italy_serie_a.json"
+    },
+    "soccer_mexico_ligamx": {
+      "count": 0,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\soccer_mexico_ligamx.json"
+    },
+    "soccer_spain_la_liga": {
+      "count": 1,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\soccer_spain_la_liga.json"
+    },
+    "soccer_usa_mls": {
+      "count": 1,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\soccer_usa_mls.json"
+    },
+    "tennis_atp_madrid_open": {
+      "count": 6,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\tennis_atp_madrid_open.json"
+    },
+    "tennis_wta_madrid_open": {
+      "count": 5,
+      "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\tennis_wta_madrid_open.json"
+    }
+  },
+  "post_merge": {
+    "count": 10,
+    "path": "C:\\Users\\carus\\OneDrive\\Desktop\\scottys_edge\\betting_model\\tests\\golden\\baseline_pre_phase_4\\_merged.json"
+  }
+}

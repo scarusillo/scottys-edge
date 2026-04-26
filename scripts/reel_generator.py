@@ -2,6 +2,14 @@
 """
 reel_generator.py — Animated Instagram Reels from picks/results data.
 
+USAGE: Manual tool only. Not wired into main.py or the daily pipeline.
+Run directly:  python reel_generator.py results
+Run directly:  python reel_generator.py picks
+
+Kept rather than archived because the Sora-generated Kling video workflow
+(see reference_sora_video.md) is the current default reel — but the
+animated alternative is valuable as a fallback or for special-content drops.
+
 Creates a 20-second 1080x1920 video at 30fps (600 frames) with:
   - Hook slide (2.5s): yesterday's record + P/L in dollars ($10/bet)
   - Season stats (3s): counter-animated record + win rate + dollar profit

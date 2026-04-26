@@ -1,0 +1,32 @@
+[
+  {
+    "book": "Fanatics",
+    "confidence": "DATA_TOTAL",
+    "context_factors": "",
+    "edge_pct": 0,
+    "event_id": "02dcaedecc84abb3770b936306df02d9",
+    "line": 15.0,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": -115.0,
+    "selection": "San Diego Padres@Arizona Diamondbacks OVER 15.0",
+    "side_type": "DATA_TOTAL",
+    "sport": "baseball_mlb",
+    "units": 5.0
+  },
+  {
+    "book": "Caesars",
+    "confidence": "ELITE",
+    "context_factors": "",
+    "edge_pct": 20.0,
+    "event_id": "f98073ff54e69128fe75a3c5776fb520",
+    "line": 8.0,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": -110.0,
+    "selection": "Cleveland Guardians@Toronto Blue Jays OVER 8.0",
+    "side_type": null,
+    "sport": "baseball_mlb",
+    "units": 5.0
+  }
+]

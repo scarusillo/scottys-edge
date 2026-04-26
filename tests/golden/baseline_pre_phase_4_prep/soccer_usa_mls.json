@@ -1,0 +1,17 @@
+[
+  {
+    "book": "BetOnline.ag",
+    "confidence": "ELITE",
+    "context_factors": "",
+    "edge_pct": 8.4,
+    "event_id": "531496bcbda76eda957cb9bb18724387",
+    "line": 0.0,
+    "market_tier": null,
+    "market_type": "SPREAD",
+    "odds": -138.0,
+    "selection": "LA Galaxy +0.0",
+    "side_type": null,
+    "sport": "soccer_usa_mls",
+    "units": 5.0
+  }
+]

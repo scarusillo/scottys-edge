@@ -297,6 +297,11 @@ MARKET_MIN_EDGE = {
 }
 MERGE_MIN_UNITS = 3.0
 
+# Props use a lower floor than game lines by design (v25.16 backtest):
+# 10% edge is profitable on -150..+140 odds. Two layers, both intentional:
+#   - player_prop_model.py MIN_EDGE_PCT = 10.0 (engine generates picks at >=10%)
+#   - main.py PROP_MIN_EDGE = 8.0 (game-line gate at fire time)
+# A prop firing at e.g. 15% edge is correct — do not raise to the 20% game-line floor.
 PROP_MIN_UNITS = 2.0
 PROP_MIN_EDGE = 8.0
 PROP_MIN_EDGE_THREES = 12.0

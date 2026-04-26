@@ -1,0 +1,17 @@
+[
+  {
+    "book": "BetMGM",
+    "confidence": "ELITE",
+    "context_factors": "",
+    "edge_pct": 19.37,
+    "event_id": "b9479a30d160b861bf9525831780f377",
+    "line": null,
+    "market_tier": null,
+    "market_type": "MONEYLINE",
+    "odds": -125.0,
+    "selection": "Boston College Eagles ML",
+    "side_type": null,
+    "sport": "baseball_ncaa",
+    "units": 5.0
+  }
+]

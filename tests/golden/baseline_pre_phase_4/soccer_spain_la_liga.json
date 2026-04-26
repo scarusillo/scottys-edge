@@ -1,0 +1,17 @@
+[
+  {
+    "book": "BetRivers",
+    "confidence": "ELITE",
+    "context_factors": "",
+    "edge_pct": 20.0,
+    "event_id": "548f901ac0c811c39953f7e3769040cb",
+    "line": 2.5,
+    "market_tier": null,
+    "market_type": "TOTAL",
+    "odds": -130.0,
+    "selection": "Celta Vigo@Villarreal OVER 2.5",
+    "side_type": null,
+    "sport": "soccer_spain_la_liga",
+    "units": 5.0
+  }
+]
