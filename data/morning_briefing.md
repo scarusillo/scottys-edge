@@ -1,11 +1,11 @@
 # Scotty's Edge Morning Briefing
-**Date:** Sunday, April 26, 2026 | **Generated:** 07:10 AM ET
+**Date:** Sunday, April 26, 2026 | **Generated:** 07:16 AM ET
 **Game Date Graded:** 2026-04-25
 
 ---
 ## Yesterday's Results
 
-**5W-10L-0P | -26.4u | RED DAY**
+**5W-9L-0P | -21.4u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
@@ -17,7 +17,6 @@
 | Nikola Jokic OVER 29.5 pts | basketball_nba | PROP_FADE_FLIP | -120 | 5.0 | **L** | -5.0 | -1.1% |
 | Carolina Hurricanes@Ottawa Senators UNDER 5.5 | icehockey_nhl | UNDER | +100 | 5.0 | **L** | -5.0 | 0.0% |
 | Minnesota Twins@Tampa Bay Rays OVER 8.0 | baseball_mlb | OVER | -115 | 5.0 | **L** | -5.0 | 0.5% |
-| Denver Nuggets@Minnesota Timberwolves OVER 22 | basketball_nba | DATA_TOTAL | -110 | 5.0 | **L** | -5.0 | -0.5% |
 | Oklahoma City Thunder@Phoenix Suns UNDER 214. | basketball_nba | DATA_TOTAL | -105 | 5.0 | **L** | -5.0 | 2.0% |
 | Cade Cunningham OVER 27.5 pts | basketball_nba | PROP_FADE_FLIP | -120 | 5.0 | **L** | -5.0 | 1.0% |
 | Ajay Mitchell UNDER 14.5 POINTS | basketball_nba | PROP_UNDER | -114 | 5.0 | **L** | -5.0 | -0.9% |
@@ -47,12 +46,6 @@
 - **Final Score:** Minnesota Twins 1 @ Tampa Bay Rays 6
 - **Model Spread:** -0.9 | Actual Margin: +5
 - **Context:** Saturday game | Tampa Bay Rays SP: Shane McClanahan (5.92 ERA) | Minnesota Twins SP: Bailey Ober (3.42 ERA) | Pitching: Shane McClanahan 5.00 vs Bailey Ober 5.03 (+0.8) | Park: Tropicana Field (-0.1) | Bullpen: Rays 4.03 vs Twins 4.33 (+0.1) | Steam: no movement
-
-### Denver Nuggets@Minnesota Timberwolves OVER 229.0
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-0.5%) -- borderline call.
-- **Final Score:** Denver Nuggets 96 @ Minnesota Timberwolves 112
-- **Context:** DATA_TOTAL v25.47 (Path 2) — CONTEXT_TOTAL: mkt=229.0 → ctx=232.69 | form=+2.6 (h:+5.8, a:+11.3) | h2h=+1.1 (n=5) | Market 229.0, Context 232.685 (disagreement=+3.69 ≥ 0.3). Bet OVER 229.0 @ Fanatics -110. | Steam: no movement
 
 ### Oklahoma City Thunder@Phoenix Suns UNDER 214.5
 - **Category:** VARIANCE
@@ -91,11 +84,11 @@
 
 | Metric | Value |
 |--------|-------|
-| Record | **242W-194L** |
-| Win Rate | 55.5% |
-| P/L | **+69.9u** |
-| ROI | +3.3% |
-| Wagered | 2139.5u |
+| Record | **242W-193L** |
+| Win Rate | 55.6% |
+| P/L | **+74.9u** |
+| ROI | +3.5% |
+| Wagered | 2134.5u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -110,7 +103,7 @@
 | soccer_italy_serie_a | 2 | 2 | -3.3u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
-| basketball_nba | 46 | 47 | -31.9u |
+| basketball_nba | 46 | 46 | -26.9u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -118,15 +111,15 @@
 | Factor | Record | P/L |
 |--------|--------|-----|
 | Midweek game | 17W-18L | -20.0u |
-| Steam: no movement | 16W-18L | -17.8u |
+| Steam: no movement | 16W-17L | -12.8u |
 | Park: Chase Field | 1W-3L | -10.4u |
-| DATA_TOTAL v25.47 | 6W-7L | -8.5u |
 | Pitching edge: Clemson Tigers | 1W-2L | -7.2u |
 | Steam: sharp opposes | 8W-8L | -6.7u |
 | Pitching edge: TCU Horned Frogs | 1W-2L | -6.3u |
 | Pitching edge: Wake Forest Demon Deacons | 1W-2L | -5.8u |
 | Weather: light rain, 11mph wind | 1W-2L | -5.7u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
+| DATA_TOTAL v25.47 | 6W-6L | -3.5u |
 | Pitching edge: Florida Gators | 2W-2L | -1.7u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
@@ -159,7 +152,7 @@ Found 40 shadow-tagged picks.
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
 | AT_CAP | 167W-135L (55.3%) | +67.4u | 0.3 |
-| BELOW_CAP | 75W-59L (56.0%) | +2.4u | 0.5 |
+| BELOW_CAP | 75W-58L (56.4%) | +7.4u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -207,13 +200,13 @@ Found 40 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS WIN LOSS LOSS LOSS LOSS WIN LOSS WIN
+- **Last 10:** LOSS LOSS WIN LOSS LOSS LOSS LOSS WIN WIN WIN
 - **Current Streak:** 2 LOSS
 
 ---
 ## Action Items
 
-1. Big red day (-26.4u). Review if any model errors need parameter changes.
+1. Big red day (-21.4u). Review if any model errors need parameter changes.
 2. Factor 'Pitching edge: Wake Forest Demon Deacons' has -5.8u P/L over 3 bets. Consider reducing weight.
 3. Factor 'Midweek game' has -20.0u P/L over 35 bets. Consider reducing weight.
 4. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
@@ -221,11 +214,10 @@ Found 40 shadow-tagged picks.
 6. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
 7. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
 8. Factor 'Steam: sharp opposes' has -6.7u P/L over 16 bets. Consider reducing weight.
-9. Factor 'Steam: no movement' has -17.8u P/L over 34 bets. Consider reducing weight.
-10. Factor 'DATA_TOTAL v25.47' has -8.5u P/L over 13 bets. Consider reducing weight.
-11. Concentration risk detected. Review directional exposure limits.
-12. baseball_ncaa OVERs: 26W-23L (-5.5u). Review totals model for this sport.
-13. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
+9. Factor 'Steam: no movement' has -12.8u P/L over 33 bets. Consider reducing weight.
+10. Concentration risk detected. Review directional exposure limits.
+11. baseball_ncaa OVERs: 26W-23L (-5.5u). Review totals model for this sport.
+12. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-26 07:10 ET*
+*Generated locally by export_briefing_data.py | 2026-04-26 07:16 ET*
