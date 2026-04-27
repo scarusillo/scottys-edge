@@ -1240,6 +1240,11 @@ def generate_prop_projections(conn=None):
         except Exception:
             pass
 
+        # v25.92: PROP_CAREER_FADE fires once per (player, stat) — flag tracks
+        # whether the fade has already emitted for this iteration so subsequent
+        # book entries skip the duplicate-flip path.
+        _cf_fired = False
+
         # For each book offering this OVER
         for entry in legal_entries:
             book = entry['book']
@@ -1426,10 +1431,19 @@ def generate_prop_projections(conn=None):
             #
             # Scope: NBA PROP_OVER only. MLB and NHL samples too thin.
             # Backtest: 0-4 OVER → 4-0 UNDER flip on 7 weeks of NBA data.
+            #
+            # v25.92 (2026-04-27): fade now fires ONCE per (player, stat) and
+            # routes to the BEST NY-legal UNDER offering across all books
+            # (highest line, then best odds). Prior code mirrored the OVER
+            # iteration's book+line, generating N duplicate flips and letting
+            # dedup pick essentially arbitrarily — Allen 4/27 fired BetRivers
+            # UNDER 7.5 @ -110 when DraftKings UNDER 8.5 @ -117 was available
+            # at a NY-legal book (full point of cushion lost at zero benefit).
             try:
                 if (side == 'Over'
                         and sport == 'basketball_nba'
-                        and stat_type in ('pts', 'reb', 'ast', 'threes', 'blk', 'stl')):
+                        and stat_type in ('pts', 'reb', 'ast', 'threes', 'blk', 'stl')
+                        and not _cf_fired):
                     from career_stats import get_career_stat as _get_career
                     _car_avg, _car_games = _get_career(conn, player, stat_type, sport)
                     if (_car_avg is not None and _car_games is not None
@@ -1446,23 +1460,38 @@ def generate_prop_projections(conn=None):
                             _career_gap = _car_avg - _market_med_cf
                             if _career_gap >= 1.0:
                                 # Market consensus line is >=1.0 below career avg.
-                                # Flip to UNDER at same book+line if odds pass MIN_ODDS.
+                                # v25.92: pick BEST NY-legal UNDER offering across
+                                # books (highest line, then best odds). Earlier
+                                # logic locked us to the OVER iteration's book+line
+                                # which was often a worse UNDER spot.
                                 from config import MIN_ODDS as _CF_MIN_ODDS
                                 _cf_flip_entries = grouped.get((eid, player, market, 'Under'), [])
-                                _cf_flip_entry = next(
-                                    (e for e in _cf_flip_entries
-                                     if e['book'] == book and e['line'] == line),
-                                    None
-                                )
-                                _cf_flip_odds = _cf_flip_entry.get('odds') if _cf_flip_entry else None
-                                if _cf_flip_odds is not None and _cf_flip_odds > _CF_MIN_ODDS:
-                                    _cf_sel = f"{player} UNDER {line} {stat_type}"
+                                _cf_candidates = [
+                                    _e for _e in _cf_flip_entries
+                                    if _e.get('book') in NY_LEGAL_BOOKS
+                                       and _e.get('odds') is not None
+                                       and _e.get('odds') > _CF_MIN_ODDS
+                                       and MIN_PROP_ODDS <= _e.get('odds') <= MAX_PROP_ODDS
+                                ]
+                                if _cf_candidates:
+                                    # Sort: highest line first (best UNDER cushion),
+                                    # then highest odds value (least negative juice).
+                                    _cf_candidates.sort(
+                                        key=lambda _e: (_e['line'], _e['odds']),
+                                        reverse=True
+                                    )
+                                    _cf_flip_entry = _cf_candidates[0]
+                                    _cf_book = _cf_flip_entry['book']
+                                    _cf_line = _cf_flip_entry['line']
+                                    _cf_flip_odds = _cf_flip_entry['odds']
+                                    _cf_sel = f"{player} UNDER {_cf_line} {stat_type}"
                                     _cf_ctx = (
                                         f'PROP_CAREER_FADE v25.87 — market median {_market_med_cf:.1f} '
                                         f'is {_career_gap:.1f} below career avg {_car_avg} '
                                         f'({_car_games} career games). Books signaling current-situation '
                                         f'decline (playoff minutes, role shift, matchup). '
-                                        f'Fading OVER→UNDER at {book} {_cf_flip_odds:+.0f}.'
+                                        f'Fading OVER→UNDER at {_cf_book} UNDER {_cf_line} {_cf_flip_odds:+.0f} '
+                                        f'(v25.92 best-line routing across {len(_cf_candidates)} NY-legal options).'
                                     )
                                     # Log shadow block record for observability
                                     try:
@@ -1472,8 +1501,8 @@ def generate_prop_projections(conn=None):
                                              reason_category, reason_detail)
                                             VALUES (?, ?, ?, ?, 'PROP', ?, ?, ?, NULL, NULL, ?, ?, ?)""",
                                             (datetime.now(timezone.utc).isoformat(), sport, eid,
-                                             f"{player} OVER {line} {stat_type}",
-                                             book, line, odds,
+                                             f"{player} OVER {_market_med_cf} {stat_type}",
+                                             _cf_book, _cf_line, _cf_flip_odds,
                                              f'PROP_CAREER_FADE_FLIP (career={_car_avg}, mkt={_market_med_cf:.1f}, gap={_career_gap:.1f})',
                                              'PROP_CAREER_FADE',
                                              f'career={_car_avg}, mkt={_market_med_cf:.1f}, gap={_career_gap:.1f}'))
@@ -1484,7 +1513,7 @@ def generate_prop_projections(conn=None):
                                         'sport': sport, 'event_id': eid, 'commence': commence,
                                         'home': home, 'away': away,
                                         'market_type': 'PROP', 'selection': _cf_sel,
-                                        'book': book, 'line': line, 'odds': _cf_flip_odds,
+                                        'book': _cf_book, 'line': _cf_line, 'odds': _cf_flip_odds,
                                         'model_spread': None,
                                         'model_prob': 0,
                                         'implied_prob': round(american_to_implied(_cf_flip_odds) or 0, 4),
@@ -1506,6 +1535,7 @@ def generate_prop_projections(conn=None):
                                         '_source': 'PROP_CAREER_FADE',
                                     }
                                     picks.append(_cf_pick)
+                                    _cf_fired = True
                                     continue
             except Exception:
                 pass
