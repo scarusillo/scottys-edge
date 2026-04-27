@@ -320,6 +320,99 @@ def gate_clv_block(pick, conn):
     return False
 
 
+def gate_nba_playoff_inseries_disagreement(pick, conn):
+    """v25.91 NBA_PLAYOFF_INSERIES_GATE (SHADOW MODE) — log NBA Path 2 TOTAL
+    picks where the in-series running total disagrees with bet direction.
+
+    Motivation: Context Model is built on regular-season form factors and has
+    no awareness of in-series playoff scoring trajectory. When the same two
+    teams have already played 2+ games in a series, those games are the most
+    informative signal we have — and the Context Model ignores them.
+
+    Backtest 4/19-4/26 NBA Path 2 cohort (n=10):
+      Original: 3W-6L-1T, -16.66u
+      Would block 3 picks (2 LOSS + 1 already-TAINTED), recover +10u
+      Cohort would become 3W-4L-1T, -6.66u
+      Path 1 (game-line) backtested negative — Path 2 only.
+
+    Rule: BLOCK if avg of last ≤5 same-matchup playoff games (since 4/15)
+    is on the OPPOSITE side of the line from the bet direction.
+    Requires n_prior >= 2 (single prior game is too noisy).
+
+    SHADOW: logs to shadow_blocked_picks but does NOT block. Promote when
+    n>=10 shadow logs validate the agreement pattern (~2 weeks).
+    """
+    if pick.get('sport') != 'basketball_nba': return False
+    if pick.get('market_type') != 'TOTAL': return False
+    cf = pick.get('context_factors') or pick.get('context') or ''
+    if 'DATA_TOTAL' not in cf: return False
+    if conn is None: return False
+
+    line = pick.get('line')
+    eid = pick.get('event_id') or ''
+    sel = pick.get('selection') or ''
+    if line is None or not eid:
+        return False
+
+    # Resolve home/away from the results-side companion to the picked event.
+    # Pick payloads carry the matchup; if absent, fall back to results table.
+    home = pick.get('home')
+    away = pick.get('away')
+    if not (home and away):
+        try:
+            row = conn.execute(
+                "SELECT home, away FROM results WHERE event_id=? LIMIT 1", (eid,)
+            ).fetchone()
+            if row:
+                home, away = row[0], row[1]
+        except Exception:
+            return False
+    if not (home and away):
+        return False
+
+    try:
+        prior = conn.execute(
+            """SELECT home_score+away_score FROM results
+               WHERE ((home=? AND away=?) OR (home=? AND away=?))
+                 AND date(commence_time) < date('now')
+                 AND date(commence_time) >= '2026-04-15'
+                 AND home_score IS NOT NULL
+               ORDER BY commence_time DESC LIMIT 5""",
+            (home, away, away, home)
+        ).fetchall()
+    except Exception:
+        return False
+
+    if len(prior) < 2:
+        return False  # need >= 2 prior games for a usable series average
+
+    series_avg = sum(p[0] for p in prior) / len(prior)
+    is_under = 'UNDER' in sel.upper()
+    series_says_under = series_avg < line
+
+    if series_says_under == is_under:
+        return False  # series agrees with bet direction → pass
+
+    # Disagreement → SHADOW log, but DO NOT block (return False)
+    print(f"  📋 NBA_PLAYOFF_INSERIES_SHADOW: {sel[:55]} — "
+          f"series avg {series_avg:.1f} vs line {line} ({len(prior)} prior games)")
+    try:
+        conn.execute(
+            """INSERT INTO shadow_blocked_picks
+               (created_at, sport, event_id, selection, market_type, book,
+                line, odds, edge_pct, units, reason)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (datetime.now().isoformat(), 'basketball_nba', eid, sel, 'TOTAL',
+             pick.get('book', ''), line, pick.get('odds'),
+             pick.get('edge_pct', 0), pick.get('units', 0),
+             f'NBA_PLAYOFF_INSERIES_SHADOW (v25.91, '
+             f'series_avg={series_avg:.1f}, line={line}, n_prior={len(prior)})'))
+        conn.commit()
+    except Exception:
+        pass
+    return False  # SHADOW — never blocks
+
+
 SHARP_OPPOSES_BLOCK_SPORTS = {'icehockey_nhl', 'baseball_ncaa'}
 
 

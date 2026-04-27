@@ -296,6 +296,12 @@ def merge_and_select(game_picks, prop_picks, conn=None):
         if gate_sharp_opposes_block(p, conn):
             return False
 
+        # v25.91 NBA_PLAYOFF_INSERIES_GATE (shadow): log Path 2 NBA TOTAL picks
+        # where in-series running avg disagrees with bet direction. Returns
+        # False unconditionally — shadow only.
+        from pipeline.gates import gate_nba_playoff_inseries_disagreement
+        gate_nba_playoff_inseries_disagreement(p, conn)
+
         # v26.0 Phase 3: HARD_VETO_DK_NCAA_BB_UNDERS extracted to pipeline.gates.
         # Same gate, same log format, same block behavior.
         from pipeline.gates import gate_dk_ncaa_bb_unders_veto
