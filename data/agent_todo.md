@@ -42,7 +42,7 @@ typically use, and why it's already solved.
 |---|---|---|
 | "DK NCAA BB UNDERs -51u / 9-18, structural loss" | Handled | v25.56 HARD_VETO_DK_NCAA_BB_UNDERS (2026-04-21). Query cites pre-fix data. |
 | "DK NCAA BB OVERs -21.8u / 2-6, propose new veto" | Handled | Combined v25.22/23/24 Option C + v25.35 SHARP_OPPOSES stack. ZERO DK NCAA OVERs have fired since 2026-04-19. |
-| "NCAA BB OVER directional bias -28.8u, raise edge floor 20→22" | Handled | edge_pct stored capped at 20.0 — raising floor is meaningless. Bleed is historical; zero NCAA OVERs of any book have fired since 2026-04-21. |
+| "NCAA BB OVER directional bias -28.8u, raise edge floor 20→22" | Handled | edge_pct stored capped at 20.0 — raising floor is meaningless. DK-specific bleed killed by v25.22-24 Option C stack (DK-only by design, main.py:1021). Non-DK NCAA OVERs DO still fire (FD/BR/BetMGM/Caesars n=27 post-rebuild, 11-13-3 -17.56u, all books +CLV) — variance against fair line, not gateable. Don't propose extending Option C to non-DK; different pricing regime. |
 | "Week 15 (Apr 14-20) NCAA BB -30.3u, audit required" | Handled | -30.65u of the week's damage was the DK UNDER cohort killed by v25.56. |
 | "STABLE cohort WR regression 73% → 55.6%, workhorse softening" | Parked | v25.84 backfill only covers 14 days; n=21 "baseline" was first 4 days. Do NOT act until n≥60 graded with full live trajectory data (per v25.83/84 memo). |
 | "NBA SHARP_OPPOSES / NBA UNDERs -11.8u" | Watched | Per v24 review (2026-04-18): NBA variance — wait. Act only if CLV drops below +0.5 at n≥25 more picks. |

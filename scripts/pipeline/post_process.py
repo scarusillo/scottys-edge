@@ -2,7 +2,7 @@
 Post-loop processing — applied to all_picks after every sport's per-game
 scoring loop has run.
 
-Three sequential stages, in order:
+Two sequential stages, in order:
 
   1. apply_context_confirmation(picks)
      Picks without a `context` field signal pure model disagreement (no
@@ -13,21 +13,20 @@ Three sequential stages, in order:
      - NCAAB favorite spreads: 20% haircut (model overvalues NCAAB favorites
        3-6 vs dogs 13-5; haircut applied regardless of context).
 
-  2. apply_clv_gate(picks, conn)
-     Block picks where the line moved >= clv_threshold AGAINST our side
-     between opener and current snapshot. Per-market thresholds:
-       SPREAD: 2.0 pts adverse
-       TOTAL:  1.5 pts adverse (totals move less)
-     Mutates `picks` in place — adverse picks removed, marginal moves
-     (>=1.0 pt either direction) annotated with `line_move` field.
-
-  3. apply_final_filter(picks)
+  2. apply_final_filter(picks)
      - MIN_ODDS hard block (anything <= MIN_ODDS dropped — too steep)
      - Star floor: ML needs >= 1.0★ (raw Elo edge), spreads/totals need
        >= 2.0★ (key-number inflation makes lower PV noise)
      - Concentration: one pick per (event_id, market_type) — best edge wins
      - Sorts picks by star × edge before deduping so the survivor of each
        (event, market) is the highest-conviction option.
+
+CLV-aware blocking is handled downstream in stage_5_merge by
+pipeline.gates.gate_clv_block (uses live `odds` OPENER rows) and
+pipeline.gates.LINE_AGAINST_GATE (v25.80, 20%+ edge picks). The legacy
+apply_clv_gate that read line_snapshots was removed 2026-04-27 — its
+writer (line_tracker.py) was archived and the table was stale since
+2026-03-22, so the gate had been silently no-opping.
 
 Extracted from `model_engine.generate_predictions()` lines 1475-1595 in
 v26.0 Phase 7. Behavior is byte-equivalent to the inline original;
@@ -69,67 +68,6 @@ def apply_context_confirmation(picks):
                 p['units'] = round(p['units'] * 0.80, 1)
                 if p['units'] < 2.0:
                     p['units'] = 2.0
-    return picks
-
-
-def apply_clv_gate(picks, conn):
-    """Stage 2: drop picks with adverse line movement since opener.
-
-    Reads `line_snapshots` table (may not exist on older DBs — silently
-    no-ops in that case). Mutates `picks` in place by removing blocked
-    indices. Annotates surviving picks with marginal moves (>=1.0 pt).
-
-    Adverse thresholds:
-      SPREAD: shift > 2.0 or shift < -2.0 (moved against us)
-      TOTAL OVER:  shift < -1.5 (total dropped — harder to go over)
-      TOTAL UNDER: shift > +1.5 (total rose — harder to stay under)
-
-    Returns the (mutated) `picks` list for chaining.
-    """
-    try:
-        blocked_indices = []
-        for i, p in enumerate(picks):
-            if p.get('market_type') not in ('SPREAD', 'TOTAL') or not p.get('event_id'):
-                continue
-            mkt = 'spreads' if p['market_type'] == 'SPREAD' else 'totals'
-            sel = p.get('selection', '')
-            if p['market_type'] == 'TOTAL':
-                outcome = 'Over' if 'OVER' in sel else 'Under'
-            else:
-                outcome = sel.split()[0]
-            snaps = conn.execute("""
-                SELECT point, snapshot_time FROM line_snapshots
-                WHERE event_id = ? AND market = ? AND outcome = ?
-                ORDER BY snapshot_time ASC
-            """, (p['event_id'], mkt, outcome)).fetchall()
-            if len(snaps) >= 2:
-                opener_pt = snaps[0][0]
-                current_pt = snaps[-1][0]
-                if opener_pt is not None and current_pt is not None:
-                    shift = current_pt - opener_pt
-                    clv_threshold = 1.5 if p['market_type'] == 'TOTAL' else 2.0
-                    is_adverse = False
-                    if p['market_type'] == 'SPREAD' and shift < -clv_threshold:
-                        is_adverse = True
-                    elif p['market_type'] == 'SPREAD' and shift > clv_threshold:
-                        is_adverse = True
-                    elif 'OVER' in sel and shift < -clv_threshold:
-                        is_adverse = True
-                    elif 'UNDER' in sel and shift > clv_threshold:
-                        is_adverse = True
-
-                    if is_adverse:
-                        print(f"  CLV BLOCK: {sel} — line moved {shift:+.1f}pts against us "
-                              f"(opener={opener_pt}, now={current_pt})")
-                        blocked_indices.append(i)
-                    elif abs(shift) >= 1.0:
-                        p['line_move'] = round(shift, 1)
-                        existing = p.get('notes', '')
-                        p['notes'] = existing + f" | LINE MOVE: {shift:+.1f}pts since open"
-        for i in sorted(blocked_indices, reverse=True):
-            picks.pop(i)
-    except Exception:
-        pass  # line_snapshots table may not exist
     return picks
 
 

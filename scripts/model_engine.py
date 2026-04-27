@@ -366,7 +366,7 @@ def generate_predictions(conn, sport=None, date=None):
     """
     from pipeline.orchestrator import compute_game_window, score_one_sport
     from pipeline.post_process import (
-        apply_context_confirmation, apply_clv_gate, apply_final_filter)
+        apply_context_confirmation, apply_final_filter)
 
     sports = [sport] if sport else list(SPORT_CONFIG.keys())
     now_utc = datetime.now(timezone.utc)
@@ -379,7 +379,6 @@ def generate_predictions(conn, sport=None, date=None):
         all_picks.extend(picks)
 
     apply_context_confirmation(all_picks)
-    apply_clv_gate(all_picks, conn)
     return apply_final_filter(all_picks)
 def update_ratings_post_game(conn, sport, home, away, home_score, away_score,
                              home_inj=0, away_inj=0, hfa=None):

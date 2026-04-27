@@ -23,7 +23,8 @@ def fetch_all_scores(ALL_SPORTS):
         for sp in ALL_SPORTS:
             try: fetch_scores(sp, days_back=3)
             except Exception: pass
-    except Exception: pass
+    except Exception as e:
+        print(f"  Odds API score fetch failed: {e}")
 
     # v21 FIX: Odds API scores endpoint often returns 0 results for tennis.
     # ESPN scraper reliably returns completed match scores (FREE).
