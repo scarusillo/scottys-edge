@@ -1,130 +1,124 @@
 # Scotty's Edge Morning Briefing
-**Date:** Sunday, April 26, 2026 | **Generated:** 07:16 AM ET
-**Game Date Graded:** 2026-04-25
+**Date:** Monday, April 27, 2026 | **Generated:** 05:10 AM ET
+**Game Date Graded:** 2026-04-26
 
 ---
 ## Yesterday's Results
 
-**5W-9L-0P | -21.4u | RED DAY**
+**8W-7L-1P | +0.0u | GREEN DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Detroit Tigers@Cincinnati Reds OVER 9.5 | baseball_mlb | OVER | +102 | 5.0 | **W** | +5.1 | 0.0% |
-| Mallorca@Alavés OVER 2.5 | soccer_spain_la_liga | OVER | -103 | 5.0 | **W** | +4.8 | 0.0% |
-| Texas State Bobcats@Coastal Carolina Chanticl | baseball_ncaa | UNDER | -105 | 5.0 | **W** | +4.8 | 0.0% |
-| New York Knicks -1.5 | basketball_nba | SPREAD_FADE_FLIP | -110 | 5.0 | **W** | +4.5 | 0.5% |
-| Boston Red Sox@Baltimore Orioles OVER 7.5 | baseball_mlb | DATA_TOTAL | -115 | 5.0 | **W** | +4.3 | -0.5% |
-| Nikola Jokic OVER 29.5 pts | basketball_nba | PROP_FADE_FLIP | -120 | 5.0 | **L** | -5.0 | -1.1% |
-| Carolina Hurricanes@Ottawa Senators UNDER 5.5 | icehockey_nhl | UNDER | +100 | 5.0 | **L** | -5.0 | 0.0% |
-| Minnesota Twins@Tampa Bay Rays OVER 8.0 | baseball_mlb | OVER | -115 | 5.0 | **L** | -5.0 | 0.5% |
-| Oklahoma City Thunder@Phoenix Suns UNDER 214. | basketball_nba | DATA_TOTAL | -105 | 5.0 | **L** | -5.0 | 2.0% |
-| Cade Cunningham OVER 27.5 pts | basketball_nba | PROP_FADE_FLIP | -120 | 5.0 | **L** | -5.0 | 1.0% |
-| Ajay Mitchell UNDER 14.5 POINTS | basketball_nba | PROP_UNDER | -114 | 5.0 | **L** | -5.0 | -0.9% |
-| Wake Forest Demon Deacons@Georgia Tech Yellow | baseball_ncaa | UNDER | -113 | 5.0 | **L** | -5.0 | 0.0% |
-| Houston Cougars@TCU Horned Frogs OVER 10.0 | baseball_ncaa | OVER | -120 | 5.0 | **L** | -5.0 | 0.0% |
-| Aaron Gordon OVER 2.5 ASSISTS | basketball_nba | PROP_OVER | +139 | 5.0 | **L** | -5.0 | 0.0% |
+| Texas A&M Aggies@Florida Gators UNDER 12.5 | baseball_ncaa | UNDER | -105 | 5.0 | **W** | +4.8 | -1.0% |
+| Virginia Cavaliers@Pittsburgh Panthers UNDER  | baseball_ncaa | UNDER | -105 | 5.0 | **W** | +4.8 | 0.0% |
+| San Antonio Spurs@Portland Trail Blazers UNDE | basketball_nba | DATA_TOTAL | -110 | 5.0 | **W** | +4.5 | 2.5% |
+| Kumar Rocker UNDER 2.5 EARNED RUNS | baseball_mlb | PROP_UNDER | -110 | 5.0 | **W** | +4.5 | 0.0% |
+| San Diego Padres@Arizona Diamondbacks OVER 15 | baseball_mlb | DATA_TOTAL | -115 | 5.0 | **W** | +4.3 | 0.0% |
+| Reed Sheppard OVER 11.5 POINTS | basketball_nba | PROP_BOOK_ARB | -115 | 5.0 | **W** | +4.3 | 0.0% |
+| Dino Prizmic +1.5 | tennis_atp_madrid_open | DOG | -130 | 5.0 | **W** | +3.9 | 0.0% |
+| Celta Vigo@Villarreal OVER 2.5 | soccer_spain_la_liga | OVER | -130 | 5.0 | **W** | +3.9 | 0.0% |
+| Edmonton Oilers@Anaheim Ducks OVER 7.0 | icehockey_nhl | DATA_TOTAL | -110 | 5.0 | **P** | +0.0 | 0.0% |
+| Como@Genoa OVER 2.5 | soccer_italy_serie_a | OVER | +102 | 5.0 | **L** | -5.0 | 0.0% |
+| Buffalo Sabres@Boston Bruins UNDER 6.0 | icehockey_nhl | UNDER | -115 | 5.0 | **L** | -5.0 | 0.0% |
+| Colorado Avalanche@Los Angeles Kings UNDER 5. | icehockey_nhl | UNDER | +100 | 5.0 | **L** | -5.0 | 0.0% |
+| Cleveland Guardians@Toronto Blue Jays OVER 8. | baseball_mlb | OVER | -114 | 5.0 | **L** | -5.0 | 0.5% |
+| Boston Celtics@Philadelphia 76ers UNDER 214.0 | basketball_nba | DATA_TOTAL | -110 | 5.0 | **L** | -5.0 | 1.0% |
+| UTSA Roadrunners@Tulane Green Wave UNDER 13.5 | baseball_ncaa | UNDER | +100 | 5.0 | **L** | -5.0 | 0.0% |
+| Nebraska Cornhuskers@Illinois Fighting Illini | baseball_ncaa | OVER | -111 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
 
-### Nikola Jokic OVER 29.5 pts
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-1.1%) -- borderline call.
-- **Final Score:** Denver Nuggets 96 @ Minnesota Timberwolves 112
-- **Context:** PROP_FADE_FLIP v25.31 — model proj 23.8 vs market median 30.5 (gap 6.7 > thr 3.0 pts). Market on opposite side of line 29.5 → flipped UNDER->OVER at BetMGM -120.
-
-### Carolina Hurricanes@Ottawa Senators UNDER 5.5
+### Como@Genoa OVER 2.5
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Carolina Hurricanes 4 @ Ottawa Senators 2
+- **Final Score:** Como 2 @ Genoa 0
 - **Model Spread:** +0.3 | Actual Margin: -2
-- **Context:** Both teams slow-paced (-1.0) | Division familiarity (-0.3) | Goalies: Linus Ullmark 2.08 vs Frederik Andersen 2.44 (recent 1.00) (-0.6) | Steam: no movement
+- **Context:** Away fast-paced (+0.4) | Steam: no movement
 
-### Minnesota Twins@Tampa Bay Rays OVER 8.0
+### Buffalo Sabres@Boston Bruins UNDER 6.0
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Final Score:** Buffalo Sabres 6 @ Boston Bruins 1
+- **Model Spread:** +0.1 | Actual Margin: -5
+- **Context:** Division familiarity (-0.3) | Goalies: Jeremy Swayman 2.43 vs Alex Lyon 2.33 (-0.4) | Steam: no movement
+
+### Colorado Avalanche@Los Angeles Kings UNDER 5.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Final Score:** Colorado Avalanche 5 @ Los Angeles Kings 1
+- **Model Spread:** +0.7 | Actual Margin: -4
+- **Context:** Both teams slow-paced (-0.9) | Division familiarity (-0.3) | Goalies: Anton Forsberg 1.92 (recent 2.25) vs Scott Wedgewood 1.50 (recent 1.00) (-0.9) | Steam: no movement
+
+### Cleveland Guardians@Toronto Blue Jays OVER 8.0
 - **Category:** VARIANCE
 - **Analysis:** Positive CLV (+0.5%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Minnesota Twins 1 @ Tampa Bay Rays 6
-- **Model Spread:** -0.9 | Actual Margin: +5
-- **Context:** Saturday game | Tampa Bay Rays SP: Shane McClanahan (5.92 ERA) | Minnesota Twins SP: Bailey Ober (3.42 ERA) | Pitching: Shane McClanahan 5.00 vs Bailey Ober 5.03 (+0.8) | Park: Tropicana Field (-0.1) | Bullpen: Rays 4.03 vs Twins 4.33 (+0.1) | Steam: no movement
+- **Final Score:** Cleveland Guardians 2 @ Toronto Blue Jays 4
+- **Model Spread:** -0.7 | Actual Margin: +2
+- **Context:** Sunday game | Toronto Blue Jays SP: Patrick Corbin (3.39 ERA) | Cleveland Guardians SP: Slade Cecconi (7.22 ERA) | Pitching: Patrick Corbin 4.15 vs Slade Cecconi 4.59 (+0.3) | Park: Rogers Centre (+0.1) | Bullpen: Jays 4.33 vs Guardians 4.05 (+0.2) | Steam: no movement
 
-### Oklahoma City Thunder@Phoenix Suns UNDER 214.5
-- **Category:** VARIANCE
-- **Analysis:** Positive CLV (+2.0%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Oklahoma City Thunder 121 @ Phoenix Suns 109
-- **Context:** DATA_TOTAL v25.47 (Path 2) — CONTEXT_TOTAL: mkt=214.5 → ctx=212.39 | form=-1.6 (h:-10.0, a:-0.3) | h2h=-0.6 (n=5) | Market 214.5, Context 212.39499999999998 (disagreement=-2.11 ≥ 0.3). Bet UNDER 214.5 @ BetMGM -105. | Steam: no movement
-
-### Cade Cunningham OVER 27.5 pts
+### Boston Celtics@Philadelphia 76ers UNDER 214.0
 - **Category:** VARIANCE
 - **Analysis:** Positive CLV (+1.0%) -- the line moved our way. Right side, wrong result.
-- **Final Score:** Detroit Pistons 105 @ Orlando Magic 113
-- **Context:** PROP_FADE_FLIP v25.31 — model proj 20.6 vs market median 28.5 (gap 7.9 > thr 3.0 pts). Market on opposite side of line 27.5 → flipped UNDER->OVER at BetMGM -120.
+- **Final Score:** Boston Celtics 128 @ Philadelphia 76ers 96
+- **Context:** DATA_TOTAL v25.47 (Path 2) — CONTEXT_TOTAL: mkt=213.5 → ctx=207.23 | form=-2.4 (h:-15.4, a:-0.8) | h2h=-3.8 (n=5) | Market 213.5, Context 207.23 (disagreement=-6.27 ≥ 0.3). Bet UNDER 214.0 @ Fanatics -110. | Steam: no movement
 
-### Ajay Mitchell UNDER 14.5 POINTS
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-0.9%) -- borderline call.
-- **Final Score:** Oklahoma City Thunder 121 @ Phoenix Suns 109
-
-### Wake Forest Demon Deacons@Georgia Tech Yellow Jack
+### UTSA Roadrunners@Tulane Green Wave UNDER 13.5
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Saturday game | Georgia Tech Yellow Jackets allows 6.0 R/saturday | Wake Forest Demon Deacons allows 3.2 R/saturday | Pitching edge: Wake Forest Demon Deacons (-0.8 pts) | Steam: no movement
+- **Context:** Sunday game | Tulane Green Wave allows 3.4 R/sunday | UTSA Roadrunners allows 6.2 R/sunday | Pitching edge: Tulane Green Wave (+0.8 pts) | Steam: no movement
 
-### Houston Cougars@TCU Horned Frogs OVER 10.0
+### Nebraska Cornhuskers@Illinois Fighting Illini OVER
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Context:** Saturday game | TCU Horned Frogs allows 6.2 R/saturday | Houston Cougars allows 7.9 R/saturday | Pitching edge: TCU Horned Frogs (+0.5 pts) | Steam: no movement
-
-### Aaron Gordon OVER 2.5 ASSISTS
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Denver Nuggets 96 @ Minnesota Timberwolves 112
+- **Context:** [SHADOW] Home fast-paced (+0.5) | Away fast-paced (+0.3) | Sunday game | Nebraska Cornhuskers SP: Cooper Katskee (4.50 ERA) | Illinois Fighting Illini allows 7.0 R/sunday | Nebraska Cornhuskers allows 4.6 R/sunday | Pitching edge: Nebraska Cornhuskers (-0.7 pts) | Steam: no movement
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **242W-193L** |
+| Record | **250W-200L** |
 | Win Rate | 55.6% |
 | P/L | **+74.9u** |
-| ROI | +3.5% |
-| Wagered | 2134.5u |
+| ROI | +3.4% |
+| Wagered | 2209.5u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
-| icehockey_nhl | 58 | 35 | +46.4u |
+| icehockey_nhl | 58 | 37 | +36.4u |
+| soccer_spain_la_liga | 5 | 0 | +20.0u |
 | basketball_ncaab | 17 | 12 | +18.7u |
-| soccer_spain_la_liga | 4 | 0 | +16.1u |
-| baseball_ncaa | 71 | 58 | +15.3u |
-| baseball_mlb | 36 | 32 | +12.0u |
-| TENNIS | 6 | 5 | +4.0u |
+| baseball_mlb | 38 | 33 | +15.9u |
+| baseball_ncaa | 73 | 60 | +14.8u |
+| TENNIS | 7 | 5 | +7.9u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
-| soccer_italy_serie_a | 2 | 2 | -3.3u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
-| basketball_nba | 46 | 46 | -26.9u |
+| soccer_italy_serie_a | 2 | 3 | -8.3u |
+| basketball_nba | 48 | 47 | -23.0u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
 
 | Factor | Record | P/L |
 |--------|--------|-----|
+| Steam: no movement | 20W-24L | -29.9u |
 | Midweek game | 17W-18L | -20.0u |
-| Steam: no movement | 16W-17L | -12.8u |
 | Park: Chase Field | 1W-3L | -10.4u |
 | Pitching edge: Clemson Tigers | 1W-2L | -7.2u |
-| Steam: sharp opposes | 8W-8L | -6.7u |
 | Pitching edge: TCU Horned Frogs | 1W-2L | -6.3u |
 | Pitching edge: Wake Forest Demon Deacons | 1W-2L | -5.8u |
+| Pitching edge: Nebraska Cornhuskers | 1W-2L | -5.7u |
 | Weather: light rain, 11mph wind | 1W-2L | -5.7u |
+| Both teams slow-paced | 9W-9L | -5.1u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
-| DATA_TOTAL v25.47 | 6W-6L | -3.5u |
+| Steam: sharp opposes | 9W-8L | -2.4u |
 | Pitching edge: Florida Gators | 2W-2L | -1.7u |
 | Home 3-in-5 | 2W-2L | -0.8u |
 | Home bounce-back | 5W-4L | -0.4u |
 | H2H high-scoring | 2W-2L | -0.2u |
-| Both teams slow-paced | 9W-8L | -0.1u |
 
 > Factors with consistent negative P/L may need weight adjustments or removal.
 > (Already-shadowed factors are filtered — see data/shadow_factors.md.)
@@ -132,7 +126,7 @@
 ---
 ## Shadow Pick Report
 
-Found 40 shadow-tagged picks.
+Found 41 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -151,8 +145,8 @@ Found 40 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 167W-135L (55.3%) | +67.4u | 0.3 |
-| BELOW_CAP | 75W-58L (56.4%) | +7.4u | 0.6 |
+| AT_CAP | 171W-141L (54.8%) | +55.3u | 0.2 |
+| BELOW_CAP | 79W-59L (57.2%) | +19.5u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -179,20 +173,20 @@ Found 40 shadow-tagged picks.
 
 | Sport | Side | W | L | P/L |
 |-------|------|---|---|-----|
-| baseball_mlb | OVER | 14 | 12 | +2.5u |
+| baseball_mlb | OVER | 14 | 13 | -2.5u |
 | baseball_mlb | UNDER | 10 | 8 | +4.3u |
-| baseball_ncaa | OVER | 26 | 23 | -5.5u |
-| baseball_ncaa | UNDER | 35 | 29 | +2.6u |
+| baseball_ncaa | OVER | 26 | 24 | -10.5u |
+| baseball_ncaa | UNDER | 37 | 30 | +7.2u |
 | basketball_nba | OVER | 1 | 1 | -0.5u |
 | basketball_nba | UNDER | 4 | 6 | -11.8u |
 | basketball_ncaab | UNDER | 0 | 1 | -5.0u |
 | icehockey_nhl | OVER | 11 | 8 | +2.3u |
-| icehockey_nhl | UNDER | 20 | 14 | +10.7u |
+| icehockey_nhl | UNDER | 20 | 16 | +0.7u |
 | soccer_germany_bundesliga | OVER | 2 | 0 | +7.0u |
 | soccer_germany_bundesliga | UNDER | 0 | 1 | -5.0u |
-| soccer_italy_serie_a | OVER | 1 | 1 | -1.5u |
+| soccer_italy_serie_a | OVER | 1 | 2 | -6.5u |
 | soccer_italy_serie_a | UNDER | 1 | 1 | -1.8u |
-| soccer_spain_la_liga | OVER | 2 | 0 | +8.9u |
+| soccer_spain_la_liga | OVER | 3 | 0 | +12.8u |
 | soccer_spain_la_liga | UNDER | 1 | 0 | +3.6u |
 | soccer_uefa_champs_league | OVER | 0 | 1 | -5.0u |
 | soccer_usa_mls | OVER | 0 | 1 | -4.5u |
@@ -200,24 +194,24 @@ Found 40 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS WIN LOSS LOSS LOSS LOSS WIN WIN WIN
-- **Current Streak:** 2 LOSS
+- **Last 10:** WIN WIN LOSS LOSS WIN WIN WIN WIN LOSS WIN
+- **Current Streak:** 2 WIN
 
 ---
 ## Action Items
 
-1. Big red day (-21.4u). Review if any model errors need parameter changes.
-2. Factor 'Pitching edge: Wake Forest Demon Deacons' has -5.8u P/L over 3 bets. Consider reducing weight.
+1. Factor 'Pitching edge: Wake Forest Demon Deacons' has -5.8u P/L over 3 bets. Consider reducing weight.
+2. Factor 'Both teams slow-paced' has -5.1u P/L over 18 bets. Consider reducing weight.
 3. Factor 'Midweek game' has -20.0u P/L over 35 bets. Consider reducing weight.
 4. Factor 'Pitching edge: Clemson Tigers' has -7.2u P/L over 3 bets. Consider reducing weight.
 5. Factor 'Pitching edge: TCU Horned Frogs' has -6.3u P/L over 3 bets. Consider reducing weight.
-6. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
-7. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-8. Factor 'Steam: sharp opposes' has -6.7u P/L over 16 bets. Consider reducing weight.
-9. Factor 'Steam: no movement' has -12.8u P/L over 33 bets. Consider reducing weight.
+6. Factor 'Pitching edge: Nebraska Cornhuskers' has -5.7u P/L over 3 bets. Consider reducing weight.
+7. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
+8. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
+9. Factor 'Steam: no movement' has -29.9u P/L over 44 bets. Consider reducing weight.
 10. Concentration risk detected. Review directional exposure limits.
-11. baseball_ncaa OVERs: 26W-23L (-5.5u). Review totals model for this sport.
+11. baseball_ncaa OVERs: 26W-24L (-10.5u). Review totals model for this sport.
 12. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-26 07:16 ET*
+*Generated locally by export_briefing_data.py | 2026-04-27 05:10 ET*
