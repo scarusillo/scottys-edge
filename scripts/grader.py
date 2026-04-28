@@ -295,8 +295,18 @@ def get_closing_line(conn, event_id, market, selection, bet_book=None):
         if valid_lines:
             mid = len(valid_lines) // 2
             median_line = valid_lines[mid]
-            # Find the row closest to median for the odds value
-            best = min(rows, key=lambda r: abs((r[0] or 0) - median_line))
+            # Find the row closest to median for the odds value.
+            # v25.96: prefer rows that have non-NULL odds first; if every
+            # row matching the median line has NULL odds, fall back to the
+            # nearest row with odds. Previously a NULL-odds row at the
+            # median produced closing_line filled but closing_odds NULL,
+            # leaving 16% of TOTAL rows with no clv_odds_pct since 4/15.
+            rows_with_odds = [r for r in rows if r[1] is not None]
+            if rows_with_odds:
+                best = min(rows_with_odds,
+                           key=lambda r: abs((r[0] or 0) - median_line))
+            else:
+                best = min(rows, key=lambda r: abs((r[0] or 0) - median_line))
             snap_ts = f"{best[3]} {best[4]}" if best[3] and best[4] else None
             return median_line, best[1], snap_ts, f"consensus({len(rows)})"
     
