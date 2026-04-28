@@ -1458,7 +1458,43 @@ def generate_prop_projections(conn=None):
                         if len(_book_lines_cf) >= 3:
                             _market_med_cf = _stats2.median(_book_lines_cf)
                             _career_gap = _car_avg - _market_med_cf
-                            if _career_gap >= 1.0:
+                            # v25.93: recency veto. The "career_avg" is a 3-season
+                            # weighted ESPN split, so for declining veterans whose
+                            # role changed mid-season (or for the playoffs), the
+                            # gap looks dramatic but the dropped market line is
+                            # already at/below current production. Require recent
+                            # production to also sit below the market line before
+                            # piling on the UNDER. Allen 4/27 (L10=11.7 vs 8.5)
+                            # and Clarkson 4/28 (L10=6.5 vs 5.5) would have been
+                            # blocked by this veto; Vucevic 4/28 (L10=6.4 vs 7.5)
+                            # would still have fired. Veto requires >=8 recent
+                            # games to avoid noise on small samples.
+                            _recent_vals = [r[0] for r in conn.execute(
+                                "SELECT stat_value FROM box_scores "
+                                "WHERE player=? AND sport=? AND stat_type=? "
+                                "ORDER BY game_date DESC LIMIT 10",
+                                (player, sport, stat_type)).fetchall()]
+                            _recent_avg = (sum(_recent_vals) / len(_recent_vals)
+                                           if len(_recent_vals) >= 8 else None)
+                            _recency_veto = (_recent_avg is not None
+                                             and _recent_avg > _market_med_cf)
+                            if _career_gap >= 1.0 and _recency_veto:
+                                try:
+                                    conn.execute("""INSERT INTO shadow_blocked_picks
+                                        (created_at, sport, event_id, selection, market_type,
+                                         book, line, odds, edge_pct, units, reason,
+                                         reason_category, reason_detail)
+                                        VALUES (?, ?, ?, ?, 'PROP', NULL, ?, NULL, NULL, NULL, ?, ?, ?)""",
+                                        (datetime.now(timezone.utc).isoformat(), sport, eid,
+                                         f"{player} UNDER {_market_med_cf} {stat_type}",
+                                         _market_med_cf,
+                                         f'PROP_CAREER_FADE_RECENCY_VETO (career={_car_avg}, mkt={_market_med_cf:.1f}, recent={_recent_avg:.2f})',
+                                         'PROP_CAREER_FADE_RECENCY_VETO',
+                                         f'career={_car_avg}, mkt={_market_med_cf:.1f}, recent={_recent_avg:.2f}, n={len(_recent_vals)}'))
+                                    conn.commit()
+                                except Exception:
+                                    pass
+                            if _career_gap >= 1.0 and not _recency_veto:
                                 # Market consensus line is >=1.0 below career avg.
                                 # v25.92: pick BEST NY-legal UNDER offering across
                                 # books (highest line, then best odds). Earlier
