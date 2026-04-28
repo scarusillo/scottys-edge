@@ -121,7 +121,7 @@ def merge_and_select(game_picks, prop_picks, conn=None):
         # became live picks because of this.
         if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB', 'SPREAD_FADE_FLIP',
                                     'DATA_SPREAD', 'DATA_TOTAL', 'PROP_FADE_FLIP',
-                                    'FADE_FLIP', 'PROP_CAREER_FADE'):
+                                    'FADE_FLIP', 'PROP_CAREER_FADE', 'RAW_EDGE_FLIP'):
             return True
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')

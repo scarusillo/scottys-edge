@@ -1383,6 +1383,131 @@ def process_totals_path(conn, sp, prelude, adj, mkt, totals_mkt, setup, ctx_stat
                             pick['context'] = ' | '.join(ctx_parts)
                         picks.append(pick)
 
+    # v25.95 RAW_EDGE_OVERCONFIDENCE_FLIP — TOTAL picks only.
+    # Backtest since 4/15: 24 TOTAL picks at raw edge >= 30% went 8-15-1
+    # for -38u (model claimed 81% WR, actual 35%). Fade flip on the same
+    # picks went 15-8-1 for +28.6u — a +67u swing. The model is not just
+    # cold at this confidence band, it is directionally inverted (35% +
+    # 65% ~= 100%). When this fires AND Context Model disagrees with our
+    # direction, we flip to opposite side at best NY-legal book. When
+    # Context AGREES, fire as-is (Context Model is calibrated; corroboration
+    # is real). Cross-sport gate (NCAA BB, MLB, NHL, soccer) — distinct
+    # from CONTEXT_DIRECTION_VETO which only blocks and only on a sport
+    # whitelist that excludes NCAA BB.
+    try:
+        flipped_picks = []
+        for _p in picks:
+            if (_p.get('market_type') == 'TOTAL'
+                    and _p.get('side_type') not in ('DATA_TOTAL', 'BOOK_ARB',
+                                                    'RAW_EDGE_FLIP')
+                    and _p.get('model_prob') is not None
+                    and _p.get('implied_prob') is not None):
+                _raw_edge = (_p['model_prob'] - _p['implied_prob']) * 100.0
+                if _raw_edge >= 30.0:
+                    _mkt_tot = _p.get('line')
+                    if _mkt_tot is not None and commence:
+                        from context_spread_model import compute_context_total
+                        try:
+                            _ctx_tot, _ = compute_context_total(
+                                conn, sp, home, away, eid, _mkt_tot,
+                                commence[:10])
+                            _pick_side = ('OVER' if 'OVER' in
+                                          _p.get('selection', '').upper()
+                                          else 'UNDER')
+                            if _ctx_tot > _mkt_tot:
+                                _ctx_side = 'OVER'
+                            elif _ctx_tot < _mkt_tot:
+                                _ctx_side = 'UNDER'
+                            else:
+                                _ctx_side = _pick_side  # neutral → agree
+                            if _ctx_side != _pick_side:
+                                # FLIP — replace with opposite-side pick
+                                if (_pick_side == 'OVER'
+                                        and under_total is not None
+                                        and under_odds is not None):
+                                    _flip_line = under_total
+                                    _flip_odds = under_odds
+                                    _flip_book = under_book
+                                    _flip_dir = 'UNDER'
+                                elif (_pick_side == 'UNDER'
+                                      and over_total is not None
+                                      and over_odds is not None):
+                                    _flip_line = over_total
+                                    _flip_odds = over_odds
+                                    _flip_book = over_book
+                                    _flip_dir = 'OVER'
+                                else:
+                                    flipped_picks.append(_p)
+                                    continue
+                                # Respect MIN_ODDS=-150 and MAX_PROP_ODDS=140
+                                # ceilings on the flipped side. If opposite
+                                # is out of range, drop to a block (skip).
+                                from config import MIN_ODDS as _MO
+                                if _flip_odds <= _MO or _flip_odds > 140:
+                                    print(f"    RAW_EDGE_FLIP odds out of "
+                                          f"range ({_flip_odds:+.0f}); "
+                                          f"blocking original instead")
+                                    continue  # skip both — block
+                                _flip_ctx = (
+                                    f"v25.95 RAW_EDGE_FLIP — original raw "
+                                    f"edge {_raw_edge:.1f}% on {_pick_side} "
+                                    f"(model claims {_p['model_prob']*100:.0f}%, "
+                                    f"implied {_p['implied_prob']*100:.0f}%). "
+                                    f"Context Model disagrees: ctx_tot="
+                                    f"{_ctx_tot:.2f} vs mkt={_mkt_tot}. "
+                                    f"Flipping to {_flip_dir} {_flip_line} "
+                                    f"@ {_flip_book} {_flip_odds:+.0f}."
+                                )
+                                _flipped = dict(_p)
+                                _flipped['selection'] = (
+                                    f"{away}@{home} {_flip_dir} {_flip_line}")
+                                _flipped['book'] = _flip_book
+                                _flipped['line'] = _flip_line
+                                _flipped['odds'] = _flip_odds
+                                _flipped['side_type'] = 'RAW_EDGE_FLIP'
+                                _flipped['confidence'] = 'CALIB_FLIP'
+                                _flipped['model_prob'] = 0
+                                _flipped['implied_prob'] = 0
+                                _flipped['edge_pct'] = 0
+                                _flipped['units'] = 5.0
+                                _flipped['star_rating'] = 3
+                                _flipped['context'] = _flip_ctx
+                                _flipped['notes'] = _flip_ctx
+                                try:
+                                    from datetime import datetime as _dtf
+                                    conn.execute(
+                                        """INSERT INTO shadow_blocked_picks
+                                           (created_at, sport, event_id,
+                                            selection, market_type, book,
+                                            line, odds, edge_pct, units,
+                                            reason)
+                                           VALUES (?, ?, ?, ?, 'TOTAL', ?,
+                                                   ?, ?, ?, ?, ?)""",
+                                        (_dtf.now().isoformat(), sp, eid,
+                                         _p.get('selection', ''),
+                                         _p.get('book', ''),
+                                         _p.get('line'), _p.get('odds'),
+                                         round(_raw_edge, 2),
+                                         _p.get('units', 0),
+                                         f'RAW_EDGE_FLIP (raw={_raw_edge:.1f}, '
+                                         f'pick={_pick_side}, ctx={_ctx_side}, '
+                                         f'ctx_tot={_ctx_tot:.2f}, mkt={_mkt_tot})'))
+                                    conn.commit()
+                                except Exception:
+                                    pass
+                                print(f"  \U0001f504 RAW_EDGE_FLIP: "
+                                      f"{_p.get('selection', '')[:50]} -> "
+                                      f"{_flip_dir} (raw={_raw_edge:.1f}%, "
+                                      f"ctx_tot={_ctx_tot:.2f})")
+                                flipped_picks.append(_flipped)
+                                continue
+                        except Exception:
+                            pass
+            flipped_picks.append(_p)
+        picks = flipped_picks
+    except Exception:
+        pass
+
     return picks
 
 
