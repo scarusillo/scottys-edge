@@ -69,6 +69,44 @@ say so instead of proposing. Cite the gate name + ship date.
 
 ## 👀 WATCH LIST — revisit 2026-05-12
 
+### MLB pitcher OUTS prop — calibration on 17.5 / 18.5 lines (flagged 2026-04-28)
+
+**Trigger case:** Bet #1109 Chase Burns OVER 17.5 OUTS at -114, scrubbed
+2026-04-28. Model claimed 69.6% probability; recent 5-start hit rate was 40%.
+
+**Structural problem the user identified:** for young/short-leash starters
+(78-97 pitch counts, modal 5.0-6.0 IP), the X7.5 / X8.5 outs line sits at
+the **6th-inning pull decision**. Either the starter gets pulled mid-6th
+at 5.2 IP (17 outs) or finishes the 6th clean (18 outs) — a binary
+sequencing outcome, not a smooth distribution. Books price it ~‑110 because
+it's nearly coin-flip; our prop model treats IP as smoothly distributed
+and overestimates OVER.
+
+**Validation metrics to require before firing OVER on outs props:**
+1. **Avg outs over recent N starts** (current proxy). Burns: 16.8 avg, line
+   17.5 → 1‑out gap, but model claims 70% OVER.
+2. **Avg innings pitched separately.** Average innings of 5.6+ would justify
+   OVER 17.5; avg 5.0-5.4 should not. Burns avg IP: 5.4 — directly below the
+   line in IP space.
+3. **Hit rate at the actual line** (binary clearing rate over last 5-10
+   starts). Should be ≥ implied + ~5% buffer.
+4. **Distribution check** — modal IP cluster + variance. If 4 of 5 last starts
+   are within ±0.2 IP of each other, distribution is tight; line at the edge
+   of mode is ~50/50.
+
+**Promotion criteria (revisit 2026-05-12):**
+- Pull all OUTS prop fires at X7.5 / X8.5 lines since 4/15
+- Compute avg_outs, avg_ip, hit_rate per pick using starter's prior 5-10 starts
+- If WR < 45% AND model_prob avg ≥ 65% with n ≥ 10 → ship a calibration
+  gate: block OVER on outs props when avg_ip < line/3 + 0.1 buffer
+- If pattern doesn't materialize → close out
+
+**Reference:** `feedback_pitcher_asymmetric.md`, `feedback_mlb_pitchers.md`,
+`feedback_mlb_era_reliability.md`. Distinct from existing pitcher gates
+which apply to MLB TOTAL picks (ERA reliability), not pitcher-prop OUTS.
+
+---
+
 ### +100 to +119 odds bucket — UNDER side leak (flagged 2026-04-28)
 
 Calibration sweep across all sports since 4/15 surfaced a directional leak:
