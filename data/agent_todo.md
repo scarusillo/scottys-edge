@@ -67,6 +67,61 @@ say so instead of proposing. Cite the gate name + ship date.
 
 ---
 
+## 👀 WATCH LIST — revisit 2026-05-12
+
+### +100 to +119 odds bucket — UNDER side leak (flagged 2026-04-28)
+
+Calibration sweep across all sports since 4/15 surfaced a directional leak:
+UNDER picks priced at slight + odds (+100 to +119 American, ~45-50% implied)
+are 0-7 across TOTAL UNDER + PROP_UNDER + DOG → -29.75u net on n=8.
+
+| side_type | n | W-L | P/L |
+|---|---|---|---|
+| TOTAL UNDER | 5 | 1-4 | -14.75u |
+| PROP_UNDER | 3 | 0-3 | -15.00u |
+| DOG (SPREAD) | 1 | 0-1 | -5.00u |
+
+**Why parked, not gated:**
+- n=8 is below `feedback_no_panic_kill.md` confidence threshold
+- PROP_UNDER cluster CLV is +1.30 (closing lines moved our way) — model finds
+  right side, wrong price, but actuals don't agree → could be small-sample variance
+- Direction unanimous though, so worth tracking
+
+**Promotion criteria (revisit 2026-05-12):**
+- If cohort reaches **n ≥ 20 with WR < 35%** and same UNDER-direction concentration
+  → ship odds-bucket gate blocking UNDER picks at +100 to +119
+- If WR rebounds to ≥ 50% by then → close out, no action
+
+**Cross-reference:** distinct from v25.66 prop odds-bucket gate (which already
+blocks props at -120 to -116 / -109 to -101 / +100 to +120) — but that gate is
+on edge-PROPs only. The current leak shows up on PROP_UNDERs that PASS that
+gate (different odds buckets) plus on TOTAL UNDERs which v25.66 doesn't cover.
+
+**Query to re-run on 2026-05-12:**
+```sql
+SELECT market_type, side_type, COUNT(*) n,
+       SUM(CASE WHEN result='WIN' THEN 1 ELSE 0 END) w,
+       SUM(CASE WHEN result='LOSS' THEN 1 ELSE 0 END) l,
+       ROUND(SUM(pnl_units), 2) pnl, ROUND(AVG(clv), 2) clv
+FROM graded_bets
+WHERE created_at >= '2026-04-15'
+  AND result IN ('WIN','LOSS','PUSH') AND units >= 3.5
+  AND odds >= 100 AND odds < 120
+  AND (selection LIKE '%UNDER%' OR side_type IN ('PROP_UNDER','DOG'))
+GROUP BY market_type, side_type;
+```
+
+### Pick'em range (-115 to -130) adds no edge (flagged 2026-04-28)
+
+Same calibration sweep showed 96 picks (67% of all volume since 4/15) at
+implied 50-56% hitting at 51% — exactly market implied, -19u net at -0.2u/pick.
+Not actionable as a gate (not losing dramatically), but a structural
+observation: edge is concentrated at conviction extremes (heavy favs +33u,
+bigger dogs +22u). Mid-range is churn. **Not on watch list — no kill criterion
+makes sense.** Reference for future calibration / edge-floor work.
+
+---
+
 ## Original content
 
 ## 🔬 USER FLAGGED — Deeper clay DIVERGENCE_GATE analysis (2026-04-25)
