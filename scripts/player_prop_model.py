@@ -1192,7 +1192,7 @@ def generate_prop_projections(conn=None):
         if not legal_entries:
             continue
 
-        # v25.90: PROP_PLAYOFF_ROLE_GATE (SHADOW MODE)
+        # v25.90: PROP_PLAYOFF_ROLE_GATE — HARD BLOCK (promoted 2026-04-28)
         # Cohort analysis (post-Apr-15) showed ROLE-tier (avg pts < 12) NBA
         # PROP_OVER picks losing 1-4 (-16u) in playoffs vs 1-1 (+1.2u) in
         # reg-season. Same player class, different regime. Hypothesis:
@@ -1201,8 +1201,16 @@ def generate_prop_projections(conn=None):
         # means model finds real edge — variance, not wrongness — but
         # variance compounds and eats us. Sam Merrill OVER 1.5 AST lost
         # again 2026-04-26 after scrub.
-        # SHADOW: log to shadow_blocked_picks but DON'T block. Re-evaluate
-        # at n>=15 cohort; promote to live block if blocked picks lose.
+        #
+        # Promoted from shadow to hard block 2026-04-28. Counterfactual on
+        # 14 graded NBA PROP_OVER picks since 2026-04-19 playoffs began:
+        # would-be-blocked subset 0W-3L (-15u, all losses), would-still-fire
+        # subset 5W-4L (+1.7u). Zero winners blocked, all blocks were losses.
+        # Promotion supersedes v25.93 PROP_CAREER_FADE recency veto for any
+        # sub-12 player — fires before the OVER iteration reaches the fade
+        # logic, so no UNDER bet can be generated either. Acceptable trade:
+        # PROP_CAREER_FADE n=2 graded was +0.83u (not load-bearing); v25.90
+        # hard catches the bench-role bleed cleanly.
         try:
             from context_spread_model import _is_playoff_game as _pgr_is_playoff
             _pgr_commence = (commence or '')[:10]
@@ -1214,7 +1222,7 @@ def generate_prop_projections(conn=None):
                 _pgr_pts_baseline = get_player_baseline(conn, player, 'pts', sport)
                 _pgr_pts_avg = _pgr_pts_baseline.get('avg') if _pgr_pts_baseline else None
                 if _pgr_pts_avg is not None and _pgr_pts_avg < 12.0:
-                    # Log once per (event, player, stat, side) using median line.
+                    # Log block to shadow_blocked_picks for observability.
                     # Reason format MUST be 'CATEGORY (detail)' — the
                     # shadow_blocked_picks_categorize trigger parses on " (" to
                     # split reason_category from reason_detail.
@@ -1228,15 +1236,13 @@ def generate_prop_projections(conn=None):
                             (datetime.now(timezone.utc).isoformat(), sport, eid,
                              f"{player} OVER {_pgr_med} {stat_type}",
                              'MEDIAN', _pgr_med,
-                             f'PROP_PLAYOFF_ROLE_GATE_SHADOW '
-                             f'(v25.90, pts_avg={_pgr_pts_avg:.1f} < 12.0, '
+                             f'PROP_PLAYOFF_ROLE_GATE '
+                             f'(v25.94, pts_avg={_pgr_pts_avg:.1f} < 12.0, '
                              f'stat={stat_type}, line={_pgr_med})'))
                         conn.commit()
                     except Exception:
                         pass
-                    # SHADOW: do NOT continue — pick still fires live. Promote
-                    # to live block in `agent_morning_prompt.md` Section 6d
-                    # decision rules: n>=15 cohort and WR<40% and net P/L<-3u.
+                    continue  # HARD BLOCK: skip this OVER candidate
         except Exception:
             pass
 
