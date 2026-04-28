@@ -132,6 +132,7 @@ all gates at save time.
 - **Merge caps:** Max 4 sharp + 10 soft picks per run; min 3.0u game lines, 2.0u props
 - **Tennis ML cap:** +140 (v25.88, was +200) — aligned with `MAX_PROP_ODDS`
 - **CLV split (v25.89):** `clv_line` (raw points) + `clv_odds_pct` (juice as % implied prob) on bets/graded_bets — original `clv` field retained for backwards compatibility
+- **edge_pct cap = 20.0 in storage** — anything above gets stored as 20.0; raw edge (uncapped) is `model_prob − implied_prob` from `bets`. Use raw edge for calibration analysis; v25.95 RAW_EDGE_FLIP gates on raw ≥ 30% on TOTALs.
 
 ## Environment Variables
 
@@ -160,6 +161,8 @@ all gates at save time.
 13. **Prop CLV:** Fetch window stays at 3hrs for new picks, but always fetches for events with pending prop bets (for closing line data). Without this, prop CLV is stale.
 14. **Twitter/X removed:** Account permanently suspended April 2026. All posting code removed from social_media.py. Discord + Instagram only.
 15. **No auto-post to IG from pipeline** unless it's the standard run flow. User can ask Claude to post Reels manually.
+16. **Two layered fade gates for NBA props (post-v25.94):** `PROP_PLAYOFF_ROLE_GATE` (hard) blocks PROP_OVER on `pts_avg<12` players in NBA playoffs — fires before PROP_CAREER_FADE so no UNDER fade is generated either for those players. `PROP_CAREER_FADE` + `v25.93 recency veto` covers the above-12 declining-vet cohort. They layer; don't unify.
+17. **Edge-model TOTAL picks at raw edge ≥ 30% are structurally overconfident.** v25.95 RAW_EDGE_FLIP flips these to opposite side when Context Model disagrees. Above 30% raw, the model claimed 81% WR but real is 35%; fade flip hits 65%. Cross-sport. Side type `RAW_EDGE_FLIP`.
 
 ## Daily Schedule (Windows Task Scheduler)
 

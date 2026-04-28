@@ -4,7 +4,7 @@
 does, how it finds edge, how it interacts with others, gates protecting it,
 and live win record.
 
-**Last updated:** 2026-04-22 (v25.67 shipped)
+**Last updated:** 2026-04-28 (v25.95 shipped)
 
 ---
 
@@ -307,6 +307,84 @@ excluded (main-line overlap detection not yet built).
 
 ---
 
+## Channel 14 — PROP_CAREER_FADE (v25.87, shipped 2026-04-24)
+
+**What it does:** NBA‑only prop fade. When books collectively price a player's
+prop OVER line ≥ 1.0 below the player's career (3‑season weighted) average,
+the market is signaling current‑situation decline (playoff minutes cut, role
+change, tough matchup). Flip OVER → UNDER at the best NY‑legal book at 5u.
+
+**How it finds edge:** `career_avg − market_median ≥ 1.0` triggers the flip.
+Distinct from PROP_FADE_FLIP (which fires on model‑vs‑market disagreement).
+PROP_CAREER_FADE measures market‑vs‑career history.
+
+**Gates / refinements:**
+- v25.92 best‑line routing — picks the highest UNDER line × best odds across
+  all NY‑legal books, not the source OVER's book/line
+- **v25.93 recency veto** — blocks the fade when the player's last‑10 box‑score
+  average exceeds the market median (recent production confirms market). Allen
+  4/27 (L10=11.7 vs line 8.5) and Clarkson 4/28 (L10=6.5 vs line 5.5) blocked
+  retroactively; Vucevic 4/28 (L10=6.4 vs line 6.8) allowed.
+- **v25.94 PROP_PLAYOFF_ROLE_GATE** (see Gate summary) supersedes v25.93 for
+  any sub‑12‑pts_avg player — those picks are blocked at the OVER step before
+  the fade can fire.
+- Concentration / direction caps apply
+
+**Scope:** NBA PROP_OVER → UNDER only. MLB / NHL samples too thin.
+
+**Record:** n=2 graded (Keldon Johnson WIN, Allen LOSS); +0.83u net. Small.
+
+---
+
+## Channel 15 — RAW_EDGE_FLIP (v25.95, shipped 2026-04-28)
+
+**What it does:** TOTAL‑market only. When an edge‑model TOTAL pick has raw
+edge (`model_prob − implied_prob`) ≥ 30%, the model is in structural
+overconfidence territory — backtest 4/15→4/28 showed n=24 such picks went
+8‑15‑1 (35% WR) for ‑38u, while a fade flip went 15‑8‑1 (65%) for +28.6u
+(+67u swing). The model isn't just cold; it's directionally inverted at this
+band. v25.95 checks Context Model direction; if Context disagrees with the
+original pick direction, replace with opposite‑side pick.
+
+**How it finds edge:** Two‑gate guard:
+1. Raw edge (uncapped, from `model_prob − implied_prob`) ≥ 30% on a TOTAL
+2. Context Model direction (`compute_context_total`) disagrees with the
+   original pick direction
+
+If both true → flip to opposite side at best NY‑legal book within
+`MIN_ODDS=‑150` and `MAX_PROP_ODDS=140` bounds. If Context agrees → fire as‑is
+(both calibrated and overconfident models pointing same direction is real
+corroboration).
+
+**Why it works:** The edge model's `edge_pct` is **capped at 20%** in storage,
+which masks calibration failures at very high raw edges. Above 30% raw, the
+distribution shows model claiming 81% WR with actual 35%. Fade flip equals
+(1 − model_prob) almost exactly — textbook directional inversion.
+
+**Cross‑sport.** Distinct from CONTEXT_DIRECTION_VETO (v25.52) which only
+blocks and only on a sport whitelist that excludes NCAA baseball — the
+biggest 30%+ raw‑edge cohort.
+
+**Side type:** `RAW_EDGE_FLIP`. Exempt from CONTEXT_DIRECTION_VETO,
+direction validator, and stage 5 merge bypass — flip already encodes
+Context Model judgment.
+
+**Scope:** TOTAL only. SPREAD / ML / PROP not yet covered (separate
+calibration profile; revisit if/when comparable evidence emerges).
+
+**Kill‑switch:** WR < 50% on n ≥ 15 → demote to block‑only (Option B1) and
+re‑evaluate Context disagreement metric.
+
+**Backtest basis (2026-04-15 to 2026-04-28):**
+- FOLLOW (current behavior): 8‑15‑1, 35% WR, ‑38.4u
+- FADE FLIP: 15‑8‑1, 65% WR, +28.6u
+- Δ vs FOLLOW: +67.0u
+- Cross‑sport: NCAA BB (12), MLB (5), NHL (6), Serie A (1)
+
+**Record:** n=0 (live as of 2026-04-28).
+
+---
+
 ## Channel 13 — CLV_MICRO_EDGE (v25.80, shipped 2026-04-23)
 
 **What it does:** Fires picks at **13%-20% edge** (below the normal 20% firing
@@ -387,6 +465,10 @@ Rough order of evaluation in `model_engine.py`:
 
 **Sport-specific hard blocks:**
 - `HARD_VETO_DK_NCAA_BB_UNDERS` (v25.56) — blocks DK NCAA BB UNDER (-51u cohort)
+- `PROP_PLAYOFF_ROLE_GATE` (v25.94, hard 2026-04-28) — blocks NBA playoff PROP_OVER on `pts/ast/reb` when `pts_avg < 12.0`. Promoted from v25.90 shadow after counterfactual showed 0W-3L on backtest (Allen, Vucevic-style bench bleed). Supersedes PROP_CAREER_FADE recency veto for sub-12 players (no fade can fire either, since the OVER iteration is skipped). Above-12 declining vets remain in v25.93's coverage.
+
+**Calibration gates (v25.95):**
+- `RAW_EDGE_FLIP` (Channel 15) — TOTAL picks at raw edge ≥ 30% with Context disagreement get flipped instead of fired. Cross-sport.
 
 **Shadow adjustments** (context_engine):
 - Home fast-paced, Away bounce-back, Altitude, Home hot streak, Away revenge,
@@ -408,6 +490,9 @@ Rough order of evaluation in `model_engine.py`:
 | PROP_BOOK_ARB | `player_prop_model.py` / `props_engine.py` | cross-book scanner |
 | CLV_MICRO_EDGE | `main.py` | `_passes_filter` (~3150) |
 | LINE_AGAINST_GATE | `main.py` | end of `_passes_filter` (~3608) |
+| PROP_CAREER_FADE | `player_prop_model.py` | ~1424 |
+| RAW_EDGE_FLIP | `pipeline/per_game.py` | end of TOTAL block (~1390) |
+| PROP_PLAYOFF_ROLE_GATE | `player_prop_model.py` | ~1209 |
 
 ---
 

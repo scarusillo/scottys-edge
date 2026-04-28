@@ -262,6 +262,68 @@ future investigation for a prop-side version.
 
 ---
 
+### J. PROP_CAREER_FADE (v25.87, shipped 2026-04-24)
+
+**Side-type:** `PROP_CAREER_FADE`
+**File:** `player_prop_model.py` (~line 1424)
+
+**What it does:** NBA prop fade. When books collectively price an OVER line
+≥ 1.0 below the player's career (3‑season weighted) average, that's the
+market signaling current‑situation decline. Flip OVER → UNDER at the best
+NY‑legal book at 5u.
+
+**Distinct from PROP_FADE_FLIP:** PROP_FADE_FLIP measures our model vs market.
+PROP_CAREER_FADE measures market vs career history.
+
+**v25.92 (2026-04-27):** best‑line routing — picks the highest UNDER × best
+odds across NY‑legal books, not the source OVER's book/line.
+
+**v25.93 (2026-04-28):** recency veto — blocks the fade when the player's
+last‑10 box‑score average exceeds the market median. Prevents fading active
+producers whose career number is inflated by prime years (Allen 4/27 lost
+with L10=11.7 vs line 8.5; Clarkson 4/28 would have lost with L10=6.5 vs
+line 5.5).
+
+**v25.94 supersedes for sub‑12 players:** PROP_PLAYOFF_ROLE_GATE hard‑blocks
+the OVER iteration before the fade can fire — Vucevic/Clarkson never reach
+the fade step. v25.93 still covers the above‑12 declining‑vet cohort.
+
+**Status:** n=2 graded (Johnson WIN, Allen LOSS) +0.83u. Small.
+
+---
+
+### K. RAW_EDGE_FLIP (v25.95, shipped 2026-04-28)
+
+**Side-type:** `RAW_EDGE_FLIP`
+**File:** `pipeline/per_game.py` (end of TOTAL block, ~line 1390)
+
+**What it does:** TOTAL‑market only. When an edge‑model TOTAL pick has raw
+edge (`model_prob − implied_prob`) ≥ 30%, the model is in structural
+overconfidence territory. v25.95 checks the Context Model direction; if
+Context disagrees with the original pick, replace with opposite‑side pick at
+the best NY‑legal book within `MIN_ODDS=‑150` and `MAX_PROP_ODDS=140` bounds.
+If Context agrees → fire the original (corroboration is real signal).
+
+**Why it works:** `edge_pct` is **capped at 20%** in storage, masking
+calibration failures. Above 30% raw, model claimed 81% WR with actual 35%.
+Fade flip = (1 − model_prob) almost exactly — directional inversion.
+
+**Cross‑sport.** Distinct from CONTEXT_DIRECTION_VETO (v25.52) which only
+blocks and only on a sport whitelist that excludes NCAA baseball — the
+biggest 30%+ raw‑edge cohort.
+
+**Backtest 2026-04-15 to 2026-04-28 (n=24, units≥3.5):**
+- FOLLOW: 8‑15‑1, 35% WR, ‑38.4u
+- FADE FLIP: 15‑8‑1, 65% WR, +28.6u
+- Δ vs FOLLOW: +67.0u
+- Sport mix: NCAA BB (12), MLB (5), NHL (6), Serie A (1)
+
+**Kill‑switch:** WR < 50% at n ≥ 15 → demote to block‑only and revisit.
+
+**Status:** Live 2026-04-28. n=0 graded.
+
+---
+
 ## 3. Gates — things that BLOCK or modify picks
 
 These don't generate picks; they filter them.
@@ -342,7 +404,8 @@ already corrected. Only 8 of 47 overlap existing v25.35 SHARP_OPPOSES_BLOCK
 - `opener_move <= -0.5`
 - `market_type in ('SPREAD', 'TOTAL')`
 - NOT in exempt `side_type` list: `SPREAD_FADE_FLIP`, `PROP_FADE_FLIP`,
-  `DATA_SPREAD`, `DATA_TOTAL`, `BOOK_ARB`, `PROP_BOOK_ARB`, `FADE_FLIP`.
+  `DATA_SPREAD`, `DATA_TOTAL`, `BOOK_ARB`, `PROP_BOOK_ARB`, `FADE_FLIP`,
+  `PROP_CAREER_FADE`, `RAW_EDGE_FLIP`.
   Those channels intentionally bet against market movement and have their own
   logic.
 
