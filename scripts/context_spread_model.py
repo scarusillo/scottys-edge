@@ -254,17 +254,6 @@ def _get_extended_form_adjustment(conn, sport, home, away, before_date):
     return adj, f'ext_form h{h_avg:+.1f}/a{a_avg:+.1f}'
 
 
-def _get_player_avg_pts(conn, player, before_date):
-    """Player's avg points over last 30 days (from box_scores)."""
-    r = conn.execute("""
-        SELECT AVG(stat_value) FROM box_scores
-        WHERE player = ? AND stat_type = 'pts'
-          AND DATE(game_date) >= DATE(?, '-30 days')
-          AND DATE(game_date) < ?
-    """, (player, before_date, before_date)).fetchone()
-    return float(r[0]) if r and r[0] else None
-
-
 def _get_star_concentration_amplifier(conn, sport, team, before_date):
     """If team has only 1-2 players averaging 18+ PPG and a star is out,
     amplify injury impact. Returns multiplier (1.0 = no amplification)."""
