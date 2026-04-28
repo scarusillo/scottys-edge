@@ -177,20 +177,66 @@ All 3 blocked picks had:
 
 ---
 
-## 🗓 NEXT WEEK — NBA Playoff Series Awareness
+## 👀 MONITOR — NBA Playoff Series Awareness (deferred 2026-04-28)
 
-**Investigation flagged 2026-04-24.** Our NBA DATA_TOTAL Context Model uses regular-season form and H2H but ignores games played in the current playoff series. DEN/MIN Game 3 missed by 30 pts (we projected 239.2, actual 209) while Games 1-2 of same series already showed series avg -11 UNDER vs line. Pattern holds across most series in Apr 18-24 (15-5 UNDERs league-wide, 7/8 series opened UNDER).
+**Original deadline May 1 deferred to end of Round 1 (~2026-05-04).** Reviewed
+2026-04-28: v25.91 NBA_PLAYOFF_INSERIES_GATE shadow log has **0 fires** since
+ship date 2026-04-27 — gate is functional but hasn't matched because every
+NBA Path 2 TOTAL pick has had its direction agree with the in-series running
+average. Gate only logs on disagreement.
 
-**Proposal (not shipped):** `NBA_PLAYOFF_SERIES_ADJUSTMENT` — when Game 2+ of a series, dampen context projection by 50% of the series_avg_vs_line trend.
+**Series-level data is consistent with original thesis (6 of 8 series running
+UNDER market through Round 1 G3-G4):**
 
-**Why waiting:** Only 3 Game 3+ data points; n too thin to ship per `feedback_no_panic_kill.md`.
+| Series | Δ (avg actual − avg line) |
+|---|---|
+| Pistons/Magic | -18.8 |
+| Cavs/Raptors | -10.2 |
+| Nuggets/Wolves | -7.2 |
+| Spurs/Trail Blazers | -6.8 |
+| Celtics/76ers | -2.5 |
+| Hawks/Knicks | -1.8 |
+| Rockets/Lakers | +1.2 |
+| OKC/Suns | +13.2 |
 
-**Decision by May 1 (also passive monitoring item):**
-1. Ship standalone gate if sample supports at n=30+ playoff games
-2. Fold into broader NBA market-baseline redesign
-3. Drop if market closing totals catch up to actual avg (~213) before then
+**Game 1s went UNDER in 7 of 8 series** — regime signal beyond just
+"in-series" (Game 1 has no in-series data). Suggests model overprojects
+playoff totals systematically, not just within-series.
 
-See `project_nba_playoff_series_awareness.md` for full analysis + sample DEN/MIN calculations.
+**Our actual NBA playoff TOTAL record: 5W-6L, -7.56u on n=11.** Most losses
+were narrow variance (213 vs 217.5, 217 vs 216.5), not blowouts that an
+in-series gate would catch. OKC/Suns is the only series we got direction
+wrong on (0-2 UNDER picks against an OVER-trending series).
+
+**Decision criteria for 2026-05-04 review (end of Round 1):**
+1. **Ship NBA_PLAYOFF_TOTAL_OFFSET** if Game 1s continue trending UNDER in
+   Round 2 + first-round-completion shows actuals 5+ pts below market
+2. **Ship NBA_PLAYOFF_SERIES_ADJUSTMENT** if v25.91 shadow log accumulates
+   n ≥ 10 disagreement fires AND blocked picks would have been > 60% losses
+3. **Fold into broader NBA market-baseline redesign** if neither pattern
+   stabilizes
+4. **Drop** if market closing lines catch up (e.g., series 2-of-3 going UNDER
+   pulls Game 4+ lines down by 5+, and our model still finds value)
+
+**Re-run query 2026-05-04:**
+```sql
+-- v25.91 fire count
+SELECT COUNT(*) FROM shadow_blocked_picks
+WHERE reason_category LIKE '%INSERIES%' OR reason LIKE '%v25.91%';
+
+-- Series totals vs lines
+SELECT home, away, COUNT(*) games,
+       ROUND(AVG(home_score+away_score), 1) avg_actual,
+       ROUND(AVG(closing_total), 1) avg_line
+FROM results
+WHERE sport='basketball_nba' AND commence_time >= '2026-04-19'
+  AND home_score IS NOT NULL
+GROUP BY (CASE WHEN home<away THEN home ELSE away END),
+         (CASE WHEN home<away THEN away ELSE home END);
+```
+
+**Reference:** `project_nba_playoff_series_awareness.md` — original analysis +
+DEN/MIN calculations.
 
 ---
 
