@@ -85,7 +85,7 @@ def _api_get(endpoint, params=None):
                 used = resp.headers.get('x-requests-used', '?')
                 print(f"  API: {endpoint} — Requests used: {used}, remaining: {remaining}")
                 return json.loads(resp.read().decode())
-        except (URLError, HTTPError, TimeoutError, OSError) as e:
+        except (URLError, HTTPError, TimeoutError, OSError, ValueError) as e:
             backoff = 2 ** attempt  # 2s, 4s, 8s
             if attempt < max_retries:
                 print(f"  ⚠ API retry {attempt}/{max_retries} for {endpoint} — {e} — waiting {backoff}s...")
