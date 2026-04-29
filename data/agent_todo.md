@@ -1,5 +1,63 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-26 — v26.0 refactor COMPLETE (all phases shipped today)
+**Last updated:** 2026-04-28 — v25.93/94/95/96 shipped; v25.97 CLV predictor built (not wired)
+
+---
+
+## 🌅 TOMORROW MORNING (2026-04-29) — TOP PRIORITY
+
+### Decide what to do with the v25.97 CLV predictor model
+
+**Built today, not wired.** `scripts/clv_model.py` — naive additive model with
+shrinkage (k=20). Trained on n=143 graded picks since 4/15 with reliable
+close-side CLV. Helper `clv_predict(conn, pick)` returns
+`(predicted_clv, contributions_dict)` — ready to call but no fire-time code
+references it yet (per `feedback_dryrun_before_live.md`).
+
+**Validation results (leave-one-out on training set):**
+- MAE: 0.847 (avg absolute error in CLV units)
+- Correlation (predicted, actual): **+0.253** — real but weak
+- Decile lift: clean in middle (deciles 4-8 predicted ≈ actual), overshoots at
+  top (decile 10 predicted +1.65 vs actual +0.31 — NBA prop POS_HIGH cohort
+  variance), underestimates magnitude in bottom 2 deciles but ranks correctly
+  (deciles 1-2 actuals avg -0.20 vs baseline +0.26)
+
+**Strongest features (shrunk deviation):**
+- `opener_move`: WITH ≥0.5 = +0.42, AGAINST ≥0.5 = -0.12 (validates LINE_AGAINST_GATE intuition)
+- `book`: BetRivers = +0.26, FanDuel = -0.16, Caesars = -0.13
+- `sport`: basketball_nba = +0.50 (cohort avg lifts NBA up), baseball_ncaa = -0.10
+
+**Decision options for tomorrow:**
+
+1. **Ship as fire-time gate** — block bottom-decile predictions (predicted_clv
+   ≤ -0.5). Risk: correlation 0.25 is below gate-grade threshold (0.40). At
+   current MAE, false positives likely.
+
+2. **Ship as stake-down signal** — keep stake at default but down-weight
+   (e.g., 5u → 3u) on bottom-decile. Lower-risk path, retains optionality.
+
+3. **Ship as briefing alert only** — surface bottom-decile picks in morning
+   briefing for human review before the day's pipeline fires. Zero pipeline
+   risk. **Recommended starting point.**
+
+4. **Hold until n≥250 graded** — current sample too thin for any usage.
+
+**Decision rule for gate-grade (option 1) usage:**
+- LOO correlation ≥ 0.40 AND
+- Bottom decile actual avg ≤ -0.5
+- Currently 0.253 / -0.20 — useful as signal, not as gate
+
+**Files:**
+- `scripts/clv_model.py` — model + helper
+- `data/clv_model_report.md` — full feature contributions + decile lift
+- `project_session_apr28.md` in user memory — full session context
+
+**Suggested approach for the session:**
+1. Re-run `python clv_model.py` to refresh report with last night's grades
+2. Sanity check: pull tonight's 11 fired picks and score each through `clv_predict`
+3. Compare predicted_clv vs actual CLV on tonight's grades when they come in
+4. Decide option 1/2/3/4 based on the sanity check
+
+---
 
 ## ✅ DONE — v26.0 generate_predictions refactor (shipped 2026-04-26)
 
