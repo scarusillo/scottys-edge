@@ -1,68 +1,94 @@
 # Scotty's Edge Morning Briefing
-**Date:** Tuesday, April 28, 2026 | **Generated:** 05:08 AM ET
-**Game Date Graded:** 2026-04-27
+**Date:** Wednesday, April 29, 2026 | **Generated:** 05:07 AM ET
+**Game Date Graded:** 2026-04-28
 
 ---
 ## Yesterday's Results
 
-**5W-2L-0P | +12.1u | GREEN DAY**
+**6W-6L-0P | -4.4u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
-| Nikola Jokic UNDER 1.5 THREES | basketball_nba | PROP_UNDER | +123 | 5.0 | **W** | +6.2 | 0.0% |
-| Detroit Pistons@Orlando Magic UNDER 215.5 | basketball_nba | DATA_TOTAL | -110 | 5.0 | **W** | +4.5 | 1.5% |
-| UC Davis Aggies@Stanford Cardinal UNDER 13.5 | baseball_ncaa | UNDER | -113 | 5.0 | **W** | +4.4 | 0.0% |
-| Cade Cunningham UNDER 29.5 POINTS | basketball_nba | PROP_UNDER | -139 | 5.0 | **W** | +3.6 | 1.5% |
-| Nikola Jokic UNDER 32.5 POINTS | basketball_nba | PROP_UNDER | -148 | 5.0 | **W** | +3.4 | 2.9% |
-| Nicolai Budkov Kjaer +3.5 | tennis_atp_madrid_open | DOG | +104 | 5.0 | **L** | -5.0 | -1.0% |
-| Grayson Allen UNDER 8.5 pts | basketball_nba | PROP_CAREER_FADE | -117 | 5.0 | **L** | -5.0 | 0.0% |
+| SE Louisiana Lions@LSU Tigers OVER 14.5 | baseball_ncaa | RAW_EDGE_FLIP | -110 | 5.0 | **W** | +4.5 | 1.5% |
+| Payton Pritchard UNDER 14.5 pts | basketball_nba | PROP_FADE_FLIP | -111 | 5.0 | **W** | +4.5 | 0.0% |
+| Rice Owls ML | baseball_ncaa | FAVORITE | -115 | 5.0 | **W** | +4.3 | 0.6% |
+| Los Angeles Angels@Chicago White Sox UNDER 8. | baseball_mlb | DATA_TOTAL | -117 | 5.0 | **W** | +4.3 | 0.5% |
+| Jordan Clarkson UNDER 0.5 THREES | basketball_nba | PROP_UNDER | -124 | 5.0 | **W** | +4.0 | 1.5% |
+| Coastal Carolina Chanticleers@North Carolina  | baseball_ncaa | RAW_EDGE_FLIP | -128 | 5.0 | **W** | +3.9 | 0.0% |
+| Atlanta Hawks@New York Knicks UNDER 214.5 | basketball_nba | DATA_TOTAL | -110 | 5.0 | **L** | -5.0 | 0.0% |
+| Houston Astros@Baltimore Orioles OVER 9.0 | baseball_mlb | DATA_TOTAL | -110 | 5.0 | **L** | -5.0 | 0.0% |
+| Gonzaga Bulldogs@Oregon Ducks OVER 12.5 | baseball_ncaa | RAW_EDGE_FLIP | -118 | 5.0 | **L** | -5.0 | 0.0% |
+| California Golden Bears@Saint Mary's Gaels OV | baseball_ncaa | RAW_EDGE_FLIP | -132 | 5.0 | **L** | -5.0 | 0.0% |
+| Ildemaro Vargas OVER 0.5 RUNS | baseball_mlb | PROP_OVER | +131 | 5.0 | **L** | -5.0 | 0.8% |
+| Dyson Daniels OVER 1.5 STEALS | basketball_nba | PROP_OVER | -142 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
 
-### Nicolai Budkov Kjaer +3.5
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (-1.0%) -- borderline call.
-- **Context:** P1 fatigue (+0.00) | P2 fatigue (-0.30) | CLV_MICRO_EDGE (edge=19.2%, pre_move=+3.50 TOWARD) | Steam: sharp confirms (+3.5)
-
-### Grayson Allen UNDER 8.5 pts
+### Atlanta Hawks@New York Knicks UNDER 214.5
 - **Category:** MARGINAL
 - **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Oklahoma City Thunder 131 @ Phoenix Suns 122
-- **Context:** PROP_CAREER_FADE v25.87 — market median 8.5 is 5.6 below career avg 14.1 (60 career games). Books signaling current-situation decline (playoff minutes, role shift, matchup). Fading OVER→UNDER at DraftKings UNDER 8.5 -117 (v25.92 best-line routing — manual rebet of #1094 that hit BetRivers UNDER 7.5 -110 pre-fix; full point of UNDER cushion recovered).
+- **Final Score:** Atlanta Hawks 97 @ New York Knicks 126
+- **Context:** DATA_TOTAL v25.47 (Path 2) — CONTEXT_TOTAL: mkt=213.5 → ctx=209.12 | form=-1.6 (h:-9.8, a:-0.7) | h2h=-2.8 (n=5) | Market 213.5, Context 209.125 (disagreement=-4.38 ≥ 0.3). Bet UNDER 214.5 @ BetMGM -110. | Steam: no movement
+
+### Houston Astros@Baltimore Orioles OVER 9.0
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Final Score:** Houston Astros 3 @ Baltimore Orioles 5
+- **Context:** DATA_TOTAL v25.47 (Path 2) — CONTEXT_TOTAL: mkt=9.0 → ctx=11.33 | form=+0.6 (h:+2.2, a:+1.8) | h2h=+0.6 (n=5) | pitcher=+1.1 (avg_era=5.55) | Market 9.0, Context 11.334999999999999 (disagreement=+2.33 ≥ 1.5). Bet OVER 9.0 @ Caesars -110. | Steam: no movement
+
+### Gonzaga Bulldogs@Oregon Ducks OVER 12.5
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Context:** v25.95 RAW_EDGE_FLIP — original raw edge 38.4% on UNDER (model claims 90%, implied 51%). Context Model disagrees: ctx_tot=13.09 vs mkt=12.5. Flipping to OVER 12.5 @ BetMGM -118. | Steam: no movement
+
+### California Golden Bears@Saint Mary's Gaels OVER 12
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Context:** v25.95 RAW_EDGE_FLIP — original raw edge 33.2% on UNDER (model claims 87%, implied 53%). Context Model disagrees: ctx_tot=13.38 vs mkt=13.0. Flipping to OVER 12.5 @ FanDuel -132. | Steam: no movement
+
+### Ildemaro Vargas OVER 0.5 RUNS
+- **Category:** VARIANCE
+- **Analysis:** Positive CLV (+0.8%) -- the line moved our way. Right side, wrong result.
+- **Final Score:** Arizona Diamondbacks 2 @ Milwaukee Brewers 13
+
+### Dyson Daniels OVER 1.5 STEALS
+- **Category:** MARGINAL
+- **Analysis:** Small CLV (+0.0%) -- borderline call.
+- **Final Score:** Atlanta Hawks 97 @ New York Knicks 126
 
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **255W-202L** |
-| Win Rate | 55.8% |
-| P/L | **+87.0u** |
-| ROI | +3.9% |
-| Wagered | 2244.5u |
+| Record | **261W-208L** |
+| Win Rate | 55.7% |
+| P/L | **+82.6u** |
+| ROI | +3.6% |
+| Wagered | 2304.5u |
 
 ### By Sport
 | Sport | W | L | P/L |
 |-------|---|---|-----|
 | icehockey_nhl | 58 | 37 | +36.4u |
+| baseball_ncaa | 77 | 62 | +22.0u |
 | soccer_spain_la_liga | 5 | 0 | +20.0u |
-| baseball_ncaa | 74 | 60 | +19.2u |
 | basketball_ncaab | 17 | 12 | +18.7u |
-| baseball_mlb | 38 | 33 | +15.9u |
+| baseball_mlb | 39 | 35 | +10.1u |
 | TENNIS | 7 | 6 | +2.9u |
 | soccer_germany_bundesliga | 2 | 1 | +2.0u |
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | 2 | 3 | -8.3u |
-| basketball_nba | 52 | 48 | -10.3u |
+| basketball_nba | 54 | 50 | -11.8u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
 
 | Factor | Record | P/L |
 |--------|--------|-----|
-| Steam: no movement | 22W-24L | -21.0u |
+| Steam: no movement | 24W-28L | -32.5u |
 | Midweek game | 17W-18L | -20.0u |
 | Park: Chase Field | 1W-3L | -10.4u |
 | Pitching edge: Clemson Tigers | 1W-2L | -7.2u |
@@ -76,10 +102,9 @@
 | Weather: light rain, 11mph wind | 1W-2L | -5.7u |
 | Both teams slow-paced | 9W-9L | -5.1u |
 | Pitching edge: Tennessee Volunteers | 1W-2L | -5.0u |
-| Steam: sharp opposes | 9W-8L | -2.4u |
 | Pitching edge: Florida Gators | 2W-2L | -1.7u |
 | Home 3-in-5 | 2W-2L | -0.8u |
-| Home bounce-back | 5W-4L | -0.4u |
+| DATA_TOTAL v25.47 | 10W-9L | -0.7u |
 | H2H high-scoring | 2W-2L | -0.2u |
 
 > Factors with consistent negative P/L may need weight adjustments or removal.
@@ -88,7 +113,7 @@
 ---
 ## Shadow Pick Report
 
-Found 42 shadow-tagged picks.
+Found 43 shadow-tagged picks.
 | Pick | Sport | Edge | Date |
 |------|-------|------|------|
 | Florida Gulf Coast Eagles@Miami Hurrican | baseball_ncaa | 20.0% | 2026-03-31 |
@@ -107,8 +132,8 @@ Found 42 shadow-tagged picks.
 
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
-| AT_CAP | 172W-142L (54.8%) | +54.7u | 0.2 |
-| BELOW_CAP | 83W-60L (58.0%) | +32.2u | 0.6 |
+| AT_CAP | 174W-143L (54.9%) | +58.6u | 0.2 |
+| BELOW_CAP | 87W-65L (57.2%) | +24.0u | 0.6 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -156,8 +181,8 @@ Found 42 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS WIN WIN WIN WIN WIN LOSS WIN WIN LOSS
-- **Current Streak:** 1 LOSS
+- **Last 10:** LOSS LOSS WIN WIN LOSS WIN LOSS WIN WIN LOSS
+- **Current Streak:** 2 LOSS
 
 ---
 ## Action Items
@@ -172,7 +197,7 @@ Found 42 shadow-tagged picks.
 8. Factor 'P2 fatigue' has -6.2u P/L over 3 bets. Consider reducing weight.
 9. Factor 'Weather: light rain, 11mph wind' has -5.7u P/L over 3 bets. Consider reducing weight.
 10. Factor 'Park: Chase Field' has -10.4u P/L over 4 bets. Consider reducing weight.
-11. Factor 'Steam: no movement' has -21.0u P/L over 46 bets. Consider reducing weight.
+11. Factor 'Steam: no movement' has -32.5u P/L over 52 bets. Consider reducing weight.
 12. Factor 'Steam: sharp confirms' has -6.2u P/L over 3 bets. Consider reducing weight.
 13. Factor 'CLV_MICRO_EDGE' has -6.2u P/L over 3 bets. Consider reducing weight.
 14. Concentration risk detected. Review directional exposure limits.
@@ -180,4 +205,4 @@ Found 42 shadow-tagged picks.
 16. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-28 05:08 ET*
+*Generated locally by export_briefing_data.py | 2026-04-29 05:07 ET*
