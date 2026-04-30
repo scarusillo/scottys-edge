@@ -1,281 +1,331 @@
 {
-  "generated_at": "2026-04-29 13:20",
-  "game_date": "2026-04-28",
+  "generated_at": "2026-04-30 05:06",
+  "game_date": "2026-04-29",
   "yesterday": [
     {
-      "selection": "SE Louisiana Lions@LSU Tigers OVER 14.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "RAW_EDGE_FLIP",
-      "result": "WIN",
-      "pnl_units": 4.55,
-      "clv": 1.5,
-      "edge_pct": 0.0,
-      "odds": -110.0,
-      "units": 5.0,
-      "context_factors": "v25.95 RAW_EDGE_FLIP \u2014 original raw edge 43.3% on UNDER (model claims 93%, implied 50%). Context Model disagrees: ctx_tot=15.81 vs mkt=15.5. Flipping to OVER 14.5 @ DraftKings -110. | Steam: no movement",
-      "context_confirmed": 1,
-      "model_spread": -0.63,
-      "closing_line": 16.0,
-      "event_id": "bac939f1dc08e473642ad95f8c53d03e",
-      "dt": "2026-04-28"
-    },
-    {
-      "selection": "Payton Pritchard UNDER 14.5 pts",
-      "sport": "basketball_nba",
-      "market_type": "PROP",
-      "side_type": "PROP_FADE_FLIP",
-      "result": "WIN",
-      "pnl_units": 4.5,
-      "clv": 0.0,
-      "edge_pct": 21.5,
-      "odds": -111.0,
-      "units": 5.0,
-      "context_factors": "PROP_FADE_FLIP v25.31 \u2014 model proj 17.8 vs market median 13.5 (gap 4.3 > thr 3.0 pts). Market on opposite side of line 14.5 \u2192 flipped OVER->UNDER at DraftKings -111.",
-      "context_confirmed": 1,
-      "model_spread": null,
-      "closing_line": 14.5,
-      "event_id": "d749c50ad2a2660df91f9dc1b8e20d78",
-      "dt": "2026-04-28"
-    },
-    {
-      "selection": "Rice Owls ML",
-      "sport": "baseball_ncaa",
-      "market_type": "MONEYLINE",
-      "side_type": "FAVORITE",
-      "result": "WIN",
-      "pnl_units": 4.35,
-      "clv": 0.6,
-      "edge_pct": 27.31,
-      "odds": -115.0,
-      "units": 5.0,
-      "context_factors": "Home bounce-back (+1.5) | [SHADOW] Home cold streak (-0.5) | [SHADOW] Away cold streak (+0.5)",
-      "context_confirmed": 1,
-      "model_spread": -2.12,
-      "closing_line": null,
-      "event_id": "68a1d961202ca53551f246967f15aaa0",
-      "dt": "2026-04-28"
-    },
-    {
-      "selection": "Los Angeles Angels@Chicago White Sox UNDER 8.0",
+      "selection": "Boston Red Sox@Toronto Blue Jays OVER 8.5",
       "sport": "baseball_mlb",
       "market_type": "TOTAL",
       "side_type": "DATA_TOTAL",
       "result": "WIN",
-      "pnl_units": 4.27,
-      "clv": 0.5,
+      "pnl_units": 5.0,
+      "clv": 0.0,
       "edge_pct": 0.0,
-      "odds": -117.0,
+      "odds": 100.0,
       "units": 5.0,
-      "context_factors": "DATA_TOTAL v25.47 (Path 2) \u2014 CONTEXT_TOTAL: mkt=7.5 \u2192 ctx=5.32 | form=+0.3 (h:+1.5, a:+0.8) | h2h=-0.3 (n=4) | pitcher=-2.0 (avg_era=1.16) | Market 7.5, Context 5.317 (disagreement=-2.18 \u2265 1.5). Bet UNDER 8.0 @ BetRivers -117. | Steam: sharp opposes (+0.5)",
+      "context_factors": "DATA_TOTAL v25.47 (Path 2) \u2014 CONTEXT_TOTAL: mkt=8.5 \u2192 ctx=11.14 | form=-0.2 (h:-0.7, a:-0.4) | h2h=+0.2 (n=5) | pitcher=+2.5 (avg_era=8.47) | Market 8.5, Context 11.145 (disagreement=+2.64 \u2265 1.5). Bet OVER 8.5 @ FanDuel +100. | Steam: no movement",
       "context_confirmed": 1,
       "model_spread": null,
-      "closing_line": 7.5,
-      "event_id": "be00405883c8d7ad0c220c8af4c08a53",
-      "dt": "2026-04-28"
+      "closing_line": 8.5,
+      "event_id": "c0a29accc7d25369ec83132f9e4034da",
+      "dt": "2026-04-29"
     },
     {
-      "selection": "Jordan Clarkson UNDER 0.5 THREES",
+      "selection": "Houston Rockets@Los Angeles Lakers UNDER 209.0",
+      "sport": "basketball_nba",
+      "market_type": "TOTAL",
+      "side_type": "DATA_TOTAL",
+      "result": "WIN",
+      "pnl_units": 4.39,
+      "clv": 0.0,
+      "edge_pct": 0.0,
+      "odds": -114.0,
+      "units": 5.0,
+      "context_factors": "DATA_TOTAL v25.47 (Path 2) \u2014 CONTEXT_TOTAL: mkt=207.5 \u2192 ctx=202.67 | form=-2.1 (h:-10.8, a:-3.0) | h2h=-2.8 (n=5) | Market 207.5, Context 202.67 (disagreement=-4.83 \u2265 0.3). Bet UNDER 209.0 @ BetRivers -114. | Steam: no movement",
+      "context_confirmed": 1,
+      "model_spread": null,
+      "closing_line": 209.0,
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "dt": "2026-04-29"
+    },
+    {
+      "selection": "Tampa Bay Rays@Cleveland Guardians UNDER 7.0",
+      "sport": "baseball_mlb",
+      "market_type": "TOTAL",
+      "side_type": "UNDER",
+      "result": "WIN",
+      "pnl_units": 4.1,
+      "clv": 0.5,
+      "edge_pct": 20.0,
+      "odds": -122.0,
+      "units": 5.0,
+      "context_factors": "Away slow-paced (-0.4) | Weather: light rain, 15mph wind (-2.5) | [SHADOW] Midweek game | Cleveland Guardians SP: Gavin Williams (4.18 ERA) | Tampa Bay Rays SP: Drew Rasmussen (2.44 ERA) | Pitching: Gavin Williams 3.56 vs Drew Rasmussen 2.45 (-0.8) | Park: Progressive Field (-0.3) | Bullpen: Guardians 4.01 vs Rays 3.90 (+0.1) | Steam: sharp opposes (+0.5)",
+      "context_confirmed": 1,
+      "model_spread": 0.8,
+      "closing_line": 6.5,
+      "event_id": "de142860d352b18879f2382e67ab3e2e",
+      "dt": "2026-04-29"
+    },
+    {
+      "selection": "Jiri Lehecka +2.5",
+      "sport": "tennis_atp_madrid_open",
+      "market_type": "SPREAD",
+      "side_type": "DOG",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.0,
+      "edge_pct": 16.75,
+      "odds": -118.0,
+      "units": 5.0,
+      "context_factors": "H2H dominance (-0.30) | H2H: Lehecka leads Fils 2-1 (+0.5) | CLV_MICRO_EDGE (edge=16.8%, pre_move=+2.50 TOWARD) | Steam: sharp confirms (+2.5)",
+      "context_confirmed": 1,
+      "model_spread": -0.040000000000000036,
+      "closing_line": 2.5,
+      "event_id": "8d92013152c2bef8c9dc68b3855c2a8f",
+      "dt": "2026-04-29"
+    },
+    {
+      "selection": "Cade Cunningham UNDER 29.5 POINTS",
       "sport": "basketball_nba",
       "market_type": "PROP",
       "side_type": "PROP_UNDER",
-      "result": "WIN",
-      "pnl_units": 4.03,
-      "clv": 1.5,
-      "edge_pct": 14.79,
-      "odds": -124.0,
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": -1.2,
+      "edge_pct": 17.13,
+      "odds": -143.0,
       "units": 5.0,
       "context_factors": "",
       "context_confirmed": 0,
       "model_spread": null,
-      "closing_line": 0.5,
-      "event_id": "595b24bea54d0917338e4a51372398b3",
-      "dt": "2026-04-28"
-    },
-    {
-      "selection": "Coastal Carolina Chanticleers@North Carolina Tar Heels OVER 11.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "RAW_EDGE_FLIP",
-      "result": "WIN",
-      "pnl_units": 3.91,
-      "clv": 0.0,
-      "edge_pct": 0.0,
-      "odds": -128.0,
-      "units": 5.0,
-      "context_factors": "v25.95 RAW_EDGE_FLIP \u2014 original raw edge 36.8% on UNDER (model claims 90%, implied 53%). Context Model disagrees: ctx_tot=12.03 vs mkt=12.0. Flipping to OVER 11.5 @ FanDuel -128. | Steam: no movement",
-      "context_confirmed": 1,
-      "model_spread": -2.79,
-      "closing_line": 11.5,
-      "event_id": "798bdcb18ea38595df75a0a601831c65",
-      "dt": "2026-04-28"
-    },
-    {
-      "selection": "Atlanta Hawks@New York Knicks UNDER 214.5",
-      "sport": "basketball_nba",
-      "market_type": "TOTAL",
-      "side_type": "DATA_TOTAL",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 0.0,
-      "odds": -110.0,
-      "units": 5.0,
-      "context_factors": "DATA_TOTAL v25.47 (Path 2) \u2014 CONTEXT_TOTAL: mkt=213.5 \u2192 ctx=209.12 | form=-1.6 (h:-9.8, a:-0.7) | h2h=-2.8 (n=5) | Market 213.5, Context 209.125 (disagreement=-4.38 \u2265 0.3). Bet UNDER 214.5 @ BetMGM -110. | Steam: no movement",
-      "context_confirmed": 1,
-      "model_spread": null,
-      "closing_line": 214.5,
-      "event_id": "595b24bea54d0917338e4a51372398b3",
-      "dt": "2026-04-28",
+      "closing_line": 29.5,
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "dt": "2026-04-29",
       "actual_score": {
-        "home": "New York Knicks",
-        "away": "Atlanta Hawks",
-        "home_score": 126,
-        "away_score": 97,
-        "actual_total": 223,
-        "actual_margin": 29
+        "home": "Detroit Pistons",
+        "away": "Orlando Magic",
+        "home_score": 116,
+        "away_score": 109,
+        "actual_total": 225,
+        "actual_margin": 7
       }
     },
     {
-      "selection": "Houston Astros@Baltimore Orioles OVER 9.0",
-      "sport": "baseball_mlb",
-      "market_type": "TOTAL",
-      "side_type": "DATA_TOTAL",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 0.0,
-      "odds": -110.0,
-      "units": 5.0,
-      "context_factors": "DATA_TOTAL v25.47 (Path 2) \u2014 CONTEXT_TOTAL: mkt=9.0 \u2192 ctx=11.33 | form=+0.6 (h:+2.2, a:+1.8) | h2h=+0.6 (n=5) | pitcher=+1.1 (avg_era=5.55) | Market 9.0, Context 11.334999999999999 (disagreement=+2.33 \u2265 1.5). Bet OVER 9.0 @ Caesars -110. | Steam: no movement",
-      "context_confirmed": 1,
-      "model_spread": null,
-      "closing_line": 9.0,
-      "event_id": "3c9ebf868da49e615e589bd0d839b640",
-      "dt": "2026-04-28",
-      "actual_score": {
-        "home": "Baltimore Orioles",
-        "away": "Houston Astros",
-        "home_score": 5,
-        "away_score": 3,
-        "actual_total": 8,
-        "actual_margin": 2
-      }
-    },
-    {
-      "selection": "Gonzaga Bulldogs@Oregon Ducks OVER 12.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "RAW_EDGE_FLIP",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 0.0,
-      "odds": -118.0,
-      "units": 5.0,
-      "context_factors": "v25.95 RAW_EDGE_FLIP \u2014 original raw edge 38.4% on UNDER (model claims 90%, implied 51%). Context Model disagrees: ctx_tot=13.09 vs mkt=12.5. Flipping to OVER 12.5 @ BetMGM -118. | Steam: no movement",
-      "context_confirmed": 1,
-      "model_spread": -2.58,
-      "closing_line": 12.5,
-      "event_id": "00b06a6b8690f6860ec639ddff49bb90",
-      "dt": "2026-04-28"
-    },
-    {
-      "selection": "California Golden Bears@Saint Mary's Gaels OVER 12.5",
-      "sport": "baseball_ncaa",
-      "market_type": "TOTAL",
-      "side_type": "RAW_EDGE_FLIP",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 0.0,
-      "odds": -132.0,
-      "units": 5.0,
-      "context_factors": "v25.95 RAW_EDGE_FLIP \u2014 original raw edge 33.2% on UNDER (model claims 87%, implied 53%). Context Model disagrees: ctx_tot=13.38 vs mkt=13.0. Flipping to OVER 12.5 @ FanDuel -132. | Steam: no movement",
-      "context_confirmed": 1,
-      "model_spread": 0.54,
-      "closing_line": 12.5,
-      "event_id": "b0ddb3abdf5ff66644bb375523c5fcca",
-      "dt": "2026-04-28"
-    },
-    {
-      "selection": "Ildemaro Vargas OVER 0.5 RUNS",
-      "sport": "baseball_mlb",
-      "market_type": "PROP",
-      "side_type": "PROP_OVER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.8,
-      "edge_pct": 21.71,
-      "odds": 131.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": 0.5,
-      "event_id": "72f79061defb394c2e533967c55edb30",
-      "dt": "2026-04-28",
-      "actual_score": {
-        "home": "Milwaukee Brewers",
-        "away": "Arizona Diamondbacks",
-        "home_score": 13,
-        "away_score": 2,
-        "actual_total": 15,
-        "actual_margin": 11
-      }
-    },
-    {
-      "selection": "Dyson Daniels OVER 1.5 STEALS",
+      "selection": "Tari Eason UNDER 1.5 THREES",
       "sport": "basketball_nba",
       "market_type": "PROP",
-      "side_type": "PROP_OVER",
+      "side_type": "PROP_UNDER",
       "result": "LOSS",
       "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 14.08,
-      "odds": -142.0,
+      "clv": 0.7,
+      "edge_pct": 13.45,
+      "odds": -111.0,
       "units": 5.0,
       "context_factors": "",
       "context_confirmed": 0,
       "model_spread": null,
       "closing_line": 1.5,
-      "event_id": "595b24bea54d0917338e4a51372398b3",
-      "dt": "2026-04-28",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "dt": "2026-04-29",
       "actual_score": {
-        "home": "New York Knicks",
-        "away": "Atlanta Hawks",
-        "home_score": 126,
-        "away_score": 97,
-        "actual_total": 223,
-        "actual_margin": 29
+        "home": "Los Angeles Lakers",
+        "away": "Houston Rockets",
+        "home_score": 93,
+        "away_score": 99,
+        "actual_total": 192,
+        "actual_margin": -6
+      }
+    },
+    {
+      "selection": "Los Angeles Angels@Chicago White Sox OVER 8.5",
+      "sport": "baseball_mlb",
+      "market_type": "TOTAL",
+      "side_type": "OVER",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.0,
+      "edge_pct": 20.0,
+      "odds": -110.0,
+      "units": 5.0,
+      "context_factors": "Away fast-paced (+0.4) | Weather: light rain, 11mph wind (-1.5) | [SHADOW] Midweek game | Chicago White Sox SP: Erick Fedde (4.44 ERA) | Los Angeles Angels SP: Yusei Kikuchi (6.17 ERA) | Pitching: Erick Fedde 3.95 vs Yusei Kikuchi 3.58 (-0.2) | Park: Guaranteed Rate Field (-0.1 decay=50%) | Bullpen: Sox 4.63 vs Angels 5.29 (+0.5) | Steam: no movement",
+      "context_confirmed": 1,
+      "model_spread": -0.81,
+      "closing_line": 8.5,
+      "event_id": "abd0114b226ed04c6bd4daac824f5241",
+      "dt": "2026-04-29",
+      "actual_score": {
+        "home": "Chicago White Sox",
+        "away": "Los Angeles Angels",
+        "home_score": 3,
+        "away_score": 2,
+        "actual_total": 5,
+        "actual_margin": 1
+      }
+    },
+    {
+      "selection": "Orlando Magic@Detroit Pistons UNDER 211.5",
+      "sport": "basketball_nba",
+      "market_type": "TOTAL",
+      "side_type": "DATA_TOTAL",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.5,
+      "edge_pct": 0.0,
+      "odds": -110.0,
+      "units": 5.0,
+      "context_factors": "DATA_TOTAL v25.47 (Path 2) \u2014 CONTEXT_TOTAL: mkt=211.0 \u2192 ctx=202.73 | form=-3.6 (h:-10.6, a:-13.6) | h2h=-4.6 (n=5) | Market 211.0, Context 202.73000000000002 (disagreement=-8.27 \u2265 0.3). Bet UNDER 211.5 @ Fanatics -110. | Steam: no movement",
+      "context_confirmed": 1,
+      "model_spread": null,
+      "closing_line": 211.0,
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "dt": "2026-04-29",
+      "actual_score": {
+        "home": "Detroit Pistons",
+        "away": "Orlando Magic",
+        "home_score": 116,
+        "away_score": 109,
+        "actual_total": 225,
+        "actual_margin": 7
+      }
+    },
+    {
+      "selection": "Arizona Diamondbacks@Milwaukee Brewers OVER 8.5",
+      "sport": "baseball_mlb",
+      "market_type": "TOTAL",
+      "side_type": "DATA_TOTAL",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.0,
+      "edge_pct": 0.0,
+      "odds": -110.0,
+      "units": 5.0,
+      "context_factors": "DATA_TOTAL v25.47 (Path 2) \u2014 CONTEXT_TOTAL: mkt=8.5 \u2192 ctx=10.08 | form=+0.7 (h:+0.6, a:+3.9) | h2h=+0.4 (n=5) | pitcher=+0.6 (avg_era=4.91) | Market 8.5, Context 10.0785 (disagreement=+1.58 \u2265 1.5). Bet OVER 8.5 @ FanDuel -110. | Steam: no movement",
+      "context_confirmed": 1,
+      "model_spread": null,
+      "closing_line": 8.5,
+      "event_id": "dbb1f14488d5ad0f783dce845101d4c1",
+      "dt": "2026-04-29",
+      "actual_score": {
+        "home": "Milwaukee Brewers",
+        "away": "Arizona Diamondbacks",
+        "home_score": 2,
+        "away_score": 6,
+        "actual_total": 8,
+        "actual_margin": -4
+      }
+    },
+    {
+      "selection": "Donovan Mitchell OVER 26.5 pts",
+      "sport": "basketball_nba",
+      "market_type": "PROP",
+      "side_type": "PROP_FADE_FLIP",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.0,
+      "edge_pct": 17.5,
+      "odds": -117.0,
+      "units": 5.0,
+      "context_factors": "PROP_FADE_FLIP v25.31 \u2014 model proj 23.5 vs market median 27.0 (gap 3.5 > thr 3.0 pts). Market on opposite side of line 26.5 \u2192 flipped UNDER->OVER at Caesars -117.",
+      "context_confirmed": 1,
+      "model_spread": null,
+      "closing_line": 26.5,
+      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
+      "dt": "2026-04-29",
+      "actual_score": {
+        "home": "Cleveland Cavaliers",
+        "away": "Toronto Raptors",
+        "home_score": 125,
+        "away_score": 120,
+        "actual_total": 245,
+        "actual_margin": 5
+      }
+    },
+    {
+      "selection": "Detroit Tigers ML",
+      "sport": "baseball_mlb",
+      "market_type": "MONEYLINE",
+      "side_type": "MLB_ML_FADE_FLIP",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": -0.3,
+      "edge_pct": 0.0,
+      "odds": -144.0,
+      "units": 5.0,
+      "context_factors": "MLB_ML_FADE_FLIP \u2014 model_spread=-0.44 \u2192 logistic ph=0.527 (market fair=0.430). Model edge on HOME=9.8% (8-12% bucket). Fading to Detroit Tigers ML @ FanDuel -144.",
+      "context_confirmed": 1,
+      "model_spread": -0.44,
+      "closing_line": null,
+      "event_id": "68d4de1e01d8567e0d2e4a137d4b254b",
+      "dt": "2026-04-29",
+      "actual_score": {
+        "home": "Atlanta Braves",
+        "away": "Detroit Tigers",
+        "home_score": 4,
+        "away_score": 3,
+        "actual_total": 7,
+        "actual_margin": 1
+      }
+    },
+    {
+      "selection": "South Alabama Jaguars@New Orleans Privateers OVER 14.0",
+      "sport": "baseball_ncaa",
+      "market_type": "TOTAL",
+      "side_type": "OVER",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 1.0,
+      "edge_pct": 20.0,
+      "odds": -120.0,
+      "units": 5.0,
+      "context_factors": "[SHADOW] Midweek game | New Orleans Privateers allows 8.6 R/midweek | South Alabama Jaguars allows 6.5 R/midweek | Pitching edge: South Alabama Jaguars (-0.6 pts) | Steam: no movement",
+      "context_confirmed": 1,
+      "model_spread": -0.61,
+      "closing_line": 15.0,
+      "event_id": "ac4f23f34a32b79cf8018eb54bb2a591",
+      "dt": "2026-04-29"
+    },
+    {
+      "selection": "LeBron James UNDER 23.5 POINTS",
+      "sport": "basketball_nba",
+      "market_type": "PROP",
+      "side_type": "PROP_UNDER",
+      "result": "LOSS",
+      "pnl_units": -5.0,
+      "clv": 0.0,
+      "edge_pct": 16.63,
+      "odds": -110.0,
+      "units": 5.0,
+      "context_factors": "",
+      "context_confirmed": 0,
+      "model_spread": null,
+      "closing_line": 23.5,
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "dt": "2026-04-29",
+      "actual_score": {
+        "home": "Los Angeles Lakers",
+        "away": "Houston Rockets",
+        "home_score": 93,
+        "away_score": 99,
+        "actual_total": 192,
+        "actual_margin": -6
       }
     }
   ],
   "season": {
     "result": "LOSS",
-    "W": 261,
-    "L": 208,
-    "pnl": 82.6,
-    "wagered": 2304.5
+    "W": 264,
+    "L": 218,
+    "pnl": 46.1,
+    "wagered": 2369.5
   },
   "by_sport": [
     {
       "sport": "baseball_mlb",
-      "W": 39,
-      "L": 35,
-      "pnl": 10.1
+      "W": 41,
+      "L": 38,
+      "pnl": 4.2
     },
     {
       "sport": "baseball_ncaa",
       "W": 77,
-      "L": 62,
-      "pnl": 22.0
+      "L": 63,
+      "pnl": 17.0
     },
     {
       "sport": "basketball_nba",
-      "W": 54,
-      "L": 50,
-      "pnl": -11.8
+      "W": 55,
+      "L": 55,
+      "pnl": -32.4
     },
     {
       "sport": "basketball_ncaab",
@@ -322,18 +372,18 @@
     {
       "sport": "TENNIS",
       "W": 7,
-      "L": 6,
-      "pnl": 2.9
+      "L": 7,
+      "pnl": -2.1
     }
   ],
   "context_health": [
     {
       "factor": "Steam: no movement",
-      "W": 24,
-      "L": 28,
-      "pnl": -32.5,
-      "first_half_pnl": -7.6,
-      "second_half_pnl": -24.9,
+      "W": 26,
+      "L": 32,
+      "pnl": -43.1,
+      "first_half_pnl": -2.6,
+      "second_half_pnl": -40.5,
       "trending": "WORSE"
     },
     {
@@ -362,6 +412,33 @@
       "first_half_pnl": 6.0,
       "second_half_pnl": -26.0,
       "trending": "WORSE"
+    },
+    {
+      "factor": "Steam: sharp confirms",
+      "W": 1,
+      "L": 3,
+      "pnl": -11.2,
+      "first_half_pnl": -1.1,
+      "second_half_pnl": -10.0,
+      "trending": "WORSE"
+    },
+    {
+      "factor": "CLV_MICRO_EDGE",
+      "W": 1,
+      "L": 3,
+      "pnl": -11.2,
+      "first_half_pnl": -1.1,
+      "second_half_pnl": -10.0,
+      "trending": "WORSE"
+    },
+    {
+      "factor": "Weather: light rain, 11mph wind",
+      "W": 1,
+      "L": 3,
+      "pnl": -10.7,
+      "first_half_pnl": -10.0,
+      "second_half_pnl": -0.7,
+      "trending": "BETTER"
     },
     {
       "factor": "Park: Chase Field",
@@ -418,24 +495,6 @@
       "trending": "BETTER"
     },
     {
-      "factor": "Steam: sharp confirms",
-      "W": 1,
-      "L": 2,
-      "pnl": -6.2,
-      "first_half_pnl": -5.0,
-      "second_half_pnl": -1.1,
-      "trending": "BETTER"
-    },
-    {
-      "factor": "CLV_MICRO_EDGE",
-      "W": 1,
-      "L": 2,
-      "pnl": -6.2,
-      "first_half_pnl": -5.0,
-      "second_half_pnl": -1.1,
-      "trending": "BETTER"
-    },
-    {
       "factor": "Altitude",
       "W": 2,
       "L": 3,
@@ -455,15 +514,6 @@
     },
     {
       "factor": "Pitching edge: Nebraska Cornhuskers",
-      "W": 1,
-      "L": 2,
-      "pnl": -5.7,
-      "first_half_pnl": -5.0,
-      "second_half_pnl": -0.7,
-      "trending": "BETTER"
-    },
-    {
-      "factor": "Weather: light rain, 11mph wind",
       "W": 1,
       "L": 2,
       "pnl": -5.7,
@@ -517,6 +567,24 @@
       "trending": "STABLE"
     },
     {
+      "factor": "Away fast-paced",
+      "W": 21,
+      "L": 18,
+      "pnl": -1.3,
+      "first_half_pnl": 34.2,
+      "second_half_pnl": -35.5,
+      "trending": "WORSE"
+    },
+    {
+      "factor": "DATA_TOTAL v25.47",
+      "W": 12,
+      "L": 11,
+      "pnl": -1.3,
+      "first_half_pnl": 1.5,
+      "second_half_pnl": -2.9,
+      "trending": "WORSE"
+    },
+    {
       "factor": "Home 3-in-5",
       "W": 2,
       "L": 2,
@@ -524,15 +592,6 @@
       "first_half_pnl": -1.1,
       "second_half_pnl": 0.3,
       "trending": "STABLE"
-    },
-    {
-      "factor": "DATA_TOTAL v25.47",
-      "W": 10,
-      "L": 9,
-      "pnl": -0.7,
-      "first_half_pnl": 2.2,
-      "second_half_pnl": -2.9,
-      "trending": "WORSE"
     },
     {
       "factor": "H2H high-scoring",
@@ -550,15 +609,6 @@
       "pnl": 1.1,
       "first_half_pnl": -7.6,
       "second_half_pnl": 8.7,
-      "trending": "BETTER"
-    },
-    {
-      "factor": "Steam: sharp opposes",
-      "W": 10,
-      "L": 8,
-      "pnl": 1.9,
-      "first_half_pnl": -8.5,
-      "second_half_pnl": 10.4,
       "trending": "BETTER"
     },
     {
@@ -625,15 +675,6 @@
       "trending": "BETTER"
     },
     {
-      "factor": "Away fast-paced",
-      "W": 21,
-      "L": 17,
-      "pnl": 3.7,
-      "first_half_pnl": 34.2,
-      "second_half_pnl": -30.5,
-      "trending": "WORSE"
-    },
-    {
       "factor": "Pitching edge: California Golden Bears",
       "W": 2,
       "L": 1,
@@ -649,6 +690,15 @@
       "pnl": 3.8,
       "first_half_pnl": 4.3,
       "second_half_pnl": -0.6,
+      "trending": "WORSE"
+    },
+    {
+      "factor": "Chicago White Sox SP: Erick Fedde",
+      "W": 2,
+      "L": 1,
+      "pnl": 3.8,
+      "first_half_pnl": 4.3,
+      "second_half_pnl": -0.5,
       "trending": "WORSE"
     },
     {
@@ -679,6 +729,15 @@
       "trending": "BETTER"
     },
     {
+      "factor": "form=-0.2",
+      "W": 2,
+      "L": 1,
+      "pnl": 4.5,
+      "first_half_pnl": -5.0,
+      "second_half_pnl": 9.6,
+      "trending": "BETTER"
+    },
+    {
       "factor": "Park: Comerica Park",
       "W": 2,
       "L": 1,
@@ -695,6 +754,15 @@
       "first_half_pnl": 5.0,
       "second_half_pnl": 0.0,
       "trending": "WORSE"
+    },
+    {
+      "factor": "Steam: sharp opposes",
+      "W": 11,
+      "L": 8,
+      "pnl": 6.0,
+      "first_half_pnl": -8.5,
+      "second_half_pnl": 14.5,
+      "trending": "BETTER"
     },
     {
       "factor": "[SHADOW] Home fast-paced",
@@ -758,6 +826,15 @@
       "first_half_pnl": 8.2,
       "second_half_pnl": 2.7,
       "trending": "WORSE"
+    },
+    {
+      "factor": "[SHADOW] Midweek game",
+      "W": 13,
+      "L": 9,
+      "pnl": 11.0,
+      "first_half_pnl": 1.7,
+      "second_half_pnl": 9.4,
+      "trending": "BETTER"
     },
     {
       "factor": "Pitching edge: North Carolina Tar Heels",
@@ -832,15 +909,6 @@
       "trending": "WORSE"
     },
     {
-      "factor": "[SHADOW] Midweek game",
-      "W": 12,
-      "L": 7,
-      "pnl": 16.9,
-      "first_half_pnl": 2.5,
-      "second_half_pnl": 14.4,
-      "trending": "BETTER"
-    },
-    {
       "factor": "Pitching edge: Miami Hurricanes",
       "W": 4,
       "L": 0,
@@ -869,15 +937,22 @@
     },
     {
       "factor": "Away slow-paced",
-      "W": 25,
+      "W": 26,
       "L": 13,
-      "pnl": 41.1,
+      "pnl": 45.2,
       "first_half_pnl": -3.1,
-      "second_half_pnl": 44.2,
+      "second_half_pnl": 48.3,
       "trending": "BETTER"
     }
   ],
   "day_of_week": [
+    {
+      "day_of_week": "Wednesday",
+      "sport": "basketball_nba",
+      "W": 4,
+      "L": 12,
+      "pnl": -39.9
+    },
     {
       "day_of_week": "Friday",
       "sport": "baseball_ncaa",
@@ -887,10 +962,10 @@
     },
     {
       "day_of_week": "Wednesday",
-      "sport": "basketball_nba",
-      "W": 3,
-      "L": 7,
-      "pnl": -19.3
+      "sport": "baseball_mlb",
+      "W": 7,
+      "L": 11,
+      "pnl": -22.0
     },
     {
       "day_of_week": "Saturday",
@@ -898,13 +973,6 @@
       "W": 9,
       "L": 11,
       "pnl": -17.3
-    },
-    {
-      "day_of_week": "Wednesday",
-      "sport": "baseball_mlb",
-      "W": 5,
-      "L": 8,
-      "pnl": -16.1
     },
     {
       "day_of_week": "Saturday",
@@ -919,6 +987,13 @@
       "W": 5,
       "L": 6,
       "pnl": -11.6
+    },
+    {
+      "day_of_week": "Wednesday",
+      "sport": "baseball_ncaa",
+      "W": 1,
+      "L": 3,
+      "pnl": -10.6
     },
     {
       "day_of_week": "Monday",
@@ -954,13 +1029,6 @@
       "W": 2,
       "L": 3,
       "pnl": -6.2
-    },
-    {
-      "day_of_week": "Wednesday",
-      "sport": "baseball_ncaa",
-      "W": 1,
-      "L": 2,
-      "pnl": -5.6
     },
     {
       "day_of_week": "Thursday",
@@ -1169,17 +1237,17 @@
   "edge_cap": [
     {
       "bucket": "AT_CAP",
-      "W": 174,
-      "L": 143,
-      "pnl": 58.6,
+      "W": 175,
+      "L": 145,
+      "pnl": 52.7,
       "avg_clv": 0.2
     },
     {
       "bucket": "BELOW_CAP",
-      "W": 87,
-      "L": 65,
-      "pnl": 24.0,
-      "avg_clv": 0.6
+      "W": 89,
+      "L": 73,
+      "pnl": -6.6,
+      "avg_clv": 0.5
     }
   ],
   "concentration_risk": [
@@ -1259,22 +1327,22 @@
       "sport": "baseball_mlb",
       "side_type": "OVER",
       "W": 14,
-      "L": 13,
-      "pnl": -2.5
+      "L": 14,
+      "pnl": -7.5
     },
     {
       "sport": "baseball_mlb",
       "side_type": "UNDER",
-      "W": 10,
+      "W": 11,
       "L": 8,
-      "pnl": 4.3
+      "pnl": 8.4
     },
     {
       "sport": "baseball_ncaa",
       "side_type": "OVER",
       "W": 26,
-      "L": 24,
-      "pnl": -10.5
+      "L": 25,
+      "pnl": -15.5
     },
     {
       "sport": "baseball_ncaa",
@@ -1375,114 +1443,96 @@
       "pnl": -4.5
     }
   ],
-  "ungraded": [
-    {
-      "selection": "Jiri Lehecka +2.5",
-      "sport": "tennis_atp_madrid_open",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Cade Cunningham UNDER 29.5 POINTS",
-      "sport": "basketball_nba",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Tari Eason UNDER 1.5 THREES",
-      "sport": "basketball_nba",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Los Angeles Angels@Chicago White Sox OVER 8.5",
-      "sport": "baseball_mlb",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Tampa Bay Rays@Cleveland Guardians UNDER 7.0",
-      "sport": "baseball_mlb",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Orlando Magic@Detroit Pistons UNDER 211.5",
-      "sport": "basketball_nba",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Houston Rockets@Los Angeles Lakers UNDER 209.0",
-      "sport": "basketball_nba",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Boston Red Sox@Toronto Blue Jays OVER 8.5",
-      "sport": "baseball_mlb",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Houston Astros@Baltimore Orioles OVER 9.0",
-      "sport": "baseball_mlb",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Arizona Diamondbacks@Milwaukee Brewers OVER 8.5",
-      "sport": "baseball_mlb",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Donovan Mitchell OVER 26.5 pts",
-      "sport": "basketball_nba",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "Detroit Tigers ML",
-      "sport": "baseball_mlb",
-      "dt": "2026-04-29"
-    },
-    {
-      "selection": "South Alabama Jaguars@New Orleans Privateers OVER 14.0",
-      "sport": "baseball_ncaa",
-      "dt": "2026-04-29"
-    }
-  ],
+  "ungraded": [],
   "last_10": [
     "LOSS",
     "LOSS",
+    "LOSS",
+    "LOSS",
+    "LOSS",
     "WIN",
     "WIN",
     "LOSS",
-    "WIN",
-    "LOSS",
-    "WIN",
     "WIN",
     "LOSS"
   ],
-  "streak": 2,
+  "streak": 5,
   "streak_type": "LOSS",
   "shadow_blocked_picks": [
     {
-      "created_at": "2026-04-29T16:17:42.923410+00:00",
+      "created_at": "2026-04-30T00:05:35.501783+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Dorian Finney-Smith OVER 2.5 reb",
+      "selection": "Reed Sheppard UNDER 3.5 threes",
       "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
+      "line": 3.5,
+      "odds": -148.0,
       "edge_pct": null,
       "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=reb, line=2.5)"
+      "reason": "PROP_DIVERGENCE_GATE (proj=2.7 vs market_median=3.5, gap=0.8 > thr 0.75, books=3)"
     },
     {
-      "created_at": "2026-04-29T16:17:42.664425+00:00",
+      "created_at": "2026-04-30T00:05:35.501503+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Dorian Finney-Smith OVER 1.5 pts",
+      "selection": "Reed Sheppard UNDER 3.5 threes",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": -148.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=2.7 vs market_median=3.5, gap=0.8 > thr 0.75, books=3)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:35.501109+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Reed Sheppard UNDER 3.5 threes",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": -140.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=2.7 vs market_median=3.5, gap=0.8 > thr 0.75, books=3)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:35.500629+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Reed Sheppard UNDER 3.5 threes",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": -146.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=2.7 vs market_median=3.5, gap=0.8 > thr 0.75, books=3)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:35.499879+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Reed Sheppard UNDER 3.5 threes",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": -133.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=2.7 vs market_median=3.5, gap=0.8 > thr 0.75, books=3)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:30.572833+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Dorian Finney-Smith OVER 1.5 reb",
       "market_type": "PROP",
       "line": 1.5,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=pts, line=1.5)"
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=reb, line=1.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:39.678713+00:00",
+      "created_at": "2026-04-30T00:05:30.285469+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Josh Okogie OVER 2.5 reb",
@@ -1494,7 +1544,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=reb, line=2.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:39.413330+00:00",
+      "created_at": "2026-04-30T00:05:29.985324+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Marcus Smart OVER 2.5 reb",
@@ -1506,7 +1556,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.5 < 12.0, stat=reb, line=2.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:39.153309+00:00",
+      "created_at": "2026-04-30T00:05:29.084584+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Jaxson Hayes OVER 3.5 reb",
@@ -1518,7 +1568,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.1 < 12.0, stat=reb, line=3.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:38.873188+00:00",
+      "created_at": "2026-04-30T00:05:28.784601+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Luke Kennard OVER 3.5 reb",
@@ -1530,7 +1580,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.6 < 12.0, stat=reb, line=3.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:38.297808+00:00",
+      "created_at": "2026-04-30T00:05:28.136528+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Tari Eason OVER 7.5 reb",
@@ -1542,7 +1592,19 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.2 < 12.0, stat=reb, line=7.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:37.168456+00:00",
+      "created_at": "2026-04-30T00:05:26.663198+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Dorian Finney-Smith OVER 2.5 pts",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=pts, line=2.5)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:26.392505+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Josh Okogie OVER 3.5 pts",
@@ -1554,7 +1616,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=pts, line=3.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:36.880335+00:00",
+      "created_at": "2026-04-30T00:05:26.127918+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Jaxson Hayes OVER 5.5 pts",
@@ -1566,7 +1628,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.1 < 12.0, stat=pts, line=5.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:36.604352+00:00",
+      "created_at": "2026-04-30T00:05:25.858187+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Marcus Smart OVER 11.5 pts",
@@ -1578,7 +1640,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.5 < 12.0, stat=pts, line=11.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:36.085471+00:00",
+      "created_at": "2026-04-30T00:05:25.000577+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Luke Kennard OVER 12.5 pts",
@@ -1590,7 +1652,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.6 < 12.0, stat=pts, line=12.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:35.464211+00:00",
+      "created_at": "2026-04-30T00:05:24.653556+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Tari Eason OVER 12.5 pts",
@@ -1602,7 +1664,55 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.2 < 12.0, stat=pts, line=12.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:34.083788+00:00",
+      "created_at": "2026-04-30T00:05:24.505604+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Reed Sheppard UNDER 16.5 pts",
+      "market_type": "PROP",
+      "line": 16.5,
+      "odds": -125.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=12.6 vs market_median=16.5, gap=3.9 > thr 3.0, books=3)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:24.061573+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Austin Reaves OVER 16.5 pts",
+      "market_type": "PROP",
+      "line": 16.5,
+      "odds": -127.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=21.3 vs market_median=16.5, gap=4.8 > thr 3.0, books=3)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:24.060875+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Austin Reaves UNDER 17.0 pts",
+      "market_type": "PROP",
+      "line": 17.0,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_RECENCY_VETO (career=20.9, mkt=17.0, recent=20.10)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:24.059485+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Austin Reaves UNDER 17.0 pts",
+      "market_type": "PROP",
+      "line": 17.0,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_CAREER_FADE_RECENCY_VETO (career=20.9, mkt=17.0, recent=20.10)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:19.410969+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Tari Eason OVER 1.5 ast",
@@ -1614,7 +1724,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.2 < 12.0, stat=ast, line=1.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:33.822358+00:00",
+      "created_at": "2026-04-30T00:05:19.079749+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Luke Kennard OVER 2.5 ast",
@@ -1626,7 +1736,31 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.6 < 12.0, stat=ast, line=2.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:33.559829+00:00",
+      "created_at": "2026-04-30T00:05:18.796078+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Austin Reaves OVER 3.5 ast",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": -150.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=5.2 vs market_median=3.5, gap=1.7 > thr 1.5, books=3)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:18.794179+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Austin Reaves OVER 3.5 ast",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": -146.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=5.2 vs market_median=3.5, gap=1.7 > thr 1.5, books=3)"
+    },
+    {
+      "created_at": "2026-04-30T00:05:18.469081+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Marcus Smart OVER 4.5 ast",
@@ -1638,7 +1772,223 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.5 < 12.0, stat=ast, line=4.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:22.128856+00:00",
+      "created_at": "2026-04-29T23:13:06.903668+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Josh Okogie OVER 2.5 reb",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=reb, line=2.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:06.633876+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Dorian Finney-Smith OVER 1.5 reb",
+      "market_type": "PROP",
+      "line": 1.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=reb, line=1.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:06.355792+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Marcus Smart OVER 2.5 reb",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.5 < 12.0, stat=reb, line=2.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:06.058310+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Jaxson Hayes OVER 3.5 reb",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.1 < 12.0, stat=reb, line=3.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:05.774812+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Luke Kennard OVER 3.5 reb",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.6 < 12.0, stat=reb, line=3.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:05.162874+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Tari Eason OVER 7.5 reb",
+      "market_type": "PROP",
+      "line": 7.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.2 < 12.0, stat=reb, line=7.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:04.031463+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Dorian Finney-Smith OVER 2.5 pts",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=pts, line=2.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:03.747173+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Josh Okogie OVER 3.5 pts",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=pts, line=3.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:03.475551+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Jaxson Hayes OVER 5.5 pts",
+      "market_type": "PROP",
+      "line": 5.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.1 < 12.0, stat=pts, line=5.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:03.202127+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Marcus Smart OVER 11.5 pts",
+      "market_type": "PROP",
+      "line": 11.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.5 < 12.0, stat=pts, line=11.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:02.650148+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Luke Kennard OVER 12.5 pts",
+      "market_type": "PROP",
+      "line": 12.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.6 < 12.0, stat=pts, line=12.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:13:02.358868+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Tari Eason OVER 12.5 pts",
+      "market_type": "PROP",
+      "line": 12.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.2 < 12.0, stat=pts, line=12.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:12:59.027767+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Tari Eason OVER 1.5 ast",
+      "market_type": "PROP",
+      "line": 1.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.2 < 12.0, stat=ast, line=1.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:12:58.763291+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Luke Kennard OVER 2.5 ast",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.6 < 12.0, stat=ast, line=2.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:12:58.500226+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Marcus Smart OVER 4.5 ast",
+      "market_type": "PROP",
+      "line": 4.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.5 < 12.0, stat=ast, line=4.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:09:31.004205+00:00",
+      "sport": "basketball_nba",
+      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
+      "selection": "Jakob Poeltl OVER 1.5 ast",
+      "market_type": "PROP",
+      "line": 1.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.0 < 12.0, stat=ast, line=1.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:09:30.172945+00:00",
+      "sport": "basketball_nba",
+      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
+      "selection": "Sandro Mamukelashvili OVER 3.5 reb",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.4 < 12.0, stat=reb, line=3.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:09:29.904192+00:00",
+      "sport": "basketball_nba",
+      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
+      "selection": "Sandro Mamukelashvili OVER 6.5 pts",
+      "market_type": "PROP",
+      "line": 6.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.4 < 12.0, stat=pts, line=6.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:09:26.644334+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Jamal Shead OVER 1.5 reb",
@@ -1650,7 +2000,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=reb, line=1.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:21.871004+00:00",
+      "created_at": "2026-04-29T23:09:26.392539+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Sam Merrill OVER 1.5 reb",
@@ -1662,7 +2012,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.4 < 12.0, stat=reb, line=1.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:21.585142+00:00",
+      "created_at": "2026-04-29T23:09:26.129516+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Jaylon Tyson OVER 2.5 reb",
@@ -1674,7 +2024,19 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.1 < 12.0, stat=reb, line=2.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:21.309270+00:00",
+      "created_at": "2026-04-29T23:09:25.830467+00:00",
+      "sport": "basketball_nba",
+      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
+      "selection": "Dean Wade OVER 3.5 reb",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=5.3 < 12.0, stat=reb, line=3.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:09:25.516251+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Max Strus OVER 4.5 reb",
@@ -1686,19 +2048,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=reb, line=4.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:21.026279+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Dean Wade OVER 4.5 reb",
-      "market_type": "PROP",
-      "line": 4.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=5.3 < 12.0, stat=reb, line=4.5)"
-    },
-    {
-      "created_at": "2026-04-29T16:17:19.877495+00:00",
+      "created_at": "2026-04-29T23:09:24.363628+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Jakob Poeltl OVER 5.5 reb",
@@ -1710,7 +2060,31 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.0 < 12.0, stat=reb, line=5.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:18.494971+00:00",
+      "created_at": "2026-04-29T23:09:23.947287+00:00",
+      "sport": "basketball_nba",
+      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
+      "selection": "Scottie Barnes UNDER 7.5 reb",
+      "market_type": "PROP",
+      "line": 7.5,
+      "odds": -150.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=5.8 vs market_median=7.5, gap=1.7 > thr 1.5, books=3)"
+    },
+    {
+      "created_at": "2026-04-29T23:09:23.945966+00:00",
+      "sport": "basketball_nba",
+      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
+      "selection": "Scottie Barnes UNDER 7.5 reb",
+      "market_type": "PROP",
+      "line": 7.5,
+      "odds": -142.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=5.8 vs market_median=7.5, gap=1.7 > thr 1.5, books=3)"
+    },
+    {
+      "created_at": "2026-04-29T23:09:22.985042+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Dean Wade OVER 4.5 pts",
@@ -1722,31 +2096,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=5.3 < 12.0, stat=pts, line=4.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:18.239605+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Jamal Shead OVER 6.5 pts",
-      "market_type": "PROP",
-      "line": 6.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=pts, line=6.5)"
-    },
-    {
-      "created_at": "2026-04-29T16:17:17.979968+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Jaylon Tyson OVER 6.5 pts",
-      "market_type": "PROP",
-      "line": 6.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.1 < 12.0, stat=pts, line=6.5)"
-    },
-    {
-      "created_at": "2026-04-29T16:17:17.679488+00:00",
+      "created_at": "2026-04-29T23:09:22.726120+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Jakob Poeltl OVER 6.5 pts",
@@ -1758,31 +2108,55 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.0 < 12.0, stat=pts, line=6.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:17.409418+00:00",
+      "created_at": "2026-04-29T23:09:22.468495+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Sam Merrill OVER 7.5 pts",
+      "selection": "Jamal Shead OVER 6.5 pts",
       "market_type": "PROP",
-      "line": 7.5,
+      "line": 6.5,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.4 < 12.0, stat=pts, line=7.5)"
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=pts, line=6.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:17.093573+00:00",
+      "created_at": "2026-04-29T23:09:22.211211+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Max Strus OVER 8.5 pts",
+      "selection": "Sam Merrill OVER 6.5 pts",
       "market_type": "PROP",
-      "line": 8.5,
+      "line": 6.5,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=pts, line=8.5)"
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.4 < 12.0, stat=pts, line=6.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:15.267588+00:00",
+      "created_at": "2026-04-29T23:09:21.901408+00:00",
+      "sport": "basketball_nba",
+      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
+      "selection": "Jaylon Tyson OVER 6.5 pts",
+      "market_type": "PROP",
+      "line": 6.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.1 < 12.0, stat=pts, line=6.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:09:21.605861+00:00",
+      "sport": "basketball_nba",
+      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
+      "selection": "Max Strus OVER 9.5 pts",
+      "market_type": "PROP",
+      "line": 9.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=pts, line=9.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:09:19.761333+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Donovan Mitchell UNDER 27.5 pts",
@@ -1794,31 +2168,19 @@
       "reason": "PROP_DIVERGENCE_GATE (proj=23.5 vs market_median=27.5, gap=4.0 > thr 3.0, books=3)"
     },
     {
-      "created_at": "2026-04-29T16:17:15.267143+00:00",
+      "created_at": "2026-04-29T23:09:19.760519+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Donovan Mitchell UNDER 27.5 pts",
       "market_type": "PROP",
       "line": 27.5,
-      "odds": -130.0,
+      "odds": -115.0,
       "edge_pct": null,
       "units": null,
       "reason": "PROP_DIVERGENCE_GATE (proj=23.5 vs market_median=27.5, gap=4.0 > thr 3.0, books=3)"
     },
     {
-      "created_at": "2026-04-29T16:17:15.266543+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Donovan Mitchell UNDER 27.5 pts",
-      "market_type": "PROP",
-      "line": 27.5,
-      "odds": -110.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=23.5 vs market_median=27.5, gap=4.0 > thr 3.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-29T16:17:13.775947+00:00",
+      "created_at": "2026-04-29T23:09:18.272096+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Max Strus OVER 1.5 ast",
@@ -1830,7 +2192,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=ast, line=1.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:12.710565+00:00",
+      "created_at": "2026-04-29T23:09:17.158305+00:00",
       "sport": "basketball_nba",
       "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
       "selection": "Jamal Shead OVER 4.5 ast",
@@ -1842,19 +2204,43 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=ast, line=4.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:02.804724+00:00",
+      "created_at": "2026-04-29T23:07:31.722787+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Javonte Green OVER 2.5 reb",
+      "selection": "Daniss Jenkins OVER 1.5 reb",
+      "market_type": "PROP",
+      "line": 1.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=reb, line=1.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:31.414902+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Caris LeVert OVER 1.5 reb",
+      "market_type": "PROP",
+      "line": 1.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=reb, line=1.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:29.826204+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Tristan da Silva OVER 2.5 reb",
       "market_type": "PROP",
       "line": 2.5,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=reb, line=2.5)"
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=7.5 < 12.0, stat=reb, line=2.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:02.519016+00:00",
+      "created_at": "2026-04-29T23:07:29.528718+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Anthony Black OVER 2.5 reb",
@@ -1866,19 +2252,43 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=8.3 < 12.0, stat=reb, line=2.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:01.719439+00:00",
+      "created_at": "2026-04-29T23:07:29.234375+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Goga Bitadze OVER 4.5 reb",
+      "selection": "Javonte Green OVER 3.5 reb",
       "market_type": "PROP",
-      "line": 4.5,
+      "line": 3.5,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=5.4 < 12.0, stat=reb, line=4.5)"
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=reb, line=3.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:01.137645+00:00",
+      "created_at": "2026-04-29T23:07:28.950176+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Jamal Cain OVER 3.5 reb",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=7.5 < 12.0, stat=reb, line=3.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:28.100332+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Goga Bitadze OVER 3.5 reb",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=5.4 < 12.0, stat=reb, line=3.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:27.544217+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Ausar Thompson OVER 6.5 reb",
@@ -1890,19 +2300,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.5 < 12.0, stat=reb, line=6.5)"
     },
     {
-      "created_at": "2026-04-29T16:17:00.321422+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Daniss Jenkins OVER 3.5 pts",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=pts, line=3.5)"
-    },
-    {
-      "created_at": "2026-04-29T16:17:00.054445+00:00",
+      "created_at": "2026-04-29T23:07:26.747444+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Goga Bitadze OVER 3.5 pts",
@@ -1914,7 +2312,31 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=5.4 < 12.0, stat=pts, line=3.5)"
     },
     {
-      "created_at": "2026-04-29T16:16:59.761390+00:00",
+      "created_at": "2026-04-29T23:07:26.472084+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Daniss Jenkins OVER 4.5 pts",
+      "market_type": "PROP",
+      "line": 4.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=pts, line=4.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:26.200169+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Caris LeVert OVER 5.5 pts",
+      "market_type": "PROP",
+      "line": 5.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=pts, line=5.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:25.911307+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Javonte Green OVER 5.5 pts",
@@ -1926,571 +2348,31 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=pts, line=5.5)"
     },
     {
-      "created_at": "2026-04-29T16:16:59.486968+00:00",
+      "created_at": "2026-04-29T23:07:25.638111+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Anthony Black OVER 9.5 pts",
-      "market_type": "PROP",
-      "line": 9.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=8.3 < 12.0, stat=pts, line=9.5)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:59.211540+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Duncan Robinson UNDER 9.5 pts",
-      "market_type": "PROP",
-      "line": 9.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_CAREER_FADE_RECENCY_VETO (career=12.0, mkt=9.5, recent=12.90)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:59.191581+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Duncan Robinson UNDER 9.5 pts",
-      "market_type": "PROP",
-      "line": 9.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_CAREER_FADE_RECENCY_VETO (career=12.0, mkt=9.5, recent=12.90)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:58.902406+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Ausar Thompson OVER 10.5 pts",
-      "market_type": "PROP",
-      "line": 10.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.5 < 12.0, stat=pts, line=10.5)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:58.343868+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Jalen Duren OVER 14.5 pts",
-      "market_type": "PROP",
-      "line": 14.5,
-      "odds": -125.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=18.0 vs market_median=14.5, gap=3.5 > thr 3.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:57.671122+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Cade Cunningham UNDER 28.5 pts",
-      "market_type": "PROP",
-      "line": 28.5,
-      "odds": -115.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=22.2 vs market_median=28.5, gap=6.3 > thr 3.0, books=4)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:57.670607+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Cade Cunningham UNDER 28.5 pts",
-      "market_type": "PROP",
-      "line": 28.5,
-      "odds": -115.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=22.2 vs market_median=28.5, gap=6.3 > thr 3.0, books=4)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:57.670078+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Cade Cunningham UNDER 28.5 pts",
-      "market_type": "PROP",
-      "line": 28.5,
-      "odds": -114.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=22.2 vs market_median=28.5, gap=6.3 > thr 3.0, books=4)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:57.643595+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Cade Cunningham UNDER 28.5 pts",
-      "market_type": "PROP",
-      "line": 28.5,
-      "odds": -115.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=22.2 vs market_median=28.5, gap=6.3 > thr 3.0, books=4)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:56.108304+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Anthony Black OVER 2.5 ast",
-      "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=8.3 < 12.0, stat=ast, line=2.5)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:55.835013+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Ausar Thompson OVER 2.5 ast",
-      "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.5 < 12.0, stat=ast, line=2.5)"
-    },
-    {
-      "created_at": "2026-04-29T16:16:55.559239+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Desmond Bane OVER 3.5 ast",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": -146.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_CAREER_FADE_FLIP (career=4.7, mkt=3.5, gap=1.2)"
-    },
-    {
-      "created_at": "2026-04-29T15:15:03.014555+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Dorian Finney-Smith OVER 2.5 reb",
-      "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=reb, line=2.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:15:02.759484+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Dorian Finney-Smith OVER 1.5 pts",
-      "market_type": "PROP",
-      "line": 1.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=pts, line=1.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:59.821368+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Josh Okogie OVER 2.5 reb",
-      "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=reb, line=2.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:59.556415+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Marcus Smart OVER 2.5 reb",
-      "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.5 < 12.0, stat=reb, line=2.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:59.300603+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Jaxson Hayes OVER 3.5 reb",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.1 < 12.0, stat=reb, line=3.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:59.036681+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Luke Kennard OVER 3.5 reb",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.6 < 12.0, stat=reb, line=3.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:58.448135+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Tari Eason OVER 7.5 reb",
-      "market_type": "PROP",
-      "line": 7.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.2 < 12.0, stat=reb, line=7.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:57.238177+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Josh Okogie OVER 3.5 pts",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=pts, line=3.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:56.965710+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Jaxson Hayes OVER 5.5 pts",
-      "market_type": "PROP",
-      "line": 5.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.1 < 12.0, stat=pts, line=5.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:56.688907+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Marcus Smart OVER 11.5 pts",
-      "market_type": "PROP",
-      "line": 11.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.5 < 12.0, stat=pts, line=11.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:56.397744+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Luke Kennard OVER 12.5 pts",
-      "market_type": "PROP",
-      "line": 12.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.6 < 12.0, stat=pts, line=12.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:55.854007+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Tari Eason OVER 12.5 pts",
-      "market_type": "PROP",
-      "line": 12.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.2 < 12.0, stat=pts, line=12.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:54.536720+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Tari Eason OVER 1.5 ast",
-      "market_type": "PROP",
-      "line": 1.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.2 < 12.0, stat=ast, line=1.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:54.271774+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Luke Kennard OVER 2.5 ast",
-      "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.6 < 12.0, stat=ast, line=2.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:54.012291+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Marcus Smart OVER 4.5 ast",
-      "market_type": "PROP",
-      "line": 4.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.5 < 12.0, stat=ast, line=4.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:42.749657+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Jamal Shead OVER 1.5 reb",
-      "market_type": "PROP",
-      "line": 1.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=reb, line=1.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:42.494205+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Sam Merrill OVER 1.5 reb",
-      "market_type": "PROP",
-      "line": 1.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.4 < 12.0, stat=reb, line=1.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:42.235496+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Jaylon Tyson OVER 2.5 reb",
-      "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.1 < 12.0, stat=reb, line=2.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:41.953684+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Max Strus OVER 4.5 reb",
-      "market_type": "PROP",
-      "line": 4.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=reb, line=4.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:41.670189+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Dean Wade OVER 4.5 reb",
-      "market_type": "PROP",
-      "line": 4.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=5.3 < 12.0, stat=reb, line=4.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:40.592066+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Jakob Poeltl OVER 5.5 reb",
-      "market_type": "PROP",
-      "line": 5.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.0 < 12.0, stat=reb, line=5.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:39.252005+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Dean Wade OVER 4.5 pts",
-      "market_type": "PROP",
-      "line": 4.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=5.3 < 12.0, stat=pts, line=4.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:38.996124+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Jamal Shead OVER 6.5 pts",
+      "selection": "Tristan da Silva OVER 6.5 pts",
       "market_type": "PROP",
       "line": 6.5,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=pts, line=6.5)"
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=7.5 < 12.0, stat=pts, line=6.5)"
     },
     {
-      "created_at": "2026-04-29T15:14:38.741988+00:00",
+      "created_at": "2026-04-29T23:07:25.205853+00:00",
       "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Jaylon Tyson OVER 6.5 pts",
-      "market_type": "PROP",
-      "line": 6.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.1 < 12.0, stat=pts, line=6.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:38.489414+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Jakob Poeltl OVER 6.5 pts",
-      "market_type": "PROP",
-      "line": 6.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.0 < 12.0, stat=pts, line=6.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:38.227741+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Sam Merrill OVER 7.5 pts",
-      "market_type": "PROP",
-      "line": 7.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.4 < 12.0, stat=pts, line=7.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:37.949033+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Max Strus OVER 8.5 pts",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Jamal Cain OVER 8.5 pts",
       "market_type": "PROP",
       "line": 8.5,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=pts, line=8.5)"
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=7.5 < 12.0, stat=pts, line=8.5)"
     },
     {
-      "created_at": "2026-04-29T15:14:36.067311+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Donovan Mitchell UNDER 27.5 pts",
-      "market_type": "PROP",
-      "line": 27.5,
-      "odds": -134.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=23.5 vs market_median=27.5, gap=4.0 > thr 3.0, books=3)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:34.569571+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Max Strus OVER 1.5 ast",
-      "market_type": "PROP",
-      "line": 1.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=ast, line=1.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:33.517051+00:00",
-      "sport": "basketball_nba",
-      "event_id": "6fa2ebdc614d327bc9a4558541adcd30",
-      "selection": "Jamal Shead OVER 4.5 ast",
-      "market_type": "PROP",
-      "line": 4.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=ast, line=4.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:27.219126+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Daniss Jenkins OVER 3.5 pts",
-      "market_type": "PROP",
-      "line": 3.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=pts, line=3.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:23.648913+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Anthony Black OVER 2.5 reb",
-      "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=8.3 < 12.0, stat=reb, line=2.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:23.343503+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Javonte Green OVER 2.5 reb",
-      "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=reb, line=2.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:22.253804+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Ausar Thompson OVER 6.5 reb",
-      "market_type": "PROP",
-      "line": 6.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.5 < 12.0, stat=reb, line=6.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:21.469283+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Javonte Green OVER 5.5 pts",
-      "market_type": "PROP",
-      "line": 5.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=pts, line=5.5)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:21.215453+00:00",
+      "created_at": "2026-04-29T23:07:24.658137+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Anthony Black OVER 9.5 pts",
@@ -2502,19 +2384,19 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=8.3 < 12.0, stat=pts, line=9.5)"
     },
     {
-      "created_at": "2026-04-29T15:14:20.920302+00:00",
+      "created_at": "2026-04-29T23:07:24.299880+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Duncan Robinson UNDER 9.5 pts",
+      "selection": "Duncan Robinson UNDER 10.5 pts",
       "market_type": "PROP",
-      "line": 9.5,
+      "line": 10.5,
       "odds": null,
       "edge_pct": null,
       "units": null,
-      "reason": "PROP_CAREER_FADE_RECENCY_VETO (career=12.0, mkt=9.5, recent=12.90)"
+      "reason": "PROP_CAREER_FADE_RECENCY_VETO (career=12.0, mkt=10.5, recent=12.90)"
     },
     {
-      "created_at": "2026-04-29T15:14:20.635501+00:00",
+      "created_at": "2026-04-29T23:07:24.020738+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Ausar Thompson OVER 10.5 pts",
@@ -2526,31 +2408,31 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.5 < 12.0, stat=pts, line=10.5)"
     },
     {
-      "created_at": "2026-04-29T15:14:19.957924+00:00",
+      "created_at": "2026-04-29T23:07:23.452703+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Jalen Duren OVER 14.5 pts",
       "market_type": "PROP",
       "line": 14.5,
-      "odds": -121.0,
+      "odds": -115.0,
       "edge_pct": null,
       "units": null,
       "reason": "PROP_DIVERGENCE_GATE (proj=18.0 vs market_median=14.5, gap=3.5 > thr 3.0, books=3)"
     },
     {
-      "created_at": "2026-04-29T15:14:19.948411+00:00",
+      "created_at": "2026-04-29T23:07:23.452115+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Jalen Duren OVER 14.5 pts",
       "market_type": "PROP",
       "line": 14.5,
-      "odds": -125.0,
+      "odds": -113.0,
       "edge_pct": null,
       "units": null,
       "reason": "PROP_DIVERGENCE_GATE (proj=18.0 vs market_median=14.5, gap=3.5 > thr 3.0, books=3)"
     },
     {
-      "created_at": "2026-04-29T15:14:19.278111+00:00",
+      "created_at": "2026-04-29T23:07:22.804974+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Cade Cunningham UNDER 28.5 pts",
@@ -2562,31 +2444,7 @@
       "reason": "PROP_DIVERGENCE_GATE (proj=22.2 vs market_median=28.5, gap=6.3 > thr 3.0, books=4)"
     },
     {
-      "created_at": "2026-04-29T15:14:19.277347+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Cade Cunningham UNDER 28.5 pts",
-      "market_type": "PROP",
-      "line": 28.5,
-      "odds": -114.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=22.2 vs market_median=28.5, gap=6.3 > thr 3.0, books=4)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:19.276488+00:00",
-      "sport": "basketball_nba",
-      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
-      "selection": "Cade Cunningham UNDER 28.5 pts",
-      "market_type": "PROP",
-      "line": 28.5,
-      "odds": -114.0,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_DIVERGENCE_GATE (proj=22.2 vs market_median=28.5, gap=6.3 > thr 3.0, books=4)"
-    },
-    {
-      "created_at": "2026-04-29T15:14:19.203644+00:00",
+      "created_at": "2026-04-29T23:07:22.804280+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Cade Cunningham UNDER 28.5 pts",
@@ -2598,7 +2456,67 @@
       "reason": "PROP_DIVERGENCE_GATE (proj=22.2 vs market_median=28.5, gap=6.3 > thr 3.0, books=4)"
     },
     {
-      "created_at": "2026-04-29T15:14:17.740358+00:00",
+      "created_at": "2026-04-29T23:07:22.803900+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Cade Cunningham UNDER 28.5 pts",
+      "market_type": "PROP",
+      "line": 28.5,
+      "odds": -115.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=22.2 vs market_median=28.5, gap=6.3 > thr 3.0, books=4)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:22.803109+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Cade Cunningham UNDER 28.5 pts",
+      "market_type": "PROP",
+      "line": 28.5,
+      "odds": -115.0,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_DIVERGENCE_GATE (proj=22.2 vs market_median=28.5, gap=6.3 > thr 3.0, books=4)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:19.569060+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Jamal Cain OVER 0.5 ast",
+      "market_type": "PROP",
+      "line": 0.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=7.5 < 12.0, stat=ast, line=0.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:19.294279+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Daniss Jenkins OVER 1.5 ast",
+      "market_type": "PROP",
+      "line": 1.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=10.8 < 12.0, stat=ast, line=1.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:18.914991+00:00",
+      "sport": "basketball_nba",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Caris LeVert OVER 1.5 ast",
+      "market_type": "PROP",
+      "line": 1.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=6.3 < 12.0, stat=ast, line=1.5)"
+    },
+    {
+      "created_at": "2026-04-29T23:07:15.125465+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Anthony Black OVER 2.5 ast",
@@ -2610,7 +2528,7 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=8.3 < 12.0, stat=ast, line=2.5)"
     },
     {
-      "created_at": "2026-04-29T15:14:17.478275+00:00",
+      "created_at": "2026-04-29T23:07:14.871025+00:00",
       "sport": "basketball_nba",
       "event_id": "912bee9cc9d36b6017819f012c0c56f1",
       "selection": "Ausar Thompson OVER 2.5 ast",
@@ -2622,31 +2540,19 @@
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.5 < 12.0, stat=ast, line=2.5)"
     },
     {
-      "created_at": "2026-04-29T14:09:53.651969+00:00",
+      "created_at": "2026-04-29T23:07:14.613093+00:00",
       "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Dorian Finney-Smith OVER 2.5 reb",
+      "event_id": "912bee9cc9d36b6017819f012c0c56f1",
+      "selection": "Desmond Bane OVER 3.5 ast",
       "market_type": "PROP",
-      "line": 2.5,
-      "odds": null,
+      "line": 3.5,
+      "odds": -138.0,
       "edge_pct": null,
       "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=reb, line=2.5)"
+      "reason": "PROP_CAREER_FADE_FLIP (career=4.7, mkt=3.5, gap=1.2)"
     },
     {
-      "created_at": "2026-04-29T14:09:53.393303+00:00",
-      "sport": "basketball_nba",
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "selection": "Dorian Finney-Smith OVER 1.5 pts",
-      "market_type": "PROP",
-      "line": 1.5,
-      "odds": null,
-      "edge_pct": null,
-      "units": null,
-      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=pts, line=1.5)"
-    },
-    {
-      "created_at": "2026-04-29T14:09:50.450897+00:00",
+      "created_at": "2026-04-29T22:19:06.430091+00:00",
       "sport": "basketball_nba",
       "event_id": "0d0aa62d4305ee094389473b308ce0bd",
       "selection": "Josh Okogie OVER 2.5 reb",
@@ -2656,53 +2562,149 @@
       "edge_pct": null,
       "units": null,
       "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=reb, line=2.5)"
+    },
+    {
+      "created_at": "2026-04-29T22:19:06.172139+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Dorian Finney-Smith OVER 1.5 reb",
+      "market_type": "PROP",
+      "line": 1.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=reb, line=1.5)"
+    },
+    {
+      "created_at": "2026-04-29T22:19:05.924478+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Marcus Smart OVER 2.5 reb",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.5 < 12.0, stat=reb, line=2.5)"
+    },
+    {
+      "created_at": "2026-04-29T22:19:05.677167+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Jaxson Hayes OVER 3.5 reb",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.1 < 12.0, stat=reb, line=3.5)"
+    },
+    {
+      "created_at": "2026-04-29T22:19:05.379084+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Luke Kennard OVER 3.5 reb",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.6 < 12.0, stat=reb, line=3.5)"
+    },
+    {
+      "created_at": "2026-04-29T22:19:04.818857+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Tari Eason OVER 7.5 reb",
+      "market_type": "PROP",
+      "line": 7.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=11.2 < 12.0, stat=reb, line=7.5)"
+    },
+    {
+      "created_at": "2026-04-29T22:19:03.753452+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Dorian Finney-Smith OVER 2.5 pts",
+      "market_type": "PROP",
+      "line": 2.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=pts, line=2.5)"
+    },
+    {
+      "created_at": "2026-04-29T22:19:03.491349+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Josh Okogie OVER 3.5 pts",
+      "market_type": "PROP",
+      "line": 3.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=3.6 < 12.0, stat=pts, line=3.5)"
+    },
+    {
+      "created_at": "2026-04-29T22:19:03.221328+00:00",
+      "sport": "basketball_nba",
+      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
+      "selection": "Jaxson Hayes OVER 5.5 pts",
+      "market_type": "PROP",
+      "line": 5.5,
+      "odds": null,
+      "edge_pct": null,
+      "units": null,
+      "reason": "PROP_PLAYOFF_ROLE_GATE (v25.94, pts_avg=9.1 < 12.0, stat=pts, line=5.5)"
     }
   ],
   "book_performance": [
     {
       "book": "FanDuel",
-      "bets": 106,
-      "wins": 62,
-      "losses": 41,
-      "pnl": 55.8,
-      "wagered": 515.0,
-      "avg_clv": 0.24
+      "bets": 110,
+      "wins": 63,
+      "losses": 44,
+      "pnl": 45.8,
+      "wagered": 535.0,
+      "avg_clv": 0.22
     },
     {
       "book": "BetRivers",
-      "bets": 71,
-      "wins": 43,
-      "losses": 27,
-      "pnl": 44.4,
-      "wagered": 351.0,
-      "avg_clv": 0.11
+      "bets": 74,
+      "wins": 44,
+      "losses": 29,
+      "pnl": 38.8,
+      "wagered": 366.0,
+      "avg_clv": 0.09
     },
     {
       "book": "Fanatics",
-      "bets": 45,
+      "bets": 46,
       "wins": 29,
-      "losses": 15,
-      "pnl": 42.9,
-      "wagered": 215.0,
-      "avg_clv": 1.29
+      "losses": 16,
+      "pnl": 37.9,
+      "wagered": 220.0,
+      "avg_clv": 1.28
     },
     {
       "book": "Caesars",
-      "bets": 63,
+      "bets": 64,
       "wins": 32,
-      "losses": 27,
-      "pnl": 28.6,
-      "wagered": 304.5,
-      "avg_clv": 0.93
+      "losses": 28,
+      "pnl": 23.6,
+      "wagered": 309.5,
+      "avg_clv": 0.92
     },
     {
       "book": "DraftKings",
-      "bets": 132,
-      "wins": 66,
-      "losses": 65,
-      "pnl": -14.4,
-      "wagered": 652.5,
-      "avg_clv": -0.41
+      "bets": 136,
+      "wins": 67,
+      "losses": 68,
+      "pnl": -25.3,
+      "wagered": 672.5,
+      "avg_clv": -0.38
     },
     {
       "book": "BetMGM",
@@ -2719,18 +2721,18 @@
     "blocks_alltime": 0,
     "recent_blocks": [],
     "blocks_by_sport_14d": [],
-    "picks_fired_7d": 100,
+    "picks_fired_7d": 90,
     "counterfactual_note": "Blocked picks never enter bets table \u2014 no live counterfactual. Forward validation requires manual check against historical graded_bets for same event_id+selection patterns."
   },
   "mlb_context_ml_stats": {
     "distinct_fires_7d": 6,
     "distinct_fires_alltime": 6,
     "counterfactual_14d": {
-      "n_completed": 3,
-      "wins": 0,
+      "n_completed": 5,
+      "wins": 2,
       "losses": 3,
-      "wr": 0.0,
-      "net_pl": -15.0,
+      "wr": 0.4,
+      "net_pl": -3.5,
       "samples": [
         {
           "event_id": "630b5c008c0741c01c32f890068fa598",
@@ -2739,6 +2741,22 @@
           "edge_pct": 16.78,
           "won": false,
           "pl": -5.0
+        },
+        {
+          "event_id": "68d4de1e01d8567e0d2e4a137d4b254b",
+          "side": "HOME",
+          "odds": 125.0,
+          "edge_pct": 16.27,
+          "won": true,
+          "pl": 6.25
+        },
+        {
+          "event_id": "abd0114b226ed04c6bd4daac824f5241",
+          "side": "HOME",
+          "odds": 105.0,
+          "edge_pct": 9.31,
+          "won": true,
+          "pl": 5.25
         },
         {
           "event_id": "bb7e51c3ed5e76ca658d46e6b586c0fa",

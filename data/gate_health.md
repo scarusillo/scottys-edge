@@ -1,44 +1,45 @@
-## Gate Health Card — 2026-04-28
+## Gate Health Card — 2026-04-29
 
 ### Fires (graded)
 | Sport | n | Units | P/L |
 |---|---|---|---|
-| baseball_ncaa | 5 | 25.0u | +2.81u |
-| basketball_nba | 4 | 20.0u | -1.47u |
-| baseball_mlb | 3 | 15.0u | -5.73u |
-| **TOTAL** | **12** | **60.0u** | **-4.39u** |
+| basketball_nba | 6 | 30.0u | -20.61u |
+| baseball_mlb | 5 | 25.0u | -5.90u |
+| tennis_atp_madrid_open | 1 | 5.0u | -5.00u |
+| baseball_ncaa | 1 | 5.0u | -5.00u |
+| **TOTAL** | **13** | **65.0u** | **-36.51u** |
 
 ### Block volume by sport
 | Sport | Distinct events | Total log entries |
 |---|---|---|
-| baseball_mlb | 14 | 679 |
-| baseball_ncaa | 11 | 79 |
-| basketball_nba | 6 | 1241 |
-| tennis_atp_madrid_open | 3 | 7 |
-| soccer_uefa_champs_league | 2 | 17 |
-| icehockey_nhl | 2 | 30 |
+| baseball_mlb | 17 | 573 |
+| basketball_nba | 5 | 885 |
+| tennis_atp_madrid_open | 1 | 5 |
+| soccer_uefa_champs_league | 1 | 9 |
+| icehockey_nhl | 1 | 1 |
+| baseball_ncaa | 1 | 10 |
 
 ### Blocks by gate
 | Gate | Total log entries | Distinct events |
 |---|---|---|
-| `PROP_DIVERGENCE_GATE` | 447 | 12 |
-| `BLOWOUT_GATE` | 439 | 3 |
-| `PROP_PLAYOFF_ROLE_GATE` | 359 | 3 |
-| `PROP_CAREER_FADE_RECENCY_VETO` | 200 | 3 |
-| `PROP_PLAYOFF_ROLE_GATE_SHADOW` | 174 | 6 |
-| `PARK_GATE` | 87 | 7 |
-| `MLB_SIDE_CONVICTION_GATE` | 70 | 6 |
-| `DIVERGENCE_GATE` | 60 | 7 |
-| `ERA_RELIABILITY_GATE` | 58 | 3 |
-| `RAW_EDGE_FLIP` | 30 | 5 |
-| `SPREAD_FADE_FLIP_DUAL_MODEL_VETO` | 28 | 2 |
-| `PROP_CAREER_FADE_FLIP` | 26 | 6 |
-| `CONTEXT_TOTAL_P2_SHADOW_INSUFFICIENT_SAMPLE` | 17 | 2 |
-| `NHL_PACE_OVER_GATE` | 15 | 1 |
-| `PROP_FADE_FLIP` | 15 | 3 |
-| _+6 more gates with smaller volume_ | | |
+| `PROP_PLAYOFF_ROLE_GATE` | 649 | 5 |
+| `BLOWOUT_GATE` | 339 | 2 |
+| `PROP_DIVERGENCE_GATE` | 138 | 6 |
+| `MLB_SIDE_CONVICTION_GATE` | 80 | 7 |
+| `ERA_RELIABILITY_GATE` | 64 | 3 |
+| `PARK_GATE` | 63 | 6 |
+| `PROP_CAREER_FADE_RECENCY_VETO` | 45 | 3 |
+| `DIVERGENCE_GATE` | 20 | 3 |
+| `MLB_CONTEXT_ML_SHADOW` | 18 | 6 |
+| `SPREAD_FADE_FLIP_DUAL_MODEL_VETO` | 15 | 2 |
+| `PROP_FADE_FLIP` | 12 | 2 |
+| `CONTEXT_TOTAL_P2_SHADOW_INSUFFICIENT_SAMPLE` | 9 | 1 |
+| `PROP_CAREER_FADE_FLIP` | 9 | 1 |
+| `CONTEXT_DAILY_SPORT_CAP` | 8 | 1 |
+| `PROP_EVENT_CAP` | 4 | 1 |
+| _+4 more gates with smaller volume_ | | |
 
-**Approx pass rate:** 12 fires / (12 fires + 38 distinct-blocked events) = **24.0%**
+**Approx pass rate:** 13 fires / (13 fires + 26 distinct-blocked events) = **33.3%**
 
 _Note: pass-rate is approximate — same event can be evaluated multiple times across the hourly pipeline; this counts distinct event_id only._
 
@@ -46,38 +47,38 @@ _Note: pass-rate is approximate — same event can be evaluated multiple times a
 
 ### Gate Block Summary (last 7 days)
 
-**Total blocks logged: 11487** across 31 gate types
+**Total blocks logged: 11201** across 33 gate types
 
 
 | Gate | Total | Distinct events | Avg/day |
 |---|---|---|---|
-| `PROP_DIVERGENCE_GATE` | 2561 | 62 | 365.9 |
-| `BLOWOUT_GATE` | 1840 | 11 | 262.9 |
-| `PROP_CAREER_FADE_FLIP` | 1076 | 17 | 153.7 |
-| `CONTEXT_TOTAL_P2_SHADOW_INSUFFICIENT_SAMPLE` | 983 | 74 | 140.4 |
+| `PROP_DIVERGENCE_GATE` | 2335 | 56 | 333.6 |
+| `BLOWOUT_GATE` | 1777 | 10 | 253.9 |
+| `PROP_CAREER_FADE_FLIP` | 1085 | 18 | 155.0 |
+| `PROP_PLAYOFF_ROLE_GATE` | 1023 | 6 | 146.1 |
 | `PROP_PLAYOFF_ROLE_GATE_SHADOW` | 955 | 8 | 136.4 |
-| `MLB_SIDE_CONVICTION_GATE` | 797 | 43 | 113.9 |
-| `ERA_RELIABILITY_GATE` | 674 | 23 | 96.3 |
-| `DIVERGENCE_GATE` | 670 | 84 | 95.7 |
-| `PARK_GATE` | 655 | 36 | 93.6 |
-| `PROP_PLAYOFF_ROLE_GATE` | 381 | 3 | 54.4 |
-| `PROP_CAREER_FADE_RECENCY_VETO` | 207 | 3 | 29.6 |
-| `PROP_FADE_FLIP` | 146 | 21 | 20.9 |
+| `CONTEXT_TOTAL_P2_SHADOW_INSUFFICIENT_SAMPLE` | 723 | 58 | 103.3 |
+| `MLB_SIDE_CONVICTION_GATE` | 669 | 42 | 95.6 |
+| `DIVERGENCE_GATE` | 598 | 74 | 85.4 |
+| `PARK_GATE` | 582 | 37 | 83.1 |
+| `ERA_RELIABILITY_GATE` | 546 | 21 | 78.0 |
+| `PROP_CAREER_FADE_RECENCY_VETO` | 247 | 6 | 35.3 |
+| `SPREAD_FADE_FLIP_DUAL_MODEL_VETO` | 117 | 9 | 16.7 |
 | `NCAA_ERA_RELIABILITY_GATE` | 107 | 19 | 15.3 |
-| `SPREAD_FADE_FLIP_DUAL_MODEL_VETO` | 102 | 7 | 14.6 |
+| `PROP_FADE_FLIP` | 98 | 17 | 14.0 |
 | `NHL_PACE_OVER_GATE` | 97 | 4 | 13.9 |
 
 ### Daily breakdown — top 10 gates
 
-| Gate | 04-23 | 04-24 | 04-25 | 04-26 | 04-27 | 04-28 | 04-29 |
+| Gate | 04-24 | 04-25 | 04-26 | 04-27 | 04-28 | 04-29 | 04-30 |
 |---|---|---|---|---|---|---|---|
-| `PROP_DIVERGENCE_GATE` | 380 | 389 | 355 | 329 | 288 | 447 | 19 |
-| `BLOWOUT_GATE` | 356 | 184 | · | 459 | · | 439 | 78 |
-| `PROP_CAREER_FADE_FLIP` | · | 167 | 297 | 410 | 176 | 26 | · |
-| `CONTEXT_TOTAL_P2_SHADOW_INSUFF` | 23 | 65 | 465 | 111 | 33 | 17 | · |
-| `PROP_PLAYOFF_ROLE_GATE_SHADOW` | · | · | · | 73 | 708 | 174 | · |
-| `MLB_SIDE_CONVICTION_GATE` | 35 | 166 | 144 | 119 | 55 | 70 | · |
-| `ERA_RELIABILITY_GATE` | 76 | 52 | 140 | 78 | 78 | 58 | · |
-| `DIVERGENCE_GATE` | 26 | 122 | 226 | 74 | 70 | 60 | · |
-| `PARK_GATE` | 43 | 110 | 126 | 71 | 82 | 87 | · |
-| `PROP_PLAYOFF_ROLE_GATE` | · | · | · | · | · | 359 | 22 |
+| `PROP_DIVERGENCE_GATE` | 389 | 355 | 329 | 288 | 447 | 138 | 9 |
+| `BLOWOUT_GATE` | 184 | · | 459 | · | 439 | 339 | · |
+| `PROP_CAREER_FADE_FLIP` | 167 | 297 | 410 | 176 | 26 | 9 | · |
+| `PROP_PLAYOFF_ROLE_GATE` | · | · | · | · | 359 | 649 | 15 |
+| `PROP_PLAYOFF_ROLE_GATE_SHADOW` | · | · | 73 | 708 | 174 | · | · |
+| `CONTEXT_TOTAL_P2_SHADOW_INSUFF` | 65 | 465 | 111 | 33 | 17 | 9 | · |
+| `MLB_SIDE_CONVICTION_GATE` | 166 | 144 | 119 | 55 | 70 | 80 | · |
+| `DIVERGENCE_GATE` | 122 | 226 | 74 | 70 | 60 | 20 | · |
+| `PARK_GATE` | 110 | 126 | 71 | 82 | 87 | 63 | · |
+| `ERA_RELIABILITY_GATE` | 52 | 140 | 78 | 78 | 58 | 64 | · |
