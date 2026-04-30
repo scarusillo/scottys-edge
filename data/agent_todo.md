@@ -1,9 +1,9 @@
 # Scotty's Edge — Master Agent To-Do List
-**Last updated:** 2026-04-28 — v25.93/94/95/96 shipped; v25.97 CLV predictor built (not wired)
+**Last updated:** 2026-04-29 PM — v25.98 MLB_ML_FADE_FLIP + v25.99 CLV gate + v26.1 MLB Context ML shadow all shipped
 
 ---
 
-## 🌅 TOMORROW MORNING (2026-04-29) — TOP PRIORITY
+## 🌅 TODAY (2026-04-29) — TOP PRIORITY
 
 ### Decide what to do with the v25.97 CLV predictor model
 
@@ -56,6 +56,58 @@ references it yet (per `feedback_dryrun_before_live.md`).
 2. Sanity check: pull tonight's 11 fired picks and score each through `clv_predict`
 3. Compare predicted_clv vs actual CLV on tonight's grades when they come in
 4. Decide option 1/2/3/4 based on the sanity check
+
+---
+
+## 🟢 LIVE IN SHADOW — v26.1 MLB Context ML model (shipped 2026-04-29)
+
+**Status:** Shadow logging only, no live picks. Decision after 14 days
+forward (target 2026-05-13).
+
+- Phase A inventory complete — bullpen, recent form, batting form, park,
+  rest days all available; handedness splits NOT (deferred to v2)
+- Phase B-1 model trained on n=440 graded MLB games. Holdout log-loss
+  0.7333 (worse than random 0.693 — overfits) but backtest at edge ≥ 8%
+  in [-150, +140] is +47.06u on n=96. Reading: model finds selective
+  edge despite weak overall accuracy.
+- Wired into pipeline as shadow channel, logs to
+  `shadow_blocked_picks.reason_category='MLB_CONTEXT_ML_SHADOW'`
+- Day-1: 6 distinct shadow fires across 18 games tonight (33% rate);
+  3 doubleheader-afternoon games already graded 0-3 (-15u, but n=3 is noise)
+- Counterfactual grading flows through `briefing_data.json` →
+  `mlb_context_ml_stats` → cloud agent reads daily
+
+**Promotion gate (all three must pass at 14d):**
+1. n ≥ 30 distinct forward shadow fires
+2. Counterfactual WR @ edge ≥ 8% ≥ 55%
+3. Avg log-loss vs market consensus < 0.69
+
+**If pass:** promote to live at 3u, confluence-only with MLB_ML_FADE_FLIP.
+**If fail:** kill the channel.
+
+Files: `mlb_ml_features.py`, `mlb_ml_model.py`, `mlb_ml_weights.json`,
+`mlb_ml_report.md`, `pipeline/channels/mlb_context_ml.py`.
+Memory: `project_v26_1_mlb_context_ml.md`.
+Cloud agent monitoring: section 6f in `agent_morning_prompt.md`.
+
+---
+
+## ✅ DONE — v25.98 MLB_ML_FADE_FLIP (shipped 2026-04-29)
+
+First MLB moneyline channel ever — prior all-time MLB ML count was n=1.
+
+- File: `scripts/pipeline/channels/mlb_ml_fade_flip.py`
+- Wired in `pipeline/per_game.py:process_ml_and_cross_market` after the
+  existing baseball ML block
+- Sport: `baseball_mlb` only (NCAA excluded; FOLLOW MLs there work fine)
+- Edge band: [8%, 12%] on either ML side (logistic spread→prob, scale=4)
+- Stake: 5u flat
+- Opposite-side odds: [-150, +140]
+- Backtest 366 games / 28 days: 34W-20L (63%) +38.70u at edge≥8%, peaks at
+  71% WR for 12% edge floor, reverses negative at 15%+
+- Day-1 dry-run: 2 fires (SFG +130, CLE -115) from 18 MLB games
+- Kill switch: WR < 50% at n ≥ 25 forward fires
+- Memory: `project_v25_98_mlb_ml_fade_flip.md`
 
 ---
 

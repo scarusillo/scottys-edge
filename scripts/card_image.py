@@ -853,7 +853,8 @@ def generate_results_card(conn=None, output_path=None, start_date='2026-03-04'):
     yw=sum(1 for b in yesterday_bets if b[2]=='WIN'); yl=sum(1 for b in yesterday_bets if b[2]=='LOSS')
     yp=sum(b[3] or 0 for b in yesterday_bets)
     winners=[b for b in yesterday_bets if b[2]=='WIN']
-    losers=[b for b in yesterday_bets if b[2] in ('LOSS','PUSH')]
+    losers=[b for b in yesterday_bets if b[2]=='LOSS']
+    pushes=[b for b in yesterday_bets if b[2]=='PUSH']
     desktop=_get_desktop(); cards=[]
     if winners:
         s1=_render_results_slide(winners,fonts,f"WINNERS ({len(winners)})",GREEN,(yw,yl),yp,latest_date,tw,tl,tp,tr,start_date,True)
@@ -863,6 +864,10 @@ def generate_results_card(conn=None, output_path=None, start_date='2026-03-04'):
         s2=_render_results_slide(losers,fonts,f"LOSSES ({len(losers)})",RED,(yw,yl),yp,latest_date,tw,tl,tp,tr,start_date,False)
         p2=os.path.join(desktop,'scottys_edge_results_2_losses.png')
         s2.save(p2,'PNG',quality=95); print(f"  \U0001f4ca Losses: {p2}"); cards.append(p2)
+    if pushes:
+        s3=_render_results_slide(pushes,fonts,f"PUSHES ({len(pushes)})",WHITE_60,(yw,yl),yp,latest_date,tw,tl,tp,tr,start_date,False)
+        p3=os.path.join(desktop,'scottys_edge_results_3_pushes.png')
+        s3.save(p3,'PNG',quality=95); print(f"  \U0001f4ca Pushes: {p3}"); cards.append(p3)
     if not cards:
         s=_render_results_slide(yesterday_bets,fonts,"RESULTS",GREEN if yp>=0 else RED,(yw,yl),yp,latest_date,tw,tl,tp,tr,start_date,True)
         p=output_path or os.path.join(desktop,'scottys_edge_results.png')

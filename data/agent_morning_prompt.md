@@ -261,6 +261,162 @@ Report:
 
 Reference: see `feedback_no_panic_kill.md` and `project_session_apr26.md`.
 
+## 6e. CLV_PREDICTOR_GATE TRACKING (v25.99, live 2026-04-29)
+
+The CLV predictor gate blocks picks where `clv_model.clv_predict()` scores
+predicted_clv ≤ -0.40. Backtest LOO (n=155 graded since 4/15): 42 blocked
+picks would have lost -63.99u (36.6% WR). Threshold validated against
+the 60% WR kept cohort. Boost side (predicted_clv ≥ +0.80, 1.4× stake)
+is also live, exempt channels are BOOK_ARB / PROP_BOOK_ARB / MLB_ML_FADE_FLIP.
+
+Read everything from `d['clv_gate_stats']`:
+- `blocks_7d` — how many picks blocked in last 7 days
+- `blocks_alltime` — running total since ship
+- `recent_blocks` — last 30 blocked picks (date, sport, selection, book, line, odds, reason_detail)
+- `blocks_by_sport_14d` — distribution by sport
+- `picks_fired_7d` — total picks that fired in same 7-day window (for block-rate context)
+
+### Part A — Block volume + rate
+
+Report:
+- 7-day block count and 7-day block rate = blocks_7d / (blocks_7d + picks_fired_7d)
+- Per-sport breakdown from `blocks_by_sport_14d`
+- All-time block count
+
+**Healthy range:** block rate 15-25% over rolling 7-day window. Backtest
+expectation was 27% (42/155). If rate drops below 10% for 5+ consecutive
+days, flag as a **STALENESS WARNING** — feature distributions may have
+drifted past what the trained model captures.
+
+### Part B — Spot-check recent blocks
+
+Pick 3-5 entries from `recent_blocks` and inspect the `reason_detail`
+field (format: `predicted_clv=-X.XX <= -0.40`). Surface:
+- Patterns by sport / book / side_type concentration
+- Any predictions far below -0.40 (e.g., -1.0+) — strongly negative
+  predictions are higher-conviction and worth highlighting
+
+Do NOT counterfactually grade blocked picks. They never enter the
+bets table; we can't observe their actual outcomes. Forward validation
+is purely block-rate + adjacent-cohort drift.
+
+### Part C — Promote/kill criteria
+
+- **Lower threshold to -0.30** (block more aggressively) when 14-day
+  kept-cohort WR > 62% AND block_rate < 15%. Means we're missing real
+  bottom-decile picks.
+- **Raise threshold to -0.50** (block more conservatively) when
+  blocks_by_sport_14d shows one sport getting >50% of blocks AND that
+  sport's kept cohort over same window has WR > 55%. Likely the gate
+  is overcorrecting on a sport that's actually fine.
+- **Disable the gate** (set CLV_BLOCK_THRESHOLD to a value no pick can
+  reach, e.g. -10.0) when n=14d kept cohort WR drops below 50% — gate
+  is killing winners net.
+
+Reference: `project_session_apr29.md` (will exist), `clv_model.py`,
+`scripts/pipeline/gates.py:gate_clv_predictor_block`.
+
+## 6f. MLB_CONTEXT_ML_SHADOW TRACKING (v26.1, live 2026-04-29 in SHADOW)
+
+The MLB Context ML model is a purpose-built logistic regression on 10
+features (starter/bullpen quality, recent form, batting form, park,
+injuries, rest days, home advantage). Training holdout log-loss was
+0.7333 (worse than random 0.693) but backtest at edge ≥ 8% in
+[-150, +140] was +47.06u over n=96 — model finds selective edge despite
+weak overall classification accuracy. Hence shadow first.
+
+**DOES NOT FIRE LIVE PICKS.** Logs to `shadow_blocked_picks` with
+`reason_category='MLB_CONTEXT_ML_SHADOW'`. `reason_detail` format:
+`side=HOME/AWAY pmod=X.XXX pfair=X.XXX edge=X.X% odds=±NNN`.
+
+Read everything from `d['mlb_context_ml_stats']` (will be populated when
+local export adds the section — until then, query the DB directly per
+the queries below).
+
+### Part A — Volume + dedup count
+
+Hourly pipeline cycles produce duplicate logs per event. ALWAYS dedup
+on `event_id + side` before counting:
+
+```sql
+SELECT COUNT(*) AS distinct_fires FROM (
+  SELECT event_id, substr(reason_detail, 1, 9) AS side
+  FROM shadow_blocked_picks
+  WHERE reason_category='MLB_CONTEXT_ML_SHADOW'
+    AND DATE(created_at) >= DATE('now','-7 day')
+  GROUP BY event_id, substr(reason_detail, 1, 9)
+)
+```
+
+Report 7-day distinct shadow fires + cumulative since 2026-04-29.
+
+### Part B — Counterfactual W/L on completed games
+
+Match shadow fires to `results` table by event_id. Parse `side=HOME` or
+`side=AWAY` from reason_detail. Determine winner from home_score vs
+away_score. Compute would-be P/L at 5u stake using the logged odds.
+
+```sql
+SELECT sb.event_id, MIN(sb.created_at) AS first_seen,
+       sb.odds, sb.edge_pct, sb.reason_detail,
+       r.home, r.away, r.home_score, r.away_score
+FROM shadow_blocked_picks sb
+JOIN results r ON r.event_id = sb.event_id AND r.completed = 1
+WHERE sb.reason_category='MLB_CONTEXT_ML_SHADOW'
+  AND DATE(sb.created_at) >= DATE('now', '-14 day')
+GROUP BY sb.event_id, substr(sb.reason_detail, 1, 9)
+```
+
+For each row:
+- If `side=HOME`: won = (home_score > away_score)
+- If `side=AWAY`: won = (away_score > home_score)
+- P/L = 5 * payout(odds) if won else -5
+
+Report:
+- Forward W-L record + net P/L
+- Per-edge-bucket WR (5-7%, 7-9%, 9-12%, 12%+)
+- Per-side WR (HOME shadow vs AWAY shadow)
+
+### Part C — Confluence rate with v25.98 MLB_ML_FADE_FLIP
+
+For each shadow fire, check whether MLB_ML_FADE_FLIP fired on the same
+event. If yes, do they agree on direction (same team) or disagree
+(opposite teams)?
+
+```sql
+SELECT sb.event_id, sb.selection AS shadow_pick, b.selection AS fade_pick
+FROM shadow_blocked_picks sb
+JOIN bets b ON b.event_id = sb.event_id AND b.side_type='MLB_ML_FADE_FLIP'
+WHERE sb.reason_category='MLB_CONTEXT_ML_SHADOW'
+GROUP BY sb.event_id, substr(sb.reason_detail, 1, 9)
+```
+
+Report:
+- Confluence rate: (# games where models agree) / (# games where both fired)
+- This drives the volume of eventual confluence-only firing if promoted
+
+### Part D — Promote / kill decision
+
+Decision after 14 days forward (target 2026-05-13):
+
+| Criterion | Threshold |
+|---|---|
+| Distinct forward shadow fires | n ≥ 30 |
+| Counterfactual WR @ edge ≥ 8% | ≥ 55% |
+| Avg log-loss vs market consensus | < 0.69 |
+
+- **All three pass:** Action item — promote to live at 3u stake,
+  confluence-only with MLB_ML_FADE_FLIP. Edit
+  `pipeline/channels/mlb_context_ml.py` to convert shadow log to live
+  pick generation.
+- **Any fail:** Action item — kill the channel. Retain weights for
+  offline analysis. Document reasons in
+  `project_v26_1_mlb_context_ml.md` why the model failed.
+
+Reference: `project_v26_1_mlb_context_ml.md`,
+`scripts/mlb_ml_features.py`, `scripts/mlb_ml_model.py`,
+`scripts/pipeline/channels/mlb_context_ml.py`.
+
 ## 7. ACTION ITEMS
 
 Concrete, numbered. Max 5. NEVER recommend things already resolved in

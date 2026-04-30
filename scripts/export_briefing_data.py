@@ -236,6 +236,127 @@ def export_data():
     except Exception:
         pass  # Table may not exist yet
 
+    # v25.99 CLV_PREDICTOR_GATE — block + boost stats over rolling 7-day + all-time
+    clv_gate_stats = {}
+    try:
+        clv_gate_stats['blocks_7d'] = conn.execute("""
+            SELECT COUNT(*) FROM shadow_blocked_picks
+            WHERE reason_category='CLV_PREDICTOR_BLOCK'
+              AND DATE(created_at) >= DATE('now','-7 day')
+        """).fetchone()[0]
+        clv_gate_stats['blocks_alltime'] = conn.execute("""
+            SELECT COUNT(*) FROM shadow_blocked_picks
+            WHERE reason_category='CLV_PREDICTOR_BLOCK'
+        """).fetchone()[0]
+        # Recent block samples for the cloud agent to inspect
+        clv_gate_stats['recent_blocks'] = [dict(r) for r in conn.execute("""
+            SELECT DATE(created_at) AS date, sport, selection, book, line, odds,
+                   reason_detail
+            FROM shadow_blocked_picks
+            WHERE reason_category='CLV_PREDICTOR_BLOCK'
+            ORDER BY created_at DESC LIMIT 30
+        """).fetchall()]
+        # Per-sport block counts (last 14 days)
+        clv_gate_stats['blocks_by_sport_14d'] = [dict(r) for r in conn.execute("""
+            SELECT sport, COUNT(*) AS n FROM shadow_blocked_picks
+            WHERE reason_category='CLV_PREDICTOR_BLOCK'
+              AND DATE(created_at) >= DATE('now','-14 day')
+            GROUP BY sport ORDER BY n DESC
+        """).fetchall()]
+        # Block rate context: how many picks fired in same window
+        clv_gate_stats['picks_fired_7d'] = conn.execute("""
+            SELECT COUNT(*) FROM bets
+            WHERE DATE(created_at) >= DATE('now','-7 day') AND units >= 3.0
+        """).fetchone()[0]
+        # Counterfactual: did blocked picks lose? Match by selection + event_id
+        # against graded_bets where we DID fire that pick despite the gate
+        # (won't happen post-v25.99 but kept for regression checks).
+        clv_gate_stats['counterfactual_note'] = (
+            'Blocked picks never enter bets table — no live counterfactual. '
+            'Forward validation requires manual check against historical graded_bets '
+            'for same event_id+selection patterns.'
+        )
+    except Exception as _e:
+        clv_gate_stats['error'] = str(_e)
+
+    # v26.1 MLB Context ML — shadow tracking
+    mlb_context_ml_stats = {}
+    try:
+        # Distinct shadow fires (deduped on event_id + side)
+        mlb_context_ml_stats['distinct_fires_7d'] = conn.execute("""
+            SELECT COUNT(*) FROM (
+              SELECT event_id, substr(reason_detail, 1, 9) AS side
+              FROM shadow_blocked_picks
+              WHERE reason_category='MLB_CONTEXT_ML_SHADOW'
+                AND DATE(created_at) >= DATE('now','-7 day')
+              GROUP BY event_id, substr(reason_detail, 1, 9)
+            )
+        """).fetchone()[0]
+        mlb_context_ml_stats['distinct_fires_alltime'] = conn.execute("""
+            SELECT COUNT(*) FROM (
+              SELECT event_id, substr(reason_detail, 1, 9) AS side
+              FROM shadow_blocked_picks
+              WHERE reason_category='MLB_CONTEXT_ML_SHADOW'
+              GROUP BY event_id, substr(reason_detail, 1, 9)
+            )
+        """).fetchone()[0]
+
+        # Counterfactual W/L over last 14 days for completed games
+        cf_rows = conn.execute("""
+            SELECT MIN(sb.created_at) AS first_seen, sb.event_id,
+                   sb.odds, sb.edge_pct, sb.reason_detail,
+                   r.home_score, r.away_score
+            FROM shadow_blocked_picks sb
+            JOIN results r ON r.event_id = sb.event_id AND r.completed = 1
+            WHERE sb.reason_category='MLB_CONTEXT_ML_SHADOW'
+              AND DATE(sb.created_at) >= DATE('now', '-14 day')
+            GROUP BY sb.event_id, substr(sb.reason_detail, 1, 9)
+        """).fetchall()
+        cf_results = []
+        wins = losses = 0
+        net_pl = 0.0
+        for first_seen, eid, odds_, edge, detail, hs, as_ in cf_rows:
+            side = 'HOME' if 'side=HOME' in (detail or '') else 'AWAY'
+            won = (hs > as_) if side == 'HOME' else (as_ > hs)
+            if hs == as_:
+                continue
+            payout = (odds_ / 100.0) if odds_ > 0 else (100.0 / abs(odds_))
+            pl = 5.0 * payout if won else -5.0
+            net_pl += pl
+            if won: wins += 1
+            else: losses += 1
+            cf_results.append({
+                'event_id': eid, 'side': side, 'odds': odds_,
+                'edge_pct': edge, 'won': won, 'pl': round(pl, 2),
+            })
+        mlb_context_ml_stats['counterfactual_14d'] = {
+            'n_completed': len(cf_results), 'wins': wins, 'losses': losses,
+            'wr': round(wins / max(1, wins + losses), 3),
+            'net_pl': round(net_pl, 2), 'samples': cf_results[:30],
+        }
+
+        # Confluence with MLB_ML_FADE_FLIP
+        confluence_rows = conn.execute("""
+            SELECT sb.event_id, MIN(sb.selection) AS shadow_pick,
+                   MIN(b.selection) AS fade_pick
+            FROM shadow_blocked_picks sb
+            JOIN bets b ON b.event_id = sb.event_id
+              AND b.side_type='MLB_ML_FADE_FLIP'
+            WHERE sb.reason_category='MLB_CONTEXT_ML_SHADOW'
+            GROUP BY sb.event_id, substr(sb.reason_detail, 1, 9)
+        """).fetchall()
+        agree = sum(1 for r in confluence_rows
+                    if r[1] and r[2] and r[1].split(' ML')[0].strip() ==
+                    r[2].split(' ML')[0].strip())
+        mlb_context_ml_stats['confluence'] = {
+            'overlap_events': len(confluence_rows),
+            'agree': agree,
+            'disagree': len(confluence_rows) - agree,
+            'agreement_rate': round(agree / max(1, len(confluence_rows)), 3),
+        }
+    except Exception as _e:
+        mlb_context_ml_stats['error'] = str(_e)
+
     # Book performance — running tally by sportsbook
     book_performance = []
     try:
@@ -274,6 +395,8 @@ def export_data():
         'streak_type': last_10[0] if last_10 else 'N/A',
         'shadow_blocked_picks': shadow_blocked,
         'book_performance': book_performance,
+        'clv_gate_stats': clv_gate_stats,
+        'mlb_context_ml_stats': mlb_context_ml_stats,
     }
 
     with open(OUTPUT_PATH, 'w', encoding='utf-8') as f:
