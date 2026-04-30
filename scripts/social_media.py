@@ -327,33 +327,6 @@ def _make_story_image(image_path):
     return story_path
 
 
-def post_reel_to_instagram(video_path, caption):
-    """Post a video as an Instagram Reel.
-
-    Args:
-        video_path: str — path to MP4 file
-        caption: str — the reel caption
-
-    Returns:
-        bool — True if posted successfully
-    """
-    cl = _get_ig_client()
-    if not cl:
-        return False
-
-    if not os.path.exists(video_path):
-        print(f"  Instagram Reel: Video not found — {video_path}")
-        return False
-
-    try:
-        media = cl.clip_upload(video_path, caption)
-        print(f"  Instagram Reel: Posted (media pk={media.pk})")
-        return True
-    except Exception as e:
-        print(f"  Instagram Reel: Post failed — {e}")
-        return False
-
-
 def post_to_instagram(image_paths, caption, also_story=True):
     """Post image(s) to Instagram feed (carousel if multiple) + story.
 

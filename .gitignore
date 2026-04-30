@@ -64,6 +64,12 @@ data/cards/*.wav
 data/cards/*_backup.txt
 data/cards/_reel_caption.txt
 
+# Sora / AI video generator artifacts (large binaries, not part of pipeline)
+hf_*.mp4
+hf_*.jpg
+hf_*.mp4.jpg
+scripts/hf_*
+
 # Runtime state (regenerated)
 data/cowork_comments.json
 data/engagement_log.json

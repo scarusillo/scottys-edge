@@ -143,66 +143,68 @@ def fetch_odds(sport, markets='h2h,spreads,totals', tag='CURRENT'):
         return data
 
     conn = sqlite3.connect(DB_PATH)
-    # v25.3: real UTC, not local-ET-pretending-to-be-UTC. Same fix as fetch_props.
-    # snapshot_date and snapshot_time are now real UTC so the grader's CLV
-    # closing-line filter (latest snapshot before commence_time) actually works.
-    # Previously: NCAAB ML CLVs like Saint Mary's -37% were measurement artifacts
-    # from in-game snapshots being treated as pre-game.
-    now = datetime.now(timezone.utc)
-    rows = []
-    _in_progress_skipped = 0
+    try:
+        # v25.3: real UTC, not local-ET-pretending-to-be-UTC. Same fix as fetch_props.
+        # snapshot_date and snapshot_time are now real UTC so the grader's CLV
+        # closing-line filter (latest snapshot before commence_time) actually works.
+        # Previously: NCAAB ML CLVs like Saint Mary's -37% were measurement artifacts
+        # from in-game snapshots being treated as pre-game.
+        now = datetime.now(timezone.utc)
+        rows = []
+        _in_progress_skipped = 0
 
-    for event in data:
-        event_id = event['id']
-        home = event['home_team']
-        away = event['away_team']
-        commence = event['commence_time']
+        for event in data:
+            event_id = event['id']
+            home = event['home_team']
+            away = event['away_team']
+            commence = event['commence_time']
 
-        # v25.3: Skip in-progress games — never capture in-game game-line prices.
-        # Same defense-in-depth pattern as fetch_props. Some bookmakers leave
-        # markets open during games with live odds; we never want those in our
-        # closing-line snapshots.
-        try:
-            gt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
-            if gt <= now:
-                _in_progress_skipped += 1
-                continue
-        except Exception:
-            pass
+            # v25.3: Skip in-progress games — never capture in-game game-line prices.
+            # Same defense-in-depth pattern as fetch_props. Some bookmakers leave
+            # markets open during games with live odds; we never want those in our
+            # closing-line snapshots.
+            try:
+                gt = datetime.fromisoformat(commence.replace('Z', '+00:00'))
+                if gt <= now:
+                    _in_progress_skipped += 1
+                    continue
+            except Exception:
+                pass
 
-        for book in event.get('bookmakers', []):
-            book_name = book['title']
-            for market in book.get('markets', []):
-                market_key = market['key']
-                for outcome in market.get('outcomes', []):
-                    rows.append((
-                        now.strftime('%Y-%m-%d'),
-                        now.strftime('%H:%M:%S'),
-                        tag,
-                        sport,
-                        event_id,
-                        commence,
-                        home, away,
-                        book_name,
-                        market_key,
-                        outcome['name'],
-                        outcome.get('point'),
-                        outcome.get('price'),
-                    ))
+            for book in event.get('bookmakers', []):
+                book_name = book['title']
+                for market in book.get('markets', []):
+                    market_key = market['key']
+                    for outcome in market.get('outcomes', []):
+                        rows.append((
+                            now.strftime('%Y-%m-%d'),
+                            now.strftime('%H:%M:%S'),
+                            tag,
+                            sport,
+                            event_id,
+                            commence,
+                            home, away,
+                            book_name,
+                            market_key,
+                            outcome['name'],
+                            outcome.get('point'),
+                            outcome.get('price'),
+                        ))
 
-    conn.executemany("""
-        INSERT INTO odds (snapshot_date, snapshot_time, tag, sport, event_id,
-            commence_time, home, away, book, market, selection, line, odds)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
-    """, rows)
-    conn.commit()
+        conn.executemany("""
+            INSERT INTO odds (snapshot_date, snapshot_time, tag, sport, event_id,
+                commence_time, home, away, book, market, selection, line, odds)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, rows)
+        conn.commit()
 
-    # ── Auto-capture openers (first-seen lines for each event) ──
-    _capture_openers(conn, rows, sport)
+        # ── Auto-capture openers (first-seen lines for each event) ──
+        _capture_openers(conn, rows, sport)
 
-    # Also update market_consensus
-    _update_consensus(conn, data, sport, tag)
-    conn.close()
+        # Also update market_consensus
+        _update_consensus(conn, data, sport, tag)
+    finally:
+        conn.close()
     msg = f"  Stored {len(rows)} odds rows for {sport}"
     if _in_progress_skipped:
         msg += f" (skipped {_in_progress_skipped} in-progress events)"

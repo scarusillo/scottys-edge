@@ -175,6 +175,7 @@ def analyze_ungraded(conn):
         AND DATE(b.created_at) <= DATE('now', '-1 day')
         AND DATE(b.created_at) >= DATE('now', '-5 days')
         AND b.units >= 3.5
+        AND (b.result IS NULL OR b.result NOT IN ('SCRUBBED','MANUAL_SCRUB','TAINTED','DUPLICATE'))
     """).fetchall()
     
     return ungraded

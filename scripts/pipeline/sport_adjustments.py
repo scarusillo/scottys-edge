@@ -34,7 +34,6 @@ For backwards compatibility, all symbols above are also re-exported from
 import math
 import sqlite3
 from datetime import datetime, timedelta, timezone
-from zoneinfo import ZoneInfo
 
 # Module-level constants used by the totals/park functions below.
 # Moved here from model_engine.py in v26.0 Phase 7.
