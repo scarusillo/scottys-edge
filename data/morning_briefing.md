@@ -1,11 +1,11 @@
 # Scotty's Edge Morning Briefing
-**Date:** Thursday, April 30, 2026 | **Generated:** 05:06 AM ET
+**Date:** Thursday, April 30, 2026 | **Generated:** 05:13 AM ET
 **Game Date Graded:** 2026-04-29
 
 ---
 ## Yesterday's Results
 
-**3W-10L-0P | -36.5u | RED DAY**
+**3W-9L-0P | -31.5u | RED DAY**
 
 | Pick | Sport | Type | Odds | Units | Result | P/L | CLV |
 |------|-------|------|------|-------|--------|-----|-----|
@@ -21,7 +21,6 @@
 | Donovan Mitchell OVER 26.5 pts | basketball_nba | PROP_FADE_FLIP | -117 | 5.0 | **L** | -5.0 | 0.0% |
 | Detroit Tigers ML | baseball_mlb | MLB_ML_FADE_FLIP | -144 | 5.0 | **L** | -5.0 | -0.3% |
 | South Alabama Jaguars@New Orleans Privateers  | baseball_ncaa | OVER | -120 | 5.0 | **L** | -5.0 | 1.0% |
-| LeBron James UNDER 23.5 POINTS | basketball_nba | PROP_UNDER | -110 | 5.0 | **L** | -5.0 | 0.0% |
 
 ---
 ## Loss Analysis
@@ -78,21 +77,16 @@
 - **Analysis:** Positive CLV (+1.0%) -- the line moved our way. Right side, wrong result.
 - **Context:** [SHADOW] Midweek game | New Orleans Privateers allows 8.6 R/midweek | South Alabama Jaguars allows 6.5 R/midweek | Pitching edge: South Alabama Jaguars (-0.6 pts) | Steam: no movement
 
-### LeBron James UNDER 23.5 POINTS
-- **Category:** MARGINAL
-- **Analysis:** Small CLV (+0.0%) -- borderline call.
-- **Final Score:** Houston Rockets 99 @ Los Angeles Lakers 93
-
 ---
 ## Season Overview (since 3/4)
 
 | Metric | Value |
 |--------|-------|
-| Record | **264W-218L** |
-| Win Rate | 54.8% |
-| P/L | **+46.1u** |
-| ROI | +1.9% |
-| Wagered | 2369.5u |
+| Record | **264W-217L** |
+| Win Rate | 54.9% |
+| P/L | **+51.1u** |
+| ROI | +2.2% |
+| Wagered | 2364.5u |
 
 ### By Sport
 | Sport | W | L | P/L |
@@ -107,7 +101,7 @@
 | soccer_usa_mls | 0 | 1 | -4.5u |
 | soccer_uefa_champs_league | 0 | 1 | -5.0u |
 | soccer_italy_serie_a | 2 | 3 | -8.3u |
-| basketball_nba | 55 | 55 | -32.4u |
+| basketball_nba | 55 | 54 | -27.4u |
 
 ---
 ## Context Factor Health (Negative P/L, 3+ bets)
@@ -160,7 +154,7 @@ Found 46 shadow-tagged picks.
 | Bucket | Record | P/L | Avg CLV |
 |--------|--------|-----|---------|
 | AT_CAP | 175W-145L (54.7%) | +52.7u | 0.2 |
-| BELOW_CAP | 89W-73L (54.9%) | -6.6u | 0.5 |
+| BELOW_CAP | 89W-72L (55.3%) | -1.6u | 0.5 |
 
 > Performance is similar across edge tiers -- cap is neutral.
 
@@ -208,14 +202,14 @@ Found 46 shadow-tagged picks.
 ---
 ## Current Streak
 
-- **Last 10:** LOSS LOSS LOSS LOSS LOSS WIN WIN LOSS WIN LOSS
-- **Current Streak:** 5 LOSS
+- **Last 10:** LOSS LOSS LOSS LOSS WIN WIN LOSS WIN LOSS LOSS
+- **Current Streak:** 4 LOSS
 
 ---
 ## Action Items
 
-1. Big red day (-36.5u). Review if any model errors need parameter changes.
-2. 5-bet losing streak. Stay disciplined -- check if edges are still valid.
+1. Big red day (-31.5u). Review if any model errors need parameter changes.
+2. 4-bet losing streak. Stay disciplined -- check if edges are still valid.
 3. Factor 'Pitching edge: Wake Forest Demon Deacons' has -5.8u P/L over 3 bets. Consider reducing weight.
 4. Factor 'Both teams slow-paced' has -5.1u P/L over 18 bets. Consider reducing weight.
 5. Factor 'Midweek game' has -20.0u P/L over 35 bets. Consider reducing weight.
@@ -235,4 +229,4 @@ Found 46 shadow-tagged picks.
 19. basketball_nba UNDERs: 4W-6L (-11.8u). Review totals model for this sport.
 
 ---
-*Generated locally by export_briefing_data.py | 2026-04-30 05:06 ET*
+*Generated locally by export_briefing_data.py | 2026-04-30 05:13 ET*

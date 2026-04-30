@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-30 05:06",
+  "generated_at": "2026-04-30 05:13",
   "game_date": "2026-04-29",
   "yesterday": [
     {
@@ -273,40 +273,14 @@
       "closing_line": 15.0,
       "event_id": "ac4f23f34a32b79cf8018eb54bb2a591",
       "dt": "2026-04-29"
-    },
-    {
-      "selection": "LeBron James UNDER 23.5 POINTS",
-      "sport": "basketball_nba",
-      "market_type": "PROP",
-      "side_type": "PROP_UNDER",
-      "result": "LOSS",
-      "pnl_units": -5.0,
-      "clv": 0.0,
-      "edge_pct": 16.63,
-      "odds": -110.0,
-      "units": 5.0,
-      "context_factors": "",
-      "context_confirmed": 0,
-      "model_spread": null,
-      "closing_line": 23.5,
-      "event_id": "0d0aa62d4305ee094389473b308ce0bd",
-      "dt": "2026-04-29",
-      "actual_score": {
-        "home": "Los Angeles Lakers",
-        "away": "Houston Rockets",
-        "home_score": 93,
-        "away_score": 99,
-        "actual_total": 192,
-        "actual_margin": -6
-      }
     }
   ],
   "season": {
     "result": "LOSS",
     "W": 264,
-    "L": 218,
-    "pnl": 46.1,
-    "wagered": 2369.5
+    "L": 217,
+    "pnl": 51.1,
+    "wagered": 2364.5
   },
   "by_sport": [
     {
@@ -324,8 +298,8 @@
     {
       "sport": "basketball_nba",
       "W": 55,
-      "L": 55,
-      "pnl": -32.4
+      "L": 54,
+      "pnl": -27.4
     },
     {
       "sport": "basketball_ncaab",
@@ -950,8 +924,8 @@
       "day_of_week": "Wednesday",
       "sport": "basketball_nba",
       "W": 4,
-      "L": 12,
-      "pnl": -39.9
+      "L": 11,
+      "pnl": -34.9
     },
     {
       "day_of_week": "Friday",
@@ -1245,8 +1219,8 @@
     {
       "bucket": "BELOW_CAP",
       "W": 89,
-      "L": 73,
-      "pnl": -6.6,
+      "L": 72,
+      "pnl": -1.6,
       "avg_clv": 0.5
     }
   ],
@@ -1449,14 +1423,14 @@
     "LOSS",
     "LOSS",
     "LOSS",
-    "LOSS",
     "WIN",
     "WIN",
     "LOSS",
     "WIN",
+    "LOSS",
     "LOSS"
   ],
-  "streak": 5,
+  "streak": 4,
   "streak_type": "LOSS",
   "shadow_blocked_picks": [
     {
@@ -2699,12 +2673,12 @@
     },
     {
       "book": "DraftKings",
-      "bets": 136,
+      "bets": 135,
       "wins": 67,
-      "losses": 68,
-      "pnl": -25.3,
-      "wagered": 672.5,
-      "avg_clv": -0.38
+      "losses": 67,
+      "pnl": -20.3,
+      "wagered": 667.5,
+      "avg_clv": -0.39
     },
     {
       "book": "BetMGM",
@@ -2721,7 +2695,7 @@
     "blocks_alltime": 0,
     "recent_blocks": [],
     "blocks_by_sport_14d": [],
-    "picks_fired_7d": 90,
+    "picks_fired_7d": 89,
     "counterfactual_note": "Blocked picks never enter bets table \u2014 no live counterfactual. Forward validation requires manual check against historical graded_bets for same event_id+selection patterns."
   },
   "mlb_context_ml_stats": {

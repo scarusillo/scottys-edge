@@ -3,11 +3,11 @@
 ### Fires (graded)
 | Sport | n | Units | P/L |
 |---|---|---|---|
-| basketball_nba | 6 | 30.0u | -20.61u |
+| basketball_nba | 5 | 25.0u | -15.61u |
 | baseball_mlb | 5 | 25.0u | -5.90u |
 | tennis_atp_madrid_open | 1 | 5.0u | -5.00u |
 | baseball_ncaa | 1 | 5.0u | -5.00u |
-| **TOTAL** | **13** | **65.0u** | **-36.51u** |
+| **TOTAL** | **12** | **60.0u** | **-31.51u** |
 
 ### Block volume by sport
 | Sport | Distinct events | Total log entries |
@@ -39,7 +39,7 @@
 | `PROP_EVENT_CAP` | 4 | 1 |
 | _+4 more gates with smaller volume_ | | |
 
-**Approx pass rate:** 13 fires / (13 fires + 26 distinct-blocked events) = **33.3%**
+**Approx pass rate:** 12 fires / (12 fires + 26 distinct-blocked events) = **31.6%**
 
 _Note: pass-rate is approximate — same event can be evaluated multiple times across the hourly pipeline; this counts distinct event_id only._
 
