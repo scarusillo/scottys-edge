@@ -572,6 +572,7 @@ CONTEXT_VETO_EXEMPT_SIDE_TYPES = {
     'SPREAD_FADE_FLIP', 'PROP_FADE_FLIP', 'DATA_SPREAD',
     'DATA_TOTAL', 'BOOK_ARB', 'PROP_BOOK_ARB', 'FADE_FLIP',
     'RAW_EDGE_FLIP',  # v25.95: already a Context-driven flip
+    'MLB_ML_FADE_FLIP',  # v25.98: fades own model by design
 }
 
 
@@ -802,3 +803,107 @@ def gate_line_against(pick, conn, clv_micro_edge_active=False):
         return True
     except Exception:
         return False
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# v25.99 CLV_PREDICTOR_GATE — block bottom-decile predicted CLV picks +
+# stake-boost top-decile predicted CLV picks.
+#
+# Backtest LOO over n=155 graded since 4/15:
+#   block at predicted_clv <= -0.40: 42 picks blocked → +63.99u saved
+#     (blocked cohort 36.6% WR, kept cohort 60.0% WR vs 52% sample-wide)
+#   boost at predicted_clv >=  +0.80: 47 picks boosted (1.4×) → +8.15u extra
+#   combined sample +8.81u → +80.95u (9× improvement)
+# ─────────────────────────────────────────────────────────────────────────
+
+CLV_BLOCK_THRESHOLD = -0.40
+CLV_BOOST_THRESHOLD = 0.80
+CLV_BOOST_MULTIPLIER = 1.4
+CLV_MIN_TRAINING_N = 30
+
+CLV_GATE_EXEMPT_SIDE_TYPES = {
+    'BOOK_ARB', 'PROP_BOOK_ARB',
+    'MLB_ML_FADE_FLIP',
+}
+
+_CLV_MODEL_CACHE = None
+
+
+def _ensure_clv_model(conn):
+    global _CLV_MODEL_CACHE
+    if _CLV_MODEL_CACHE is None:
+        try:
+            from clv_model import load_training, fit
+            rows = load_training(conn)
+            if len(rows) < CLV_MIN_TRAINING_N:
+                _CLV_MODEL_CACHE = (None, None)
+                return None
+            _CLV_MODEL_CACHE = fit(rows)
+        except Exception:
+            _CLV_MODEL_CACHE = (None, None)
+            return None
+    if _CLV_MODEL_CACHE[0] is None:
+        return None
+    return _CLV_MODEL_CACHE
+
+
+def _score_clv(pick, conn):
+    if pick.get('side_type') in CLV_GATE_EXEMPT_SIDE_TYPES:
+        return None
+    model = _ensure_clv_model(conn)
+    if model is None:
+        return None
+    bl, devs = model
+    try:
+        from clv_model import predict, featurize
+        pred, _ = predict(bl, devs, featurize(pick))
+        pick['_clv_predicted'] = pred
+        return pred
+    except Exception:
+        return None
+
+
+def gate_clv_predictor_block(pick, conn):
+    """Block when predicted_clv <= CLV_BLOCK_THRESHOLD."""
+    pred = _score_clv(pick, conn)
+    if pred is None:
+        return False
+    if pred > CLV_BLOCK_THRESHOLD:
+        return False
+    detail = f'predicted_clv={pred:+.2f} <= {CLV_BLOCK_THRESHOLD:+.2f}'
+    try:
+        conn.execute(
+            """INSERT INTO shadow_blocked_picks (created_at, sport, event_id,
+                selection, market_type, book, line, odds, edge_pct, units,
+                reason, reason_category, reason_detail)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+            (datetime.now().isoformat(), pick.get('sport'), pick.get('event_id'),
+             pick.get('selection'), pick.get('market_type'), pick.get('book'),
+             pick.get('line'), pick.get('odds'), pick.get('edge_pct', 0),
+             pick.get('units', 0),
+             f'CLV_PREDICTOR_BLOCK ({detail})',
+             'CLV_PREDICTOR_BLOCK', detail))
+        conn.commit()
+    except Exception:
+        pass
+    print(f"    \U0001f6ab CLV_PREDICTOR_BLOCK: {(pick.get('selection') or '')[:55]} "
+          f"({detail})")
+    return True
+
+
+def apply_clv_top_decile_boost(pick, conn):
+    """Stake-boost picks whose predicted_clv >= CLV_BOOST_THRESHOLD."""
+    if pick.get('_clv_boosted'):
+        return
+    pred = pick.get('_clv_predicted')
+    if pred is None:
+        pred = _score_clv(pick, conn)
+    if pred is None or pred < CLV_BOOST_THRESHOLD:
+        return
+    original = pick.get('units', 0) or 0
+    new_units = round(original * CLV_BOOST_MULTIPLIER, 1)
+    if new_units > original:
+        pick['units'] = new_units
+        pick['_clv_boosted'] = True
+        print(f"    \U0001f4c8 CLV_BOOST: {(pick.get('selection') or '')[:55]} "
+              f"({original:.1f}u → {new_units:.1f}u, predicted_clv={pred:+.2f})")

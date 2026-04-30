@@ -121,7 +121,8 @@ def merge_and_select(game_picks, prop_picks, conn=None):
         # became live picks because of this.
         if p.get('side_type') in ('BOOK_ARB', 'PROP_BOOK_ARB', 'SPREAD_FADE_FLIP',
                                     'DATA_SPREAD', 'DATA_TOTAL', 'PROP_FADE_FLIP',
-                                    'FADE_FLIP', 'PROP_CAREER_FADE', 'RAW_EDGE_FLIP'):
+                                    'FADE_FLIP', 'PROP_CAREER_FADE', 'RAW_EDGE_FLIP',
+                                    'MLB_ML_FADE_FLIP'):
             return True
         mtype = p.get('market_type', 'SPREAD')
         sport = p.get('sport', '')
@@ -321,7 +322,19 @@ def merge_and_select(game_picks, prop_picks, conn=None):
         return True
 
     game_filtered = [p for p in game_picks if _passes_filter(p)]
-    
+
+    # ── v25.99 CLV_PREDICTOR_GATE — block bottom-decile + boost top-decile ──
+    # Backtest LOO n=155: block@-0.40 saved +63.99u, boost@+0.80 added +8.15u
+    from pipeline.gates import gate_clv_predictor_block, apply_clv_top_decile_boost
+    _clv_kept = []
+    for _p in game_filtered:
+        if conn is not None and gate_clv_predictor_block(_p, conn):
+            continue
+        if conn is not None:
+            apply_clv_top_decile_boost(_p, conn)
+        _clv_kept.append(_p)
+    game_filtered = _clv_kept
+
     # ── Exclude offshore/non-legal books from recommendations ──
     # Data from these books is still used for consensus/edge calculations,
     # but we don't recommend bets on books the user can't access.
@@ -639,8 +652,13 @@ def merge_and_select(game_picks, prop_picks, conn=None):
         odds = p.get('odds', -110)
         if odds > 200:
             continue
+        # v25.99 CLV_PREDICTOR_GATE — same gate applied to props
+        if conn is not None and gate_clv_predictor_block(p, conn):
+            continue
+        if conn is not None:
+            apply_clv_top_decile_boost(p, conn)
         prop_filtered.append(p)
-    
+
     prop_filtered.sort(key=lambda x: x['star_rating']*100 + x['edge_pct'], reverse=True)
     
     # Dedup: same player + same stat type = keep best

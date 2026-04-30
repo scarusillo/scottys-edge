@@ -790,6 +790,22 @@ def process_ml_and_cross_market(conn, sp, prelude, adj, mkt, setup, ctx_state, s
                                 picks.append(pick)
         # else baseball without Elo: skip generic ML
 
+        # ═══ MLB_ML_FADE_FLIP (v25.98) — fade Elo edge in 8-12% bucket ═══
+        # Backtest (366 games, 4/1-4/28): 34W-20L (63%) +38.70u at 8% floor.
+        # Stops working above 12% (model picks up real signal at extreme conviction).
+        from pipeline.channels.mlb_ml_fade_flip import try_mlb_ml_fade_flip
+        _mlb_ff_picks = try_mlb_ml_fade_flip(conn, sp, prelude, mkt, seen)
+        picks.extend(_mlb_ff_picks)
+
+        # ═══ MLB_CONTEXT_ML (v26.1) — SHADOW only, no live picks ═══
+        # Logs predictions to shadow_blocked_picks for forward validation.
+        # Promotion gate: 14d forward, n>=30, WR>=55%, log-loss < 0.69.
+        try:
+            from pipeline.channels.mlb_context_ml import try_mlb_context_ml_shadow
+            try_mlb_context_ml_shadow(conn, sp, prelude, mkt)
+        except Exception as _ml_e:
+            pass  # shadow channel never blocks the pipeline on error
+
     # ═══ WALTERS ML EVALUATION (non-baseball) ═══
     elif hml is not None and aml is not None and 'baseball' not in sp:
         _walters_elo_w = 1.0

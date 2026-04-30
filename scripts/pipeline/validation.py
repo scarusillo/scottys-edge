@@ -48,7 +48,8 @@ def _validate_picks(picks):
         if p.get('side_type') in ('SPREAD_FADE_FLIP', 'DATA_SPREAD',
                                    'BOOK_ARB', 'PROP_BOOK_ARB',
                                    'DATA_TOTAL', 'PROP_FADE_FLIP', 'FADE_FLIP',
-                                   'PROP_CAREER_FADE', 'RAW_EDGE_FLIP'):
+                                   'PROP_CAREER_FADE', 'RAW_EDGE_FLIP',
+                                   'MLB_ML_FADE_FLIP'):
             valid.append(p)
             continue
 
